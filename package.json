@@ -23,7 +23,9 @@
     "node": ">= 18"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.1.6"
+    "@iobroker/adapter-core": "^3.1.6",
+    "@adobe/fetch": "4.1.9",
+    "ws": "8.18.0"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.8.0",
@@ -52,8 +54,10 @@
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
-    "typescript": "~5.6.2"
+    "typescript": "~5.6.2",
+    "@types/ws": "8.5.12"
   },
+  "type": "module",
   "main": "build/main.js",
   "files": [
     "admin{,/!(src)/**}/!(tsconfig|tsconfig.*|.eslintrc).{json,json5}",
@@ -65,7 +69,7 @@
   ],
   "scripts": {
     "prebuild": "rimraf build",
-    "build": "build-adapter ts",
+    "build": "tsc",
     "watch": "build-adapter ts --watch",
     "prebuild:ts": "rimraf build",
     "build:ts": "build-adapter ts",

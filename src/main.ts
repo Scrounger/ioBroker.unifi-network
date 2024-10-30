@@ -7,7 +7,7 @@
 import * as utils from '@iobroker/adapter-core';
 
 // Load your modules here, e.g.:
-// import * as fs from "fs";
+import { NetworkApi } from './lib/network-api.js';
 
 class UnifiNetwork extends utils.Adapter {
 
@@ -33,7 +33,7 @@ class UnifiNetwork extends utils.Adapter {
 		// this.config:
 		// this.log.info('config option1: ' + this.config.option1);
 		// this.log.info('config option2: ' + this.config.option2);
-
+		this.log
 		/*
 		For every state in the system there has to be also an object of type state
 		Here a simple template for a boolean variable named "testVariable"
@@ -50,6 +50,8 @@ class UnifiNetwork extends utils.Adapter {
 			},
 			native: {},
 		});
+
+		let bla = new NetworkApi(this);
 
 		// In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
 		this.subscribeStates('testVariable');
@@ -144,10 +146,5 @@ class UnifiNetwork extends utils.Adapter {
 
 }
 
-if (require.main !== module) {
-	// Export the constructor in compact mode
-	module.exports = (options: Partial<utils.AdapterOptions> | undefined) => new UnifiNetwork(options);
-} else {
-	// otherwise start the instance directly
-	(() => new UnifiNetwork())();
-}
+// otherwise start the instance directly
+(() => new UnifiNetwork())();
