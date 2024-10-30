@@ -1,0 +1,43 @@
+{
+	"cli": true,
+	"target": "directory",
+	"adapterName": "unifi-network",
+	"title": "Unifi Network",
+	"description": "Unifi Network uses the websocket interface to receive real-time information from the unifi-network application",
+	"keywords": [
+		"unifi",
+		"network",
+		"unifi-os",
+		"api",
+		"websocket"
+	],
+	"expert": "no",
+	"features": [
+		"adapter"
+	],
+	"adminFeatures": [],
+	"type": "infrastructure",
+	"startMode": "daemon",
+	"connectionType": "local",
+	"dataSource": "push",
+	"connectionIndicator": "no",
+	"language": "TypeScript",
+	"nodeVersion": "20",
+	"adminUi": "json",
+	"tools": [
+		"ESLint"
+	],
+	"releaseScript": "yes",
+	"devServer": "no",
+	"indentation": "Tab",
+	"quotes": "single",
+	"authorName": "Scrounger",
+	"authorGithub": "Scrounger",
+	"authorEmail": "scrounger@gmx.net",
+	"gitRemoteProtocol": "HTTPS",
+	"gitCommit": "no",
+	"defaultBranch": "main",
+	"license": "MIT License",
+	"dependabot": "yes",
+	"creatorVersion": "2.6.5"
+}

@@ -1,0 +1,99 @@
+{
+    "common": {
+        "name": "unifi-network",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "Unifi Network",
+            "de": "Unifi-Netzwerk",
+            "ru": "Юнифи Сеть",
+            "pt": "Rede Unifi",
+            "nl": "Unifi-netwerk",
+            "fr": "Réseau Unifi",
+            "it": "Rete Unifi",
+            "es": "Red Unifi",
+            "pl": "Sieć Unifi",
+            "uk": "Мережа Unifi",
+            "zh-cn": "统一网络"
+        },
+        "desc": {
+            "en": "Unifi Network uses the websocket interface to receive real-time information from the unifi-network application",
+            "de": "Unifi Network verwendet die Websocket-Schnittstelle, um Echtzeitinformationen von der Unifi-Network-Anwendung zu empfangen",
+            "ru": "Unifi Network использует интерфейс веб-сокета для получения информации в реальном времени из приложения unifi-network.",
+            "pt": "Unifi Network usa a interface websocket para receber informações em tempo real do aplicativo unifi-network",
+            "nl": "Unifi Network gebruikt de websocket-interface om realtime informatie te ontvangen van de unifi-network-applicatie",
+            "fr": "Unifi Network utilise l'interface websocket pour recevoir des informations en temps réel de l'application unifi-network",
+            "it": "Unifi Network utilizza l'interfaccia websocket per ricevere informazioni in tempo reale dall'applicazione unifi-network",
+            "es": "Unifi Network utiliza la interfaz websocket para recibir información en tiempo real desde la aplicación unifi-network",
+            "pl": "Unifi Network wykorzystuje interfejs websocket do otrzymywania informacji w czasie rzeczywistym z aplikacji unifi-network",
+            "uk": "Unifi Network використовує інтерфейс websocket для отримання інформації в реальному часі від програми unifi-network",
+            "zh-cn": "Unifi Network 使用 websocket 接口从 unifi-network 应用程序接收实时信息"
+        },
+        "authors": [
+            "Scrounger <scrounger@gmx.net>"
+        ],
+        "keywords": [
+            "unifi",
+            "network",
+            "unifi-os",
+            "api",
+            "websocket"
+        ],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "unifi-network.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/Scrounger/ioBroker.unifi-network/main/admin/unifi-network.png",
+        "readme": "https://github.com/Scrounger/ioBroker.unifi-network/blob/main/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "infrastructure",
+        "compact": true,
+        "connectionType": "local",
+        "dataSource": "push",
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=3.3.22"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=5.1.13"
+            }
+        ]
+    },
+    "encryptedNative": [
+        "accessToken"
+    ],
+    "protectedNative": [
+        "accessToken"
+    ],
+    "native": {
+        "host": "",
+        "user": "",
+        "password": ""
+    },
+    "objects": [],
+    "instanceObjects": []
+}

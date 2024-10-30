@@ -1,0 +1,48 @@
+{
+	"i18n": true,
+	"type": "tabs",
+	"items": {
+		"tab_1": {
+			"type": "panel",
+			"label": "General",
+			"items": {
+				"donation_link": {
+					"type": "staticLink",
+					"text": "You like the adapter? Then support me.",
+					"sm": 12,
+					"button": true,
+					"newLine": true,
+					"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+					"style": {
+						"justifyContent": "flex-start !important"
+					}
+				},
+				"dividerCredentials": {
+					"newLine": true,
+					"type": "header",
+					"text": "login data",
+					"size": 2
+				},
+				"host": {
+					"type": "text",
+					"label": "host",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				},
+				"user": {
+					"type": "text",
+					"label": "Username",
+					"sm": 12,
+					"md": 2
+				},
+				"password": {
+					"type": "password",
+					"label": "Password",
+					"sm": 12,
+					"md": 2
+				}
+			}
+		}
+	}
+}
