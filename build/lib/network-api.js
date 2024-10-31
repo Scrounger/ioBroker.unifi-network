@@ -13,7 +13,7 @@ export class NetworkApi extends EventEmitter {
     password;
     username;
     _eventsWs;
-    constructor(log = console) {
+    constructor(host, username, password, log = console) {
         // Initialize our parent.
         super();
         this.log = log;
@@ -22,17 +22,14 @@ export class NetworkApi extends EventEmitter {
         this.apiLastSuccess = 0;
         this.fetch = context({ alpnProtocols: ["h2" /* ALPNProtocol.ALPN_HTTP2 */], rejectUnauthorized: false, userAgent: 'unifi-network' }).fetch;
         this.headers = new Headers();
-        this.host = '';
-        this.username = '';
-        this.password = '';
+        this.host = host;
+        this.username = username;
+        this.password = password;
     }
-    async login(host, username, password) {
+    async login() {
         const logPrefix = `[${this.logPrefix}.login]`;
         try {
             this.logout();
-            this.host = host;
-            this.username = username;
-            this.password = password;
             // Let's attempt to login.
             const loginSuccess = await this.loginController();
             // Publish the result to our listeners
@@ -51,6 +48,7 @@ export class NetworkApi extends EventEmitter {
         try {
             // If we're already logged in, we're done.
             if (this.headers.has('Cookie') && this.headers.has('X-CSRF-Token')) {
+                this.log.debug(`${logPrefix} we are already logged in to the controller`);
                 return true;
             }
             // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
@@ -85,6 +83,7 @@ export class NetworkApi extends EventEmitter {
                 this.headers.set('Cookie', cookie.split(';')[0]);
                 // Save the CSRF token.
                 this.headers.set('X-CSRF-Token', csrfToken);
+                this.log.debug(`${logPrefix} successfully logged into the controller`);
                 return true;
             }
             // Clear out our login credentials.
@@ -131,7 +130,7 @@ export class NetworkApi extends EventEmitter {
     /**
      * Execute an HTTP fetch request to the Network controller.
      *
-     * @param url       - Complete URL to execute **without** any additional parameters you want to pass (e.g. https://unvr.local/proxy/protect/cameras/someid/snapshot).
+     * @param url       - Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   - Parameters to pass on for the endpoint request.
      *
      * @returns Returns a promise that will resolve to a Response object successful, and `null` otherwise.
@@ -142,7 +141,6 @@ export class NetworkApi extends EventEmitter {
      *
      * @category API Access
      */
-    // Communicate HTTP requests with a Network controller.
     async retrieve(url, options = { method: 'GET' }) {
         return this._retrieve(url, options);
     }
@@ -256,26 +254,35 @@ export class NetworkApi extends EventEmitter {
             signal.clear();
         }
     }
-    async retrievData(url, options = { method: 'GET' }) {
+    /**
+     * Execute an HTTP fetch request to the Network controller and retriev data as json
+     * @param url       Complete URL to execute **without** any additional parameters you want to pass.
+     * @param options   Parameters to pass on for the endpoint request.
+     * @param retry     Retry once if we have an issue
+     * @returns         Returns a promise json object
+     */
+    async retrievData(url, options = { method: 'GET' }, retry = true) {
         const logPrefix = `[${this.logPrefix}.retrievData]`;
         try {
-            if (await this.loginController()) {
-                const response = await this.retrieve(url);
-                if (!response?.ok) {
-                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
-                }
-                else {
-                    const data = await response.json();
-                    if (data) {
-                        return data;
-                    }
-                }
+            // Log us in if needed.
+            if (!(await this.loginController())) {
+                return retry ? this.retrievData(url, options, false) : undefined;
+            }
+            const response = await this.retrieve(url, options);
+            // Something went wrong. Retry the bootstrap attempt once, and then we're done.
+            if (!response?.ok) {
+                this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
+                return retry ? this.retrievData(url, options, false) : undefined;
+            }
+            const data = await response.json();
+            if (data) {
+                return data;
             }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
-        return null;
+        return undefined;
     }
     getApiEndpoint(endpoint) {
         let endpointSuffix;

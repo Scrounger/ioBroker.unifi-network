@@ -26,7 +26,7 @@ export class NetworkApi extends EventEmitter {
     private _eventsWs: WebSocket | null;
 
 
-    constructor(log: NetworkLogging = console) {
+    constructor(host: string, username: string, password: string, log: NetworkLogging = console) {
         // Initialize our parent.
         super();
 
@@ -39,20 +39,16 @@ export class NetworkApi extends EventEmitter {
         this.fetch = context({ alpnProtocols: [ALPNProtocol.ALPN_HTTP2], rejectUnauthorized: false, userAgent: 'unifi-network' }).fetch;
         this.headers = new Headers();
 
-        this.host = '';
-        this.username = '';
-        this.password = '';
+        this.host = host;
+        this.username = username;
+        this.password = password;
     }
 
-    public async login(host: string, username: string, password: string): Promise<boolean> {
+    public async login(): Promise<boolean> {
         const logPrefix = `[${this.logPrefix}.login]`
 
         try {
             this.logout();
-
-            this.host = host;
-            this.username = username;
-            this.password = password;
 
             // Let's attempt to login.
             const loginSuccess = await this.loginController();
@@ -78,6 +74,7 @@ export class NetworkApi extends EventEmitter {
             // If we're already logged in, we're done.
             if (this.headers.has('Cookie') && this.headers.has('X-CSRF-Token')) {
 
+                this.log.debug(`${logPrefix} we are already logged in to the controller`);
                 return true;
             }
 
@@ -128,6 +125,7 @@ export class NetworkApi extends EventEmitter {
                 // Save the CSRF token.
                 this.headers.set('X-CSRF-Token', csrfToken);
 
+                this.log.debug(`${logPrefix} successfully logged into the controller`);
                 return true;
             }
 
@@ -183,7 +181,7 @@ export class NetworkApi extends EventEmitter {
     /**
      * Execute an HTTP fetch request to the Network controller.
      *
-     * @param url       - Complete URL to execute **without** any additional parameters you want to pass (e.g. https://unvr.local/proxy/protect/cameras/someid/snapshot).
+     * @param url       - Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   - Parameters to pass on for the endpoint request.
      *
      * @returns Returns a promise that will resolve to a Response object successful, and `null` otherwise.
@@ -194,7 +192,6 @@ export class NetworkApi extends EventEmitter {
      *
      * @category API Access
      */
-    // Communicate HTTP requests with a Network controller.
     public async retrieve(url: string, options: RequestOptions = { method: 'GET' }): Promise<Response | null> {
 
         return this._retrieve(url, options);
@@ -366,28 +363,43 @@ export class NetworkApi extends EventEmitter {
         }
     }
 
-    public async retrievData(url: string, options: RequestOptions = { method: 'GET' }): Promise<any | null> {
+    /**
+     * Execute an HTTP fetch request to the Network controller and retriev data as json
+     * @param url       Complete URL to execute **without** any additional parameters you want to pass.
+     * @param options   Parameters to pass on for the endpoint request.
+     * @param retry     Retry once if we have an issue
+     * @returns         Returns a promise json object
+     */
+    public async retrievData(url: string, options: RequestOptions = { method: 'GET' }, retry: boolean = true): Promise<any | undefined> {
         const logPrefix = `[${this.logPrefix}.retrievData]`
 
         try {
-            if (await this.loginController()) {
-                const response = await this.retrieve(url);
+            // Log us in if needed.
+            if (!(await this.loginController())) {
 
-                if (!response?.ok) {
-                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
-                } else {
-                    const data = await response.json();
+                return retry ? this.retrievData(url, options, false) : undefined;
+            }
 
-                    if (data) {
-                        return data
-                    }
-                }
+            const response = await this.retrieve(url, options);
+
+            // Something went wrong. Retry the bootstrap attempt once, and then we're done.
+            if (!response?.ok) {
+
+                this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
+
+                return retry ? this.retrievData(url, options, false) : undefined;
+            }
+
+            const data = await response.json();
+
+            if (data) {
+                return data;
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
-        return null;
+        return undefined;
     }
 
     public getApiEndpoint(endpoint: ApiEndpoints): string {

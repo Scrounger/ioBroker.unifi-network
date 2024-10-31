@@ -12,8 +12,8 @@ export declare class NetworkApi extends EventEmitter {
     private password;
     private username;
     private _eventsWs;
-    constructor(log?: NetworkLogging);
-    login(host: string, username: string, password: string): Promise<boolean>;
+    constructor(host: string, username: string, password: string, log?: NetworkLogging);
+    login(): Promise<boolean>;
     private loginController;
     /**
      * Clear the login credentials and terminate any open connection to the UniFi Network API.
@@ -30,7 +30,7 @@ export declare class NetworkApi extends EventEmitter {
     /**
      * Execute an HTTP fetch request to the Network controller.
      *
-     * @param url       - Complete URL to execute **without** any additional parameters you want to pass (e.g. https://unvr.local/proxy/protect/cameras/someid/snapshot).
+     * @param url       - Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   - Parameters to pass on for the endpoint request.
      *
      * @returns Returns a promise that will resolve to a Response object successful, and `null` otherwise.
@@ -43,7 +43,14 @@ export declare class NetworkApi extends EventEmitter {
      */
     retrieve(url: string, options?: RequestOptions): Promise<Response | null>;
     private _retrieve;
-    retrievData(url: string, options?: RequestOptions): Promise<any | null>;
+    /**
+     * Execute an HTTP fetch request to the Network controller and retriev data as json
+     * @param url       Complete URL to execute **without** any additional parameters you want to pass.
+     * @param options   Parameters to pass on for the endpoint request.
+     * @param retry     Retry once if we have an issue
+     * @returns         Returns a promise json object
+     */
+    retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
 }
 export declare enum ApiEndpoints {

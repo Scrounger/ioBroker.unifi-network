@@ -5,12 +5,14 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
+import moment from 'moment';
 
 // Load your modules here, e.g.:
 import { ApiEndpoints, NetworkApi } from './lib/network-api.js';
 
+
 class UnifiNetwork extends utils.Adapter {
-	api: NetworkApi;
+	ufn: NetworkApi;
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
@@ -29,78 +31,28 @@ class UnifiNetwork extends utils.Adapter {
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	private async onReady(): Promise<void> {
-		// Initialize your adapter here
+		const logPrefix = '[onReady]:';
 
-		// The adapters config (in the instance object everything under the attribute "native") is accessible via
-		// this.config:
-		// this.log.info('config option1: ' + this.config.option1);
-		// this.log.info('config option2: ' + this.config.option2);
-		this.log
-		/*
-		For every state in the system there has to be also an object of type state
-		Here a simple template for a boolean variable named "testVariable"
-		Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-		*/
-		await this.setObjectNotExistsAsync('testVariable', {
-			type: 'state',
-			common: {
-				name: 'testVariable',
-				type: 'boolean',
-				role: 'indicator',
-				read: true,
-				write: true,
-			},
-			native: {},
-		});
+		try {
+			moment.locale(this.language);
 
-		this.api = new NetworkApi(this.log);
+			if (this.config.host, this.config.user, this.config.password) {
+				this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
 
-		// this.log.warn(this.api.login(this.config.host, this.config.user, this.config.password) ? 'success' : 'oh nooo');
+				await this.ufn.login();
 
-		await this.api.login(this.config.host, this.config.user, this.config.password);
+				const test = await this.ufn.retrievData(this.ufn.getApiEndpoint(ApiEndpoints.self));
 
-		const data = await this.api.retrievData(this.api.getApiEndpoint(ApiEndpoints.self));
+				this.log.warn(JSON.stringify(test));
 
-		this.log.warn(JSON.stringify(data));
 
-		// this.api.on("login", async (successfulLogin: boolean) => {
+			} else {
+				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
+			}
 
-		// 	// Indicate if we are successful.
-		// 	if (successfulLogin) {
-
-		// 		this.log.warn("Logged in successfully.");
-
-		// 		await this.api.test();
-		// 	}
-		// });
-
-		// In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-		this.subscribeStates('testVariable');
-		// You can also add a subscription for multiple states. The following line watches all states starting with "lights."
-		// this.subscribeStates('lights.*');
-		// Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
-		// this.subscribeStates('*');
-
-		/*
-			setState examples
-			you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-		*/
-		// the variable testVariable is set to true as command (ack=false)
-		await this.setStateAsync('testVariable', true);
-
-		// same thing, but the value is flagged "ack"
-		// ack should be always set to true if the value is received from or acknowledged from the target system
-		await this.setStateAsync('testVariable', { val: true, ack: true });
-
-		// same thing, but the state is deleted after 30s (getState will return null afterwards)
-		await this.setStateAsync('testVariable', { val: true, ack: true, expire: 30 });
-
-		// examples for the checkPassword/checkGroup functions
-		let result = await this.checkPasswordAsync('admin', 'iobroker');
-		this.log.info('check user admin pw iobroker: ' + result);
-
-		result = await this.checkGroupAsync('admin', 'admin');
-		this.log.info('check group user admin group admin: ' + result);
+		} catch (error: any) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
 	}
 
 	/**
@@ -113,7 +65,7 @@ class UnifiNetwork extends utils.Adapter {
 			// clearTimeout(timeout2);
 			// ...
 			// clearInterval(interval1);
-			this.api.logout();
+			this.ufn.logout();
 
 			callback();
 		} catch (e) {
