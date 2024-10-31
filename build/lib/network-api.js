@@ -1,6 +1,7 @@
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './settings-api.js';
 import { AbortError, FetchError, Headers, context, timeoutSignal } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
+import WebSocket from 'ws';
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     // private adapter: ioBroker.Adapter;
@@ -303,6 +304,68 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
         return 'https://' + this.host + endpointPrefix + endpointSuffix;
+    }
+    async launchEventsWs() {
+        const logPrefix = `[${this.logPrefix}.launchEventsWs]`;
+        try {
+            // Log us in if needed.
+            if (!(await this.loginController())) {
+                return false;
+            }
+            // If we already have a listener, we're already all set.
+            if (this._eventsWs) {
+                return true;
+            }
+            const ws = new WebSocket("wss://" + this.host + "/proxy/network/wss/s/default/events?" + 'clients=v2&next_ai_notifications=true', {
+                headers: {
+                    Cookie: this.headers.get("Cookie") ?? ""
+                },
+                rejectUnauthorized: false
+            });
+            if (!ws) {
+                this.log.error("Unable to connect to the realtime update events API. Will retry again later.");
+                this._eventsWs = null;
+                return false;
+            }
+            let messageHandler;
+            // Cleanup after ourselves if our websocket closes for some resaon.
+            ws.once("close", () => {
+                this._eventsWs = null;
+                if (messageHandler) {
+                    ws.removeListener("message", messageHandler);
+                    messageHandler = null;
+                }
+            });
+            // Handle any websocket errors.
+            ws.once("error", (error) => {
+                // If we're closing before fully established it's because we're shutting down the API - ignore it.
+                if (error.message !== "WebSocket was closed before the connection was established") {
+                    this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+                }
+                ws.terminate();
+            });
+            // Process messages as they come in.
+            ws.on("message", messageHandler = (data, isBinary) => {
+                try {
+                    if (isBinary) {
+                        this.log.error(`is binary: ${JSON.stringify(data)}`);
+                    }
+                    else {
+                        const message = JSON.parse(data.toString());
+                        this.log.warn(JSON.stringify(message.meta));
+                    }
+                }
+                catch (error) {
+                    this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+                }
+            });
+            // Make the websocket available, and then we're done.
+            this._eventsWs = ws;
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return true;
     }
 }
 export var ApiEndpoints;

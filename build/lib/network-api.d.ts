@@ -1,4 +1,4 @@
-import { NetworkLogging } from "./network-logging";
+import { NetworkLogging } from './network-logging.js';
 import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
 export declare class NetworkApi extends EventEmitter {
@@ -52,6 +52,7 @@ export declare class NetworkApi extends EventEmitter {
      */
     retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
+    launchEventsWs(): Promise<boolean>;
 }
 export declare enum ApiEndpoints {
     login = "login",

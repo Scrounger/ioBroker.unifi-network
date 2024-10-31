@@ -45,6 +45,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				this.log.warn(JSON.stringify(test));
 
+				this.ufn.launchEventsWs();
+
 
 			} else {
 				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
