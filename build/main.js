@@ -5,7 +5,7 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 // Load your modules here, e.g.:
-import { NetworkApi } from './lib/network-api.js';
+import { ApiEndpoints, NetworkApi } from './lib/network-api.js';
 class UnifiNetwork extends utils.Adapter {
     api;
     constructor(options = {}) {
@@ -48,10 +48,14 @@ class UnifiNetwork extends utils.Adapter {
         });
         this.api = new NetworkApi(this.log);
         // this.log.warn(this.api.login(this.config.host, this.config.user, this.config.password) ? 'success' : 'oh nooo');
-        // this.api.on("login", (successfulLogin: boolean) => {
+        await this.api.login(this.config.host, this.config.user, this.config.password);
+        const data = await this.api.retrievData(this.api.getApiEndpoint(ApiEndpoints.self));
+        this.log.warn(JSON.stringify(data));
+        // this.api.on("login", async (successfulLogin: boolean) => {
         // 	// Indicate if we are successful.
         // 	if (successfulLogin) {
         // 		this.log.warn("Logged in successfully.");
+        // 		await this.api.test();
         // 	}
         // });
         // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.

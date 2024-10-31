@@ -1,10 +1,6 @@
 import { NetworkLogging } from "./network-logging";
 import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
-export declare enum ApiEndpoints {
-    login = "login",
-    logout = "logout"
-}
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -47,5 +43,10 @@ export declare class NetworkApi extends EventEmitter {
      */
     retrieve(url: string, options?: RequestOptions): Promise<Response | null>;
     private _retrieve;
+    retrievData(url: string, options?: RequestOptions): Promise<any | null>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
+}
+export declare enum ApiEndpoints {
+    login = "login",
+    self = "self"
 }

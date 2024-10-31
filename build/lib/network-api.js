@@ -1,11 +1,6 @@
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './settings-api.js';
 import { AbortError, FetchError, Headers, context, timeoutSignal } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
-export var ApiEndpoints;
-(function (ApiEndpoints) {
-    ApiEndpoints["login"] = "login";
-    ApiEndpoints["logout"] = "logout";
-})(ApiEndpoints || (ApiEndpoints = {}));
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     // private adapter: ioBroker.Adapter;
@@ -21,7 +16,6 @@ export class NetworkApi extends EventEmitter {
     constructor(log = console) {
         // Initialize our parent.
         super();
-        const logPrefix = `[${this.logPrefix}.constructor]`;
         this.log = log;
         this._eventsWs = null;
         this.apiErrorCount = 0;
@@ -31,62 +25,74 @@ export class NetworkApi extends EventEmitter {
         this.host = '';
         this.username = '';
         this.password = '';
-        this.log.warn(`${logPrefix} init`);
     }
     async login(host, username, password) {
-        this.logout();
-        this.host = host;
-        this.username = username;
-        this.password = password;
-        // Let's attempt to login.
-        const loginSuccess = await this.loginController();
-        // Publish the result to our listeners
-        this.emit('login', loginSuccess);
-        // Return the status of our login attempt.
-        return loginSuccess;
+        const logPrefix = `[${this.logPrefix}.login]`;
+        try {
+            this.logout();
+            this.host = host;
+            this.username = username;
+            this.password = password;
+            // Let's attempt to login.
+            const loginSuccess = await this.loginController();
+            // Publish the result to our listeners
+            this.emit('login', loginSuccess);
+            // Return the status of our login attempt.
+            return loginSuccess;
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return false;
     }
     // Login to the UniFi Network API.
     async loginController() {
-        // If we're already logged in, we're done.
-        if (this.headers.has('Cookie') && this.headers.has('X-CSRF-Token')) {
-            return true;
-        }
-        // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
-        if (!this.headers.has('X-CSRF-Token')) {
-            // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
-            // controller and checking the headers for it.
-            const response = await this.retrieve('https://' + this.host, { method: 'GET' });
-            if (response?.ok) {
-                const csrfToken = response.headers.get('X-CSRF-Token');
-                // Preserve the CSRF token, if found, for future API calls.
-                if (csrfToken) {
-                    this.headers.set('X-CSRF-Token', csrfToken);
+        const logPrefix = `[${this.logPrefix}.loginController]`;
+        try {
+            // If we're already logged in, we're done.
+            if (this.headers.has('Cookie') && this.headers.has('X-CSRF-Token')) {
+                return true;
+            }
+            // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
+            if (!this.headers.has('X-CSRF-Token')) {
+                // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
+                // controller and checking the headers for it.
+                const response = await this.retrieve('https://' + this.host, { method: 'GET' });
+                if (response?.ok) {
+                    const csrfToken = response.headers.get('X-CSRF-Token');
+                    // Preserve the CSRF token, if found, for future API calls.
+                    if (csrfToken) {
+                        this.headers.set('X-CSRF-Token', csrfToken);
+                    }
                 }
             }
-        }
-        // Log us in.
-        const response = await this.retrieve(this.getApiEndpoint(ApiEndpoints.login), {
-            body: JSON.stringify({ password: this.password, rememberMe: true, token: '', username: this.username }),
-            method: 'POST'
-        });
-        // Something went wrong with the login call, possibly a controller reboot or failure.
-        if (!response?.ok) {
+            // Log us in.
+            const response = await this.retrieve(this.getApiEndpoint(ApiEndpoints.login), {
+                body: JSON.stringify({ password: this.password, rememberMe: true, token: '', username: this.username }),
+                method: 'POST'
+            });
+            // Something went wrong with the login call, possibly a controller reboot or failure.
+            if (!response?.ok) {
+                this.logout();
+                return false;
+            }
+            // We're logged in. Let's configure our headers.
+            const csrfToken = response.headers.get('X-Updated-CSRF-Token') ?? response.headers.get('X-CSRF-Token');
+            const cookie = response.headers.get('Set-Cookie');
+            // Save the refreshed cookie and CSRF token for future API calls and we're done.
+            if (csrfToken && cookie) {
+                // Only preserve the token element of the cookie and not the superfluous information that's been added to it.
+                this.headers.set('Cookie', cookie.split(';')[0]);
+                // Save the CSRF token.
+                this.headers.set('X-CSRF-Token', csrfToken);
+                return true;
+            }
+            // Clear out our login credentials.
             this.logout();
-            return false;
         }
-        // We're logged in. Let's configure our headers.
-        const csrfToken = response.headers.get('X-Updated-CSRF-Token') ?? response.headers.get('X-CSRF-Token');
-        const cookie = response.headers.get('Set-Cookie');
-        // Save the refreshed cookie and CSRF token for future API calls and we're done.
-        if (csrfToken && cookie) {
-            // Only preserve the token element of the cookie and not the superfluous information that's been added to it.
-            this.headers.set('Cookie', cookie.split(';')[0]);
-            // Save the CSRF token.
-            this.headers.set('X-CSRF-Token', csrfToken);
-            return true;
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
-        // Clear out our login credentials.
-        this.logout();
         return false;
     }
     /**
@@ -95,16 +101,22 @@ export class NetworkApi extends EventEmitter {
      * @category Authentication
      */
     logout() {
-        // Close any connection to the Network API.
-        this.reset();
-        // Save our CSRF token, if we have one.
-        const csrfToken = this.headers?.get('X-CSRF-Token');
-        // Initialize the headers we need.
-        this.headers = new Headers();
-        this.headers.set('Content-Type', 'application/json');
-        // Restore the CSRF token if we have one.
-        if (csrfToken) {
-            this.headers.set('X-CSRF-Token', csrfToken);
+        const logPrefix = `[${this.logPrefix}.logout]`;
+        try {
+            // Close any connection to the Network API.
+            this.reset();
+            // Save our CSRF token, if we have one.
+            const csrfToken = this.headers?.get('X-CSRF-Token');
+            // Initialize the headers we need.
+            this.headers = new Headers();
+            this.headers.set('Content-Type', 'application/json');
+            // Restore the CSRF token if we have one.
+            if (csrfToken) {
+                this.headers.set('X-CSRF-Token', csrfToken);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
     /**
@@ -244,42 +256,39 @@ export class NetworkApi extends EventEmitter {
             signal.clear();
         }
     }
+    async retrievData(url, options = { method: 'GET' }) {
+        const logPrefix = `[${this.logPrefix}.retrievData]`;
+        try {
+            if (await this.loginController()) {
+                const response = await this.retrieve(url);
+                if (!response?.ok) {
+                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
+                }
+                else {
+                    const data = await response.json();
+                    if (data) {
+                        return data;
+                    }
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return null;
+    }
     getApiEndpoint(endpoint) {
         let endpointSuffix;
         let endpointPrefix = '/proxy/network/api/';
         switch (endpoint) {
-            // case 'bootstrap':
-            //     endpointSuffix = 'bootstrap';
-            //     break;
-            // case 'camera':
-            //     endpointSuffix = 'cameras';
-            //     break;
-            // case 'chime':
-            //     endpointSuffix = 'chimes';
-            //     break;
-            // case 'light':
-            //     endpointSuffix = 'lights';
-            //     break;
-            case 'login':
+            case ApiEndpoints.login:
                 endpointPrefix = '/api/';
                 endpointSuffix = 'auth/login';
                 break;
-            // case 'nvr':
-            //     endpointSuffix = 'nvr';
-            //     break;
-            // case 'self':
-            //     endpointPrefix = '/api/';
-            //     endpointSuffix = 'users/self';
-            //     break;
-            // case 'sensor':
-            //     endpointSuffix = 'sensors';
-            //     break;
-            // case 'websocket':
-            //     endpointSuffix = 'ws';
-            //     break;
-            // case 'viewer':
-            //     endpointSuffix = 'viewers';
-            //     break;
+            case ApiEndpoints.self:
+                endpointPrefix = '/api/';
+                endpointSuffix = 'users/self';
+                break;
             default:
                 break;
         }
@@ -289,3 +298,8 @@ export class NetworkApi extends EventEmitter {
         return 'https://' + this.host + endpointPrefix + endpointSuffix;
     }
 }
+export var ApiEndpoints;
+(function (ApiEndpoints) {
+    ApiEndpoints["login"] = "login";
+    ApiEndpoints["self"] = "self";
+})(ApiEndpoints || (ApiEndpoints = {}));
