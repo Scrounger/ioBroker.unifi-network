@@ -9,10 +9,19 @@ import moment from 'moment';
 
 // Load your modules here, e.g.:
 import { ApiEndpoints, NetworkApi } from './lib/network-api.js';
+import { NetworkEvent } from './lib/network-types.js';
 
 
 class UnifiNetwork extends utils.Adapter {
-	ufn: NetworkApi;
+	ufn: NetworkApi = undefined;
+	isConnected: boolean = false;
+
+	aliveInterval: number = 15;
+	aliveTimeout: NodeJS.Timeout | undefined = undefined;
+	aliveTimestamp: number = moment().valueOf();
+
+	connectionMaxRetries: number = 200;
+	connectionRetries: number = 0;
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
@@ -39,13 +48,21 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.host, this.config.user, this.config.password) {
 				this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
 
-				await this.ufn.login();
+				// listen to realtime events (must be given as function to be able to use this)
+				this.ufn.on('message', (event) => this.onNetworkEvent(event));
 
-				const test = await this.ufn.retrievData(this.ufn.getApiEndpoint(ApiEndpoints.self));
+				await this.establishConnection(true);
 
-				this.log.warn(JSON.stringify(test));
 
-				this.ufn.launchEventsWs();
+
+
+				// await this.ufn.login();
+
+				// const test = await this.ufn.retrievData(this.ufn.getApiEndpoint(ApiEndpoints.self));
+
+				// this.log.warn(JSON.stringify(test));
+
+				// this.ufn.launchEventsWs();
 
 
 			} else {
@@ -61,13 +78,16 @@ class UnifiNetwork extends utils.Adapter {
 	 * Is called when adapter shuts down - callback has to be called under any circumstances!
 	 */
 	private onUnload(callback: () => void): void {
+		const logPrefix = '[onUnload]:';
+
 		try {
-			// Here you must clear all timeouts or intervals that may still be active
-			// clearTimeout(timeout1);
-			// clearTimeout(timeout2);
-			// ...
-			// clearInterval(interval1);
-			this.ufn.logout();
+			if (this.aliveTimeout) clearTimeout(this.aliveTimeout);
+
+			if (this.ufn) {
+				this.ufn.logout();
+				this.setConnectionStatus(false);
+				this.log.info(`${logPrefix} Logged out successfully from the Unifi-Protect controller API. (host: ${this.config.host})`);
+			}
 
 			callback();
 		} catch (e) {
@@ -120,6 +140,141 @@ class UnifiNetwork extends utils.Adapter {
 	// 	}
 	// }
 
+	//#region Establish Connection
+
+	/**
+	 * Establish Connection to NVR and starting the alive checker
+	 * @param isAdapterStart 
+	 */
+	async establishConnection(isAdapterStart: boolean = false) {
+		const logPrefix = '[establishConnection]:';
+
+		try {
+			await this.login();
+
+			// start the alive checker
+			if (this.aliveTimeout) {
+				clearTimeout(this.aliveTimeout);
+				this.aliveTimeout = null;
+			}
+
+			this.aliveTimeout = setTimeout(() => {
+				this.aliveChecker();
+			}, this.aliveInterval * 1000);
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	/** Login into NVR and load bootstrap data
+	 * @returns {Promise<boolean>} Connection status
+	 */
+	async login(): Promise<boolean> {
+		const logPrefix = '[login]:';
+
+		try {
+			if (this.ufn) {
+				const loginSuccessful = await this.ufn.login();
+
+				if (loginSuccessful) {
+					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller API. (host: ${this.config.host})`);
+
+					if (await this.ufn.launchEventsWs()) {
+						await this.setConnectionStatus(true);
+						return true;
+					} else {
+						this.log.error(`${logPrefix} unable to start ws listener`);
+					}
+				} else {
+					this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host})`);
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+
+		await this.setConnectionStatus(false);
+
+		return false;
+	}
+
+
+	/** Check whether the connection to the controller exists, if not try to establish a new connection
+	 */
+	async aliveChecker() {
+		const logPrefix = '[aliveChecker]:';
+
+		try {
+			if (this.ufn) {
+				const diff = Math.round((moment().valueOf() - this.aliveTimestamp) / 1000);
+
+				if (diff >= this.aliveInterval) {
+					this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
+					this.ufn.logout();
+
+					await this.setConnectionStatus(false);
+
+					if (this.connectionRetries < this.connectionMaxRetries) {
+						this.connectionRetries++;
+
+						await this.establishConnection();
+					} else {
+						this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * this.aliveInterval}s, stopping the adapter.`);
+						this.stop({ reason: 'too many connection retries' });
+					}
+				} else {
+					this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
+
+					await this.setConnectionStatus(true);
+					this.connectionRetries = 0;
+
+					if (this.aliveTimeout) {
+						clearTimeout(this.aliveTimeout);
+						this.aliveTimeout = null;
+					}
+
+					this.aliveTimeout = setTimeout(() => {
+						this.aliveChecker();
+					}, this.aliveInterval * 1000);
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+
+	/** Set adapter info.connection state and internal var
+	 * @param {boolean} isConnected
+	 */
+	async setConnectionStatus(isConnected: boolean) {
+		const logPrefix = '[setConnectionStatus]:';
+
+		try {
+			this.isConnected = isConnected;
+			await this.setState('info.connection', isConnected, true);
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	//#endregion
+
+	async onNetworkEvent(event: NetworkEvent) {
+		const logPrefix = '[onProtectEvent]:';
+
+		try {
+			this.aliveTimestamp = moment().valueOf();
+
+			this.log.warn(JSON.stringify(event.meta));
+
+			// {"message":"session-metadata:sync","rc":"ok"} -> beim start
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
 }
 
 // otherwise start the instance directly

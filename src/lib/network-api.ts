@@ -497,8 +497,6 @@ export class NetworkApi extends EventEmitter {
                 try {
                     const message: NetworkEvent = JSON.parse(data.toString());
 
-                    this.log.warn(JSON.stringify(message.meta));
-
                     this.emit('message', message);
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);

@@ -316,44 +316,39 @@ export class NetworkApi extends EventEmitter {
             if (this._eventsWs) {
                 return true;
             }
-            const ws = new WebSocket("wss://" + this.host + "/proxy/network/wss/s/default/events?" + 'clients=v2&next_ai_notifications=true', {
+            const ws = new WebSocket('wss://' + this.host + '/proxy/network/wss/s/default/events?' + 'clients=v2&next_ai_notifications=true', {
                 headers: {
-                    Cookie: this.headers.get("Cookie") ?? ""
+                    Cookie: this.headers.get('Cookie') ?? ''
                 },
                 rejectUnauthorized: false
             });
             if (!ws) {
-                this.log.error("Unable to connect to the realtime update events API. Will retry again later.");
+                this.log.error('Unable to connect to the realtime update events API. Will retry again later.');
                 this._eventsWs = null;
                 return false;
             }
             let messageHandler;
             // Cleanup after ourselves if our websocket closes for some resaon.
-            ws.once("close", () => {
+            ws.once('close', () => {
                 this._eventsWs = null;
                 if (messageHandler) {
-                    ws.removeListener("message", messageHandler);
+                    ws.removeListener('message', messageHandler);
                     messageHandler = null;
                 }
             });
             // Handle any websocket errors.
-            ws.once("error", (error) => {
+            ws.once('error', (error) => {
                 // If we're closing before fully established it's because we're shutting down the API - ignore it.
-                if (error.message !== "WebSocket was closed before the connection was established") {
+                if (error.message !== 'WebSocket was closed before the connection was established') {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
                 ws.terminate();
             });
             // Process messages as they come in.
-            ws.on("message", messageHandler = (data, isBinary) => {
+            ws.on('message', messageHandler = (data) => {
                 try {
-                    if (isBinary) {
-                        this.log.error(`is binary: ${JSON.stringify(data)}`);
-                    }
-                    else {
-                        const message = JSON.parse(data.toString());
-                        this.log.warn(JSON.stringify(message.meta));
-                    }
+                    const message = JSON.parse(data.toString());
+                    this.emit('message', message);
                 }
                 catch (error) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);

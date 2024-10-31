@@ -1,6 +1,8 @@
 export interface NetworkEvent {
     meta: NetworkEventMeta;
-    data: any;
+    data: Array<{
+        [key: string]: boolean | number | object | string;
+    }>;
 }
 export interface NetworkEventMeta {
     message: string;
