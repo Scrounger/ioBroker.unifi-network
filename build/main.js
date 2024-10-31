@@ -7,10 +7,12 @@ import * as utils from '@iobroker/adapter-core';
 // Load your modules here, e.g.:
 import { NetworkApi } from './lib/network-api.js';
 class UnifiNetwork extends utils.Adapter {
+    api;
     constructor(options = {}) {
         super({
             ...options,
             name: 'unifi-network',
+            useFormatDate: true
         });
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
@@ -44,7 +46,14 @@ class UnifiNetwork extends utils.Adapter {
             },
             native: {},
         });
-        let bla = new NetworkApi(this);
+        this.api = new NetworkApi(this);
+        this.log.warn(this.api.login(this.config.host, this.config.user, this.config.password) ? 'success' : 'oh nooo');
+        this.api.on("login", (successfulLogin) => {
+            // Indicate if we are successful.
+            if (successfulLogin) {
+                this.log.warn("Logged in successfully.");
+            }
+        });
         // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
         this.subscribeStates('testVariable');
         // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
@@ -78,6 +87,7 @@ class UnifiNetwork extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
+            this.api.logout();
             callback();
         }
         catch (e) {
