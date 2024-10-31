@@ -1,3 +1,4 @@
+import { NetworkLogging } from "./network-logging";
 import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
 export declare enum ApiEndpoints {
@@ -6,16 +7,16 @@ export declare enum ApiEndpoints {
 }
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
-    private adapter;
-    private _eventsWs;
     private apiErrorCount;
     private apiLastSuccess;
     private fetch;
     private headers;
+    private log;
     private host;
     private password;
     private username;
-    constructor(adapter: ioBroker.Adapter);
+    private _eventsWs;
+    constructor(log?: NetworkLogging);
     login(host: string, username: string, password: string): Promise<boolean>;
     private loginController;
     /**

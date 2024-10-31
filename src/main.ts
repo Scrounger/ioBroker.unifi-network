@@ -7,7 +7,7 @@
 import * as utils from '@iobroker/adapter-core';
 
 // Load your modules here, e.g.:
-import { ApiEndpoints, NetworkApi } from './lib/network-api.js';
+import { NetworkApi } from './lib/network-api.js';
 
 class UnifiNetwork extends utils.Adapter {
 	api: NetworkApi;
@@ -53,7 +53,7 @@ class UnifiNetwork extends utils.Adapter {
 			native: {},
 		});
 
-		this.api = new NetworkApi(this);
+		this.api = new NetworkApi(this.log);
 
 		this.log.warn(this.api.login(this.config.host, this.config.user, this.config.password) ? 'success' : 'oh nooo');
 
@@ -64,7 +64,6 @@ class UnifiNetwork extends utils.Adapter {
 			if (successfulLogin) {
 
 				this.log.warn("Logged in successfully.");
-
 
 
 			}

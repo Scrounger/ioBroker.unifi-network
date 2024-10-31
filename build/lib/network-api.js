@@ -1,5 +1,5 @@
-import { AbortError, FetchError, Headers, context, timeoutSignal } from '@adobe/fetch';
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './settings-api.js';
+import { AbortError, FetchError, Headers, context, timeoutSignal } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
 export var ApiEndpoints;
 (function (ApiEndpoints) {
@@ -8,20 +8,21 @@ export var ApiEndpoints;
 })(ApiEndpoints || (ApiEndpoints = {}));
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
-    adapter;
-    _eventsWs;
+    // private adapter: ioBroker.Adapter;
     apiErrorCount;
     apiLastSuccess;
     fetch;
     headers;
+    log;
     host;
     password;
     username;
-    constructor(adapter) {
+    _eventsWs;
+    constructor(log = console) {
         // Initialize our parent.
         super();
         const logPrefix = `[${this.logPrefix}.constructor]`;
-        this.adapter = adapter;
+        this.log = log;
         this._eventsWs = null;
         this.apiErrorCount = 0;
         this.apiLastSuccess = 0;
@@ -30,7 +31,7 @@ export class NetworkApi extends EventEmitter {
         this.host = '';
         this.username = '';
         this.password = '';
-        this.adapter.log.warn(`${logPrefix} init`);
+        this.log.warn(`${logPrefix} init`);
     }
     async login(host, username, password) {
         this.logout();
@@ -156,7 +157,7 @@ export class NetworkApi extends EventEmitter {
             if (this.apiErrorCount >= API_ERROR_LIMIT) {
                 // Let the user know we've got an API problem.
                 if (this.apiErrorCount === API_ERROR_LIMIT) {
-                    this.adapter.log.error(`Throttling API calls due to errors with the ${this.apiErrorCount} previous attempts. Pausing communication with the Network controller for ${API_RETRY_INTERVAL / 60} minutes.`);
+                    this.log.error(`Throttling API calls due to errors with the ${this.apiErrorCount} previous attempts. Pausing communication with the Network controller for ${API_RETRY_INTERVAL / 60} minutes.`);
                     this.apiErrorCount++;
                     this.apiLastSuccess = now;
                     this.reset();
@@ -167,7 +168,7 @@ export class NetworkApi extends EventEmitter {
                     return null;
                 }
                 // Inform the user that we're out of the penalty box and try again.
-                this.adapter.log.error(`Resuming connectivity to the UniFi Network API after pausing for ${API_RETRY_INTERVAL / 60} minutes.`);
+                this.log.error(`Resuming connectivity to the UniFi Network API after pausing for ${API_RETRY_INTERVAL / 60} minutes.`);
                 this.apiErrorCount = 0;
                 this.reset();
                 if (!(await this.loginController())) {
@@ -184,21 +185,21 @@ export class NetworkApi extends EventEmitter {
             // Bad username and password.
             if (response.status === 401) {
                 this.logout();
-                this.adapter.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password.`);
+                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password.`);
                 return null;
             }
             // Insufficient privileges.
             if (response.status === 403) {
-                this.adapter.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`);
+                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`);
                 return null;
             }
             if (!response.ok && isServerSideIssue(response.status)) {
-                this.adapter.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots.`);
+                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots.`);
                 return null;
             }
             // Some other unknown error occurred.
             if (!response.ok) {
-                this.adapter.log.error(`${logPrefix} ${response.status} - ${response.statusText}`);
+                this.log.error(`${logPrefix} ${response.status} - ${response.statusText}`);
                 return null;
             }
             this.apiLastSuccess = Date.now();
@@ -208,8 +209,8 @@ export class NetworkApi extends EventEmitter {
         catch (error) {
             this.apiErrorCount++;
             if (error instanceof AbortError) {
-                this.adapter.log.error(`${logPrefix} Network controller is taking too long to respond to a request. This error can usually be safely ignored.`);
-                this.adapter.log.debug(`${logPrefix} Original request was: ${url}`);
+                this.log.error(`${logPrefix} Network controller is taking too long to respond to a request. This error can usually be safely ignored.`);
+                this.log.debug(`${logPrefix} Original request was: ${url}`);
                 return null;
             }
             if (error instanceof FetchError) {
@@ -218,21 +219,21 @@ export class NetworkApi extends EventEmitter {
                     case 'EHOSTDOWN':
                     case 'ERR_HTTP2_STREAM_CANCEL':
                     case 'ERR_HTTP2_STREAM_ERROR':
-                        this.adapter.log.error(`${logPrefix} Connection refused.`);
+                        this.log.error(`${logPrefix} Connection refused.`);
                         break;
                     case 'ECONNRESET':
                         // Retry on connection reset, but no more than once.
                         if (!isRetry) {
                             return this._retrieve(url, options, decodeResponse, true);
                         }
-                        this.adapter.log.error(`${logPrefix} Network connection to Network controller has been reset.`);
+                        this.log.error(`${logPrefix} Network connection to Network controller has been reset.`);
                         break;
                     case 'ENOTFOUND':
-                        this.adapter.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct.`);
+                        this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct.`);
                         break;
                     default:
                         // If we're logging when we have an error, do so.
-                        this.adapter.log.error(`${logPrefix} ${error.code} - ${error.message}`);
+                        this.log.error(`${logPrefix} ${error.code} - ${error.message}`);
                         break;
                 }
             }

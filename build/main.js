@@ -46,14 +46,14 @@ class UnifiNetwork extends utils.Adapter {
             },
             native: {},
         });
-        this.api = new NetworkApi(this);
-        this.log.warn(this.api.login(this.config.host, this.config.user, this.config.password) ? 'success' : 'oh nooo');
-        this.api.on("login", (successfulLogin) => {
-            // Indicate if we are successful.
-            if (successfulLogin) {
-                this.log.warn("Logged in successfully.");
-            }
-        });
+        this.api = new NetworkApi(this.log);
+        // this.log.warn(this.api.login(this.config.host, this.config.user, this.config.password) ? 'success' : 'oh nooo');
+        // this.api.on("login", (successfulLogin: boolean) => {
+        // 	// Indicate if we are successful.
+        // 	if (successfulLogin) {
+        // 		this.log.warn("Logged in successfully.");
+        // 	}
+        // });
         // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
         this.subscribeStates('testVariable');
         // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
