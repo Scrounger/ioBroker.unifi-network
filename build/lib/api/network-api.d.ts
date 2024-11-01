@@ -1,6 +1,6 @@
-import { NetworkLogging } from './network-logging.js';
 import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
+import { NetworkLogging } from './network-logging.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;

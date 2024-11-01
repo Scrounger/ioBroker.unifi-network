@@ -7,9 +7,9 @@
 import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
 
-// Load your modules here, e.g.:
-import { WebSocketListener, NetworkApi } from './lib/network-api.js';
-import { NetworkEvent } from './lib/network-types.js';
+// API imports
+import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
+import { NetworkEvent } from './lib/api/network-types.js';
 
 
 class UnifiNetwork extends utils.Adapter {

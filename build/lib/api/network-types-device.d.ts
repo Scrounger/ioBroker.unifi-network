@@ -1,13 +1,3 @@
-export interface NetworkEvent {
-    meta: NetworkEventMeta;
-    data: Array<NetworkDevice>;
-}
-export interface NetworkEventMeta {
-    message: string;
-    rc: string;
-    mac?: string;
-    product_line?: string;
-}
 export interface NetworkDevice {
     _id: string;
     adopted: boolean;
@@ -70,11 +60,10 @@ export interface NetworkDevice {
     port_table: any[];
     provisioned_at: number;
     radio_table: NetworkDevice_RadioTable[];
-    radio_table_stats: any[];
+    radio_table_stats: NetworkDevice_RadioTableStat[];
     reboot_duration: number;
     required_version: string;
     rx_bytes: number;
-    scan_radio_table: any[];
     serial: string;
     setup_id: string;
     shortname: string;
@@ -119,7 +108,7 @@ export interface NetworkDevice_AntennaTable {
     ra0_gain: number;
     rai0_gain: number;
 }
-export interface NetworkDevice_ConfigNetwork {
+interface NetworkDevice_ConfigNetwork {
     bonding_enabled: boolean;
     dns1: string;
     dns2: string;
@@ -165,6 +154,28 @@ export interface NetworkDevice_RadioTable {
     is_11ac?: boolean;
     is_11ax?: boolean;
 }
+export interface NetworkDevice_RadioTableStat {
+    ast_be_xmit: any;
+    ast_cst: any;
+    ast_txto: any;
+    channel: number;
+    cu_self_rx: number;
+    cu_self_tx: number;
+    cu_total: number;
+    extchannel: number;
+    gain: number;
+    "guest-num_sta": number;
+    last_channel: number;
+    name: string;
+    num_sta: number;
+    radio: string;
+    satisfaction: number;
+    state: string;
+    tx_packets: number;
+    tx_power: number;
+    tx_retries: number;
+    "user-num_sta": number;
+}
 export interface NetworkDevice_User {
     datetime: string;
     duration: number;
@@ -196,3 +207,4 @@ export interface NetworkDevice_Uplink {
     uplink_mac: string;
     uplink_remote_port: number;
 }
+export {};
