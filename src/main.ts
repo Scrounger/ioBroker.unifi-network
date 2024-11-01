@@ -12,6 +12,10 @@ import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
 import { NetworkEvent } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 
+// Adapter imports
+import * as myHelper from './lib/helper.js';
+import { DeviceImages } from './lib/images-device.js';
+
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -281,9 +285,48 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateDevices]:';
 
 		try {
+			const idChannel = 'devices';
+			this.createOrUpdateChannel(idChannel, 'devices');
 
+			for (let device of data) {
+				this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+
+				this.createOrUpdateChannel(`${idChannel}.${device.mac}`, device.name, DeviceImages[device.model] || undefined);
+
+			}
 
 		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	private async createOrUpdateChannel(id: string, name: string, icon: string = undefined): Promise<void> {
+		const logPrefix = '[createOrUpdateChannel]:';
+
+		try {
+			let common = {
+				name: name,
+				icon: icon
+			};
+
+			if (!await this.objectExists(id)) {
+				this.log.debug(`${logPrefix} creating channel '${id}'`);
+				await this.setObjectAsync(id, {
+					type: 'channel',
+					common: common,
+					native: {}
+				});
+			} else {
+				const obj = await this.getObjectAsync(id);
+
+				if (obj && obj.common) {
+					if (!myHelper.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
+						await this.extendObject(id, { common: common });
+						this.log.info(`${logPrefix} channel updated '${id}'`);
+					}
+				}
+			}
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}

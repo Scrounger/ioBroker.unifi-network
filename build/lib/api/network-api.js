@@ -290,7 +290,10 @@ export class NetworkApi extends EventEmitter {
     async getDevices() {
         const logPrefix = `[${this.logPrefix}.getDevices]`;
         try {
-            return await this.retrievData(this.getApiEndpoint(ApiEndpoints.devices));
+            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.devices));
+            if (res && res.data) {
+                return res.data;
+            }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

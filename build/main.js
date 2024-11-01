@@ -7,6 +7,9 @@ import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
 // API imports
 import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
+// Adapter imports
+import * as myHelper from './lib/helper.js';
+import { DeviceImages } from './lib/images-device.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -146,9 +149,9 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const loginSuccessful = await this.ufn.login();
                 if (loginSuccessful) {
-                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller API. (host: ${this.config.host})`);
+                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host})`);
                     if (await this.ufn.launchEventsWs()) {
-                        this.log.info(`${logPrefix} Websocket conncection to realtime API successfully established`);
+                        this.log.info(`${logPrefix} WebSocket conncection to realtime API successfully established`);
                         await this.setConnectionStatus(true);
                         return true;
                     }
@@ -231,6 +234,41 @@ class UnifiNetwork extends utils.Adapter {
     async updateDevices(data) {
         const logPrefix = '[updateDevices]:';
         try {
+            const idChannel = 'devices';
+            this.createOrUpdateChannel(idChannel, 'devices');
+            for (let device of data) {
+                this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                this.createOrUpdateChannel(`${idChannel}.${device.mac}`, device.name, DeviceImages[device.model] || undefined);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async createOrUpdateChannel(id, name, icon = undefined) {
+        const logPrefix = '[createOrUpdateChannel]:';
+        try {
+            let common = {
+                name: name,
+                icon: icon
+            };
+            if (!await this.objectExists(id)) {
+                this.log.debug(`${logPrefix} creating channel '${id}'`);
+                await this.setObjectAsync(id, {
+                    type: 'channel',
+                    common: common,
+                    native: {}
+                });
+            }
+            else {
+                const obj = await this.getObjectAsync(id);
+                if (obj && obj.common) {
+                    if (!myHelper.isChannelCommonEqual(obj.common, common)) {
+                        await this.extendObject(id, { common: common });
+                        this.log.info(`${logPrefix} channel updated '${id}'`);
+                    }
+                }
+            }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
