@@ -5,5 +5,7 @@
     "host": "Adres IP/nazwa hosta",
     "Username": "Nazwa użytkownika",
     "Password": "Hasło",
-    "You like the adapter? Then support me.": "Podoba Ci się adapter? Więc wesprzyj mnie."
+    "You like the adapter? Then support me.": "Podoba Ci się adapter? Więc wesprzyj mnie.",
+    "MAC Address": "Adres MAC",
+    "Device Name": "Nazwa urządzenia"
 }

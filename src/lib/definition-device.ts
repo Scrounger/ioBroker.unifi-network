@@ -1,6 +1,7 @@
-interface IdeviceDefinition {
-    iobType: string,
-    name: string,
+export interface IdeviceDefinition {
+    id?: string,
+    iobType?: string,
+    name?: string,
     role?: string,
     read?: boolean,
     write?: boolean,
@@ -9,11 +10,15 @@ interface IdeviceDefinition {
     max?: number,
     step?: number,
     states?: [key: string] | [key: number],
-    readval?(val: ioBroker.StateValue): ioBroker.StateValue,
+    readVal?(val: ioBroker.StateValue): ioBroker.StateValue,
     writeVal?(val: ioBroker.StateValue): ioBroker.StateValue,
     isArray?: boolean,
-
+    items?: any,
+    channelName?: string,
+    icon?: string,
 }
+
+
 
 export const deviceDefinition: { [key: string]: IdeviceDefinition; } = {
     mac: {
@@ -23,5 +28,15 @@ export const deviceDefinition: { [key: string]: IdeviceDefinition; } = {
     name: {
         iobType: 'string',
         name: 'Device Name'
+    },
+    port_table: {
+        channelName: 'Port Table',
+        isArray: true,
+        items: {
+            name: {
+                iobType: 'string',
+                name: 'Port Name'
+            }
+        },
     }
 }

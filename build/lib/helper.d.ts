@@ -1,1 +1,10 @@
 export declare function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean;
+export declare function getObjectByString(path: any, obj: any, separator?: string): any;
+export declare function getAllowedCommonStates(path: any, obj: any, separator?: string): {};
+/** Compare common properties of State
+ * @param {ioBroker.StateCommon} objCommon
+ * @param {ioBroker.StateCommon} myCommon
+ * @returns {boolean}
+ */
+export declare function isStateCommonEqual(objCommon: ioBroker.StateCommon, myCommon: ioBroker.StateCommon): boolean;
+export declare function zeroPad(source: any, places: number): string;

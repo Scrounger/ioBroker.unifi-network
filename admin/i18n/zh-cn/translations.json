@@ -5,5 +5,7 @@
     "host": "IP 地址/主机名",
     "Username": "用户名",
     "Password": "密码",
-    "You like the adapter? Then support me.": "你喜欢这个适配器吗？那就支持我吧。"
+    "You like the adapter? Then support me.": "你喜欢这个适配器吗？那就支持我吧。",
+    "MAC Address": "MAC地址",
+    "Device Name": "设备名称"
 }

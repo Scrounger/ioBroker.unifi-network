@@ -5,5 +5,7 @@
     "host": "IP-adres / hostnaam",
     "Username": "Gebruikersnaam",
     "Password": "Wachtwoord",
-    "You like the adapter? Then support me.": "Vind je de adapter leuk? Steun mij dan."
+    "You like the adapter? Then support me.": "Vind je de adapter leuk? Steun mij dan.",
+    "MAC Address": "MAC-adres",
+    "Device Name": "Apparaatnaam"
 }

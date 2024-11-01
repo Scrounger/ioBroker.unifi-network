@@ -5,5 +5,7 @@
     "host": "IP-адреса / ім'я хоста",
     "Username": "Ім'я користувача",
     "Password": "Пароль",
-    "You like the adapter? Then support me.": "Вам подобається адаптер? Тоді підтримай мене."
+    "You like the adapter? Then support me.": "Вам подобається адаптер? Тоді підтримай мене.",
+    "MAC Address": "MAC-адреса",
+    "Device Name": "Назва пристрою"
 }

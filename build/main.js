@@ -10,6 +10,7 @@ import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
+import { deviceDefinition } from './lib/definition-device.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -239,6 +240,7 @@ class UnifiNetwork extends utils.Adapter {
             for (let device of data) {
                 this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
                 this.createOrUpdateChannel(`${idChannel}.${device.mac}`, device.name, DeviceImages[device.model] || undefined);
+                await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device);
             }
         }
         catch (error) {
@@ -273,6 +275,171 @@ class UnifiNetwork extends utils.Adapter {
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
+    }
+    /** Create all states for a devices, that are defined in {@link myDeviceTypes}
+     * @param {string} channel id of channel (e.g. camera id)
+     * @param {object} deviceTypes defined states and types in {@link myDeviceTypes}
+     * @param {object} objValues ufp bootstrap values of device
+     * @param {string} filterComparisonId id for filter
+     */
+    async createGenericState(channel, deviceTypes, objValues, filterComparisonId, objOrg) {
+        const logPrefix = '[createGenericState]:';
+        try {
+            // {@link myDevices}
+            for (const id in deviceTypes) {
+                let logMsgState = '.' + `${channel}.${id}`.split('.')?.slice(1)?.join('.');
+                try {
+                    if (id && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'isArray')) {
+                        // if we have a 'iobType' property, then it's a state
+                        let stateId = id;
+                        if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
+                            // if we have a custom state, use defined id
+                            stateId = deviceTypes[id].id;
+                        }
+                        logMsgState = '.' + `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
+                        // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
+                        // 	// not on blacklist
+                        if (!await this.objectExists(`${channel}.${stateId}`)) {
+                            // create State
+                            this.log.debug(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
+                            const obj = {
+                                type: 'state',
+                                common: await this.getCommonGenericState(id, deviceTypes, objOrg, logMsgState),
+                                native: {}
+                            };
+                            // @ts-ignore
+                            await this.setObjectAsync(`${channel}.${stateId}`, obj);
+                        }
+                        else {
+                            // update State if needed
+                            const obj = await this.getObjectAsync(`${channel}.${stateId}`);
+                            const commonUpdated = await this.getCommonGenericState(id, deviceTypes, objOrg, logMsgState);
+                            if (obj && obj.common) {
+                                if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
+                                    await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
+                                    this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}'`);
+                                }
+                            }
+                        }
+                        if (deviceTypes[id].write && deviceTypes[id].write === true) {
+                            // state is writeable -> subscribe it
+                            this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
+                            await this.subscribeStatesAsync(`${channel}.${stateId}`);
+                        }
+                        if (objValues && Object.prototype.hasOwnProperty.call(objValues, id)) {
+                            // write current val to state
+                            if (deviceTypes[id].readVal) {
+                                await this.setStateChangedAsync(`${channel}.${stateId}`, deviceTypes[id].readVal(objValues[id]), true);
+                            }
+                            else {
+                                await this.setStateChangedAsync(`${channel}.${stateId}`, objValues[id], true);
+                            }
+                        }
+                        else {
+                            if (!Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
+                                // only report it if it's not a custom defined state
+                                this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Protect application or will update by an event)`);
+                            }
+                        }
+                        // } else {
+                        // 	// is on blacklist
+                        // 	if (await this.objectExists(`${channel}.${stateId}`)) {
+                        // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted state '${logMsgState}'`);
+                        // 		await this.delObjectAsync(`${channel}.${stateId}`);
+                        // 	} else {
+                        // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating state '${logMsgState}', because it is on blacklist`);
+                        // 	}
+                        // }
+                    }
+                    else {
+                        // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
+                        if (id !== 'channelName') {
+                            // it's a channel, create it and iterate again over the properties
+                            // const common = {
+                            // 	name: Object.prototype.hasOwnProperty.call(deviceTypes[id], 'name') ? deviceTypes[id].name : id
+                            // };
+                            await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
+                            // if (!await this.objectExists(`${channel}.${id}`)) {
+                            // 	// create channel
+                            // 	this.log.debug(`${logPrefix} ${objOrg.name} - creating channel '${logMsgState}'`);
+                            // 	await this.setObjectAsync(`${channel}.${id}`, {
+                            // 		type: 'channel',
+                            // 		common: common,
+                            // 		native: {}
+                            // 	});
+                            // } else {
+                            // 	// check if common of channel has updates
+                            // 	const obj = await this.getObjectAsync(`${channel}.${id}`);
+                            // 	if (obj && obj.common) {
+                            // 		//@ts-ignore
+                            // 		if (!myHelper.isChannelCommonEqual(obj.common, common)) {
+                            // 			await this.extendObject(`${channel}.${id}`, { common: common });
+                            // 			this.log.debug(`${logPrefix} ${objOrg.name} - channel updated '${logMsgState}'`);
+                            // 		}
+                            // 	}
+                            // }
+                            if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'isArray')) {
+                                for (let i = 0; i <= objValues[id].length - 1; i++) {
+                                    await this.createGenericState(`${channel}.${id}.${myHelper.zeroPad(i, 2)}`, deviceTypes[id].items, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
+                                }
+                            }
+                            else {
+                                await this.createGenericState(`${channel}.${id}`, deviceTypes[id], objValues[id], `${filterComparisonId}.${id}`, objOrg);
+                            }
+                        }
+                        // } else {
+                        // 	if (await this.objectExists(`${channel}.${id}`)) {
+                        // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted channel '${logMsgState}'`);
+                        // 		await this.delObjectAsync(`${channel}.${id}`, { recursive: true });
+                        // 	} else {
+                        // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating channel '${logMsgState}', because it is on blacklist`);
+                        // 	}
+                        // }
+                    }
+                }
+                catch (error) {
+                    this.log.error(`${logPrefix} [id: ${id}] error: ${error}, stack: ${error.stack}`);
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async getCommonGenericState(id, deviceTypes, objOrg, logMsgState) {
+        const logPrefix = '[getCommonGenericState]:';
+        try {
+            const common = {
+                name: deviceTypes[id].name ? deviceTypes[id].name : id,
+                type: deviceTypes[id].iobType,
+                read: deviceTypes[id].read ? deviceTypes[id].read : true,
+                write: deviceTypes[id].write ? deviceTypes[id].write : false,
+                role: deviceTypes[id].role ? deviceTypes[id].role : 'state',
+            };
+            if (deviceTypes[id].unit)
+                common.unit = deviceTypes[id].unit;
+            if (deviceTypes[id].min || deviceTypes[id].min === 0)
+                common.min = deviceTypes[id].min;
+            if (deviceTypes[id].max || deviceTypes[id].max === 0)
+                common.max = deviceTypes[id].max;
+            if (deviceTypes[id].step)
+                common.step = deviceTypes[id].step;
+            if (deviceTypes[id].states) {
+                common.states = deviceTypes[id].states;
+            }
+            else if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'statesFromProperty')) {
+                const statesFromProp = myHelper.getAllowedCommonStates(deviceTypes[id].statesFromProperty, objOrg);
+                common.states = statesFromProp;
+                this.log.debug(`${logPrefix} ${objOrg.name} - set allowed common.states for '${logMsgState}' (from: ${deviceTypes[id].statesFromProperty})`);
+            }
+            if (deviceTypes[id].desc)
+                common.desc = deviceTypes[id].desc;
+            return common;
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
     }
     //#region WS Listener
     async networkEventsListener() {

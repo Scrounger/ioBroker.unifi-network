@@ -6,5 +6,15 @@ export const deviceDefinition = {
     name: {
         iobType: 'string',
         name: 'Device Name'
+    },
+    port_table: {
+        channelName: 'Port Table',
+        isArray: true,
+        items: {
+            name: {
+                iobType: 'string',
+                name: 'Port Name'
+            }
+        },
     }
 };
