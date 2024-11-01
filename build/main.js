@@ -233,6 +233,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             this.aliveTimestamp = moment().valueOf();
             this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            this.log.warn(JSON.stringify(event.data[0].mac));
             // {"message":"session-metadata:sync","rc":"ok"} -> beim start
         }
         catch (error) {
