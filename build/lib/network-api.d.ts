@@ -58,3 +58,13 @@ export declare enum ApiEndpoints {
     login = "login",
     self = "self"
 }
+export declare enum WebSocketListener {
+    client = "client",
+    device = "device",
+    events = "events"
+}
+export declare enum WebSocketEvents {
+    client = "client:sync",
+    device = "device:sync",
+    events = "events"
+}

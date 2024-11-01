@@ -316,7 +316,7 @@ export class NetworkApi extends EventEmitter {
             if (this._eventsWs) {
                 return true;
             }
-            const ws = new WebSocket('wss://' + this.host + '/proxy/network/wss/s/default/events?' + 'clients=v2&next_ai_notifications=true', {
+            const ws = new WebSocket('wss://' + this.host + '/proxy/network/wss/s/default/events?' + 'clients=v2&next_ai_notifications=true&critical_notifications=true', {
                 headers: {
                     Cookie: this.headers.get('Cookie') ?? ''
                 },
@@ -347,8 +347,21 @@ export class NetworkApi extends EventEmitter {
             // Process messages as they come in.
             ws.on('message', messageHandler = (data) => {
                 try {
-                    const message = JSON.parse(data.toString());
-                    this.emit('message', message);
+                    const event = JSON.parse(data.toString());
+                    if (event.meta.message === WebSocketEvents.client) {
+                        this.emit(WebSocketListener.client, event);
+                    }
+                    else if (event.meta.message === WebSocketEvents.device) {
+                        this.emit(WebSocketListener.device, event);
+                    }
+                    else if (event.meta.message === WebSocketEvents.events) {
+                        this.emit(WebSocketListener.events, event);
+                    }
+                    else {
+                        if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+                            this.log.warn(`${logPrefix} meta.message: ${event.meta.message} not implemented!`);
+                        }
+                    }
                 }
                 catch (error) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
@@ -368,3 +381,15 @@ export var ApiEndpoints;
     ApiEndpoints["login"] = "login";
     ApiEndpoints["self"] = "self";
 })(ApiEndpoints || (ApiEndpoints = {}));
+export var WebSocketListener;
+(function (WebSocketListener) {
+    WebSocketListener["client"] = "client";
+    WebSocketListener["device"] = "device";
+    WebSocketListener["events"] = "events";
+})(WebSocketListener || (WebSocketListener = {}));
+export var WebSocketEvents;
+(function (WebSocketEvents) {
+    WebSocketEvents["client"] = "client:sync";
+    WebSocketEvents["device"] = "device:sync";
+    WebSocketEvents["events"] = "events";
+})(WebSocketEvents || (WebSocketEvents = {}));

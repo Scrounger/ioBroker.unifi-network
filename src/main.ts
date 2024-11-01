@@ -8,7 +8,7 @@ import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
 
 // Load your modules here, e.g.:
-import { ApiEndpoints, NetworkApi } from './lib/network-api.js';
+import { WebSocketListener, NetworkApi } from './lib/network-api.js';
 import { NetworkEvent } from './lib/network-types.js';
 
 
@@ -49,7 +49,9 @@ class UnifiNetwork extends utils.Adapter {
 				this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
 
 				// listen to realtime events (must be given as function to be able to use this)
-				this.ufn.on('message', (event) => this.onNetworkEvent(event));
+				this.networkEventListeners();
+
+
 
 				await this.establishConnection(true);
 
@@ -261,13 +263,28 @@ class UnifiNetwork extends utils.Adapter {
 
 	//#endregion
 
-	async onNetworkEvent(event: NetworkEvent) {
+	//#region WS Listener
+
+	async networkEventListeners() {
 		const logPrefix = '[onProtectEvent]:';
+
+		try {
+			this.ufn.on(WebSocketListener.device, (event) => this.onNetworkDeviceEvent(event));
+			// this.ufn.on(WebSocketListener.client, (event) => this.onNetworkClientEvent(event));
+			// this.ufn.on(WebSocketListener.events, (event) => this.onNetworkEvents(event));
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async onNetworkDeviceEvent(event: NetworkEvent) {
+		const logPrefix = '[onNetworkDeviceEvent]:';
 
 		try {
 			this.aliveTimestamp = moment().valueOf();
 
-			this.log.warn(JSON.stringify(event.meta));
+			this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
 
 			// {"message":"session-metadata:sync","rc":"ok"} -> beim start
 
@@ -275,6 +292,37 @@ class UnifiNetwork extends utils.Adapter {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
+
+	async onNetworkClientEvent(event: NetworkEvent) {
+		const logPrefix = '[onNetworkClientEvent]:';
+
+		try {
+			this.aliveTimestamp = moment().valueOf();
+
+			this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+
+			// {"message":"session-metadata:sync","rc":"ok"} -> beim start
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async onNetworkEvents(event: NetworkEvent) {
+		const logPrefix = '[onNetworkEvents]:';
+
+		try {
+			this.aliveTimestamp = moment().valueOf();
+
+			this.log.error(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+
+			// {"message":"session-metadata:sync","rc":"ok"} -> beim start
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+	//#endregion
 }
 
 // otherwise start the instance directly

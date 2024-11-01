@@ -6,7 +6,7 @@
 import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
 // Load your modules here, e.g.:
-import { NetworkApi } from './lib/network-api.js';
+import { WebSocketListener, NetworkApi } from './lib/network-api.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -37,7 +37,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
                 // listen to realtime events (must be given as function to be able to use this)
-                this.ufn.on('message', (event) => this.onNetworkEvent(event));
+                this.networkEventListeners();
                 await this.establishConnection(true);
                 // await this.ufn.login();
                 // const test = await this.ufn.retrievData(this.ufn.getApiEndpoint(ApiEndpoints.self));
@@ -113,6 +113,7 @@ class UnifiNetwork extends utils.Adapter {
     // 		}
     // 	}
     // }
+    //#region Establish Connection
     /**
      * Establish Connection to NVR and starting the alive checker
      * @param isAdapterStart
@@ -184,7 +185,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 else {
-                    this.log.debug(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
+                    this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
                     await this.setConnectionStatus(true);
                     this.connectionRetries = 0;
                     if (this.aliveTimeout) {
@@ -214,11 +215,47 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async onNetworkEvent(event) {
+    //#endregion
+    //#region WS Listener
+    async networkEventListeners() {
         const logPrefix = '[onProtectEvent]:';
         try {
+            this.ufn.on(WebSocketListener.device, (event) => this.onNetworkDeviceEvent(event));
+            // this.ufn.on(WebSocketListener.client, (event) => this.onNetworkClientEvent(event));
+            // this.ufn.on(WebSocketListener.events, (event) => this.onNetworkEvents(event));
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkDeviceEvent(event) {
+        const logPrefix = '[onNetworkDeviceEvent]:';
+        try {
             this.aliveTimestamp = moment().valueOf();
-            this.log.warn(JSON.stringify(event.meta));
+            this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            // {"message":"session-metadata:sync","rc":"ok"} -> beim start
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkClientEvent(event) {
+        const logPrefix = '[onNetworkClientEvent]:';
+        try {
+            this.aliveTimestamp = moment().valueOf();
+            this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            // {"message":"session-metadata:sync","rc":"ok"} -> beim start
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkEvents(event) {
+        const logPrefix = '[onNetworkEvents]:';
+        try {
+            this.aliveTimestamp = moment().valueOf();
+            this.log.error(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            // {"message":"session-metadata:sync","rc":"ok"} -> beim start
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

@@ -7,8 +7,6 @@ import { EventEmitter } from 'node:events';
 import WebSocket from 'ws';
 
 
-
-
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
 
@@ -448,10 +446,8 @@ export class NetworkApi extends EventEmitter {
                 return true;
             }
 
-            const ws = new WebSocket('wss://' + this.host + '/proxy/network/wss/s/default/events?' + 'clients=v2&next_ai_notifications=true', {
-
+            const ws = new WebSocket('wss://' + this.host + '/proxy/network/wss/s/default/events?' + 'clients=v2&next_ai_notifications=true&critical_notifications=true', {
                 headers: {
-
                     Cookie: this.headers.get('Cookie') ?? ''
                 },
 
@@ -495,9 +491,19 @@ export class NetworkApi extends EventEmitter {
             // Process messages as they come in.
             ws.on('message', messageHandler = (data: string): void => {
                 try {
-                    const message: NetworkEvent = JSON.parse(data.toString());
+                    const event: NetworkEvent = JSON.parse(data.toString());
 
-                    this.emit('message', message);
+                    if (event.meta.message === WebSocketEvents.client) {
+                        this.emit(WebSocketListener.client, event);
+                    } else if (event.meta.message === WebSocketEvents.device) {
+                        this.emit(WebSocketListener.device, event);
+                    } else if (event.meta.message === WebSocketEvents.events) {
+                        this.emit(WebSocketListener.events, event);
+                    } else {
+                        if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+                            this.log.warn(`${logPrefix} meta.message: ${event.meta.message} not implemented!`);
+                        }
+                    }
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
@@ -517,4 +523,16 @@ export class NetworkApi extends EventEmitter {
 export enum ApiEndpoints {
     login = 'login',
     self = 'self'
+}
+
+export enum WebSocketListener {
+    client = 'client',
+    device = 'device',
+    events = 'events'
+}
+
+export enum WebSocketEvents {
+    client = 'client:sync',
+    device = 'device:sync',
+    events = 'events'
 }
