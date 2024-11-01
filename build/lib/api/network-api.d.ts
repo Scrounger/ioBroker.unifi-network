@@ -1,6 +1,7 @@
 import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
 import { NetworkLogging } from './network-logging.js';
+import { NetworkDevice } from './network-types-device.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -42,7 +43,6 @@ export declare class NetworkApi extends EventEmitter {
      * @category API Access
      */
     retrieve(url: string, options?: RequestOptions): Promise<Response | null>;
-    private _retrieve;
     /**
      * Execute an HTTP fetch request to the Network controller and retriev data as json
      * @param url       Complete URL to execute **without** any additional parameters you want to pass.
@@ -51,12 +51,15 @@ export declare class NetworkApi extends EventEmitter {
      * @returns         Returns a promise json object
      */
     retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
+    private _retrieve;
+    getDevices(): Promise<NetworkDevice[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     launchEventsWs(): Promise<boolean>;
 }
 export declare enum ApiEndpoints {
     login = "login",
-    self = "self"
+    self = "self",
+    devices = "devices"
 }
 export declare enum WebSocketListener {
     client = "client",

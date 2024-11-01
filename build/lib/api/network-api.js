@@ -51,7 +51,7 @@ export class NetworkApi extends EventEmitter {
         try {
             // If we're already logged in, we're done.
             if (this.headers.has('Cookie') && this.headers.has('X-CSRF-Token')) {
-                this.log.debug(`${logPrefix} we are already logged in to the controller`);
+                // this.log.debug(`${logPrefix} we are already logged in to the controller`);
                 return true;
             }
             // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
@@ -146,6 +146,36 @@ export class NetworkApi extends EventEmitter {
      */
     async retrieve(url, options = { method: 'GET' }) {
         return this._retrieve(url, options);
+    }
+    /**
+     * Execute an HTTP fetch request to the Network controller and retriev data as json
+     * @param url       Complete URL to execute **without** any additional parameters you want to pass.
+     * @param options   Parameters to pass on for the endpoint request.
+     * @param retry     Retry once if we have an issue
+     * @returns         Returns a promise json object
+     */
+    async retrievData(url, options = { method: 'GET' }, retry = true) {
+        const logPrefix = `[${this.logPrefix}.retrievData]`;
+        try {
+            // Log us in if needed.
+            if (!(await this.loginController())) {
+                return retry ? this.retrievData(url, options, false) : undefined;
+            }
+            const response = await this.retrieve(url, options);
+            // Something went wrong. Retry the bootstrap attempt once, and then we're done.
+            if (!response?.ok) {
+                this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
+                return retry ? this.retrievData(url, options, false) : undefined;
+            }
+            const data = await response.json();
+            if (data) {
+                return data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
     }
     // Internal interface to communicating HTTP requests with a Network controller, with error handling.
     async _retrieve(url, options = { method: 'GET' }, decodeResponse = true, isRetry = false) {
@@ -257,30 +287,10 @@ export class NetworkApi extends EventEmitter {
             signal.clear();
         }
     }
-    /**
-     * Execute an HTTP fetch request to the Network controller and retriev data as json
-     * @param url       Complete URL to execute **without** any additional parameters you want to pass.
-     * @param options   Parameters to pass on for the endpoint request.
-     * @param retry     Retry once if we have an issue
-     * @returns         Returns a promise json object
-     */
-    async retrievData(url, options = { method: 'GET' }, retry = true) {
-        const logPrefix = `[${this.logPrefix}.retrievData]`;
+    async getDevices() {
+        const logPrefix = `[${this.logPrefix}.getDevices]`;
         try {
-            // Log us in if needed.
-            if (!(await this.loginController())) {
-                return retry ? this.retrievData(url, options, false) : undefined;
-            }
-            const response = await this.retrieve(url, options);
-            // Something went wrong. Retry the bootstrap attempt once, and then we're done.
-            if (!response?.ok) {
-                this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
-                return retry ? this.retrievData(url, options, false) : undefined;
-            }
-            const data = await response.json();
-            if (data) {
-                return data;
-            }
+            return await this.retrievData(this.getApiEndpoint(ApiEndpoints.devices));
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -298,6 +308,9 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.self:
                 endpointPrefix = '/api/';
                 endpointSuffix = 'users/self';
+                break;
+            case ApiEndpoints.devices:
+                endpointSuffix = 's/default/stat/device';
                 break;
             default:
                 break;
@@ -361,7 +374,7 @@ export class NetworkApi extends EventEmitter {
                     }
                     else {
                         if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
-                            this.log.warn(`${logPrefix} meta.message: ${event.meta.message} not implemented!`);
+                            this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
                         }
                     }
                 }
@@ -382,6 +395,7 @@ export var ApiEndpoints;
 (function (ApiEndpoints) {
     ApiEndpoints["login"] = "login";
     ApiEndpoints["self"] = "self";
+    ApiEndpoints["devices"] = "devices";
 })(ApiEndpoints || (ApiEndpoints = {}));
 export var WebSocketListener;
 (function (WebSocketListener) {

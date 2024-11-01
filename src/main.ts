@@ -10,6 +10,7 @@ import moment from 'moment';
 // API imports
 import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
 import { NetworkEvent } from './lib/api/network-types.js';
+import { NetworkDevice } from './lib/api/network-types-device.js';
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -49,9 +50,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
 
 				// listen to realtime events (must be given as function to be able to use this)
-				this.networkEventListeners();
-
-
+				this.networkEventsListener();
 
 				await this.establishConnection(true);
 
@@ -152,7 +151,9 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[establishConnection]:';
 
 		try {
-			await this.login();
+			if (await this.login()) {
+				await this.updateData();
+			}
 
 			// start the alive checker
 			if (this.aliveTimeout) {
@@ -180,9 +181,11 @@ class UnifiNetwork extends utils.Adapter {
 				const loginSuccessful = await this.ufn.login();
 
 				if (loginSuccessful) {
-					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller API. (host: ${this.config.host})`);
+					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host})`);
 
 					if (await this.ufn.launchEventsWs()) {
+						this.log.info(`${logPrefix} WebSocket conncection to realtime API successfully established`);
+
 						await this.setConnectionStatus(true);
 						return true;
 					} else {
@@ -263,9 +266,31 @@ class UnifiNetwork extends utils.Adapter {
 
 	//#endregion
 
+	async updateData() {
+		const logPrefix = '[updateData]:';
+
+		try {
+			await this.updateDevices(await this.ufn.getDevices());
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async updateDevices(data: NetworkDevice[]) {
+		const logPrefix = '[updateDevices]:';
+
+		try {
+
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
 	//#region WS Listener
 
-	async networkEventListeners() {
+	async networkEventsListener() {
 		const logPrefix = '[onProtectEvent]:';
 
 		try {
@@ -284,8 +309,8 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			this.aliveTimestamp = moment().valueOf();
 
-			this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
-			this.log.warn(JSON.stringify(event.data[0].mac));
+			// this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+			// this.log.warn(JSON.stringify(event.data[0].mac));
 
 			// {"message":"session-metadata:sync","rc":"ok"} -> beim start
 
