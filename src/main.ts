@@ -15,7 +15,7 @@ import { NetworkDevice } from './lib/api/network-types-device.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
-import { deviceDefinition } from './lib/definition-device.js';
+import { deviceDefinition, iDeviceArrayChannel, iDeviceObjectChannel, iDeviceState } from './lib/definition-device.js';
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -50,6 +50,8 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			moment.locale(this.language);
+			await utils.I18n.init('admin', this);
+			this.log.warn(JSON.stringify(utils.I18n.getTranslatedObject('MAC Address')));
 
 			if (this.config.host, this.config.user, this.config.password) {
 				this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
@@ -286,6 +288,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateDevices]:';
 
 		try {
+			// this.log.warn(JSON.stringify(data));
 			const idChannel = 'devices';
 			this.createOrUpdateChannel(idChannel, 'devices');
 
@@ -348,7 +351,7 @@ class UnifiNetwork extends utils.Adapter {
 				let logMsgState = '.' + `${channel}.${id}`.split('.')?.slice(1)?.join('.');
 
 				try {
-					if (id && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'isArray')) {
+					if (id && objValues[id] && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
 
 						// if we have a 'iobType' property, then it's a state
 						let stateId = id;
@@ -419,18 +422,24 @@ class UnifiNetwork extends utils.Adapter {
 					} else {
 						// if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
 
-						if (id !== 'channelName') {
-							// it's a channel, create it and iterate again over the properties
+						// it's a channel from type object
+						if (objValues[id] && objValues[id].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object')) {
 							await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
 
-							if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'isArray')) {
-								for (let i = 0; i <= objValues[id].length - 1; i++) {
-									await this.createGenericState(`${channel}.${id}.${myHelper.zeroPad(i, 2)}`, deviceTypes[id].items, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
-								}
-							} else {
-								await this.createGenericState(`${channel}.${id}`, deviceTypes[id], objValues[id], `${filterComparisonId}.${id}`, objOrg);
+							await this.createGenericState(`${channel}.${id}`, deviceTypes[id].object, objValues[id], `${filterComparisonId}.${id}`, objOrg);
+						}
+
+						// it's a channel from type array
+						if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
+							await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
+
+							for (let i = 0; i <= objValues[id].length - 1; i++) {
+								const idChannel = `${channel}.${id}.${deviceTypes[id].idChannelPrefix}${myHelper.zeroPad(i, deviceTypes[id].zeroPad)}`;
+								await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i)
+								await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
 							}
 						}
+
 						// } else {
 						// 	if (await this.objectExists(`${channel}.${id}`)) {
 						// 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted channel '${logMsgState}'`);

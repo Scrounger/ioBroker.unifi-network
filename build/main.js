@@ -38,6 +38,8 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onReady]:';
         try {
             moment.locale(this.language);
+            await utils.I18n.init('admin', this);
+            this.log.warn(JSON.stringify(utils.I18n.getTranslatedObject('MAC Address')));
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
                 // listen to realtime events (must be given as function to be able to use this)
@@ -235,6 +237,7 @@ class UnifiNetwork extends utils.Adapter {
     async updateDevices(data) {
         const logPrefix = '[updateDevices]:';
         try {
+            // this.log.warn(JSON.stringify(data));
             const idChannel = 'devices';
             this.createOrUpdateChannel(idChannel, 'devices');
             for (let device of data) {
@@ -289,7 +292,7 @@ class UnifiNetwork extends utils.Adapter {
             for (const id in deviceTypes) {
                 let logMsgState = '.' + `${channel}.${id}`.split('.')?.slice(1)?.join('.');
                 try {
-                    if (id && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'isArray')) {
+                    if (id && objValues[id] && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
                         // if we have a 'iobType' property, then it's a state
                         let stateId = id;
                         if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
@@ -353,38 +356,18 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     else {
                         // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
-                        if (id !== 'channelName') {
-                            // it's a channel, create it and iterate again over the properties
-                            // const common = {
-                            // 	name: Object.prototype.hasOwnProperty.call(deviceTypes[id], 'name') ? deviceTypes[id].name : id
-                            // };
+                        // it's a channel from type object
+                        if (objValues[id] && objValues[id].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object')) {
                             await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
-                            // if (!await this.objectExists(`${channel}.${id}`)) {
-                            // 	// create channel
-                            // 	this.log.debug(`${logPrefix} ${objOrg.name} - creating channel '${logMsgState}'`);
-                            // 	await this.setObjectAsync(`${channel}.${id}`, {
-                            // 		type: 'channel',
-                            // 		common: common,
-                            // 		native: {}
-                            // 	});
-                            // } else {
-                            // 	// check if common of channel has updates
-                            // 	const obj = await this.getObjectAsync(`${channel}.${id}`);
-                            // 	if (obj && obj.common) {
-                            // 		//@ts-ignore
-                            // 		if (!myHelper.isChannelCommonEqual(obj.common, common)) {
-                            // 			await this.extendObject(`${channel}.${id}`, { common: common });
-                            // 			this.log.debug(`${logPrefix} ${objOrg.name} - channel updated '${logMsgState}'`);
-                            // 		}
-                            // 	}
-                            // }
-                            if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'isArray')) {
-                                for (let i = 0; i <= objValues[id].length - 1; i++) {
-                                    await this.createGenericState(`${channel}.${id}.${myHelper.zeroPad(i, 2)}`, deviceTypes[id].items, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
-                                }
-                            }
-                            else {
-                                await this.createGenericState(`${channel}.${id}`, deviceTypes[id], objValues[id], `${filterComparisonId}.${id}`, objOrg);
+                            await this.createGenericState(`${channel}.${id}`, deviceTypes[id].object, objValues[id], `${filterComparisonId}.${id}`, objOrg);
+                        }
+                        // it's a channel from type array
+                        if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
+                            await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
+                            for (let i = 0; i <= objValues[id].length - 1; i++) {
+                                const idChannel = `${channel}.${id}.${deviceTypes[id].idChannelPrefix}${myHelper.zeroPad(i, deviceTypes[id].zeroPad)}`;
+                                await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i);
+                                await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
                             }
                         }
                         // } else {

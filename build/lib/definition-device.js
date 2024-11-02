@@ -9,12 +9,40 @@ export const deviceDefinition = {
     },
     port_table: {
         channelName: 'Port Table',
-        isArray: true,
-        items: {
+        idChannelPrefix: 'Port_',
+        zeroPad: 2,
+        arrayChannelNamePrefix: 'Port ',
+        array: {
             name: {
                 iobType: 'string',
                 name: 'Port Name'
             }
         },
+    },
+    "system-stats": {
+        channelName: 'System Statistics',
+        object: {
+            cpu: {
+                iobType: 'number',
+                unit: '%',
+                readVal(val) {
+                    return parseFloat(val);
+                },
+            },
+            mem: {
+                iobType: 'number',
+                unit: '%',
+                readVal(val) {
+                    return parseFloat(val);
+                },
+            },
+            uptime: {
+                iobType: 'number',
+                unit: 's',
+                readVal(val) {
+                    return parseFloat(val);
+                },
+            },
+        }
     }
 };
