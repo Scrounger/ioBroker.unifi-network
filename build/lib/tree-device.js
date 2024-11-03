@@ -1,4 +1,8 @@
 export const deviceTree = {
+    ip: {
+        iobType: 'string',
+        name: 'ip address'
+    },
     mac: {
         iobType: 'string',
         name: 'mac address'
@@ -78,5 +82,10 @@ export const deviceTree = {
                 },
             },
         },
+    },
+    uptime: {
+        iobType: 'number',
+        name: 'uptime',
+        unit: 's',
     }
 };

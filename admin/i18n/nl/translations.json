@@ -16,5 +16,8 @@
     "port name": "poort naam",
     "temperature": "temperatuur",
     "device state": "apparaat staat",
-    "unifi devices": "unifi-apparaten"
+    "unifi devices": "unifi-apparaten",
+    "ip address": "ip-adres",
+    "WLAN SSID": "WLAN-SSID",
+    "uptime": "uptime"
 }

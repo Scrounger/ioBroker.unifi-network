@@ -1,6 +1,10 @@
 import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 
 export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
+    ip: {
+        iobType: 'string',
+        name: 'ip address'
+    },
     mac: {
         iobType: 'string',
         name: 'mac address'
@@ -81,5 +85,10 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 },
             },
         },
+    },
+    uptime: {
+        iobType: 'number',
+        name: 'uptime',
+        unit: 's',
     }
 }

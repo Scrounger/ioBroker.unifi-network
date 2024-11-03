@@ -1,5 +1,7 @@
+import _ from "lodash";
+
 export function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean {
-    return JSON.stringify(objCommon.name) === JSON.stringify(myCommon.name) &&
+    return _.isEqual(objCommon.name, myCommon.name) &&
         objCommon.icon == myCommon.icon &&
         objCommon.desc === myCommon.desc &&
         objCommon.role === myCommon.role
@@ -31,7 +33,7 @@ export function getAllowedCommonStates(path, obj, separator = '.') {
  * @returns {boolean}
  */
 export function isStateCommonEqual(objCommon: ioBroker.StateCommon, myCommon: ioBroker.StateCommon): boolean {
-    return JSON.stringify(objCommon.name) === JSON.stringify(myCommon.name) &&
+    return _.isEqual(objCommon.name, myCommon.name) &&
         objCommon.type === myCommon.type &&
         objCommon.read === myCommon.read &&
         objCommon.write === objCommon.write &&
@@ -42,7 +44,7 @@ export function isStateCommonEqual(objCommon: ioBroker.StateCommon, myCommon: io
         objCommon.desc == myCommon.desc &&
         objCommon.max === myCommon.max &&
         objCommon.min === myCommon.min &&
-        JSON.stringify(objCommon.states) === JSON.stringify(myCommon.states);
+        _.isEqual(objCommon.states, myCommon.states);
 }
 
 export function zeroPad(source: any, places: number): string {

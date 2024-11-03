@@ -16,5 +16,8 @@
     "port name": "端口名称",
     "temperature": "温度",
     "device state": "设备状态",
-    "unifi devices": "统一设备"
+    "unifi devices": "统一设备",
+    "ip address": "IP地址",
+    "WLAN SSID": "无线网络SSID",
+    "uptime": "正常运行时间"
 }

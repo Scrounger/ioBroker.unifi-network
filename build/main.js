@@ -10,6 +10,7 @@ import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
+import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
@@ -39,7 +40,6 @@ class UnifiNetwork extends utils.Adapter {
         try {
             moment.locale(this.language);
             await utils.I18n.init('admin', this);
-            this.log.warn(JSON.stringify(utils.I18n.getTranslatedObject('MAC Address')));
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
                 // listen to realtime events (must be given as function to be able to use this)
@@ -230,6 +230,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
             await this.updateDevices(await this.ufn.getDevices(), true);
+            await this.updateClients(await this.ufn.getClients(), true);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -239,11 +240,28 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateDevices]:';
         try {
             const idChannel = 'devices';
+            if (isAdapterStart)
+                this.log.info(`${logPrefix} Discovered ${data.length} devices`);
             for (let device of data) {
-                if (isAdapterStart)
-                    this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
                 this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined, isAdapterStart);
                 await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateClients(data, isAdapterStart = false) {
+        const logPrefix = '[updateClients]:';
+        try {
+            const idChannel = 'clients';
+            if (isAdapterStart)
+                this.log.info(`${logPrefix} Discovered ${data.length} clients`);
+            for (let client of data) {
+                // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
+                this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.status`, undefined, isAdapterStart);
+                await this.createGenericState(`${idChannel}.${client.mac || 'VPN - ' + client.ip}`, clientTree, client, 'clients', client, isAdapterStart);
             }
         }
         catch (error) {
@@ -261,8 +279,9 @@ class UnifiNetwork extends utils.Adapter {
     async createOrUpdateDevice(id, name, onlineId, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
+            const i18n = utils.I18n.getTranslatedObject(name);
             let common = {
-                name: utils.I18n.getTranslatedObject(name) || name,
+                name: Object.keys(i18n).length > 1 ? i18n : name,
                 icon: icon,
                 statusStates: {
                     onlineId: onlineId
@@ -282,7 +301,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isChannelCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.info(`${logPrefix} device updated '${id}'`);
+                            this.log.debug(`${logPrefix} device updated '${id}'`);
                         }
                     }
                 }
@@ -303,8 +322,9 @@ class UnifiNetwork extends utils.Adapter {
     async createOrUpdateChannel(id, name, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
+            const i18n = utils.I18n.getTranslatedObject(name);
             let common = {
-                name: utils.I18n.getTranslatedObject(name) || name,
+                name: Object.keys(i18n).length > 1 ? i18n : name,
                 icon: icon
             };
             if (!await this.objectExists(id)) {
@@ -321,7 +341,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isChannelCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.info(`${logPrefix} channel updated '${id}'`);
+                            this.log.debug(`${logPrefix} channel updated '${id}'`);
                         }
                     }
                 }
@@ -331,12 +351,6 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    /** Create all states for a devices, that are defined in {@link myDeviceTypes}
-     * @param {string} channel id of channel (e.g. camera id)
-     * @param {object} treeDefinition defined states and types in {@link myDeviceTypes}
-     * @param {object} objValues ufp bootstrap values of device
-     * @param {string} filterComparisonId id for filter
-     */
     async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, isAdapterStart = false) {
         const logPrefix = '[createGenericState]:';
         try {
@@ -389,7 +403,7 @@ class UnifiNetwork extends utils.Adapter {
                             const val = treeDefinition[key].readVal ? treeDefinition[key].readVal(objValues[key]) : objValues[key];
                             let changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
                             if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
-                                this.log.debug(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
+                                this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                             }
                         }
                         else {
@@ -448,8 +462,13 @@ class UnifiNetwork extends utils.Adapter {
     async getCommonGenericState(id, treeDefinition, objOrg, logMsgState) {
         const logPrefix = '[getCommonGenericState]:';
         try {
+            let name = id;
+            if (treeDefinition[id].name) {
+                const i18n = utils.I18n.getTranslatedObject(treeDefinition[id].name);
+                name = Object.keys(i18n).length > 1 ? i18n : treeDefinition[id].name;
+            }
             const common = {
-                name: treeDefinition[id].name ? utils.I18n.getTranslatedObject(treeDefinition[id].name) || treeDefinition[id].name : id,
+                name: name,
                 type: treeDefinition[id].iobType,
                 read: treeDefinition[id].read ? treeDefinition[id].read : true,
                 write: treeDefinition[id].write ? treeDefinition[id].write : false,
@@ -506,8 +525,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkClientEvent]:';
         try {
             this.aliveTimestamp = moment().valueOf();
-            // this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
-            // {"message":"session-metadata:sync","rc":"ok"} -> beim start
+            await this.updateClients(event.data);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -517,7 +535,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkEvents]:';
         try {
             this.aliveTimestamp = moment().valueOf();
-            // this.log.error(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
             // {"message":"session-metadata:sync","rc":"ok"} -> beim start
         }
         catch (error) {

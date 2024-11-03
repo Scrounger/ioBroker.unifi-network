@@ -16,5 +16,8 @@
     "port name": "nom du port",
     "temperature": "température",
     "device state": "état de l'appareil",
-    "unifi devices": "appareils unifiés"
+    "unifi devices": "appareils unifiés",
+    "ip address": "adresse IP",
+    "WLAN SSID": "SSID du réseau Wi-Fi",
+    "uptime": "disponibilité"
 }

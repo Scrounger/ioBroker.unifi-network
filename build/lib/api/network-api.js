@@ -300,6 +300,19 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    async getClients() {
+        const logPrefix = `[${this.logPrefix}.getClients]`;
+        try {
+            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.clients));
+            if (res && res.data) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
     getApiEndpoint(endpoint) {
         let endpointSuffix;
         let endpointPrefix = '/proxy/network/api/';
@@ -314,6 +327,9 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints.devices:
                 endpointSuffix = 's/default/stat/device';
+                break;
+            case ApiEndpoints.clients:
+                endpointSuffix = 's/default/stat/sta';
                 break;
             default:
                 break;
@@ -399,6 +415,7 @@ export var ApiEndpoints;
     ApiEndpoints["login"] = "login";
     ApiEndpoints["self"] = "self";
     ApiEndpoints["devices"] = "devices";
+    ApiEndpoints["clients"] = "clients";
 })(ApiEndpoints || (ApiEndpoints = {}));
 export var WebSocketListener;
 (function (WebSocketListener) {

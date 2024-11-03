@@ -8,6 +8,7 @@ import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-sett
 import { NetworkLogging } from './network-logging.js';
 import { NetworkEvent } from './network-types.js'
 import { NetworkDevice } from './network-types-device.js'
+import { NetworkClient } from './network-types-client.js';
 
 
 export class NetworkApi extends EventEmitter {
@@ -422,6 +423,22 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    public async getClients(): Promise<NetworkClient[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getClients]`
+
+        try {
+            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.clients));
+
+            if (res && res.data) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
     public getApiEndpoint(endpoint: ApiEndpoints): string {
 
         let endpointSuffix;
@@ -440,6 +457,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints.devices:
                 endpointSuffix = 's/default/stat/device';
+                break;
+
+            case ApiEndpoints.clients:
+                endpointSuffix = 's/default/stat/sta';
                 break;
 
             default:
@@ -547,7 +568,8 @@ export class NetworkApi extends EventEmitter {
 export enum ApiEndpoints {
     login = 'login',
     self = 'self',
-    devices = 'devices'
+    devices = 'devices',
+    clients = "clients"
 }
 
 export enum WebSocketListener {

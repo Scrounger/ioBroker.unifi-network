@@ -16,5 +16,8 @@
     "port name": "назва порту",
     "temperature": "температура",
     "device state": "стан пристрою",
-    "unifi devices": "уніфіковані пристрої"
+    "unifi devices": "уніфіковані пристрої",
+    "ip address": "ip адреса",
+    "WLAN SSID": "WLAN SSID",
+    "uptime": "час роботи"
 }
