@@ -1,4 +1,4 @@
-export interface iDeviceState {
+export interface myCommonState {
     id?: string;
     iobType: string;
     name?: string;
@@ -18,14 +18,14 @@ export interface iDeviceState {
     writeVal?(val: ioBroker.StateValue): ioBroker.StateValue;
     icon?: string;
 }
-export interface iDeviceObjectChannel {
+export interface myCommoneChannelObject {
     channelName: string;
     icon?: string;
     object: {
-        [key: string]: iDeviceState;
+        [key: string]: myCommonState;
     };
 }
-export interface iDeviceArrayChannel {
+export interface myCommonChannelArray {
     channelName: string;
     icon?: string;
     arrayChannelIdPrefix?: string;
@@ -34,9 +34,6 @@ export interface iDeviceArrayChannel {
     arrayChannelNamePrefix?: string;
     arrayChannelNameFromProperty?: string;
     array: {
-        [key: string]: iDeviceState;
+        [key: string]: myCommonState;
     };
 }
-export declare const deviceDefinition: {
-    [key: string]: iDeviceState | iDeviceObjectChannel | iDeviceArrayChannel;
-};

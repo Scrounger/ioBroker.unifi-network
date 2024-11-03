@@ -15,7 +15,8 @@ import { NetworkDevice } from './lib/api/network-types-device.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
-import { deviceDefinition } from './lib/definition-device.js';
+import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './lib/myTypes.js';
+import { deviceTree } from './lib/tree-device.js';
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -296,7 +297,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined, isAdapterStart);
 
-				await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device, isAdapterStart);
+				await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
 			}
 
 		} catch (error) {
@@ -391,27 +392,27 @@ class UnifiNetwork extends utils.Adapter {
 
 	/** Create all states for a devices, that are defined in {@link myDeviceTypes}
 	 * @param {string} channel id of channel (e.g. camera id)
-	 * @param {object} deviceTypes defined states and types in {@link myDeviceTypes}
+	 * @param {object} treeDefinition defined states and types in {@link myDeviceTypes}
 	 * @param {object} objValues ufp bootstrap values of device
 	 * @param {string} filterComparisonId id for filter
 	 */
-	async createGenericState(channel: string, deviceTypes: any, objValues: NetworkDevice, filterComparisonId: string, objOrg: NetworkDevice, isAdapterStart: boolean = false) {
+	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } | myCommonState, objValues: NetworkDevice, filterComparisonId: string, objOrg: NetworkDevice, isAdapterStart: boolean = false) {
 		const logPrefix = '[createGenericState]:';
 
 		try {
 			// {@link myDevices}
-			for (const id in deviceTypes) {
-				let logMsgState = '.' + `${channel}.${id}`.split('.')?.slice(1)?.join('.');
+			for (const key in treeDefinition) {
+				let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
 
 				try {
-					if (id && (objValues[id] || objValues[id] === 0 || objValues[id] === false) && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
+					if (key && (objValues[key] || objValues[key] === 0 || objValues[key] === false) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
 
 						// if we have a 'iobType' property, then it's a state
-						let stateId = id;
+						let stateId = key;
 
-						if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
+						if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
 							// if we have a custom state, use defined id
-							stateId = deviceTypes[id].id;
+							stateId = treeDefinition[key].id;
 						}
 
 						logMsgState = '.' + `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
@@ -424,7 +425,7 @@ class UnifiNetwork extends utils.Adapter {
 							this.log.debug(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
 							const obj = {
 								type: 'state',
-								common: await this.getCommonGenericState(id, deviceTypes, objOrg, logMsgState),
+								common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
 								native: {}
 							};
 
@@ -435,7 +436,7 @@ class UnifiNetwork extends utils.Adapter {
 							if (isAdapterStart) {
 								const obj: ioBroker.Object = await this.getObjectAsync(`${channel}.${stateId}`);
 
-								const commonUpdated = await this.getCommonGenericState(id, deviceTypes, objOrg, logMsgState);
+								const commonUpdated = await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState);
 
 								if (obj && obj.common) {
 									if (!myHelper.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
@@ -446,16 +447,16 @@ class UnifiNetwork extends utils.Adapter {
 							}
 						}
 
-						if (deviceTypes[id].write && deviceTypes[id].write === true) {
+						if (treeDefinition[key].write && treeDefinition[key].write === true) {
 							// ToDo - Handle when device is new during runtime
 							// state is writeable -> subscribe it
 							this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
 							await this.subscribeStatesAsync(`${channel}.${stateId}`);
 						}
 
-						if (objValues && Object.prototype.hasOwnProperty.call(objValues, id)) {
+						if (objValues && Object.prototype.hasOwnProperty.call(objValues, key)) {
 							// write current val to state
-							const val = deviceTypes[id].readVal ? deviceTypes[id].readVal(objValues[id]) : objValues[id];
+							const val = treeDefinition[key].readVal ? treeDefinition[key].readVal(objValues[key]) : objValues[key];
 
 							let changedObj: any = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
 
@@ -463,7 +464,7 @@ class UnifiNetwork extends utils.Adapter {
 								this.log.debug(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
 							}
 						} else {
-							if (!Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
+							if (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
 								// only report it if it's not a custom defined state
 								this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Protect application or will update by an event)`);
 							}
@@ -481,22 +482,22 @@ class UnifiNetwork extends utils.Adapter {
 						// if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
 
 						// it's a channel from type object
-						if (objValues[id] && objValues[id].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object')) {
-							await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined, isAdapterStart);
+						if (objValues[key] && objValues[key].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object')) {
+							await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
 
-							await this.createGenericState(`${channel}.${id}`, deviceTypes[id].object, objValues[id], `${filterComparisonId}.${id}`, objOrg, isAdapterStart);
+							await this.createGenericState(`${channel}.${key}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
 						}
 
 						// it's a channel from type array
-						if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
+						if (objValues[key] && objValues[key].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
 
-							if (objValues[id].length > 0) {
-								await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined, isAdapterStart);
+							if (objValues[key].length > 0) {
+								await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
 
-								for (let i = 0; i <= objValues[id].length - 1; i++) {
-									const idChannel = `${channel}.${id}.${objValues[id][i][deviceTypes[id].arrayChannelIdFromProperty] || `${deviceTypes[id].arrayChannelIdPrefix || ''}${myHelper.zeroPad(i, deviceTypes[id].arrayChannelIdZeroPad || 0)}`}`;
-									await this.createOrUpdateChannel(idChannel, objValues[id][i][deviceTypes[id].arrayChannelNameFromProperty] || deviceTypes[id].arrayChannelNamePrefix + i || i.toString(), undefined, isAdapterStart)
-									await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg, isAdapterStart);
+								for (let i = 0; i <= objValues[key].length - 1; i++) {
+									const idChannel = `${channel}.${key}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(i, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
+									await this.createOrUpdateChannel(idChannel, objValues[key][i][treeDefinition[key].arrayChannelNameFromProperty] || treeDefinition[key].arrayChannelNamePrefix + i || i.toString(), undefined, isAdapterStart)
+									await this.createGenericState(idChannel, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
 								}
 							}
 						}
@@ -511,7 +512,7 @@ class UnifiNetwork extends utils.Adapter {
 						// }
 					}
 				} catch (error) {
-					this.log.error(`${logPrefix} [id: ${id}] error: ${error}, stack: ${error.stack}`);
+					this.log.error(`${logPrefix} [id: ${key}] error: ${error}, stack: ${error.stack}`);
 				}
 			}
 		} catch (error) {
@@ -519,37 +520,37 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async getCommonGenericState(id, deviceTypes, objOrg, logMsgState) {
+	async getCommonGenericState(id, treeDefinition, objOrg, logMsgState) {
 		const logPrefix = '[getCommonGenericState]:';
 
 		try {
 			const common: ioBroker.StateCommon = {
-				name: deviceTypes[id].name ? deviceTypes[id].name : id,
-				type: deviceTypes[id].iobType,
-				read: deviceTypes[id].read ? deviceTypes[id].read : true,
-				write: deviceTypes[id].write ? deviceTypes[id].write : false,
-				role: deviceTypes[id].role ? deviceTypes[id].role : 'state',
+				name: treeDefinition[id].name ? treeDefinition[id].name : id,
+				type: treeDefinition[id].iobType,
+				read: treeDefinition[id].read ? treeDefinition[id].read : true,
+				write: treeDefinition[id].write ? treeDefinition[id].write : false,
+				role: treeDefinition[id].role ? treeDefinition[id].role : 'state',
 			};
 
-			if (deviceTypes[id].unit) common.unit = deviceTypes[id].unit;
+			if (treeDefinition[id].unit) common.unit = treeDefinition[id].unit;
 
-			if (deviceTypes[id].min || deviceTypes[id].min === 0) common.min = deviceTypes[id].min;
+			if (treeDefinition[id].min || treeDefinition[id].min === 0) common.min = treeDefinition[id].min;
 
-			if (deviceTypes[id].max || deviceTypes[id].max === 0) common.max = deviceTypes[id].max;
+			if (treeDefinition[id].max || treeDefinition[id].max === 0) common.max = treeDefinition[id].max;
 
-			if (deviceTypes[id].step) common.step = deviceTypes[id].step;
+			if (treeDefinition[id].step) common.step = treeDefinition[id].step;
 
 
-			if (deviceTypes[id].states) {
-				common.states = deviceTypes[id].states;
-			} else if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'statesFromProperty')) {
-				const statesFromProp = myHelper.getAllowedCommonStates(deviceTypes[id].statesFromProperty, objOrg);
+			if (treeDefinition[id].states) {
+				common.states = treeDefinition[id].states;
+			} else if (Object.prototype.hasOwnProperty.call(treeDefinition[id], 'statesFromProperty')) {
+				const statesFromProp = myHelper.getAllowedCommonStates(treeDefinition[id].statesFromProperty, objOrg);
 
 				common.states = statesFromProp;
-				this.log.debug(`${logPrefix} ${objOrg.name} - set allowed common.states for '${logMsgState}' (from: ${deviceTypes[id].statesFromProperty})`);
+				this.log.debug(`${logPrefix} ${objOrg.name} - set allowed common.states for '${logMsgState}' (from: ${treeDefinition[id].statesFromProperty})`);
 			}
 
-			if (deviceTypes[id].desc) common.desc = deviceTypes[id].desc;
+			if (treeDefinition[id].desc) common.desc = treeDefinition[id].desc;
 
 			return common;
 		} catch (error) {

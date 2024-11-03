@@ -1,4 +1,4 @@
-export const deviceDefinition = {
+export const deviceTree = {
     mac: {
         iobType: 'string',
         name: 'MAC Address'
