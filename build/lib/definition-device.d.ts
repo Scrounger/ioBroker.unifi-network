@@ -27,10 +27,12 @@ export interface iDeviceObjectChannel {
 }
 export interface iDeviceArrayChannel {
     channelName: string;
-    idChannelPrefix: string;
-    zeroPad: number;
     icon?: string;
-    arrayChannelNamePrefix: string;
+    arrayChannelIdPrefix?: string;
+    arrayChannelIdZeroPad?: number;
+    arrayChannelIdFromProperty?: string;
+    arrayChannelNamePrefix?: string;
+    arrayChannelNameFromProperty?: string;
     array: {
         [key: string]: iDeviceState;
     };

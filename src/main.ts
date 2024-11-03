@@ -494,8 +494,8 @@ class UnifiNetwork extends utils.Adapter {
 								await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined, isAdapterStart);
 
 								for (let i = 0; i <= objValues[id].length - 1; i++) {
-									const idChannel = `${channel}.${id}.${deviceTypes[id].idChannelPrefix}${myHelper.zeroPad(i, deviceTypes[id].zeroPad)}`;
-									await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i, undefined, isAdapterStart)
+									const idChannel = `${channel}.${id}.${objValues[id][i][deviceTypes[id].arrayChannelIdFromProperty] || `${deviceTypes[id].arrayChannelIdPrefix || ''}${myHelper.zeroPad(i, deviceTypes[id].arrayChannelIdZeroPad || 0)}`}`;
+									await this.createOrUpdateChannel(idChannel, objValues[id][i][deviceTypes[id].arrayChannelNameFromProperty] || deviceTypes[id].arrayChannelNamePrefix + i || i.toString(), undefined, isAdapterStart)
 									await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg, isAdapterStart);
 								}
 							}

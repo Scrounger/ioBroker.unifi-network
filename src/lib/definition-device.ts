@@ -23,10 +23,12 @@ export interface iDeviceObjectChannel {
 
 export interface iDeviceArrayChannel {
     channelName: string,
-    idChannelPrefix: string,
-    zeroPad: number,
     icon?: string,
-    arrayChannelNamePrefix: string,
+    arrayChannelIdPrefix?: string,
+    arrayChannelIdZeroPad?: number,
+    arrayChannelIdFromProperty?: string,
+    arrayChannelNamePrefix?: string,
+    arrayChannelNameFromProperty?: string,
     array: { [key: string]: iDeviceState; },
 }
 
@@ -56,9 +58,9 @@ export const deviceDefinition: { [key: string]: iDeviceState | iDeviceObjectChan
     },
     port_table: {
         channelName: 'Port Table',
-        idChannelPrefix: 'Port_',
-        zeroPad: 2,
-        arrayChannelNamePrefix: 'Port ',
+        arrayChannelIdPrefix: 'Port_',
+        arrayChannelIdZeroPad: 2,
+        arrayChannelNameFromProperty: 'name',
         array: {
             name: {
                 iobType: 'string',
@@ -92,5 +94,24 @@ export const deviceDefinition: { [key: string]: iDeviceState | iDeviceObjectChan
                 },
             },
         }
+    },
+    temperatures: {
+        channelName: 'temperature',
+        arrayChannelIdFromProperty: 'name',
+        arrayChannelNameFromProperty: 'name',
+        array: {
+            type: {
+                iobType: 'string',
+                name: 'type'
+            },
+            value: {
+                iobType: 'number',
+                name: 'value',
+                unit: '°C',
+                readVal: function (val: number) {
+                    return Math.round(val * 10) / 10;
+                },
+            },
+        },
     }
 }

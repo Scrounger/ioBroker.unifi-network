@@ -24,9 +24,9 @@ export const deviceDefinition = {
     },
     port_table: {
         channelName: 'Port Table',
-        idChannelPrefix: 'Port_',
-        zeroPad: 2,
-        arrayChannelNamePrefix: 'Port ',
+        arrayChannelIdPrefix: 'Port_',
+        arrayChannelIdZeroPad: 2,
+        arrayChannelNameFromProperty: 'name',
         array: {
             name: {
                 iobType: 'string',
@@ -59,5 +59,24 @@ export const deviceDefinition = {
                 },
             },
         }
+    },
+    temperatures: {
+        channelName: 'temperature',
+        arrayChannelIdFromProperty: 'name',
+        arrayChannelNameFromProperty: 'name',
+        array: {
+            type: {
+                iobType: 'string',
+                name: 'type'
+            },
+            value: {
+                iobType: 'number',
+                name: 'value',
+                unit: '°C',
+                readVal: function (val) {
+                    return Math.round(val * 10) / 10;
+                },
+            },
+        },
     }
 };
