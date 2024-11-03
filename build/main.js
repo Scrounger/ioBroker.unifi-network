@@ -228,29 +228,29 @@ class UnifiNetwork extends utils.Adapter {
     async updateData() {
         const logPrefix = '[updateData]:';
         try {
-            await this.updateDevices(await this.ufn.getDevices());
+            this.createOrUpdateChannel('devices', 'devices', undefined, true);
+            await this.updateDevices(await this.ufn.getDevices(), true);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateDevices(data) {
+    async updateDevices(data, isAdapterStart = false) {
         const logPrefix = '[updateDevices]:';
         try {
-            // this.log.warn(JSON.stringify(data));
             const idChannel = 'devices';
-            this.createOrUpdateChannel(idChannel, 'devices');
             for (let device of data) {
-                this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-                this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined);
-                await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device);
+                if (isAdapterStart)
+                    this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined, isAdapterStart);
+                await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device, isAdapterStart);
             }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async createOrUpdateDevice(id, name, onlineId, icon = undefined) {
+    async createOrUpdateDevice(id, name, onlineId, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
             let common = {
@@ -269,11 +269,13 @@ class UnifiNetwork extends utils.Adapter {
                 });
             }
             else {
-                const obj = await this.getObjectAsync(id);
-                if (obj && obj.common) {
-                    if (!myHelper.isChannelCommonEqual(obj.common, common)) {
-                        await this.extendObject(id, { common: common });
-                        this.log.info(`${logPrefix} device updated '${id}'`);
+                if (isAdapterStart) {
+                    const obj = await this.getObjectAsync(id);
+                    if (obj && obj.common) {
+                        if (!myHelper.isChannelCommonEqual(obj.common, common)) {
+                            await this.extendObject(id, { common: common });
+                            this.log.info(`${logPrefix} device updated '${id}'`);
+                        }
                     }
                 }
             }
@@ -282,7 +284,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async createOrUpdateChannel(id, name, icon = undefined) {
+    async createOrUpdateChannel(id, name, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
             let common = {
@@ -298,11 +300,13 @@ class UnifiNetwork extends utils.Adapter {
                 });
             }
             else {
-                const obj = await this.getObjectAsync(id);
-                if (obj && obj.common) {
-                    if (!myHelper.isChannelCommonEqual(obj.common, common)) {
-                        await this.extendObject(id, { common: common });
-                        this.log.info(`${logPrefix} channel updated '${id}'`);
+                if (isAdapterStart) {
+                    const obj = await this.getObjectAsync(id);
+                    if (obj && obj.common) {
+                        if (!myHelper.isChannelCommonEqual(obj.common, common)) {
+                            await this.extendObject(id, { common: common });
+                            this.log.info(`${logPrefix} channel updated '${id}'`);
+                        }
                     }
                 }
             }
@@ -317,14 +321,14 @@ class UnifiNetwork extends utils.Adapter {
      * @param {object} objValues ufp bootstrap values of device
      * @param {string} filterComparisonId id for filter
      */
-    async createGenericState(channel, deviceTypes, objValues, filterComparisonId, objOrg) {
+    async createGenericState(channel, deviceTypes, objValues, filterComparisonId, objOrg, isAdapterStart = false) {
         const logPrefix = '[createGenericState]:';
         try {
             // {@link myDevices}
             for (const id in deviceTypes) {
                 let logMsgState = '.' + `${channel}.${id}`.split('.')?.slice(1)?.join('.');
                 try {
-                    if (id && (objValues[id] || objValues[id] === 0) && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
+                    if (id && (objValues[id] || objValues[id] === 0 || objValues[id] === false) && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
                         // if we have a 'iobType' property, then it's a state
                         let stateId = id;
                         if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
@@ -346,28 +350,30 @@ class UnifiNetwork extends utils.Adapter {
                             await this.setObjectAsync(`${channel}.${stateId}`, obj);
                         }
                         else {
-                            // update State if needed
-                            const obj = await this.getObjectAsync(`${channel}.${stateId}`);
-                            const commonUpdated = await this.getCommonGenericState(id, deviceTypes, objOrg, logMsgState);
-                            if (obj && obj.common) {
-                                if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
-                                    await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                    this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}'`);
+                            // update State if needed (only on adapter start)
+                            if (isAdapterStart) {
+                                const obj = await this.getObjectAsync(`${channel}.${stateId}`);
+                                const commonUpdated = await this.getCommonGenericState(id, deviceTypes, objOrg, logMsgState);
+                                if (obj && obj.common) {
+                                    if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
+                                        await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
+                                        this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}'`);
+                                    }
                                 }
                             }
                         }
                         if (deviceTypes[id].write && deviceTypes[id].write === true) {
+                            // ToDo - Handle when device is new during runtime
                             // state is writeable -> subscribe it
                             this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
                             await this.subscribeStatesAsync(`${channel}.${stateId}`);
                         }
                         if (objValues && Object.prototype.hasOwnProperty.call(objValues, id)) {
                             // write current val to state
-                            if (deviceTypes[id].readVal) {
-                                await this.setStateChangedAsync(`${channel}.${stateId}`, deviceTypes[id].readVal(objValues[id]), true);
-                            }
-                            else {
-                                await this.setStateChangedAsync(`${channel}.${stateId}`, objValues[id], true);
+                            const val = deviceTypes[id].readVal ? deviceTypes[id].readVal(objValues[id]) : objValues[id];
+                            let changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+                            if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
+                                this.log.debug(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                             }
                         }
                         else {
@@ -390,17 +396,17 @@ class UnifiNetwork extends utils.Adapter {
                         // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
                         // it's a channel from type object
                         if (objValues[id] && objValues[id].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object')) {
-                            await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
-                            await this.createGenericState(`${channel}.${id}`, deviceTypes[id].object, objValues[id], `${filterComparisonId}.${id}`, objOrg);
+                            await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined, isAdapterStart);
+                            await this.createGenericState(`${channel}.${id}`, deviceTypes[id].object, objValues[id], `${filterComparisonId}.${id}`, objOrg, isAdapterStart);
                         }
                         // it's a channel from type array
                         if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
                             if (objValues[id].length > 0) {
-                                await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
+                                await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined, isAdapterStart);
                                 for (let i = 0; i <= objValues[id].length - 1; i++) {
                                     const idChannel = `${channel}.${id}.${deviceTypes[id].idChannelPrefix}${myHelper.zeroPad(i, deviceTypes[id].zeroPad)}`;
-                                    await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i);
-                                    await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
+                                    await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i, undefined, isAdapterStart);
+                                    await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg, isAdapterStart);
                                 }
                             }
                         }
@@ -474,14 +480,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkDeviceEvent]:';
         try {
             this.aliveTimestamp = moment().valueOf();
-            for (let device of event.data) {
-                // const idChannel = 'devices';
-                // this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined);
-                // await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device);
-            }
-            // this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
-            // this.log.warn(JSON.stringify(event.data[0].mac));
-            // {"message":"session-metadata:sync","rc":"ok"} -> beim start
+            await this.updateDevices(event.data);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
