@@ -9,7 +9,11 @@ export interface iDeviceState {
     min?: number;
     max?: number;
     step?: number;
-    states?: [key: string] | [key: number];
+    states?: {
+        [key: string]: string;
+    } | {
+        [key: number]: string;
+    };
     readVal?(val: ioBroker.StateValue): ioBroker.StateValue;
     writeVal?(val: ioBroker.StateValue): ioBroker.StateValue;
     icon?: string;

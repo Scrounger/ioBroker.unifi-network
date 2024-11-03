@@ -7,6 +7,21 @@ export const deviceDefinition = {
         iobType: 'string',
         name: 'Device Name'
     },
+    state: {
+        iobType: 'number',
+        name: 'Device state',
+        states: {
+            0: "offline",
+            1: "connected",
+            2: "pending adoption",
+            4: "updating",
+            5: "provisioning",
+            6: "unreachable",
+            7: "adopting",
+            9: "adoption error",
+            11: "isolated"
+        }
+    },
     port_table: {
         channelName: 'Port Table',
         idChannelPrefix: 'Port_',

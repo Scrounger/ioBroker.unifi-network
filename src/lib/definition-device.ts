@@ -9,7 +9,7 @@ export interface iDeviceState {
     min?: number,
     max?: number,
     step?: number,
-    states?: [key: string] | [key: number],
+    states?: { [key: string]: string } | { [key: number]: string },
     readVal?(val: ioBroker.StateValue): ioBroker.StateValue,
     writeVal?(val: ioBroker.StateValue): ioBroker.StateValue,
     icon?: string,
@@ -38,6 +38,21 @@ export const deviceDefinition: { [key: string]: iDeviceState | iDeviceObjectChan
     name: {
         iobType: 'string',
         name: 'Device Name'
+    },
+    state: {
+        iobType: 'number',
+        name: 'Device state',
+        states: {
+            0: "offline",
+            1: "connected",
+            2: "pending adoption",
+            4: "updating",
+            5: "provisioning",
+            6: "unreachable",
+            7: "adopting",
+            9: "adoption error",
+            11: "isolated"
+        }
     },
     port_table: {
         channelName: 'Port Table',

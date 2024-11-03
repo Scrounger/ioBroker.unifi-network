@@ -14,7 +14,7 @@ import { deviceDefinition } from './lib/definition-device.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
-    aliveInterval = 15;
+    aliveInterval = 30;
     aliveTimeout = undefined;
     aliveTimestamp = moment().valueOf();
     connectionMaxRetries = 200;
@@ -242,8 +242,40 @@ class UnifiNetwork extends utils.Adapter {
             this.createOrUpdateChannel(idChannel, 'devices');
             for (let device of data) {
                 this.log.info(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-                this.createOrUpdateChannel(`${idChannel}.${device.mac}`, device.name, DeviceImages[device.model] || undefined);
+                this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined);
                 await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async createOrUpdateDevice(id, name, onlineId, icon = undefined) {
+        const logPrefix = '[createOrUpdateChannel]:';
+        try {
+            let common = {
+                name: name,
+                icon: icon,
+                statusStates: {
+                    onlineId: onlineId
+                }
+            };
+            if (!await this.objectExists(id)) {
+                this.log.debug(`${logPrefix} creating device '${id}'`);
+                await this.setObjectAsync(id, {
+                    type: 'device',
+                    common: common,
+                    native: {}
+                });
+            }
+            else {
+                const obj = await this.getObjectAsync(id);
+                if (obj && obj.common) {
+                    if (!myHelper.isChannelCommonEqual(obj.common, common)) {
+                        await this.extendObject(id, { common: common });
+                        this.log.info(`${logPrefix} device updated '${id}'`);
+                    }
+                }
             }
         }
         catch (error) {
@@ -292,7 +324,7 @@ class UnifiNetwork extends utils.Adapter {
             for (const id in deviceTypes) {
                 let logMsgState = '.' + `${channel}.${id}`.split('.')?.slice(1)?.join('.');
                 try {
-                    if (id && objValues[id] && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
+                    if (id && (objValues[id] || objValues[id] === 0) && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'iobType') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'object') && !Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
                         // if we have a 'iobType' property, then it's a state
                         let stateId = id;
                         if (Object.prototype.hasOwnProperty.call(deviceTypes[id], 'id')) {
@@ -363,11 +395,13 @@ class UnifiNetwork extends utils.Adapter {
                         }
                         // it's a channel from type array
                         if (objValues[id] && objValues[id].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(deviceTypes[id], 'array')) {
-                            await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
-                            for (let i = 0; i <= objValues[id].length - 1; i++) {
-                                const idChannel = `${channel}.${id}.${deviceTypes[id].idChannelPrefix}${myHelper.zeroPad(i, deviceTypes[id].zeroPad)}`;
-                                await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i);
-                                await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
+                            if (objValues[id].length > 0) {
+                                await this.createOrUpdateChannel(`${channel}.${id}`, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'channelName') ? deviceTypes[id].channelName : id, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'icon') ? deviceTypes[id].icon : undefined);
+                                for (let i = 0; i <= objValues[id].length - 1; i++) {
+                                    const idChannel = `${channel}.${id}.${deviceTypes[id].idChannelPrefix}${myHelper.zeroPad(i, deviceTypes[id].zeroPad)}`;
+                                    await this.createOrUpdateChannel(idChannel, Object.prototype.hasOwnProperty.call(deviceTypes[id], 'arrayChannelNamePrefix') ? deviceTypes[id].arrayChannelNamePrefix + i : i);
+                                    await this.createGenericState(idChannel, deviceTypes[id].array, objValues[id][i], `${filterComparisonId}.${id}`, objOrg);
+                                }
                             }
                         }
                         // } else {
@@ -440,6 +474,11 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkDeviceEvent]:';
         try {
             this.aliveTimestamp = moment().valueOf();
+            for (let device of event.data) {
+                // const idChannel = 'devices';
+                // this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined);
+                // await this.createGenericState(`${idChannel}.${device.mac}`, deviceDefinition, device, 'devices', device);
+            }
             // this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
             // this.log.warn(JSON.stringify(event.data[0].mac));
             // {"message":"session-metadata:sync","rc":"ok"} -> beim start
@@ -452,7 +491,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkClientEvent]:';
         try {
             this.aliveTimestamp = moment().valueOf();
-            this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            // this.log.warn(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
             // {"message":"session-metadata:sync","rc":"ok"} -> beim start
         }
         catch (error) {
@@ -463,7 +502,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkEvents]:';
         try {
             this.aliveTimestamp = moment().valueOf();
-            this.log.error(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
+            // this.log.error(JSON.stringify(event.meta) + ' - count: ' + event.data.length);
             // {"message":"session-metadata:sync","rc":"ok"} -> beim start
         }
         catch (error) {
