@@ -278,7 +278,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateData]:';
 
 		try {
-			this.createOrUpdateChannel('devices', 'devices', undefined, true);
+			this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
 			await this.updateDevices(await this.ufn.getDevices(), true);
 
 		} catch (error) {
@@ -318,7 +318,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			let common = {
-				name: name,
+				name: utils.I18n.getTranslatedObject(name) || name,
 				icon: icon,
 				statusStates: {
 					onlineId: onlineId
@@ -362,7 +362,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			let common = {
-				name: name,
+				name: utils.I18n.getTranslatedObject(name) || name,
 				icon: icon
 			};
 
@@ -525,7 +525,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			const common: ioBroker.StateCommon = {
-				name: treeDefinition[id].name ? treeDefinition[id].name : id,
+				name: treeDefinition[id].name ? utils.I18n.getTranslatedObject(treeDefinition[id].name) || treeDefinition[id].name : id,
 				type: treeDefinition[id].iobType,
 				read: treeDefinition[id].read ? treeDefinition[id].read : true,
 				write: treeDefinition[id].write ? treeDefinition[id].write : false,

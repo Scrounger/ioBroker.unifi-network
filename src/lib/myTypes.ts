@@ -24,10 +24,10 @@ export interface myCommoneChannelObject {
 export interface myCommonChannelArray {
     channelName: string,
     icon?: string,
-    arrayChannelIdPrefix?: string,
-    arrayChannelIdZeroPad?: number,
-    arrayChannelIdFromProperty?: string,
-    arrayChannelNamePrefix?: string,
-    arrayChannelNameFromProperty?: string,
+    arrayChannelIdPrefix?: string,                  // Array item id get a prefix e.g. myPrefix_0
+    arrayChannelIdZeroPad?: number,                 // Array item id get a padding for the number
+    arrayChannelIdFromProperty?: string,            // Array item id is taken from a property in the corresponding tree
+    arrayChannelNamePrefix?: string,                // Array item common.name get a prefix e.g. myPrefix_0
+    arrayChannelNameFromProperty?: string,          // Array item common.name is taken from a property in the corresponding tree
     array: { [key: string]: myCommonState; },
 }

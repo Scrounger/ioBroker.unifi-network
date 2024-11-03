@@ -7,5 +7,14 @@
     "Password": "密码",
     "You like the adapter? Then support me.": "你喜欢这个适配器吗？那就支持我吧。",
     "MAC Address": "MAC地址",
-    "Device Name": "设备名称"
+    "Device Name": "设备名称",
+    "System Statistics": "系统统计",
+    "mac address": "MAC地址",
+    "device name": "设备名称",
+    "system statistics": "系统统计",
+    "port table": "端口表",
+    "port name": "端口名称",
+    "temperature": "温度",
+    "device state": "设备状态",
+    "unifi devices": "统一设备"
 }

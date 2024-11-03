@@ -7,5 +7,14 @@
     "Password": "Пароль",
     "You like the adapter? Then support me.": "Вам подобається адаптер? Тоді підтримай мене.",
     "MAC Address": "MAC-адреса",
-    "Device Name": "Назва пристрою"
+    "Device Name": "Назва пристрою",
+    "System Statistics": "Статистика системи",
+    "mac address": "MAC-адреса",
+    "device name": "Назва пристрою",
+    "system statistics": "Статистика системи",
+    "port table": "таблиця портів",
+    "port name": "назва порту",
+    "temperature": "температура",
+    "device state": "стан пристрою",
+    "unifi devices": "уніфіковані пристрої"
 }

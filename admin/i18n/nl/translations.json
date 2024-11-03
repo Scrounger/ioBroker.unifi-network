@@ -7,5 +7,14 @@
     "Password": "Wachtwoord",
     "You like the adapter? Then support me.": "Vind je de adapter leuk? Steun mij dan.",
     "MAC Address": "MAC-adres",
-    "Device Name": "Apparaatnaam"
+    "Device Name": "Apparaatnaam",
+    "System Statistics": "Systeemstatistieken",
+    "mac address": "MAC-adres",
+    "device name": "Apparaatnaam",
+    "system statistics": "Systeemstatistieken",
+    "port table": "poort tafel",
+    "port name": "poort naam",
+    "temperature": "temperatuur",
+    "device state": "apparaat staat",
+    "unifi devices": "unifi-apparaten"
 }

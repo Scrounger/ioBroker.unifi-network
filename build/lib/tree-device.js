@@ -1,15 +1,15 @@
 export const deviceTree = {
     mac: {
         iobType: 'string',
-        name: 'MAC Address'
+        name: 'mac address'
     },
     name: {
         iobType: 'string',
-        name: 'Device Name'
+        name: 'device name'
     },
     state: {
         iobType: 'number',
-        name: 'Device state',
+        name: 'device state',
         states: {
             0: "offline",
             1: "connected",
@@ -23,19 +23,19 @@ export const deviceTree = {
         }
     },
     port_table: {
-        channelName: 'Port Table',
+        channelName: 'port table',
         arrayChannelIdPrefix: 'Port_',
         arrayChannelIdZeroPad: 2,
         arrayChannelNameFromProperty: 'name',
         array: {
             name: {
                 iobType: 'string',
-                name: 'Port Name'
+                name: 'port name'
             }
         },
     },
     "system-stats": {
-        channelName: 'System Statistics',
+        channelName: 'system statistics',
         object: {
             cpu: {
                 iobType: 'number',

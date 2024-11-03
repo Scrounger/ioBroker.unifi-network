@@ -7,5 +7,14 @@
     "Password": "Hasło",
     "You like the adapter? Then support me.": "Podoba Ci się adapter? Więc wesprzyj mnie.",
     "MAC Address": "Adres MAC",
-    "Device Name": "Nazwa urządzenia"
+    "Device Name": "Nazwa urządzenia",
+    "System Statistics": "Statystyki systemu",
+    "mac address": "Adres MAC",
+    "device name": "Nazwa urządzenia",
+    "system statistics": "Statystyki systemu",
+    "port table": "stół portowy",
+    "port name": "nazwa portu",
+    "temperature": "temperatura",
+    "device state": "stan urządzenia",
+    "unifi devices": "urządzenia unifi"
 }

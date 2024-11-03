@@ -6,6 +6,12 @@
 	"Username": "Username",
 	"Password": "Password",
 	"You like the adapter? Then support me.": "You like the adapter? Then support me.",
-	"MAC Address": "MAC Address",
-	"Device Name": "Device Name"
+	"mac address": "MAC Address",
+	"device name": "Device Name",
+	"system statistics": "System Statistics",
+	"port table": "port table",
+	"port name": "port name",
+	"temperature": "temperature",
+	"device state": "device state",
+	"unifi devices": "unifi devices"
 }

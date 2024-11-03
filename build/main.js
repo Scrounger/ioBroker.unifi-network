@@ -228,7 +228,7 @@ class UnifiNetwork extends utils.Adapter {
     async updateData() {
         const logPrefix = '[updateData]:';
         try {
-            this.createOrUpdateChannel('devices', 'devices', undefined, true);
+            this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
             await this.updateDevices(await this.ufn.getDevices(), true);
         }
         catch (error) {
@@ -262,7 +262,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
             let common = {
-                name: name,
+                name: utils.I18n.getTranslatedObject(name) || name,
                 icon: icon,
                 statusStates: {
                     onlineId: onlineId
@@ -304,7 +304,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
             let common = {
-                name: name,
+                name: utils.I18n.getTranslatedObject(name) || name,
                 icon: icon
             };
             if (!await this.objectExists(id)) {
@@ -449,7 +449,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[getCommonGenericState]:';
         try {
             const common = {
-                name: treeDefinition[id].name ? treeDefinition[id].name : id,
+                name: treeDefinition[id].name ? utils.I18n.getTranslatedObject(treeDefinition[id].name) || treeDefinition[id].name : id,
                 type: treeDefinition[id].iobType,
                 read: treeDefinition[id].read ? treeDefinition[id].read : true,
                 write: treeDefinition[id].write ? treeDefinition[id].write : false,
