@@ -29,7 +29,7 @@ export const clientTree = {
         unit: 's',
     },
     tags: {
-        iobType: 'json',
+        iobType: 'array',
         name: 'tags',
         readVal(val) {
             return JSON.stringify(val);

@@ -281,7 +281,7 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
 			await this.updateDevices(await this.ufn.getDevices(), true);
-			// await this.updateClients(await this.ufn.getClients(), true);
+			await this.updateClients(await this.ufn.getClients(), true);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -299,7 +299,7 @@ class UnifiNetwork extends utils.Adapter {
 			for (let device of data) {
 				// if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
 
-				this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, DeviceImages[device.model] || undefined, isAdapterStart);
+				this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, DeviceImages[device.model] || undefined, isAdapterStart);
 
 				await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
 			}
@@ -320,7 +320,7 @@ class UnifiNetwork extends utils.Adapter {
 			for (let client of data) {
 				// if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
 
-				this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.status`, undefined, isAdapterStart);
+				this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.status`, undefined, undefined, isAdapterStart);
 
 				await this.createGenericState(`${idChannel}.${client.mac || 'VPN - ' + client.ip}`, clientTree, client, 'clients', client, isAdapterStart);
 			}
@@ -338,7 +338,7 @@ class UnifiNetwork extends utils.Adapter {
 	 * @param icon 
 	 * @param isAdapterStart
 	 */
-	private async createOrUpdateDevice(id: string, name: string, onlineId: string, icon: string = undefined, isAdapterStart: boolean = false): Promise<void> {
+	private async createOrUpdateDevice(id: string, name: string, onlineId: string, errorId: string = undefined, icon: string = undefined, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[createOrUpdateDevice]:';
 
 		try {
@@ -351,6 +351,10 @@ class UnifiNetwork extends utils.Adapter {
 					onlineId: onlineId
 				}
 			};
+
+			if (errorId) {
+				common.statusStates["errorId"] = errorId;
+			}
 
 			if (!await this.objectExists(id)) {
 				this.log.debug(`${logPrefix} creating device '${id}'`);
@@ -419,7 +423,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } | myCommonState, objValues: NetworkDevice | NetworkClient, filterComparisonId: string, objOrg: NetworkDevice | NetworkClient, isAdapterStart: boolean = false) {
+	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | NetworkClient, filterComparisonId: string, objOrg: NetworkDevice | NetworkClient, isAdapterStart: boolean = false) {
 		const logPrefix = '[createGenericState]:';
 
 		try {
@@ -445,10 +449,10 @@ class UnifiNetwork extends utils.Adapter {
 
 						if (!await this.objectExists(`${channel}.${stateId}`)) {
 							// create State
-							this.log.debug(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
+							this.log.silly(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
 							const obj = {
 								type: 'state',
-								common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
+								common: await this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objOrg, logMsgState),
 								native: {}
 							};
 
@@ -459,7 +463,7 @@ class UnifiNetwork extends utils.Adapter {
 							if (isAdapterStart) {
 								const obj: ioBroker.Object = await this.getObjectAsync(`${channel}.${stateId}`);
 
-								const commonUpdated = await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState);
+								const commonUpdated = await this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objOrg, logMsgState);
 
 								if (obj && obj.common) {
 									if (!myHelper.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
@@ -549,11 +553,11 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async getCommonGenericState(id, treeDefinition, objOrg, logMsgState) {
+	async getCommonGenericState(id: string, treeDefinition: { [key: string]: myCommonState }, objOrg, logMsgState: string) {
 		const logPrefix = '[getCommonGenericState]:';
 
 		try {
-			let name = id;
+			let name: ioBroker.StringOrTranslated = id;
 
 			if (treeDefinition[id].name) {
 				const i18n = utils.I18n.getTranslatedObject(treeDefinition[id].name);
@@ -576,6 +580,8 @@ class UnifiNetwork extends utils.Adapter {
 			if (treeDefinition[id].max || treeDefinition[id].max === 0) common.max = treeDefinition[id].max;
 
 			if (treeDefinition[id].step) common.step = treeDefinition[id].step;
+
+			if (treeDefinition[id].expert) common.expert = treeDefinition[id].expert;
 
 
 			if (treeDefinition[id].states) {
@@ -604,7 +610,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			this.ufn.on(WebSocketListener.device, (event) => this.onNetworkDeviceEvent(event));
-			// this.ufn.on(WebSocketListener.client, (event) => this.onNetworkClientEvent(event));
+			this.ufn.on(WebSocketListener.client, (event) => this.onNetworkClientEvent(event));
 			// this.ufn.on(WebSocketListener.events, (event) => this.onNetworkEvents(event));
 
 		} catch (error) {

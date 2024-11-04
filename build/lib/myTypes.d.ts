@@ -1,6 +1,6 @@
 export interface myCommonState {
     id?: string;
-    iobType: string;
+    iobType: ioBroker.CommonType;
     name?: string;
     role?: string;
     read?: boolean;
@@ -14,11 +14,14 @@ export interface myCommonState {
     } | {
         [key: number]: string;
     };
-    readVal?(val: ioBroker.StateValue): ioBroker.StateValue;
-    writeVal?(val: ioBroker.StateValue): ioBroker.StateValue;
+    expert?: true;
     icon?: string;
     def?: ioBroker.StateValue;
+    desc?: string;
+    readVal?(val: ioBroker.StateValue): ioBroker.StateValue;
+    writeVal?(val: ioBroker.StateValue): ioBroker.StateValue;
     valFromProperty?: string;
+    statesFromProperty?: string;
 }
 export interface myCommoneChannelObject {
     channelName: string;
