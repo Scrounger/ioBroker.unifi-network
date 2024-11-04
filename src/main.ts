@@ -68,6 +68,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 			}
 
+
 		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
@@ -272,6 +273,9 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
 			await this.updateDevices(await this.ufn.getDevices(), true);
+
+			this.createOrUpdateChannel('clients', 'clients', undefined, true);
+			this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
 			await this.updateClients(await this.ufn.getClients(), true);
 
 		} catch (error) {
@@ -314,9 +318,19 @@ class UnifiNetwork extends utils.Adapter {
 				for (let client of data) {
 					// if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
 
-					this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+					if (client.mac) {
+						this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
 
-					await this.createGenericState(`${idChannel}.${client.mac || 'VPN - ' + client.ip}`, clientTree, client, 'clients', client, isAdapterStart);
+						await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
+					} else {
+						if (client.type === 'VPN' && client.ip) {
+							const idVpnChannel = 'vpn';
+							const preparedIp = client.ip.replaceAll('.', '_');
+
+							this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+							await this.createGenericState(`${idVpnChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
+						}
+					}
 				}
 			}
 		} catch (error) {
