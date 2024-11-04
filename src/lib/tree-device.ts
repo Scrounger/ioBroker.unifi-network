@@ -23,6 +23,10 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             return val !== 0 && val !== 6 && val !== 9
         },
     },
+    last_seen: {
+        iobType: 'number',
+        name: 'last seen'
+    },
     mac: {
         iobType: 'string',
         name: 'mac address'

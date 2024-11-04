@@ -9,6 +9,11 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'ip address'
     },
+    isOnline: {
+        id: 'isOnline',
+        iobType: 'boolean',
+        name: 'Is client online',
+    },
     last_seen: {
         iobType: 'number',
         name: 'last seen'
@@ -30,11 +35,4 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'uptime',
         unit: 's',
     },
-    tags: {
-        iobType: 'array',
-        name: 'tags',
-        readVal(val) {
-            return JSON.stringify(val);
-        },
-    }
 }

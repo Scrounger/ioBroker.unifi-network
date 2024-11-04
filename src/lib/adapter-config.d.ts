@@ -7,6 +7,7 @@ declare global {
 			host: string;
 			user: string;
 			password: string;
+			updateInterval: number;
 		}
 	}
 }

@@ -19,5 +19,7 @@
     "unifi devices": "统一设备",
     "ip address": "IP地址",
     "WLAN SSID": "无线网络SSID",
-    "uptime": "正常运行时间"
+    "uptime": "正常运行时间",
+    "update interval": "更新间隔",
+    "increase this value for low performance systems": "对于低性能系统增加此值"
 }

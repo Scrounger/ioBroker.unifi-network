@@ -92,7 +92,8 @@
     "native": {
         "host": "",
         "user": "",
-        "password": ""
+        "password": "",
+        "updateInterval": 15
     },
     "objects": [],
     "instanceObjects": [

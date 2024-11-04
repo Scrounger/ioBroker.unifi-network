@@ -16,5 +16,7 @@
 	"unifi devices": "unifi devices",
 	"ip address": "ip address",
 	"WLAN SSID": "WLAN SSID",
-	"uptime": "uptime"
+	"uptime": "uptime",
+	"update interval": "update interval",
+	"increase this value for low performance systems": "increase this value for low performance systems"
 }

@@ -19,5 +19,7 @@
     "unifi devices": "dispositivos unificados",
     "ip address": "endereço IP",
     "WLAN SSID": "SSID WLAN",
-    "uptime": "tempo de atividade"
+    "uptime": "tempo de atividade",
+    "update interval": "intervalo de atualização",
+    "increase this value for low performance systems": "aumentar este valor para sistemas de baixo desempenho"
 }

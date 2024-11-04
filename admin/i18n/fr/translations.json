@@ -19,5 +19,7 @@
     "unifi devices": "appareils unifiés",
     "ip address": "adresse IP",
     "WLAN SSID": "SSID du réseau Wi-Fi",
-    "uptime": "disponibilité"
+    "uptime": "disponibilité",
+    "update interval": "intervalle de mise à jour",
+    "increase this value for low performance systems": "augmenter cette valeur pour les systèmes à faible performance"
 }

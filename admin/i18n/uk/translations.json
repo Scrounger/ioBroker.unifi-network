@@ -19,5 +19,7 @@
     "unifi devices": "уніфіковані пристрої",
     "ip address": "ip адреса",
     "WLAN SSID": "WLAN SSID",
-    "uptime": "час роботи"
+    "uptime": "час роботи",
+    "update interval": "інтервал оновлення",
+    "increase this value for low performance systems": "збільшити це значення для систем з низькою продуктивністю"
 }

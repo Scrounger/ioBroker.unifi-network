@@ -42,13 +42,8 @@ class UnifiNetwork extends utils.Adapter {
             await utils.I18n.init('admin', this);
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
-                // listen to realtime events (must be given as function to be able to use this)
                 this.networkEventsListener();
                 await this.establishConnection(true);
-                // await this.ufn.login();
-                // const test = await this.ufn.retrievData(this.ufn.getApiEndpoint(ApiEndpoints.self));
-                // this.log.warn(JSON.stringify(test));
-                // this.ufn.launchEventsWs();
             }
             else {
                 this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -69,7 +64,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 this.ufn.logout();
                 this.setConnectionStatus(false);
-                this.log.info(`${logPrefix} Logged out successfully from the Unifi-Protect controller API. (host: ${this.config.host})`);
+                this.log.info(`${logPrefix} Logged out successfully from the Unifi-Network controller API. (host: ${this.config.host})`);
             }
             callback();
         }
@@ -357,7 +352,13 @@ class UnifiNetwork extends utils.Adapter {
     async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, isAdapterStart = false) {
         const logPrefix = '[createGenericState]:';
         try {
-            // {@link myDevices}
+            if (!isAdapterStart) {
+                // only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
+                const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
+                if (lastSeen && lastSeen.val && moment().diff(lastSeen.val * 1000, 'seconds') < this.config.updateInterval) {
+                    return;
+                }
+            }
             for (const key in treeDefinition) {
                 let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
                 try {
@@ -416,7 +417,7 @@ class UnifiNetwork extends utils.Adapter {
                         else {
                             if (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
                                 // only report it if it's not a custom defined state
-                                this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Protect application or will update by an event)`);
+                                this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
                             }
                         }
                         // } else {

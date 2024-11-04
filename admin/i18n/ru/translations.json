@@ -19,5 +19,7 @@
     "unifi devices": "унифицированные устройства",
     "ip address": "IP-адрес",
     "WLAN SSID": "SSID беспроводной локальной сети",
-    "uptime": "время безотказной работы"
+    "uptime": "время безотказной работы",
+    "update interval": "интервал обновления",
+    "increase this value for low performance systems": "увеличьте это значение для систем с низкой производительностью"
 }

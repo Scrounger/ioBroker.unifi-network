@@ -41,6 +41,16 @@
 					"label": "Password",
 					"sm": 12,
 					"md": 2
+				},
+				"updateInterval": {
+					"type": "number",
+					"label": "update interval",
+					"help": "increase this value for low performance systems",
+					"min": 0,
+					"max": 10000,
+					"step": 1,
+					"sm": 12,
+					"md": 3
 				}
 			}
 		}
