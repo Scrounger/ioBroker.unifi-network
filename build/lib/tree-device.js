@@ -1,7 +1,25 @@
 export const deviceTree = {
+    hasError: {
+        id: 'hasError',
+        iobType: 'boolean',
+        name: 'device reported errors',
+        valFromProperty: 'state',
+        readVal(val) {
+            return val === 6 || val === 9;
+        },
+    },
     ip: {
         iobType: 'string',
         name: 'ip address'
+    },
+    isOnline: {
+        id: 'isOnline',
+        iobType: 'boolean',
+        name: 'Is device online',
+        valFromProperty: 'state',
+        readVal(val) {
+            return val !== 0 && val !== 6 && val !== 9;
+        },
     },
     mac: {
         iobType: 'string',

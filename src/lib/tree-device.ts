@@ -1,9 +1,27 @@
 import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 
 export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
+    hasError: {
+        id: 'hasError',
+        iobType: 'boolean',
+        name: 'device reported errors',
+        valFromProperty: 'state',
+        readVal(val: number) {
+            return val === 6 || val === 9
+        },
+    },
     ip: {
         iobType: 'string',
         name: 'ip address'
+    },
+    isOnline: {
+        id: 'isOnline',
+        iobType: 'boolean',
+        name: 'Is device online',
+        valFromProperty: 'state',
+        readVal(val: number) {
+            return val !== 0 && val !== 6 && val !== 9
+        },
     },
     mac: {
         iobType: 'string',

@@ -13,6 +13,8 @@ export interface myCommonState {
     readVal?(val: ioBroker.StateValue): ioBroker.StateValue,
     writeVal?(val: ioBroker.StateValue): ioBroker.StateValue,
     icon?: string,
+    def?: ioBroker.StateValue,
+    valFromProperty?: string             // Take value from other property in the corresponding tree
 }
 
 export interface myCommoneChannelObject {

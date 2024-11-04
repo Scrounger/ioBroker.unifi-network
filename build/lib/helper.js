@@ -1,4 +1,11 @@
 import _ from "lodash";
+export function isDeviceCommonEqual(objCommon, myCommon) {
+    return _.isEqual(objCommon.name, myCommon.name) &&
+        objCommon.icon == myCommon.icon &&
+        objCommon.desc === myCommon.desc &&
+        objCommon.role === myCommon.role &&
+        _.isEqual(objCommon.statusStates, myCommon.statusStates);
+}
 export function isChannelCommonEqual(objCommon, myCommon) {
     return _.isEqual(objCommon.name, myCommon.name) &&
         objCommon.icon == myCommon.icon &&

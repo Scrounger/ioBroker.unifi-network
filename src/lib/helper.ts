@@ -1,5 +1,13 @@
 import _ from "lodash";
 
+export function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
+    return _.isEqual(objCommon.name, myCommon.name) &&
+        objCommon.icon == myCommon.icon &&
+        objCommon.desc === myCommon.desc &&
+        objCommon.role === myCommon.role &&
+        _.isEqual(objCommon.statusStates, myCommon.statusStates)
+}
+
 export function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean {
     return _.isEqual(objCommon.name, myCommon.name) &&
         objCommon.icon == myCommon.icon &&

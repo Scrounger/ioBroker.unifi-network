@@ -17,6 +17,8 @@ export interface myCommonState {
     readVal?(val: ioBroker.StateValue): ioBroker.StateValue;
     writeVal?(val: ioBroker.StateValue): ioBroker.StateValue;
     icon?: string;
+    def?: ioBroker.StateValue;
+    valFromProperty?: string;
 }
 export interface myCommoneChannelObject {
     channelName: string;

@@ -281,7 +281,7 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
 			await this.updateDevices(await this.ufn.getDevices(), true);
-			await this.updateClients(await this.ufn.getClients(), true);
+			// await this.updateClients(await this.ufn.getClients(), true);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -299,7 +299,7 @@ class UnifiNetwork extends utils.Adapter {
 			for (let device of data) {
 				// if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
 
-				this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.state`, DeviceImages[device.model] || undefined, isAdapterStart);
+				this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, DeviceImages[device.model] || undefined, isAdapterStart);
 
 				await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
 			}
@@ -364,7 +364,7 @@ class UnifiNetwork extends utils.Adapter {
 					const obj = await this.getObjectAsync(id);
 
 					if (obj && obj.common) {
-						if (!myHelper.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
+						if (!myHelper.isDeviceCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
 							await this.extendObject(id, { common: common });
 							this.log.debug(`${logPrefix} device updated '${id}'`);
 						}
@@ -428,7 +428,7 @@ class UnifiNetwork extends utils.Adapter {
 				let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
 
 				try {
-					if (key && (objValues[key] || objValues[key] === 0 || objValues[key] === false) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+					if (key && (objValues[key] || objValues[key] === 0 || objValues[key] === false || Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
 
 						// if we have a 'iobType' property, then it's a state
 						let stateId = key;
@@ -477,9 +477,15 @@ class UnifiNetwork extends utils.Adapter {
 							await this.subscribeStatesAsync(`${channel}.${stateId}`);
 						}
 
-						if (objValues && Object.prototype.hasOwnProperty.call(objValues, key)) {
+						if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty))) {
 							// write current val to state
-							const val = treeDefinition[key].readVal ? treeDefinition[key].readVal(objValues[key]) : objValues[key];
+							const valKey = treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key
+
+							const val = treeDefinition[key].readVal ? treeDefinition[key].readVal(objValues[valKey]) : objValues[valKey];
+
+							// if (treeDefinition[key].valFromProperty) {
+							// 	this.log.warn(`${treeDefinition[key].valFromProperty} -> ${objValues[treeDefinition[key].valFromProperty]}`);
+							// }
 
 							let changedObj: any = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
 
