@@ -15,8 +15,8 @@ export interface myCommonState {
     def?: ioBroker.StateValue,
     desc?: string,
 
-    readVal?(val: ioBroker.StateValue): ioBroker.StateValue,
-    writeVal?(val: ioBroker.StateValue): ioBroker.StateValue,
+    readVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    writeVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
     valFromProperty?: string             // Take value from other property in the corresponding tree
     statesFromProperty?: string         // ToDo: perhaps can be removed

@@ -42,7 +42,7 @@ class UnifiNetwork extends utils.Adapter {
             await utils.I18n.init('admin', this);
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
-                this.networkEventsListener();
+                // this.networkEventsListener();
                 await this.establishConnection(true);
             }
             else {
@@ -226,6 +226,7 @@ class UnifiNetwork extends utils.Adapter {
             this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
             await this.updateDevices(await this.ufn.getDevices(), true);
             await this.updateClients(await this.ufn.getClients(), true);
+            this.networkEventsListener();
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -352,7 +353,7 @@ class UnifiNetwork extends utils.Adapter {
     async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, isAdapterStart = false) {
         const logPrefix = '[createGenericState]:';
         try {
-            if (!isAdapterStart) {
+            if (!isAdapterStart && this.config.updateInterval > 0) {
                 // only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
                 const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
                 if (lastSeen && lastSeen.val && moment().diff(lastSeen.val * 1000, 'seconds') < this.config.updateInterval) {
@@ -362,7 +363,9 @@ class UnifiNetwork extends utils.Adapter {
             for (const key in treeDefinition) {
                 let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
                 try {
-                    if (key && (objValues[key] || objValues[key] === 0 || objValues[key] === false || Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+                    // if we have an own defined state which takes val from other property
+                    const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
+                    if (key && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
                         // if we have a 'iobType' property, then it's a state
                         let stateId = key;
                         if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
@@ -402,13 +405,8 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
                             await this.subscribeStatesAsync(`${channel}.${stateId}`);
                         }
-                        if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty))) {
-                            // write current val to state
-                            const valKey = treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
-                            const val = treeDefinition[key].readVal ? treeDefinition[key].readVal(objValues[valKey]) : objValues[valKey];
-                            // if (treeDefinition[key].valFromProperty) {
-                            // 	this.log.warn(`${treeDefinition[key].valFromProperty} -> ${objValues[treeDefinition[key].valFromProperty]}`);
-                            // }
+                        if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
+                            const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this) : objValues[valKey];
                             let changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
                             if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
                                 this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
@@ -515,7 +513,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             this.ufn.on(WebSocketListener.device, (event) => this.onNetworkDeviceEvent(event));
             this.ufn.on(WebSocketListener.client, (event) => this.onNetworkClientEvent(event));
-            // this.ufn.on(WebSocketListener.events, (event) => this.onNetworkEvents(event));
+            this.ufn.on(WebSocketListener.events, (event) => this.onNetworkEvents(event));
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

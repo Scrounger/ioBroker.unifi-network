@@ -6,7 +6,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'device reported errors',
         valFromProperty: 'state',
-        readVal(val: number) {
+        readVal(val: number, adapater: ioBroker.Adapter) {
             return val === 6 || val === 9
         },
     },
@@ -19,7 +19,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'Is device online',
         valFromProperty: 'state',
-        readVal(val: number) {
+        readVal(val: number, adapater: ioBroker.Adapter) {
             return val !== 0 && val !== 6 && val !== 9
         },
     },
@@ -68,7 +68,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             cpu: {
                 iobType: 'number',
                 unit: '%',
-                readVal(val: string) {
+                readVal(val: string, adapater: ioBroker.Adapter) {
                     return parseFloat(val);
                 },
 
@@ -76,14 +76,14 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             mem: {
                 iobType: 'number',
                 unit: '%',
-                readVal(val: string) {
+                readVal(val: string, adapater: ioBroker.Adapter) {
                     return parseFloat(val);
                 },
             },
             uptime: {
                 iobType: 'number',
                 unit: 's',
-                readVal(val: string) {
+                readVal(val: string, adapater: ioBroker.Adapter) {
                     return parseFloat(val);
                 },
             },
@@ -102,7 +102,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 iobType: 'number',
                 name: 'value',
                 unit: '°C',
-                readVal: function (val: number) {
+                readVal: function (val: number, adapater: ioBroker.Adapter) {
                     return Math.round(val * 10) / 10;
                 },
             },
