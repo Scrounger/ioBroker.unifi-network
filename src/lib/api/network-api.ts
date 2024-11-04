@@ -524,12 +524,15 @@ export class NetworkApi extends EventEmitter {
             // Handle any websocket errors.
             ws.once('error', (error: Error): void => {
 
+                this._eventsWs = null;
+
                 // If we're closing before fully established it's because we're shutting down the API - ignore it.
                 if (error.message !== 'WebSocket was closed before the connection was established') {
 
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
 
+                ws.removeListener('message', messageHandler);
                 ws.terminate();
             });
 
@@ -538,16 +541,8 @@ export class NetworkApi extends EventEmitter {
                 try {
                     const event: NetworkEvent = JSON.parse(data.toString());
 
-                    if (event.meta.message === WebSocketEvents.client) {
-                        this.emit(WebSocketListener.client, event);
-                    } else if (event.meta.message === WebSocketEvents.device) {
-                        this.emit(WebSocketListener.device, event);
-                    } else if (event.meta.message === WebSocketEvents.events) {
-                        this.emit(WebSocketListener.events, event);
-                    } else {
-                        if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
-                            this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
-                        }
+                    if (event) {
+                        this.emit("message", event);
                     }
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
@@ -570,16 +565,4 @@ export enum ApiEndpoints {
     self = 'self',
     devices = 'devices',
     clients = "clients"
-}
-
-export enum WebSocketListener {
-    client = 'client',
-    device = 'device',
-    events = 'events'
-}
-
-export enum WebSocketEvents {
-    client = 'client:sync',
-    device = 'device:sync',
-    events = 'events'
 }

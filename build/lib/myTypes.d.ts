@@ -42,3 +42,8 @@ export interface myCommonChannelArray {
         [key: string]: myCommonState;
     };
 }
+export declare enum WebSocketEvents {
+    client = "client:sync",
+    device = "device:sync",
+    events = "events"
+}

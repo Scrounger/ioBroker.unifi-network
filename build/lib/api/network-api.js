@@ -372,29 +372,20 @@ export class NetworkApi extends EventEmitter {
             });
             // Handle any websocket errors.
             ws.once('error', (error) => {
+                this._eventsWs = null;
                 // If we're closing before fully established it's because we're shutting down the API - ignore it.
                 if (error.message !== 'WebSocket was closed before the connection was established') {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
+                ws.removeListener('message', messageHandler);
                 ws.terminate();
             });
             // Process messages as they come in.
             ws.on('message', messageHandler = (data) => {
                 try {
                     const event = JSON.parse(data.toString());
-                    if (event.meta.message === WebSocketEvents.client) {
-                        this.emit(WebSocketListener.client, event);
-                    }
-                    else if (event.meta.message === WebSocketEvents.device) {
-                        this.emit(WebSocketListener.device, event);
-                    }
-                    else if (event.meta.message === WebSocketEvents.events) {
-                        this.emit(WebSocketListener.events, event);
-                    }
-                    else {
-                        if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
-                            this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
-                        }
+                    if (event) {
+                        this.emit("message", event);
                     }
                 }
                 catch (error) {
@@ -417,15 +408,3 @@ export var ApiEndpoints;
     ApiEndpoints["devices"] = "devices";
     ApiEndpoints["clients"] = "clients";
 })(ApiEndpoints || (ApiEndpoints = {}));
-export var WebSocketListener;
-(function (WebSocketListener) {
-    WebSocketListener["client"] = "client";
-    WebSocketListener["device"] = "device";
-    WebSocketListener["events"] = "events";
-})(WebSocketListener || (WebSocketListener = {}));
-export var WebSocketEvents;
-(function (WebSocketEvents) {
-    WebSocketEvents["client"] = "client:sync";
-    WebSocketEvents["device"] = "device:sync";
-    WebSocketEvents["events"] = "events";
-})(WebSocketEvents || (WebSocketEvents = {}));

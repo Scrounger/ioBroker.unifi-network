@@ -38,3 +38,9 @@ export interface myCommonChannelArray {
     arrayChannelNameFromProperty?: string,          // Array item common.name is taken from a property in the corresponding tree
     array: { [key: string]: myCommonState; },
 }
+
+export enum WebSocketEvents {
+    client = 'client:sync',
+    device = 'device:sync',
+    events = 'events'
+}

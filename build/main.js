@@ -6,10 +6,11 @@
 import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
 // API imports
-import { WebSocketListener, NetworkApi } from './lib/api/network-api.js';
+import { NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
+import { WebSocketEvents } from './lib/myTypes.js';
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
 class UnifiNetwork extends utils.Adapter {
@@ -20,6 +21,7 @@ class UnifiNetwork extends utils.Adapter {
     aliveTimestamp = moment().valueOf();
     connectionMaxRetries = 200;
     connectionRetries = 0;
+    eventListener = (event) => this.onNetworkEvent(event);
     constructor(options = {}) {
         super({
             ...options,
@@ -42,8 +44,8 @@ class UnifiNetwork extends utils.Adapter {
             await utils.I18n.init('admin', this);
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
-                // this.networkEventsListener();
                 await this.establishConnection(true);
+                this.ufn.on('message', this.eventListener);
             }
             else {
                 this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -59,6 +61,7 @@ class UnifiNetwork extends utils.Adapter {
     onUnload(callback) {
         const logPrefix = '[onUnload]:';
         try {
+            this.removeListener('message', this.eventListener);
             if (this.aliveTimeout)
                 clearTimeout(this.aliveTimeout);
             if (this.ufn) {
@@ -226,7 +229,6 @@ class UnifiNetwork extends utils.Adapter {
             this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
             await this.updateDevices(await this.ufn.getDevices(), true);
             await this.updateClients(await this.ufn.getClients(), true);
-            this.networkEventsListener();
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -235,13 +237,15 @@ class UnifiNetwork extends utils.Adapter {
     async updateDevices(data, isAdapterStart = false) {
         const logPrefix = '[updateDevices]:';
         try {
-            const idChannel = 'devices';
-            if (isAdapterStart)
-                this.log.info(`${logPrefix} Discovered ${data.length} devices`);
-            for (let device of data) {
-                // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-                this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, DeviceImages[device.model] || undefined, isAdapterStart);
-                await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
+            if (this.connected && this.isConnected) {
+                const idChannel = 'devices';
+                if (isAdapterStart)
+                    this.log.info(`${logPrefix} Discovered ${data.length} devices`);
+                for (let device of data) {
+                    // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                    this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, DeviceImages[device.model] || undefined, isAdapterStart);
+                    await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
+                }
             }
         }
         catch (error) {
@@ -251,13 +255,15 @@ class UnifiNetwork extends utils.Adapter {
     async updateClients(data, isAdapterStart = false) {
         const logPrefix = '[updateClients]:';
         try {
-            const idChannel = 'clients';
-            if (isAdapterStart)
-                this.log.info(`${logPrefix} Discovered ${data.length} clients`);
-            for (let client of data) {
-                // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
-                this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.status`, undefined, undefined, isAdapterStart);
-                await this.createGenericState(`${idChannel}.${client.mac || 'VPN - ' + client.ip}`, clientTree, client, 'clients', client, isAdapterStart);
+            if (this.connected && this.isConnected) {
+                const idChannel = 'clients';
+                if (isAdapterStart)
+                    this.log.info(`${logPrefix} Discovered ${data.length} clients`);
+                for (let client of data) {
+                    // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
+                    this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.status`, undefined, undefined, isAdapterStart);
+                    await this.createGenericState(`${idChannel}.${client.mac || 'VPN - ' + client.ip}`, clientTree, client, 'clients', client, isAdapterStart);
+                }
             }
         }
         catch (error) {
@@ -353,111 +359,113 @@ class UnifiNetwork extends utils.Adapter {
     async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, isAdapterStart = false) {
         const logPrefix = '[createGenericState]:';
         try {
-            if (!isAdapterStart && this.config.updateInterval > 0) {
-                // only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
-                const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
-                if (lastSeen && lastSeen.val && moment().diff(lastSeen.val * 1000, 'seconds') < this.config.updateInterval) {
-                    return;
+            if (this.connected && this.isConnected) {
+                if (!isAdapterStart && this.config.updateInterval > 0) {
+                    // only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
+                    const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
+                    if (lastSeen && lastSeen.val && moment().diff(lastSeen.val * 1000, 'seconds') < this.config.updateInterval) {
+                        return;
+                    }
                 }
-            }
-            for (const key in treeDefinition) {
-                let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
-                try {
-                    // if we have an own defined state which takes val from other property
-                    const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
-                    if (key && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
-                        // if we have a 'iobType' property, then it's a state
-                        let stateId = key;
-                        if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
-                            // if we have a custom state, use defined id
-                            stateId = treeDefinition[key].id;
-                        }
-                        logMsgState = '.' + `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
-                        // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
-                        // 	// not on blacklist
-                        if (!await this.objectExists(`${channel}.${stateId}`)) {
-                            // create State
-                            this.log.silly(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
-                            const obj = {
-                                type: 'state',
-                                common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
-                                native: {}
-                            };
-                            // @ts-ignore
-                            await this.setObjectAsync(`${channel}.${stateId}`, obj);
-                        }
-                        else {
-                            // update State if needed (only on adapter start)
-                            if (isAdapterStart) {
-                                const obj = await this.getObjectAsync(`${channel}.${stateId}`);
-                                const commonUpdated = await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState);
-                                if (obj && obj.common) {
-                                    if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
-                                        await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                        this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}'`);
+                for (const key in treeDefinition) {
+                    let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
+                    try {
+                        // if we have an own defined state which takes val from other property
+                        const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
+                        if (key && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+                            // if we have a 'iobType' property, then it's a state
+                            let stateId = key;
+                            if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
+                                // if we have a custom state, use defined id
+                                stateId = treeDefinition[key].id;
+                            }
+                            logMsgState = '.' + `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
+                            // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
+                            // 	// not on blacklist
+                            if (!await this.objectExists(`${channel}.${stateId}`)) {
+                                // create State
+                                this.log.silly(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
+                                const obj = {
+                                    type: 'state',
+                                    common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
+                                    native: {}
+                                };
+                                // @ts-ignore
+                                await this.setObjectAsync(`${channel}.${stateId}`, obj);
+                            }
+                            else {
+                                // update State if needed (only on adapter start)
+                                if (isAdapterStart) {
+                                    const obj = await this.getObjectAsync(`${channel}.${stateId}`);
+                                    const commonUpdated = await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState);
+                                    if (obj && obj.common) {
+                                        if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
+                                            await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
+                                            this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}'`);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (treeDefinition[key].write && treeDefinition[key].write === true) {
-                            // ToDo - Handle when device is new during runtime
-                            // state is writeable -> subscribe it
-                            this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
-                            await this.subscribeStatesAsync(`${channel}.${stateId}`);
-                        }
-                        if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
-                            const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this) : objValues[valKey];
-                            let changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
-                            if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
-                                this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
+                            if (treeDefinition[key].write && treeDefinition[key].write === true) {
+                                // ToDo - Handle when device is new during runtime
+                                // state is writeable -> subscribe it
+                                this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
+                                await this.subscribeStatesAsync(`${channel}.${stateId}`);
                             }
-                        }
-                        else {
-                            if (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
-                                // only report it if it's not a custom defined state
-                                this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
-                            }
-                        }
-                        // } else {
-                        // 	// is on blacklist
-                        // 	if (await this.objectExists(`${channel}.${stateId}`)) {
-                        // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted state '${logMsgState}'`);
-                        // 		await this.delObjectAsync(`${channel}.${stateId}`);
-                        // 	} else {
-                        // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating state '${logMsgState}', because it is on blacklist`);
-                        // 	}
-                        // }
-                    }
-                    else {
-                        // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
-                        // it's a channel from type object
-                        if (objValues[key] && objValues[key].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object')) {
-                            await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                            await this.createGenericState(`${channel}.${key}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
-                        }
-                        // it's a channel from type array
-                        if (objValues[key] && objValues[key].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
-                            if (objValues[key].length > 0) {
-                                await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                                for (let i = 0; i <= objValues[key].length - 1; i++) {
-                                    const idChannel = `${channel}.${key}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(i, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
-                                    await this.createOrUpdateChannel(idChannel, objValues[key][i][treeDefinition[key].arrayChannelNameFromProperty] || treeDefinition[key].arrayChannelNamePrefix + i || i.toString(), undefined, isAdapterStart);
-                                    await this.createGenericState(idChannel, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+                            if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
+                                const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this) : objValues[valKey];
+                                let changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+                                if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
+                                    this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                                 }
                             }
+                            else {
+                                if (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
+                                    // only report it if it's not a custom defined state
+                                    this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
+                                }
+                            }
+                            // } else {
+                            // 	// is on blacklist
+                            // 	if (await this.objectExists(`${channel}.${stateId}`)) {
+                            // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted state '${logMsgState}'`);
+                            // 		await this.delObjectAsync(`${channel}.${stateId}`);
+                            // 	} else {
+                            // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating state '${logMsgState}', because it is on blacklist`);
+                            // 	}
+                            // }
                         }
-                        // } else {
-                        // 	if (await this.objectExists(`${channel}.${id}`)) {
-                        // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted channel '${logMsgState}'`);
-                        // 		await this.delObjectAsync(`${channel}.${id}`, { recursive: true });
-                        // 	} else {
-                        // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating channel '${logMsgState}', because it is on blacklist`);
-                        // 	}
-                        // }
+                        else {
+                            // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
+                            // it's a channel from type object
+                            if (objValues[key] && objValues[key].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object')) {
+                                await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+                                await this.createGenericState(`${channel}.${key}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+                            }
+                            // it's a channel from type array
+                            if (objValues[key] && objValues[key].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+                                if (objValues[key].length > 0) {
+                                    await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+                                    for (let i = 0; i <= objValues[key].length - 1; i++) {
+                                        const idChannel = `${channel}.${key}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(i, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
+                                        await this.createOrUpdateChannel(idChannel, objValues[key][i][treeDefinition[key].arrayChannelNameFromProperty] || treeDefinition[key].arrayChannelNamePrefix + i || i.toString(), undefined, isAdapterStart);
+                                        await this.createGenericState(idChannel, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+                                    }
+                                }
+                            }
+                            // } else {
+                            // 	if (await this.objectExists(`${channel}.${id}`)) {
+                            // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted channel '${logMsgState}'`);
+                            // 		await this.delObjectAsync(`${channel}.${id}`, { recursive: true });
+                            // 	} else {
+                            // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating channel '${logMsgState}', because it is on blacklist`);
+                            // 	}
+                            // }
+                        }
                     }
-                }
-                catch (error) {
-                    this.log.error(`${logPrefix} [id: ${key}] error: ${error}, stack: ${error.stack}`);
+                    catch (error) {
+                        this.log.error(`${logPrefix} [id: ${key}] error: ${error}, stack: ${error.stack}`);
+                    }
                 }
             }
         }
@@ -508,43 +516,24 @@ class UnifiNetwork extends utils.Adapter {
         return undefined;
     }
     //#region WS Listener
-    async networkEventsListener() {
-        const logPrefix = '[onProtectEvent]:';
-        try {
-            this.ufn.on(WebSocketListener.device, (event) => this.onNetworkDeviceEvent(event));
-            this.ufn.on(WebSocketListener.client, (event) => this.onNetworkClientEvent(event));
-            this.ufn.on(WebSocketListener.events, (event) => this.onNetworkEvents(event));
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-    }
-    async onNetworkDeviceEvent(event) {
-        const logPrefix = '[onNetworkDeviceEvent]:';
+    async onNetworkEvent(event) {
+        const logPrefix = '[onNetworkEvent]:';
         try {
             this.aliveTimestamp = moment().valueOf();
-            await this.updateDevices(event.data);
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-    }
-    async onNetworkClientEvent(event) {
-        const logPrefix = '[onNetworkClientEvent]:';
-        try {
-            this.aliveTimestamp = moment().valueOf();
-            await this.updateClients(event.data);
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-    }
-    async onNetworkEvents(event) {
-        const logPrefix = '[onNetworkEvents]:';
-        try {
-            this.aliveTimestamp = moment().valueOf();
-            this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
-            // {"message":"session-metadata:sync","rc":"ok"} -> beim start
+            if (event.meta.message === WebSocketEvents.device) {
+                await this.updateDevices(event.data);
+            }
+            else if (event.meta.message === WebSocketEvents.client) {
+                await this.updateClients(event.data);
+            }
+            else if (event.meta.message === WebSocketEvents.events) {
+                this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
+            }
+            else {
+                if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+                    this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
+                }
+            }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

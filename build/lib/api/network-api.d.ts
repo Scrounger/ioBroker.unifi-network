@@ -64,13 +64,3 @@ export declare enum ApiEndpoints {
     devices = "devices",
     clients = "clients"
 }
-export declare enum WebSocketListener {
-    client = "client",
-    device = "device",
-    events = "events"
-}
-export declare enum WebSocketEvents {
-    client = "client:sync",
-    device = "device:sync",
-    events = "events"
-}
