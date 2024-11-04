@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 
 export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
@@ -27,6 +28,10 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         id: 'isOnline',
         iobType: 'boolean',
         name: 'Is client online',
+        valFromProperty: 'last_seen',
+        readVal(val: number, adapater: ioBroker.Adapter) {
+            return moment().diff(val * 1000, 'seconds') <= 92
+        }
     },
     last_seen: {
         iobType: 'number',

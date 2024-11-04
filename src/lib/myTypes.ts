@@ -39,8 +39,17 @@ export interface myCommonChannelArray {
     array: { [key: string]: myCommonState; },
 }
 
-export enum WebSocketEvents {
+export enum WebSocketEventMessages {
     client = 'client:sync',
     device = 'device:sync',
     events = 'events'
+}
+
+export enum WebSocketEventKeys {
+    clientConnected = 'EVT_WU_Connected',
+    clientDisconnected = 'EVT_WU_Disconnected',
+    clientRoamed = 'EVT_WU_Roam',
+    guestConnected = 'EVT_WG_Connected',
+    guestDisconnected = 'EVT_WG_Disconnected',
+    guestRoamed = 'EVT_WG_Roam'
 }

@@ -9,14 +9,14 @@ import moment from 'moment';
 
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
-import { NetworkEvent } from './lib/api/network-types.js';
+import { NetworkEvent, NetworkEventClient, NetworkEventDevice } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 import { NetworkClient } from './lib/api/network-types-client.js';
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
-import { WebSocketEvents, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './lib/myTypes.js';
+import { WebSocketEventKeys, WebSocketEventMessages, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './lib/myTypes.js';
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
 
@@ -32,7 +32,7 @@ class UnifiNetwork extends utils.Adapter {
 	connectionMaxRetries: number = 200;
 	connectionRetries: number = 0;
 
-	eventListener = (event: NetworkEvent) => this.onNetworkEvent(event);
+	eventListener = (event: NetworkEvent) => this.onNetworkMessage(event);
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
@@ -314,7 +314,7 @@ class UnifiNetwork extends utils.Adapter {
 				for (let client of data) {
 					// if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
 
-					this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.status`, undefined, undefined, isAdapterStart);
+					this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
 
 					await this.createGenericState(`${idChannel}.${client.mac || 'VPN - ' + client.ip}`, clientTree, client, 'clients', client, isAdapterStart);
 				}
@@ -605,24 +605,69 @@ class UnifiNetwork extends utils.Adapter {
 
 	//#region WS Listener
 
-	async onNetworkEvent(event: NetworkEvent) {
-		const logPrefix = '[onNetworkEvent]:';
+	async onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent) {
+		const logPrefix = '[onNetworkMessage]:';
 
 		try {
 			this.aliveTimestamp = moment().valueOf();
 
-			if (event.meta.message === WebSocketEvents.device) {
+			if (event.meta.message === WebSocketEventMessages.device) {
 				await this.updateDevices(event.data as NetworkDevice[]);
-			} else if (event.meta.message === WebSocketEvents.client) {
+			} else if (event.meta.message === WebSocketEventMessages.client) {
 				await this.updateClients(event.data as NetworkClient[]);
-			} else if (event.meta.message === WebSocketEvents.events) {
-				this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
+			} else if (event.meta.message === WebSocketEventMessages.events) {
+				await this.onNetworkEvent(event as NetworkEvent);
 			} else {
 				if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
 					this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
 				}
 			}
 
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async onNetworkEvent(event: NetworkEvent) {
+		const logPrefix = '[onNetworkEvent]:';
+
+		try {
+			this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
+
+			if (event && event.data) {
+				for (const myEvent of event.data) {
+					if (!(myEvent.key as string).includes('_Roam')) {
+						let mac = undefined
+						let connected = false;
+
+						if (myEvent.key === WebSocketEventKeys.clientConnected || myEvent.key === WebSocketEventKeys.clientDisconnected) {
+							mac = myEvent.user;
+							connected = myEvent.key === WebSocketEventKeys.clientConnected
+						} else if ((myEvent.key === WebSocketEventKeys.guestConnected || myEvent.key === WebSocketEventKeys.guestDisconnected)) {
+							mac = myEvent.guest;
+							connected = myEvent.key === WebSocketEventKeys.guestConnected
+						}
+
+						const id = `clients.${mac}.isOnline`;
+
+						if (await this.objectExists(id)) {
+							await this.setState(`clients.${mac}.isOnline`, connected, true);
+
+							if (await this.objectExists(`clients.${mac}`)) {
+								const obj = await this.getObjectAsync(`clients.${mac}`);
+
+								if (obj && obj.common && obj.common.name) {
+									this.log.debug(`${logPrefix} client '${obj.common.name}' (${mac}) ${connected ? 'connected' : 'disconnected'}`);
+								} else {
+									this.log.debug(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
+								}
+							} else {
+								this.log.debug(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
+							}
+						}
+					}
+				}
+			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}

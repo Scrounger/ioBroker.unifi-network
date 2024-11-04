@@ -1,10 +1,18 @@
 import { NetworkClient } from "./network-types-client.js";
 import { NetworkDevice } from "./network-types-device.js";
+export interface NetworkEventDevice {
+    meta: NetworkEventMeta;
+    data: NetworkDevice[];
+}
+export interface NetworkEventClient {
+    meta: NetworkEventMeta;
+    data: NetworkClient[];
+}
 export interface NetworkEvent {
     meta: NetworkEventMeta;
-    data: NetworkDevice[] | NetworkClient[] | Array<{
+    data: {
         [key: string]: boolean | number | object | string;
-    }>;
+    }[];
 }
 export interface NetworkEventMeta {
     message: string;

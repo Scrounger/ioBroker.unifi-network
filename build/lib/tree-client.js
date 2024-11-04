@@ -1,3 +1,4 @@
+import moment from 'moment';
 export const clientTree = {
     ap_mac: {
         iobType: 'string',
@@ -25,6 +26,10 @@ export const clientTree = {
         id: 'isOnline',
         iobType: 'boolean',
         name: 'Is client online',
+        valFromProperty: 'last_seen',
+        readVal(val, adapater) {
+            return moment().diff(val * 1000, 'seconds') <= 92;
+        }
     },
     last_seen: {
         iobType: 'number',
