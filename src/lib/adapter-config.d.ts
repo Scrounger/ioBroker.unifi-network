@@ -8,6 +8,7 @@ declare global {
 			user: string;
 			password: string;
 			updateInterval: number;
+			deviceOfflineTimeout: number;
 		}
 	}
 }

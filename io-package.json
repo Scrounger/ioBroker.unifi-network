@@ -93,7 +93,8 @@
         "host": "",
         "user": "",
         "password": "",
-        "updateInterval": 15
+        "updateInterval": 15,
+        "deviceOfflineTimeout": 92
     },
     "objects": [],
     "instanceObjects": [

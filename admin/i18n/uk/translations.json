@@ -21,5 +21,6 @@
     "WLAN SSID": "WLAN SSID",
     "uptime": "час роботи",
     "update interval": "інтервал оновлення",
-    "increase this value for low performance systems": "збільшити це значення для систем з низькою продуктивністю"
+    "increase this value for low performance systems": "збільшити це значення для систем з низькою продуктивністю",
+    "time [s] after a device is set to offline": "час [с] після того, як пристрій переведено в автономний режим"
 }

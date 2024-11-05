@@ -9,3 +9,4 @@ export declare function getAllowedCommonStates(path: any, obj: any, separator?: 
  */
 export declare function isStateCommonEqual(objCommon: ioBroker.StateCommon, myCommon: ioBroker.StateCommon): boolean;
 export declare function zeroPad(source: any, places: number): string;
+export declare function getIdWithoutLastPart(id: string): string;

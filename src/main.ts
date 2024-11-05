@@ -154,6 +154,7 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (await this.login()) {
 				await this.updateData();
+				await this.updateIsOnlineState();
 			}
 
 			// start the alive checker
@@ -231,6 +232,8 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				} else {
 					this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
+
+					this.updateIsOnlineState();
 
 					await this.setConnectionStatus(true);
 					this.connectionRetries = 0;
@@ -337,6 +340,34 @@ class UnifiNetwork extends utils.Adapter {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
+
+	async updateIsOnlineState() {
+		const logPrefix = '[updateIsOnlineState]:';
+
+		try {
+			const clients = await this.getStatesAsync('clients.*.last_seen');
+
+			for (const id in clients) {
+				const lastSeen = await this.getStateAsync(id);
+				const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
+
+				const t = moment(isOnline.lc);
+				const before = moment(lastSeen.val as number * 1000);
+				const now = moment();
+
+				if (!t.isBetween(before, now)) {
+					// isOnline not changed between now an last reported last_seen val
+					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.deviceOfflineTimeout, true);
+
+					//ToDo: Debug log message inkl. name, mac, ip
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	//#region Device, Channel, State Handlers
 
 	/**
 	 * create or update a device object, update will only be done on adapter start
@@ -504,7 +535,14 @@ class UnifiNetwork extends utils.Adapter {
 							if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
 								const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this) : objValues[valKey];
 
-								let changedObj: any = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+								let changedObj: any = undefined
+
+								if (key === 'last_seen') {
+									// set lc to last_seen value
+									changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
+								} else {
+									changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+								}
 
 								if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
 									this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
@@ -616,6 +654,8 @@ class UnifiNetwork extends utils.Adapter {
 
 		return undefined;
 	}
+
+	//#endregion
 
 	//#region WS Listener
 

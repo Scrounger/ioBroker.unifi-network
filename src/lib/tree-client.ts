@@ -30,7 +30,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'Is client online',
         valFromProperty: 'last_seen',
         readVal(val: number, adapater: ioBroker.Adapter) {
-            return moment().diff(val * 1000, 'seconds') <= 92
+            return moment().diff(val * 1000, 'seconds') <= adapater.config.deviceOfflineTimeout
         }
     },
     last_seen: {

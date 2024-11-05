@@ -28,7 +28,7 @@ export const clientTree = {
         name: 'Is client online',
         valFromProperty: 'last_seen',
         readVal(val, adapater) {
-            return moment().diff(val * 1000, 'seconds') <= 92;
+            return moment().diff(val * 1000, 'seconds') <= adapater.config.deviceOfflineTimeout;
         }
     },
     last_seen: {

@@ -21,5 +21,6 @@
     "WLAN SSID": "WLAN-SSID",
     "uptime": "Betriebszeit",
     "update interval": "Aktualisierungsintervall",
-    "increase this value for low performance systems": "Erhöhen Sie diesen Wert für Systeme mit geringer Leistung"
+    "increase this value for low performance systems": "Erhöhen Sie diesen Wert für Systeme mit geringer Leistung",
+    "time [s] after a device is set to offline": " Zeit [s] nachdem ein Gerät auf offline gesetzt wird"
 }

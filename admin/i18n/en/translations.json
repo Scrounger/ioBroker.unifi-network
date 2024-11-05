@@ -18,5 +18,6 @@
 	"WLAN SSID": "WLAN SSID",
 	"uptime": "uptime",
 	"update interval": "update interval",
-	"increase this value for low performance systems": "increase this value for low performance systems"
+	"increase this value for low performance systems": "increase this value for low performance systems",
+	"time [s] after a device is set to offline": "time [s] after a device is set to offline"
 }
