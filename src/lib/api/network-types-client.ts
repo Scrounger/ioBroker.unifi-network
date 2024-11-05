@@ -104,6 +104,7 @@ export interface NetworkClient {
     tx_retry_burst_count?: number
     type?: string
     unifi_device?: boolean
+    unifi_device_info?: UnifiDeviceInfo
     unifi_device_info_from_ucore?: UnifiDeviceUcore
     uplink_mac?: string
     uptime: number
@@ -146,6 +147,11 @@ export interface Fingerprint {
     has_override: boolean
 }
 
+export interface UnifiDeviceInfo {
+    icon_filename: string
+    icon_resolutions: number[][]
+    view_in_application: boolean
+}
 
 export interface UnifiDeviceUcore {
     computed_model: string

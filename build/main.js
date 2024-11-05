@@ -406,13 +406,13 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[createGenericState]:';
         try {
             if (this.connected && this.isConnected) {
-                if (!isAdapterStart && this.config.updateInterval > 0) {
-                    // only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
-                    const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
-                    if (lastSeen && lastSeen.val && moment().diff(lastSeen.val * 1000, 'seconds') < this.config.updateInterval) {
-                        return;
-                    }
-                }
+                // if (!isAdapterStart && this.config.updateInterval > 0) {
+                // 	// only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
+                // 	const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
+                // 	if (lastSeen && lastSeen.val && moment().diff((lastSeen.val as number) * 1000, 'seconds') < this.config.updateInterval) {
+                // 		return
+                // 	}
+                // }
                 for (const key in treeDefinition) {
                     let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
                     try {
@@ -459,7 +459,7 @@ class UnifiNetwork extends utils.Adapter {
                                 await this.subscribeStatesAsync(`${channel}.${stateId}`);
                             }
                             if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
-                                const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache) : objValues[valKey];
+                                const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
                                 let changedObj = undefined;
                                 if (key === 'last_seen') {
                                     // set lc to last_seen value

@@ -1,4 +1,4 @@
-import { NetworkClient } from "./api/network-types-client";
+import { Fingerprint, NetworkClient } from "./api/network-types-client";
 import { NetworkDevice } from "./api/network-types-device";
 
 export interface myCommonState {
@@ -18,7 +18,7 @@ export interface myCommonState {
     def?: ioBroker.StateValue,
     desc?: string,
 
-    readVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    readVal?(val: ioBroker.StateValue | Fingerprint, adapater: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
     writeVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
     valFromProperty?: string             // Take value from other property in the corresponding tree
