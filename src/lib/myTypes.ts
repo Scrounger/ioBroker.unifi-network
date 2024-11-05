@@ -18,8 +18,8 @@ export interface myCommonState {
     def?: ioBroker.StateValue,
     desc?: string,
 
-    readVal?(val: ioBroker.StateValue | Fingerprint, adapater: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
-    writeVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    readVal?(val: ioBroker.StateValue | Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
     valFromProperty?: string             // Take value from other property in the corresponding tree
     statesFromProperty?: string         // ToDo: perhaps can be removed

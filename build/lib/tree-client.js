@@ -9,7 +9,7 @@ export const clientTree = {
         iobType: 'string',
         name: 'Name of the connected access point',
         valFromProperty: 'ap_mac',
-        async readVal(val, adapater, cache, deviceOrClient) {
+        async readVal(val, adapter, cache, deviceOrClient) {
             return cache.devices[val].name ? cache.devices[val].name : null;
         },
     },
@@ -22,22 +22,23 @@ export const clientTree = {
         name: 'fingerprint',
         expert: true,
         valFromProperty: 'fingerprint',
-        readVal(val, adapater, cache, deviceOrClient) {
-            if (val && Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
-                if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
-                    return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_129x129.png`;
+        readVal(val, adapter, cache, deviceOrClient) {
+            if (val) {
+                if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
+                    if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
+                        return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_129x129.png`;
+                    }
+                    else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
+                        return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_129x129.png`;
+                    }
                 }
-                else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
-                    return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_129x129.png`;
+                else {
+                    const client = deviceOrClient;
+                    adapter.log.warn(JSON.stringify(client));
+                    if (client && client.unifi_device_info && client.unifi_device_info.icon_filename) {
+                        return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`;
+                    }
                 }
-            }
-            else {
-                // if (client.mac === 'd0:21:f9:95:d9:04') {
-                //     adapater.log.warn(JSON.stringify(client));
-                // }
-                // if (client && client.unifi_device_info && client.unifi_device_info.icon_filename) {
-                //     return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`
-                // }
             }
             return null;
         }
@@ -51,8 +52,8 @@ export const clientTree = {
         iobType: 'boolean',
         name: 'Is client online',
         valFromProperty: 'last_seen',
-        readVal(val, adapater, cache, deviceOrClient) {
-            return moment().diff(val * 1000, 'seconds') <= adapater.config.deviceOfflineTimeout;
+        readVal(val, adapter, cache, deviceOrClient) {
+            return moment().diff(val * 1000, 'seconds') <= adapter.config.deviceOfflineTimeout;
         }
     },
     last_seen: {

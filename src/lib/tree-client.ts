@@ -13,7 +13,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'Name of the connected access point',
         valFromProperty: 'ap_mac',
-        async readVal(val: string, adapater: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+        async readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
             return cache.devices[val].name ? cache.devices[val].name : null
         },
     },
@@ -26,21 +26,32 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'fingerprint',
         expert: true,
         valFromProperty: 'fingerprint',
-        readVal(val: Fingerprint, adapater: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-            if (val && Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
-                if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
-                    return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_129x129.png`
-                } else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
-                    return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_129x129.png`
+        readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            if (val) {
+                if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
+                    if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
+                        return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_129x129.png`
+                    } else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
+                        return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_129x129.png`
+                    }
+                } else {
+                    //@ts-ignore
+                    if (deviceOrClient.unifi_device_info) {
+                        //@ts-ignore
+                        adapter.log.warn(`${deviceOrClient.name} ${deviceOrClient.fingerprint}`);
+                    }
                 }
             } else {
                 // if (client.mac === 'd0:21:f9:95:d9:04') {
-                //     adapater.log.warn(JSON.stringify(client));
+                //     adapter.log.warn(JSON.stringify(client));
                 // }
 
                 // if (client && client.unifi_device_info && client.unifi_device_info.icon_filename) {
                 //     return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`
                 // }
+
+                //@ts-ignore
+
             }
             return null;
         }
@@ -54,8 +65,8 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'Is client online',
         valFromProperty: 'last_seen',
-        readVal(val: number, adapater: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-            return moment().diff(val * 1000, 'seconds') <= adapater.config.deviceOfflineTimeout
+        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            return moment().diff(val * 1000, 'seconds') <= adapter.config.deviceOfflineTimeout
         }
     },
     last_seen: {
