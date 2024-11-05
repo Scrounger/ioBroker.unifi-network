@@ -1,3 +1,6 @@
+import { NetworkClient } from "./api/network-types-client";
+import { NetworkDevice } from "./api/network-types-device";
+
 export interface myCommonState {
     id?: string,
     iobType: ioBroker.CommonType,
@@ -15,8 +18,8 @@ export interface myCommonState {
     def?: ioBroker.StateValue,
     desc?: string,
 
-    readVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter): ioBroker.StateValue | Promise<ioBroker.StateValue>,
-    writeVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    readVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    writeVal?(val: ioBroker.StateValue, adapater: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
     valFromProperty?: string             // Take value from other property in the corresponding tree
     statesFromProperty?: string         // ToDo: perhaps can be removed
@@ -49,7 +52,15 @@ export enum WebSocketEventKeys {
     clientConnected = 'EVT_WU_Connected',
     clientDisconnected = 'EVT_WU_Disconnected',
     clientRoamed = 'EVT_WU_Roam',
+    clientRoamedRadio = 'EVT_WU_RoamRadio',
     guestConnected = 'EVT_WG_Connected',
     guestDisconnected = 'EVT_WG_Disconnected',
-    guestRoamed = 'EVT_WG_Roam'
+    guestRoamed = 'EVT_WG_Roam',
+    guestRoamedRadio = 'EVT_WG_RoamRadio',
+}
+
+export interface myCache {
+    devices: { [key: string]: NetworkDevice; },
+    clients: { [key: string]: NetworkClient; },
+    vpn: { [key: string]: NetworkClient; }
 }

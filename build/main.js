@@ -21,6 +21,11 @@ class UnifiNetwork extends utils.Adapter {
     aliveTimestamp = moment().valueOf();
     connectionMaxRetries = 200;
     connectionRetries = 0;
+    cache = {
+        devices: {},
+        clients: {},
+        vpn: {}
+    };
     eventListener = (event) => this.onNetworkMessage(event);
     constructor(options = {}) {
         super({
@@ -247,6 +252,7 @@ class UnifiNetwork extends utils.Adapter {
                     this.log.info(`${logPrefix} Discovered ${data.length} devices`);
                 for (let device of data) {
                     // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                    this.cache.devices[device.mac] = device;
                     this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, DeviceImages[device.model] || undefined, isAdapterStart);
                     await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
                 }
@@ -264,13 +270,17 @@ class UnifiNetwork extends utils.Adapter {
                 if (isAdapterStart)
                     this.log.info(`${logPrefix} Discovered ${data.length} clients`);
                 for (let client of data) {
-                    // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${client.name} (IP: ${client.ip}, mac: ${client.mac}, state: ${client.status})`);
+                    const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
                     if (client.mac) {
-                        this.createOrUpdateDevice(`${idChannel}.${client.mac}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                        this.cache.clients[client.mac] = client;
+                        this.cache.clients[client.mac].name = name;
+                        this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
                         await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
                     }
                     else {
                         if (client.type === 'VPN' && client.ip) {
+                            this.cache.vpn[client.ip] = client;
+                            this.cache.vpn[client.ip].name = name;
                             const idVpnChannel = 'vpn';
                             const preparedIp = client.ip.replaceAll('.', '_');
                             this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
@@ -449,7 +459,7 @@ class UnifiNetwork extends utils.Adapter {
                                 await this.subscribeStatesAsync(`${channel}.${stateId}`);
                             }
                             if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
-                                const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this) : objValues[valKey];
+                                const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache) : objValues[valKey];
                                 let changedObj = undefined;
                                 if (key === 'last_seen') {
                                     // set lc to last_seen value
@@ -575,7 +585,7 @@ class UnifiNetwork extends utils.Adapter {
             }
             else {
                 if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
-                    this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
+                    this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
                 }
             }
         }
@@ -601,23 +611,26 @@ class UnifiNetwork extends utils.Adapter {
                         }
                         const id = `clients.${mac}.isOnline`;
                         if (await this.objectExists(id)) {
-                            await this.setState(`clients.${mac}.isOnline`, connected, true);
-                            if (await this.objectExists(`clients.${mac}`)) {
-                                const obj = await this.getObjectAsync(`clients.${mac}`);
-                                if (obj && obj.common && obj.common.name) {
-                                    this.log.debug(`${logPrefix} client '${obj.common.name}' (${mac}) ${connected ? 'connected' : 'disconnected'}`);
-                                }
-                                else {
-                                    this.log.debug(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
-                                }
-                            }
-                            else {
-                                this.log.info(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
-                            }
+                            await this.setState(id, connected, true);
+                            this.log.info(`${logPrefix} client '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip})` : ''}`);
                         }
                     }
-                    else if (myEvent.key.includes('_Roam')) {
-                        // ToDo -> debug log
+                    else if (myEvent.key.includes(WebSocketEventKeys.clientRoamed) || myEvent.key.includes(WebSocketEventKeys.guestRoamed)) {
+                        let mac = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user : myEvent.guest;
+                        if (myEvent.ap_from && myEvent.ap_to) {
+                            this.log.debug(`${logPrefix} client '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to].name}' (mac: ${myEvent.ap_to})`);
+                            const idApName = `clients.${mac}.ap_name`;
+                            if (await this.objectExists(idApName)) {
+                                await this.setState(idApName, this.cache.devices[myEvent.ap_to].name ? this.cache.devices[myEvent.ap_to].name : null, true);
+                            }
+                            const ipApMac = `clients.${mac}.ap_mac`;
+                            if (await this.objectExists(ipApMac)) {
+                                await this.setState(ipApMac, myEvent.ap_to ? myEvent.ap_to : null, true);
+                            }
+                        }
+                        else {
+                            this.log.warn(`${logPrefix} roam event has no ap information! (data: ${JSON.stringify(event.data)})`);
+                        }
                     }
                     else {
                         this.log.error(`${logPrefix} not implemented event. meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)}`);

@@ -9,9 +9,8 @@ export const clientTree = {
         iobType: 'string',
         name: 'Name of the connected access point',
         valFromProperty: 'ap_mac',
-        async readVal(val, adapater) {
-            const apName = await adapater.getStateAsync(`devices.${val}.name`);
-            return apName && apName.val ? apName.val : null;
+        async readVal(val, adapater, cache) {
+            return cache.devices[val].name ? cache.devices[val].name : null;
         },
     },
     essid: {
@@ -27,7 +26,7 @@ export const clientTree = {
         iobType: 'boolean',
         name: 'Is client online',
         valFromProperty: 'last_seen',
-        readVal(val, adapater) {
+        readVal(val, adapater, cache) {
             return moment().diff(val * 1000, 'seconds') <= adapater.config.deviceOfflineTimeout;
         }
     },

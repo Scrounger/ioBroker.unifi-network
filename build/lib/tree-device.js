@@ -4,7 +4,7 @@ export const deviceTree = {
         iobType: 'boolean',
         name: 'device reported errors',
         valFromProperty: 'state',
-        readVal(val, adapater) {
+        readVal(val, adapater, cache) {
             return val === 6 || val === 9;
         },
     },
@@ -17,7 +17,7 @@ export const deviceTree = {
         iobType: 'boolean',
         name: 'Is device online',
         valFromProperty: 'state',
-        readVal(val, adapater) {
+        readVal(val, adapater, cache) {
             return val !== 0 && val !== 6 && val !== 9;
         },
     },
@@ -66,21 +66,21 @@ export const deviceTree = {
             cpu: {
                 iobType: 'number',
                 unit: '%',
-                readVal(val, adapater) {
+                readVal(val, adapater, cache) {
                     return parseFloat(val);
                 },
             },
             mem: {
                 iobType: 'number',
                 unit: '%',
-                readVal(val, adapater) {
+                readVal(val, adapater, cache) {
                     return parseFloat(val);
                 },
             },
             uptime: {
                 iobType: 'number',
                 unit: 's',
-                readVal(val, adapater) {
+                readVal(val, adapater, cache) {
                     return parseFloat(val);
                 },
             },
@@ -99,7 +99,7 @@ export const deviceTree = {
                 iobType: 'number',
                 name: 'value',
                 unit: '°C',
-                readVal: function (val, adapater) {
+                readVal: function (val, adapater, cache) {
                     return Math.round(val * 10) / 10;
                 },
             },

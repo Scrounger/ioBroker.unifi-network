@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
+import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 
 export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
     ap_mac: {
@@ -11,9 +11,8 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'Name of the connected access point',
         valFromProperty: 'ap_mac',
-        async readVal(val: string, adapater: ioBroker.Adapter) {
-            const apName = await adapater.getStateAsync(`devices.${val}.name`);
-            return apName && apName.val ? apName.val : null
+        async readVal(val: string, adapater: ioBroker.Adapter, cache: myCache) {
+            return cache.devices[val].name ? cache.devices[val].name : null
         },
     },
     essid: {
@@ -29,7 +28,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'Is client online',
         valFromProperty: 'last_seen',
-        readVal(val: number, adapater: ioBroker.Adapter) {
+        readVal(val: number, adapater: ioBroker.Adapter, cache: myCache) {
             return moment().diff(val * 1000, 'seconds') <= adapater.config.deviceOfflineTimeout
         }
     },

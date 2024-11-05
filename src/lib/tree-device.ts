@@ -1,4 +1,4 @@
-import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
+import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 
 export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
     hasError: {
@@ -6,7 +6,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'device reported errors',
         valFromProperty: 'state',
-        readVal(val: number, adapater: ioBroker.Adapter) {
+        readVal(val: number, adapater: ioBroker.Adapter, cache: myCache) {
             return val === 6 || val === 9
         },
     },
@@ -19,7 +19,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'Is device online',
         valFromProperty: 'state',
-        readVal(val: number, adapater: ioBroker.Adapter) {
+        readVal(val: number, adapater: ioBroker.Adapter, cache: myCache) {
             return val !== 0 && val !== 6 && val !== 9
         },
     },
@@ -68,7 +68,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             cpu: {
                 iobType: 'number',
                 unit: '%',
-                readVal(val: string, adapater: ioBroker.Adapter) {
+                readVal(val: string, adapater: ioBroker.Adapter, cache: myCache) {
                     return parseFloat(val);
                 },
 
@@ -76,14 +76,14 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             mem: {
                 iobType: 'number',
                 unit: '%',
-                readVal(val: string, adapater: ioBroker.Adapter) {
+                readVal(val: string, adapater: ioBroker.Adapter, cache: myCache) {
                     return parseFloat(val);
                 },
             },
             uptime: {
                 iobType: 'number',
                 unit: 's',
-                readVal(val: string, adapater: ioBroker.Adapter) {
+                readVal(val: string, adapater: ioBroker.Adapter, cache: myCache) {
                     return parseFloat(val);
                 },
             },
@@ -102,7 +102,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 iobType: 'number',
                 name: 'value',
                 unit: '°C',
-                readVal: function (val: number, adapater: ioBroker.Adapter) {
+                readVal: function (val: number, adapater: ioBroker.Adapter, cache: myCache) {
                     return Math.round(val * 10) / 10;
                 },
             },
