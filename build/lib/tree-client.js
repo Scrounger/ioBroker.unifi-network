@@ -24,19 +24,16 @@ export const clientTree = {
         valFromProperty: 'fingerprint',
         readVal(val, adapter, cache, deviceOrClient) {
             if (val) {
-                if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
+                const client = deviceOrClient;
+                if (client.unifi_device_info && client.unifi_device_info.icon_filename) {
+                    return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`;
+                }
+                else if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
                     if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
                         return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_129x129.png`;
                     }
                     else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
                         return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_129x129.png`;
-                    }
-                }
-                else {
-                    const client = deviceOrClient;
-                    adapter.log.warn(JSON.stringify(client));
-                    if (client && client.unifi_device_info && client.unifi_device_info.icon_filename) {
-                        return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`;
                     }
                 }
             }

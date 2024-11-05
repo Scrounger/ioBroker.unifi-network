@@ -28,30 +28,16 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         valFromProperty: 'fingerprint',
         readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
             if (val) {
-                if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
+                const client = deviceOrClient as NetworkClient;
+                if (client.unifi_device_info && client.unifi_device_info.icon_filename) {
+                    return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`
+                } else if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
                     if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
                         return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_129x129.png`
                     } else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
                         return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_129x129.png`
                     }
-                } else {
-                    //@ts-ignore
-                    if (deviceOrClient.unifi_device_info) {
-                        //@ts-ignore
-                        adapter.log.warn(`${deviceOrClient.name} ${deviceOrClient.fingerprint}`);
-                    }
                 }
-            } else {
-                // if (client.mac === 'd0:21:f9:95:d9:04') {
-                //     adapter.log.warn(JSON.stringify(client));
-                // }
-
-                // if (client && client.unifi_device_info && client.unifi_device_info.icon_filename) {
-                //     return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_129x129.png`
-                // }
-
-                //@ts-ignore
-
             }
             return null;
         }
