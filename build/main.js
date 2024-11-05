@@ -586,10 +586,9 @@ class UnifiNetwork extends utils.Adapter {
     async onNetworkEvent(event) {
         const logPrefix = '[onNetworkEvent]:';
         try {
-            this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
             if (event && event.data) {
                 for (const myEvent of event.data) {
-                    if (!myEvent.key.includes('_Roam')) {
+                    if (myEvent.key.includes('_Connected') || myEvent.key.includes('_Disconnected')) {
                         let mac = undefined;
                         let connected = false;
                         if (myEvent.key === WebSocketEventKeys.clientConnected || myEvent.key === WebSocketEventKeys.clientDisconnected) {
@@ -613,9 +612,15 @@ class UnifiNetwork extends utils.Adapter {
                                 }
                             }
                             else {
-                                this.log.debug(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
+                                this.log.info(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
                             }
                         }
+                    }
+                    else if (myEvent.key.includes('_Roam')) {
+                        // ToDo -> debug log
+                    }
+                    else {
+                        this.log.error(`${logPrefix} not implemented event. meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)}`);
                     }
                 }
             }

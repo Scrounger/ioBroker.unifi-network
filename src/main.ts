@@ -686,11 +686,11 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onNetworkEvent]:';
 
 		try {
-			this.log.error(JSON.stringify(event.meta) + ' - ' + JSON.stringify(event.data));
+
 
 			if (event && event.data) {
 				for (const myEvent of event.data) {
-					if (!(myEvent.key as string).includes('_Roam')) {
+					if ((myEvent.key as string).includes('_Connected') || (myEvent.key as string).includes('_Disconnected')) {
 						let mac = undefined
 						let connected = false;
 
@@ -716,9 +716,13 @@ class UnifiNetwork extends utils.Adapter {
 									this.log.debug(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
 								}
 							} else {
-								this.log.debug(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
+								this.log.info(`${logPrefix} client '${mac}' ${connected ? 'connected' : 'disconnected'}`);
 							}
 						}
+					} else if ((myEvent.key as string).includes('_Roam')) {
+						// ToDo -> debug log
+					} else {
+						this.log.error(`${logPrefix} not implemented event. meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)}`);
 					}
 				}
 			}
