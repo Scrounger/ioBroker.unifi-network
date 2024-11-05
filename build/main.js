@@ -5,6 +5,7 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
+import { FetchError, context } from '@adobe/fetch';
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
@@ -241,6 +242,7 @@ class UnifiNetwork extends utils.Adapter {
             this.createOrUpdateChannel('clients', 'clients', undefined, true);
             this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
             await this.updateClients(await this.ufn.getClients(), true);
+            setTimeout(() => { this.updateClientsImages(); }, 30 * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -309,7 +311,7 @@ class UnifiNetwork extends utils.Adapter {
                 const now = moment();
                 if (!t.isBetween(before, now)) {
                     // isOnline not changed between now an last reported last_seen val
-                    await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.deviceOfflineTimeout, true);
+                    await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.clientOfflineTimeout, true);
                     //ToDo: Debug log message inkl. name, mac, ip
                 }
             }
@@ -318,11 +320,61 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateImages() {
-        const logPrefix = '[updateImages]:';
+    async updateClientsImages() {
+        const logPrefix = '[updateClientsImages]:';
         try {
-            const clients = await this.getStatesAsync('clients.*.imageUrl');
-            for (const id in clients) {
+            if (this.config.clientImageDownload) {
+                const clients = await this.getStatesAsync('clients.*.imageUrl');
+                let imgCache = {};
+                for (const id in clients) {
+                    const url = await this.getStateAsync(id);
+                    if (url && url.val && url.val !== null) {
+                        if (imgCache[url.val]) {
+                            imgCache[url.val].push(myHelper.getIdWithoutLastPart(id));
+                        }
+                        else {
+                            imgCache[url.val] = [myHelper.getIdWithoutLastPart(id)];
+                        }
+                    }
+                }
+                const fetch = context({
+                    alpnProtocols: ["h2" /* ALPNProtocol.ALPN_HTTP2 */],
+                    rejectUnauthorized: false,
+                    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+                }).fetch;
+                for (const url in imgCache) {
+                    try {
+                        const response = await fetch(url, { follow: 0 });
+                        if (response.status === 200) {
+                            const imageBuffer = Buffer.from(await response.arrayBuffer());
+                            const imageBase64 = imageBuffer.toString('base64');
+                            const base64ImgString = `data:image/png;base64,` + imageBase64;
+                            this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(imgCache[url])}`);
+                            for (const idChannel of imgCache[url]) {
+                                await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+                                this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+                                // Subscribe imageUrl to detect realtime changes on images
+                                await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
+                            }
+                        }
+                        else {
+                            this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+                        }
+                    }
+                    catch (error) {
+                        const mac = myHelper.getIdLastPart(imgCache[url][0]);
+                        if (error instanceof FetchError) {
+                            this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
+                            for (const idChannel of imgCache[url]) {
+                                // Subscribe imageUrl to detect realtime changes on images, also on error otherwise we get no updates
+                                await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
+                            }
+                        }
+                        else {
+                            this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
+                        }
+                    }
+                }
             }
         }
         catch (error) {
@@ -342,9 +394,9 @@ class UnifiNetwork extends utils.Adapter {
     async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
-            const i18n = utils.I18n.getTranslatedObject(name);
+            const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
             let common = {
-                name: Object.keys(i18n).length > 1 ? i18n : name,
+                name: name && Object.keys(i18n).length > 1 ? i18n : name,
                 icon: icon,
                 statusStates: {
                     onlineId: onlineId
@@ -388,9 +440,9 @@ class UnifiNetwork extends utils.Adapter {
     async createOrUpdateChannel(id, name, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
-            const i18n = utils.I18n.getTranslatedObject(name);
+            const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
             let common = {
-                name: Object.keys(i18n).length > 1 ? i18n : name,
+                name: name && Object.keys(i18n).length > 1 ? i18n : name,
                 icon: icon
             };
             if (!await this.objectExists(id)) {
@@ -433,7 +485,9 @@ class UnifiNetwork extends utils.Adapter {
                     try {
                         // if we have an own defined state which takes val from other property
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
-                        if (key && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty'))) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+                        if (key
+                            && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty')))
+                            && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
                             // if we have a 'iobType' property, then it's a state
                             let stateId = key;
                             if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {

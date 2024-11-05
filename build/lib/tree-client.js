@@ -55,7 +55,7 @@ export const clientTree = {
         name: 'Is client online',
         valFromProperty: 'last_seen',
         readVal(val, adapter, cache, deviceOrClient) {
-            return moment().diff(val * 1000, 'seconds') <= adapter.config.deviceOfflineTimeout;
+            return moment().diff(val * 1000, 'seconds') <= adapter.config.clientOfflineTimeout;
         }
     },
     last_seen: {

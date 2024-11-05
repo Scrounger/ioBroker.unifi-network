@@ -52,7 +52,7 @@
 					"sm": 12,
 					"md": 3
 				},
-				"deviceOfflineTimeout": {
+				"clientOfflineTimeout": {
 					"type": "number",
 					"label": "time [s] after a device is set to offline",
 					"help": "increase this value for low performance systems",
@@ -61,6 +61,12 @@
 					"step": 1,
 					"sm": 12,
 					"md": 3
+				},
+				"clientImageDownload": {
+					"type": "checkbox",
+					"label": "download client images",
+					"sm": 12,
+					"md": 2
 				}
 			}
 		}

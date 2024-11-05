@@ -6,6 +6,7 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
+import { ALPNProtocol, FetchError, context } from '@adobe/fetch';
 
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
@@ -16,9 +17,10 @@ import { NetworkClient } from './lib/api/network-types-client.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { DeviceImages } from './lib/images-device.js';
-import { WebSocketEventKeys, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './lib/myTypes.js';
+import { WebSocketEventKeys, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache } from './lib/myTypes.js';
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
+
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -293,6 +295,8 @@ class UnifiNetwork extends utils.Adapter {
 			this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
 			await this.updateClients(await this.ufn.getClients(), true);
 
+			setTimeout(() => { this.updateClientsImages(); }, this.config.updateInterval * 2);
+
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
@@ -378,7 +382,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (!t.isBetween(before, now)) {
 					// isOnline not changed between now an last reported last_seen val
-					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.deviceOfflineTimeout, true);
+					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.clientOfflineTimeout, true);
 
 					//ToDo: Debug log message inkl. name, mac, ip
 				}
@@ -388,16 +392,74 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateImages() {
-		const logPrefix = '[updateImages]:';
+	async updateClientsImages() {
+		const logPrefix = '[updateClientsImages]:';
 
 		try {
-			const clients = await this.getStatesAsync('clients.*.imageUrl');
+			if (this.config.clientImageDownload) {
 
-			for (const id in clients) {
+				const clients = await this.getStatesAsync('clients.*.imageUrl');
 
+				let imgCache: myImgCache = {}
+
+				for (const id in clients) {
+					const url = await this.getStateAsync(id);
+
+					if (url && url.val && url.val !== null) {
+						if (imgCache[url.val as string]) {
+							imgCache[url.val as string].push(myHelper.getIdWithoutLastPart(id))
+						} else {
+							imgCache[url.val as string] = [myHelper.getIdWithoutLastPart(id)]
+						}
+					}
+				}
+
+				const fetch = context(
+					{
+						alpnProtocols: [ALPNProtocol.ALPN_HTTP2],
+						rejectUnauthorized: false,
+						userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+					}
+				).fetch;
+
+				for (const url in imgCache) {
+					try {
+						const response = await fetch(url, { follow: 0 });
+
+						if (response.status === 200) {
+							const imageBuffer = Buffer.from(await response.arrayBuffer());
+							const imageBase64 = imageBuffer.toString('base64');
+							const base64ImgString = `data:image/png;base64,` + imageBase64;
+
+							this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(imgCache[url])}`);
+
+							for (const idChannel of imgCache[url]) {
+								await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+
+								this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+
+								// Subscribe imageUrl to detect realtime changes on images
+								await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
+							}
+						} else {
+							this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+						}
+					} catch (error: any) {
+						const mac = myHelper.getIdLastPart(imgCache[url][0]);
+
+						if (error instanceof FetchError) {
+							this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
+
+							for (const idChannel of imgCache[url]) {
+								// Subscribe imageUrl to detect realtime changes on images, also on error otherwise we get no updates
+								await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
+							}
+						} else {
+							this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
+						}
+					}
+				}
 			}
-
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
@@ -415,14 +477,14 @@ class UnifiNetwork extends utils.Adapter {
 	 * @param icon 
 	 * @param isAdapterStart
 	 */
-	private async createOrUpdateDevice(id: string, name: string, onlineId: string, errorId: string = undefined, icon: string = undefined, isAdapterStart: boolean = false): Promise<void> {
+	private async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string = undefined, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[createOrUpdateDevice]:';
 
 		try {
-			const i18n = utils.I18n.getTranslatedObject(name);
+			const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
 
 			let common = {
-				name: Object.keys(i18n).length > 1 ? i18n : name,
+				name: name && Object.keys(i18n).length > 1 ? i18n : name,
 				icon: icon,
 				statusStates: {
 					onlineId: onlineId
@@ -469,10 +531,10 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[createOrUpdateChannel]:';
 
 		try {
-			const i18n = utils.I18n.getTranslatedObject(name);
+			const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
 
 			let common = {
-				name: Object.keys(i18n).length > 1 ? i18n : name,
+				name: name && Object.keys(i18n).length > 1 ? i18n : name,
 				icon: icon
 			};
 

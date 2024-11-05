@@ -22,5 +22,7 @@
     "uptime": "время безотказной работы",
     "update interval": "интервал обновления",
     "increase this value for low performance systems": "увеличьте это значение для систем с низкой производительностью",
-    "time [s] after a device is set to offline": "время [с] после перевода устройства в автономный режим"
+    "time [s] after a device is set to offline": "время [с] после перевода устройства в автономный режим",
+    "base64 image": "изображение в формате base64",
+    "download client images": "скачать изображения клиента"
 }

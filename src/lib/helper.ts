@@ -1,16 +1,16 @@
 import _ from "lodash";
 
 export function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
-    return _.isEqual(objCommon.name, myCommon.name) &&
-        objCommon.icon == myCommon.icon &&
+    return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
+        (!myCommon.icon || objCommon.icon === myCommon.icon) &&
         objCommon.desc === myCommon.desc &&
         objCommon.role === myCommon.role &&
         _.isEqual(objCommon.statusStates, myCommon.statusStates)
 }
 
 export function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean {
-    return _.isEqual(objCommon.name, myCommon.name) &&
-        objCommon.icon == myCommon.icon &&
+    return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
+        (!myCommon.icon || objCommon.icon === myCommon.icon) &&
         objCommon.desc === myCommon.desc &&
         objCommon.role === myCommon.role
 }
@@ -60,7 +60,22 @@ export function zeroPad(source: any, places: number): string {
     return Array(+(zero > 0 && zero)).join('0') + source;
 }
 
+/**
+ * Id without last part
+ * @param id 
+ * @returns 
+ */
 export function getIdWithoutLastPart(id: string) {
     const lastIndex = id.lastIndexOf('.');
     return id.substring(0, lastIndex);
+}
+
+/**
+ * last part of id
+ * @param id 
+ * @returns 
+ */
+export function getIdLastPart(id: string): string {
+    let result = id.split('.').pop();
+    return result ? result : "";
 }

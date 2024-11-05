@@ -70,3 +70,6 @@ export interface myCache {
         [key: string]: NetworkClient;
     };
 }
+export interface myImgCache {
+    [key: string]: string[];
+}

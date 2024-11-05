@@ -64,3 +64,7 @@ export interface myCache {
     clients: { [key: string]: NetworkClient; },
     vpn: { [key: string]: NetworkClient; }
 }
+
+export interface myImgCache {
+    [key: string]: string[]
+}

@@ -22,5 +22,7 @@
     "uptime": "tiempo de actividad",
     "update interval": "intervalo de actualización",
     "increase this value for low performance systems": "aumentar este valor para sistemas de bajo rendimiento",
-    "time [s] after a device is set to offline": "tiempo [s] después de que un dispositivo se configura como fuera de línea"
+    "time [s] after a device is set to offline": "tiempo [s] después de que un dispositivo se configura como fuera de línea",
+    "base64 image": "imagen base64",
+    "download client images": "descargar imágenes del cliente"
 }

@@ -22,5 +22,7 @@
     "uptime": "uptime",
     "update interval": "update-interval",
     "increase this value for low performance systems": "verhoog deze waarde voor systemen met lage prestaties",
-    "time [s] after a device is set to offline": "tijd [s] nadat een apparaat offline is gezet"
+    "time [s] after a device is set to offline": "tijd [s] nadat een apparaat offline is gezet",
+    "base64 image": "base64 afbeelding",
+    "download client images": "clientafbeeldingen downloaden"
 }
