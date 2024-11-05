@@ -19,7 +19,7 @@ export const clientTree = {
     },
     imageUrl: {
         iobType: 'string',
-        name: 'fingerprint',
+        name: 'imageUrl',
         expert: true,
         valFromProperty: 'fingerprint',
         readVal(val, adapter, cache, deviceOrClient) {
@@ -39,6 +39,11 @@ export const clientTree = {
             }
             return null;
         }
+    },
+    image: {
+        id: 'image',
+        iobType: 'string',
+        name: 'base64 image'
     },
     ip: {
         iobType: 'string',

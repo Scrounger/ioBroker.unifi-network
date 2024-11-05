@@ -440,6 +440,7 @@ export class NetworkApi extends EventEmitter {
     }
 
     public getApiEndpoint(endpoint: ApiEndpoints): string {
+        //https://ubntwiki.com/products/software/unifi-controller/api
 
         let endpointSuffix;
         let endpointPrefix = '/proxy/network/api/';

@@ -39,6 +39,7 @@ class UnifiNetwork extends utils.Adapter {
         // this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
+    //#region adapter methods
     /**
      * Is called when databases are connected and adapter received configuration.
      */
@@ -122,6 +123,7 @@ class UnifiNetwork extends utils.Adapter {
     // 		}
     // 	}
     // }
+    //#endregion
     //#region Establish Connection
     /**
      * Establish Connection to NVR and starting the alive checker
@@ -230,6 +232,7 @@ class UnifiNetwork extends utils.Adapter {
         }
     }
     //#endregion
+    //#region updateData
     async updateData() {
         const logPrefix = '[updateData]:';
         try {
@@ -315,6 +318,18 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
+    async updateImages() {
+        const logPrefix = '[updateImages]:';
+        try {
+            const clients = await this.getStatesAsync('clients.*.imageUrl');
+            for (const id in clients) {
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    //#endregion
     //#region Device, Channel, State Handlers
     /**
      * create or update a device object, update will only be done on adapter start
@@ -418,7 +433,7 @@ class UnifiNetwork extends utils.Adapter {
                     try {
                         // if we have an own defined state which takes val from other property
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
-                        if (key && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+                        if (key && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty'))) && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
                             // if we have a 'iobType' property, then it's a state
                             let stateId = key;
                             if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {

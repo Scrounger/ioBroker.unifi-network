@@ -23,7 +23,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
     },
     imageUrl: {
         iobType: 'string',
-        name: 'fingerprint',
+        name: 'imageUrl',
         expert: true,
         valFromProperty: 'fingerprint',
         readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
@@ -41,6 +41,11 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
             }
             return null;
         }
+    },
+    image: {
+        id: 'image',
+        iobType: 'string',
+        name: 'base64 image'
     },
     ip: {
         iobType: 'string',
