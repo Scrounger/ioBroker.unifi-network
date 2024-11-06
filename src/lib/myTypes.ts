@@ -23,6 +23,7 @@ export interface myCommonState {
 
     valFromProperty?: string             // Take value from other property in the corresponding tree
     statesFromProperty?: string         // ToDo: perhaps can be removed
+    subscribeMe?: true                   // subscribe
 }
 
 export interface myCommoneChannelObject {

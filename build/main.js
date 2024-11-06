@@ -20,6 +20,7 @@ class UnifiNetwork extends utils.Adapter {
     aliveInterval = 30;
     aliveTimeout = undefined;
     aliveTimestamp = moment().valueOf();
+    imageUpdateTimeout;
     connectionMaxRetries = 200;
     connectionRetries = 0;
     cache = {
@@ -69,8 +70,8 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onUnload]:';
         try {
             this.removeListener('message', this.eventListener);
-            if (this.aliveTimeout)
-                clearTimeout(this.aliveTimeout);
+            this.clearTimeout(this.aliveTimeout);
+            this.clearTimeout(this.imageUpdateTimeout);
             if (this.ufn) {
                 this.ufn.logout();
                 this.setConnectionStatus(false);
@@ -139,10 +140,10 @@ class UnifiNetwork extends utils.Adapter {
             }
             // start the alive checker
             if (this.aliveTimeout) {
-                clearTimeout(this.aliveTimeout);
+                this.clearTimeout(this.aliveTimeout);
                 this.aliveTimeout = null;
             }
-            this.aliveTimeout = setTimeout(() => {
+            this.aliveTimeout = this.setTimeout(() => {
                 this.aliveChecker();
             }, this.aliveInterval * 1000);
         }
@@ -206,10 +207,10 @@ class UnifiNetwork extends utils.Adapter {
                     await this.setConnectionStatus(true);
                     this.connectionRetries = 0;
                     if (this.aliveTimeout) {
-                        clearTimeout(this.aliveTimeout);
+                        this.clearTimeout(this.aliveTimeout);
                         this.aliveTimeout = null;
                     }
-                    this.aliveTimeout = setTimeout(() => {
+                    this.aliveTimeout = this.setTimeout(() => {
                         this.aliveChecker();
                     }, this.aliveInterval * 1000);
                 }
@@ -242,7 +243,7 @@ class UnifiNetwork extends utils.Adapter {
             this.createOrUpdateChannel('clients', 'clients', undefined, true);
             this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
             await this.updateClients(await this.ufn.getClients(), true);
-            setTimeout(() => { this.updateClientsImages(); }, 30 * 1000);
+            this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.updateInterval * 2 * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -481,7 +482,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 for (const key in treeDefinition) {
-                    let logMsgState = '.' + `${channel}.${key}`.split('.')?.slice(1)?.join('.');
+                    let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
                     try {
                         // if we have an own defined state which takes val from other property
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
@@ -494,7 +495,7 @@ class UnifiNetwork extends utils.Adapter {
                                 // if we have a custom state, use defined id
                                 stateId = treeDefinition[key].id;
                             }
-                            logMsgState = '.' + `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
+                            logMsgState = `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
                             // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
                             // 	// not on blacklist
                             if (!await this.objectExists(`${channel}.${stateId}`)) {
@@ -523,6 +524,7 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             if (treeDefinition[key].write && treeDefinition[key].write === true) {
                                 // ToDo - Handle when device is new during runtime
+                                // ToDo - types 'subscribeMe' regcognation
                                 // state is writeable -> subscribe it
                                 this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
                                 await this.subscribeStatesAsync(`${channel}.${stateId}`);
