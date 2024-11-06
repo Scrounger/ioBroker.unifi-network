@@ -25,6 +25,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'imageUrl',
         expert: true,
+        subscribeMe: true,
         valFromProperty: 'fingerprint',
         readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
             if (val) {

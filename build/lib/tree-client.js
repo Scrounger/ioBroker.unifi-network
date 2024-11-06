@@ -21,6 +21,7 @@ export const clientTree = {
         iobType: 'string',
         name: 'imageUrl',
         expert: true,
+        subscribeMe: true,
         valFromProperty: 'fingerprint',
         readVal(val, adapter, cache, deviceOrClient) {
             if (val) {

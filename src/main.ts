@@ -42,6 +42,8 @@ class UnifiNetwork extends utils.Adapter {
 		vpn: {}
 	}
 
+	subscribedList: string[] = [];
+
 	eventListener = (event: NetworkEvent) => this.onNetworkMessage(event);
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
@@ -456,9 +458,6 @@ class UnifiNetwork extends utils.Adapter {
 								await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
 
 								this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
-
-								// Subscribe imageUrl to detect realtime changes on images
-								await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
 							}
 						} else {
 							this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
@@ -468,11 +467,6 @@ class UnifiNetwork extends utils.Adapter {
 
 						if (error instanceof FetchError) {
 							this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
-
-							for (const idChannel of imgCache[url]) {
-								// Subscribe imageUrl to detect realtime changes on images, also on error otherwise we get no updates
-								await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
-							}
 						} else {
 							this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
 						}
@@ -647,12 +641,12 @@ class UnifiNetwork extends utils.Adapter {
 								}
 							}
 
-							if (treeDefinition[key].write && treeDefinition[key].write === true) {
-								// ToDo - Handle when device is new during runtime
-								// ToDo - types 'subscribeMe' regcognation
-								// state is writeable -> subscribe it
-								this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
+							if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.prototype.hasOwnProperty.call(treeDefinition[key], 'subscribeMe'))) {
+								// state is writeable or has subscribeMe Property -> subscribe it
+								this.log.silly(`${logPrefix} ${objOrg.name} - subscribing state '${logMsgState}'`);
 								await this.subscribeStatesAsync(`${channel}.${stateId}`);
+
+								this.subscribedList.push(`${channel}.${stateId}`);
 							}
 
 							if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {

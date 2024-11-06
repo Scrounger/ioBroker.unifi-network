@@ -28,6 +28,7 @@ class UnifiNetwork extends utils.Adapter {
         clients: {},
         vpn: {}
     };
+    subscribedList = [];
     eventListener = (event) => this.onNetworkMessage(event);
     constructor(options = {}) {
         super({
@@ -257,6 +258,7 @@ class UnifiNetwork extends utils.Adapter {
                 if (isAdapterStart)
                     this.log.info(`${logPrefix} Discovered ${data.length} devices`);
                 for (let device of data) {
+                    // ToDo: uncomment
                     // if (!this.cache.devices[device.mac]) {
                     // 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
                     // }
@@ -280,6 +282,7 @@ class UnifiNetwork extends utils.Adapter {
                 for (let client of data) {
                     const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
                     if (client.mac) {
+                        // ToDo: uncomment
                         // if (!this.cache.clients[client.mac]) {
                         // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                         // }
@@ -290,6 +293,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     else {
                         if (client.type === 'VPN' && client.ip) {
+                            // ToDo: uncomment
                             // if (this.cache.vpn[client.ip]) {
                             // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                             // }
@@ -362,8 +366,6 @@ class UnifiNetwork extends utils.Adapter {
                             for (const idChannel of imgCache[url]) {
                                 await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
                                 this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
-                                // Subscribe imageUrl to detect realtime changes on images
-                                await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
                             }
                         }
                         else {
@@ -374,10 +376,6 @@ class UnifiNetwork extends utils.Adapter {
                         const mac = myHelper.getIdLastPart(imgCache[url][0]);
                         if (error instanceof FetchError) {
                             this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
-                            for (const idChannel of imgCache[url]) {
-                                // Subscribe imageUrl to detect realtime changes on images, also on error otherwise we get no updates
-                                await this.subscribeStatesAsync(`${idChannel}.imageUrl`);
-                            }
                         }
                         else {
                             this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
@@ -530,12 +528,11 @@ class UnifiNetwork extends utils.Adapter {
                                     }
                                 }
                             }
-                            if (treeDefinition[key].write && treeDefinition[key].write === true) {
-                                // ToDo - Handle when device is new during runtime
-                                // ToDo - types 'subscribeMe' regcognation
-                                // state is writeable -> subscribe it
-                                this.log.silly(`${logPrefix} ${objValues.name} - subscribing state '${logMsgState}'`);
+                            if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.prototype.hasOwnProperty.call(treeDefinition[key], 'subscribeMe'))) {
+                                // state is writeable or has subscribeMe Property -> subscribe it
+                                this.log.silly(`${logPrefix} ${objOrg.name} - subscribing state '${logMsgState}'`);
                                 await this.subscribeStatesAsync(`${channel}.${stateId}`);
+                                this.subscribedList.push(`${channel}.${stateId}`);
                             }
                             if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
                                 const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
