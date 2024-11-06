@@ -21,3 +21,11 @@ export declare function getIdWithoutLastPart(id: string): string;
  * @returns
  */
 export declare function getIdLastPart(id: string): string;
+/**
+ * Compare two objects and return properties that are diffrent
+ * @param obj1
+ * @param obj2
+ * @param compareRef
+ * @returns
+ */
+export declare function getObjectDiff(obj1: any, obj2: any, compareRef?: boolean): string[];

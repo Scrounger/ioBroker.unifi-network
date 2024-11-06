@@ -257,7 +257,9 @@ class UnifiNetwork extends utils.Adapter {
                 if (isAdapterStart)
                     this.log.info(`${logPrefix} Discovered ${data.length} devices`);
                 for (let device of data) {
-                    // if (isAdapterStart) this.log.debug(`${logPrefix} Discovered ${device.name} (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                    // if (!this.cache.devices[device.mac]) {
+                    // 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                    // }
                     this.cache.devices[device.mac] = device;
                     this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, DeviceImages[device.model] || undefined, isAdapterStart);
                     await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
@@ -278,6 +280,9 @@ class UnifiNetwork extends utils.Adapter {
                 for (let client of data) {
                     const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
                     if (client.mac) {
+                        // if (!this.cache.clients[client.mac]) {
+                        // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                        // }
                         this.cache.clients[client.mac] = client;
                         this.cache.clients[client.mac].name = name;
                         this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
@@ -285,6 +290,9 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     else {
                         if (client.type === 'VPN' && client.ip) {
+                            // if (this.cache.vpn[client.ip]) {
+                            // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                            // }
                             this.cache.vpn[client.ip] = client;
                             this.cache.vpn[client.ip].name = name;
                             const idVpnChannel = 'vpn';
@@ -420,7 +428,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isDeviceCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.debug(`${logPrefix} device updated '${id}'`);
+                            this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.getObjectDiff(common, obj.common))})`);
                         }
                     }
                 }
@@ -460,7 +468,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isChannelCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.debug(`${logPrefix} channel updated '${id}'`);
+                            this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.getObjectDiff(common, obj.common))})`);
                         }
                     }
                 }
@@ -517,7 +525,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (obj && obj.common) {
                                         if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
                                             await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                            this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}'`);
+                                            this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.getObjectDiff(commonUpdated, obj.common))})`);
                                         }
                                     }
                                 }
@@ -686,7 +694,7 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.info(`${logPrefix} client '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip})` : ''}`);
                         }
                     }
-                    else if (myEvent.key.includes(WebSocketEventKeys.clientRoamed) || myEvent.key.includes(WebSocketEventKeys.guestRoamed)) {
+                    else if (myEvent.key === WebSocketEventKeys.clientRoamed || myEvent.key === WebSocketEventKeys.guestRoamed) {
                         let mac = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user : myEvent.guest;
                         if (myEvent.ap_from && myEvent.ap_to) {
                             this.log.debug(`${logPrefix} client '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to].name}' (mac: ${myEvent.ap_to})`);
