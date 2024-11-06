@@ -8,6 +8,7 @@ declare global {
 			user: string;
 			password: string;
 			updateInterval: number;
+			deviceImageDownload: boolean;
 			clientOfflineTimeout: number;
 			clientImageDownload: boolean;
 		}

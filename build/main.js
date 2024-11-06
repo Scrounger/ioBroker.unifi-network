@@ -30,6 +30,11 @@ class UnifiNetwork extends utils.Adapter {
     };
     subscribedList = [];
     eventListener = (event) => this.onNetworkMessage(event);
+    fetch = context({
+        alpnProtocols: ["h2" /* ALPNProtocol.ALPN_HTTP2 */],
+        rejectUnauthorized: false,
+        userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+    }).fetch;
     constructor(options = {}) {
         super({
             ...options,
@@ -101,14 +106,28 @@ class UnifiNetwork extends utils.Adapter {
     /**
      * Is called if a subscribed state changes
      */
-    onStateChange(id, state) {
-        if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+    async onStateChange(id, state) {
+        const logPrefix = '[onStateChange]:';
+        try {
+            if (state) {
+                if (myHelper.getIdLastPart(id) === 'imageUrl' && state.val !== null) {
+                    if (id.startsWith(`${this.namespace}.clients.`)) {
+                        await this.updateClientImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
+                        this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
+                    }
+                }
+                else {
+                    // The state was changed
+                    this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+                }
+            }
+            else {
+                // The state was deleted
+                this.log.info(`state ${id} deleted`);
+            }
         }
-        else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
     // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
@@ -350,42 +369,41 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                 }
-                const fetch = context({
-                    alpnProtocols: ["h2" /* ALPNProtocol.ALPN_HTTP2 */],
-                    rejectUnauthorized: false,
-                    userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
-                }).fetch;
                 for (const url in imgCache) {
-                    try {
-                        const response = await fetch(url, { follow: 0 });
-                        if (response.status === 200) {
-                            const imageBuffer = Buffer.from(await response.arrayBuffer());
-                            const imageBase64 = imageBuffer.toString('base64');
-                            const base64ImgString = `data:image/png;base64,` + imageBase64;
-                            this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(imgCache[url])}`);
-                            for (const idChannel of imgCache[url]) {
-                                await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
-                                this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
-                            }
-                        }
-                        else {
-                            this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
-                        }
-                    }
-                    catch (error) {
-                        const mac = myHelper.getIdLastPart(imgCache[url][0]);
-                        if (error instanceof FetchError) {
-                            this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
-                        }
-                        else {
-                            this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
-                        }
-                    }
+                    await this.updateClientImage(url, imgCache[url]);
                 }
             }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateClientImage(url, idChannelList) {
+        const logPrefix = '[updateClientImage]:';
+        try {
+            const response = await this.fetch(url, { follow: 0 });
+            if (response.status === 200) {
+                const imageBuffer = Buffer.from(await response.arrayBuffer());
+                const imageBase64 = imageBuffer.toString('base64');
+                const base64ImgString = `data:image/png;base64,` + imageBase64;
+                this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
+                for (const idChannel of idChannelList) {
+                    await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+                    this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+                }
+            }
+            else {
+                this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+            }
+        }
+        catch (error) {
+            const mac = myHelper.getIdLastPart(idChannelList[0]);
+            if (error instanceof FetchError) {
+                this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
+            }
+            else {
+                this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
+            }
         }
     }
     //#endregion
