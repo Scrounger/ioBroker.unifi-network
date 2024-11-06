@@ -10,7 +10,6 @@ import { FetchError, context } from '@adobe/fetch';
 import { NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
-import { DeviceImages } from './lib/images-device.js';
 import { WebSocketEventKeys, WebSocketEventMessages } from './lib/myTypes.js';
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
@@ -111,9 +110,13 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (state) {
                 if (myHelper.getIdLastPart(id) === 'imageUrl' && state.val !== null) {
-                    if (id.startsWith(`${this.namespace}.clients.`)) {
-                        await this.updateClientImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
+                    if (this.config.clientImageDownload && id.startsWith(`${this.namespace}.clients.`)) {
+                        await this.downloadImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
                         this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
+                    }
+                    else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.devices.`)) {
+                        await this.downloadImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
+                        this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
                     }
                 }
                 else {
@@ -258,6 +261,7 @@ class UnifiNetwork extends utils.Adapter {
     async updateData() {
         const logPrefix = '[updateData]:';
         try {
+            await this.updateDevicesImages();
             this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
             await this.updateDevices(await this.ufn.getDevices(), true);
             this.createOrUpdateChannel('clients', 'clients', undefined, true);
@@ -282,7 +286,7 @@ class UnifiNetwork extends utils.Adapter {
                     // 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
                     // }
                     this.cache.devices[device.mac] = device;
-                    this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, DeviceImages[device.model] || undefined, isAdapterStart);
+                    this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
                     await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
                 }
             }
@@ -334,6 +338,7 @@ class UnifiNetwork extends utils.Adapter {
     async updateIsOnlineState() {
         const logPrefix = '[updateIsOnlineState]:';
         try {
+            //ToDo: vpn and perhaps device to include
             const clients = await this.getStatesAsync('clients.*.last_seen');
             for (const id in clients) {
                 const lastSeen = await this.getStateAsync(id);
@@ -345,6 +350,40 @@ class UnifiNetwork extends utils.Adapter {
                     // isOnline not changed between now an last reported last_seen val
                     await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.clientOfflineTimeout, true);
                     //ToDo: Debug log message inkl. name, mac, ip
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateDevicesImages() {
+        const logPrefix = '[updateDevicesImages]:';
+        try {
+            if (this.config.deviceImageDownload) {
+                //@ts-ignore
+                await this.setObjectNotExistsAsync('devices.publicData', {
+                    type: 'state',
+                    common: {
+                        type: 'json',
+                        name: 'ui public json data',
+                        expert: true,
+                        read: true,
+                        write: false,
+                        role: 'state'
+                    },
+                    native: undefined
+                });
+                const url = 'https://static.ui.com/fingerprint/ui/public.json';
+                const response = await this.fetch(url, { follow: 0 });
+                if (response.status === 200) {
+                    const data = await response.json();
+                    if (data && data.devices) {
+                        await this.setState('devices.publicData', JSON.stringify(data), true);
+                    }
+                }
+                else {
+                    this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
                 }
             }
         }
@@ -370,7 +409,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 for (const url in imgCache) {
-                    await this.updateClientImage(url, imgCache[url]);
+                    await this.downloadImage(url, imgCache[url]);
                 }
             }
         }
@@ -378,8 +417,8 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateClientImage(url, idChannelList) {
-        const logPrefix = '[updateClientImage]:';
+    async downloadImage(url, idChannelList) {
+        const logPrefix = '[downloadImage]:';
         try {
             const response = await this.fetch(url, { follow: 0 });
             if (response.status === 200) {

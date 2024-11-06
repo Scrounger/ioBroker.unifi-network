@@ -67,6 +67,12 @@
 					"label": "download client images",
 					"sm": 12,
 					"md": 2
+				},
+				"deviceImageDownload": {
+					"type": "checkbox",
+					"label": "download unifi device images",
+					"sm": 12,
+					"md": 2
 				}
 			}
 		}

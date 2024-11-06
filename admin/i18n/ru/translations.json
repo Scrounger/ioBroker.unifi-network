@@ -24,5 +24,7 @@
     "increase this value for low performance systems": "увеличьте это значение для систем с низкой производительностью",
     "time [s] after a device is set to offline": "время [с] после перевода устройства в автономный режим",
     "base64 image": "изображение в формате base64",
-    "download client images": "скачать изображения клиента"
+    "download client images": "скачать изображения клиента",
+    "download device images": "загрузить изображения устройств",
+    "download unifi device images": "скачать образы устройств unifi"
 }

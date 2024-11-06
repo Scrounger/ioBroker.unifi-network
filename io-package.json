@@ -94,6 +94,7 @@
         "user": "",
         "password": "",
         "updateInterval": 15,
+        "deviceImageDownload": false,
         "clientOfflineTimeout": 92,
         "clientImageDownload": false
     },

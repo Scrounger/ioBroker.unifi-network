@@ -24,5 +24,7 @@
     "increase this value for low performance systems": "对于低性能系统增加此值",
     "time [s] after a device is set to offline": "设备设置为离线后的时间 [s]",
     "base64 image": "Base64 图像",
-    "download client images": "下载客户图片"
+    "download client images": "下载客户图片",
+    "download device images": "下载设备图像",
+    "download unifi device images": "下载unifi设备镜像"
 }

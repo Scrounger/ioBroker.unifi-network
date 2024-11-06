@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
 import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
@@ -11,6 +12,36 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
             return val === 6 || val === 9
         },
+    },
+    imageUrl: {
+        iobType: 'string',
+        name: 'imageUrl',
+        expert: true,
+        subscribeMe: true,
+        valFromProperty: 'model',
+        async readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            if (val && adapter.config.deviceImageDownload) {
+                if (await adapter.objectExists('devices.publicData')) {
+                    const publicData = await adapter.getStateAsync('devices.publicData');
+
+                    if (publicData && publicData.val) {
+                        const data: any = JSON.parse(publicData.val as string);
+
+                        const find = _.find(data.devices, (x) => x.shortnames.includes(val));
+
+                        if (find) {
+                            return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.images.default}.png&w=256?q=100`
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    },
+    image: {
+        id: 'image',
+        iobType: 'string',
+        name: 'base64 image'
     },
     ip: {
         iobType: 'string',

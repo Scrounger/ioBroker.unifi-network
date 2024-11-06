@@ -24,5 +24,7 @@
     "increase this value for low performance systems": "aumentar este valor para sistemas de bajo rendimiento",
     "time [s] after a device is set to offline": "tiempo [s] después de que un dispositivo se configura como fuera de línea",
     "base64 image": "imagen base64",
-    "download client images": "descargar imágenes del cliente"
+    "download client images": "descargar imágenes del cliente",
+    "download device images": "descargar imágenes del dispositivo",
+    "download unifi device images": "descargar imágenes del dispositivo unifi"
 }
