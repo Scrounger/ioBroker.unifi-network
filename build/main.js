@@ -285,6 +285,12 @@ class UnifiNetwork extends utils.Adapter {
                     // if (!this.cache.devices[device.mac]) {
                     // 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
                     // }
+                    if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.devices[device.mac]) {
+                        const lastSeen = this.cache.devices[device.mac].last_seen;
+                        if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                            continue;
+                        }
+                    }
                     this.cache.devices[device.mac] = device;
                     this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
                     await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
@@ -309,6 +315,12 @@ class UnifiNetwork extends utils.Adapter {
                         // if (!this.cache.clients[client.mac]) {
                         // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                         // }
+                        if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
+                            const lastSeen = this.cache.clients[client.mac].last_seen;
+                            if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                continue;
+                            }
+                        }
                         this.cache.clients[client.mac] = client;
                         this.cache.clients[client.mac].name = name;
                         this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
@@ -320,6 +332,12 @@ class UnifiNetwork extends utils.Adapter {
                             // if (this.cache.vpn[client.ip]) {
                             // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                             // }
+                            if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
+                                const lastSeen = this.cache.vpn[client.ip].last_seen;
+                                if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                    continue;
+                                }
+                            }
                             this.cache.vpn[client.ip] = client;
                             this.cache.vpn[client.ip].name = name;
                             const idVpnChannel = 'vpn';
@@ -545,13 +563,13 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[createGenericState]:';
         try {
             if (this.connected && this.isConnected) {
-                if (!isAdapterStart && this.config.updateInterval > 0) {
-                    // only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
-                    const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
-                    if (lastSeen && lastSeen.val && moment().diff(lastSeen.val * 1000, 'seconds') < this.config.updateInterval) {
-                        return;
-                    }
-                }
+                // if (!isAdapterStart && this.config.updateInterval > 0) {
+                // 	// only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
+                // 	const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
+                // 	if (lastSeen && lastSeen.val && moment().diff((lastSeen.val as number) * 1000, 'seconds') < this.config.updateInterval) {
+                // 		return
+                // 	}
+                // }
                 for (const key in treeDefinition) {
                     let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
                     try {
