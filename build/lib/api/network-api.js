@@ -298,6 +298,10 @@ export class NetworkApi extends EventEmitter {
             method: 'POST'
         });
     }
+    /**
+     * Detailed list of all devices on site
+     * @returns
+     */
     async getDevices() {
         const logPrefix = `[${this.logPrefix}.getDevices]`;
         try {
@@ -311,6 +315,27 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    /**
+     * List of all active (connected) clients
+     * @returns
+     */
+    async getClientsActive() {
+        const logPrefix = `[${this.logPrefix}.getClientsActive]`;
+        try {
+            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.activeClients));
+            if (res && res.data) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    /**
+     * List of all configured / known clients on the site
+     * @returns
+     */
     async getClients() {
         const logPrefix = `[${this.logPrefix}.getClients]`;
         try {
@@ -340,8 +365,11 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.devices:
                 endpointSuffix = `/api/s/${this.site}/stat/device`;
                 break;
-            case ApiEndpoints.clients:
+            case ApiEndpoints.activeClients:
                 endpointSuffix = `/api/s/${this.site}/stat/sta`;
+                break;
+            case ApiEndpoints.clients:
+                endpointSuffix = `/api/s/${this.site}/rest/user`;
                 break;
             default:
                 break;
@@ -413,10 +441,6 @@ export class NetworkApi extends EventEmitter {
         }
         return true;
     }
-    async blockClient(mac) {
-        const result = await this.sendData(`/api/s/${this.site}/cmd/stamgr`, { cmd: 'block-sta', mac: mac.toLowerCase() });
-        return result === null ? false : true;
-    }
 }
 export var ApiEndpoints;
 (function (ApiEndpoints) {
@@ -424,4 +448,5 @@ export var ApiEndpoints;
     ApiEndpoints["self"] = "self";
     ApiEndpoints["devices"] = "devices";
     ApiEndpoints["clients"] = "clients";
+    ApiEndpoints["activeClients"] = "activeClients";
 })(ApiEndpoints || (ApiEndpoints = {}));

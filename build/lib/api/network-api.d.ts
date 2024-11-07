@@ -56,15 +56,28 @@ export declare class NetworkApi extends EventEmitter {
     retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
     private _retrieve;
     sendData(cmd: string, payload: any): Promise<Response>;
+    /**
+     * Detailed list of all devices on site
+     * @returns
+     */
     getDevices(): Promise<NetworkDevice[] | undefined>;
+    /**
+     * List of all active (connected) clients
+     * @returns
+     */
+    getClientsActive(): Promise<NetworkClient[] | undefined>;
+    /**
+     * List of all configured / known clients on the site
+     * @returns
+     */
     getClients(): Promise<NetworkClient[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     launchEventsWs(): Promise<boolean>;
-    blockClient(mac: string): Promise<boolean>;
 }
 export declare enum ApiEndpoints {
     login = "login",
     self = "self",
     devices = "devices",
-    clients = "clients"
+    clients = "clients",
+    activeClients = "activeClients"
 }

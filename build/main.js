@@ -849,7 +849,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     else if (myEvent.key === WebSocketEventKeys.clientOrGuestBlocked || myEvent.key === WebSocketEventKeys.clientOrGuestUnblocked) {
                         const mac = myEvent.client;
-                        const isGuest = (this.cache.clients[mac] && this.cache.clients[mac].is_guest) || await this.objectExists(`clients.${mac}.blocked`);
+                        const isGuest = this.cache.clients[mac].is_guest;
                         const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
                         if (await this.objectExists(id)) {
                             await this.setState(id, myEvent.key === WebSocketEventKeys.clientOrGuestBlocked, true);

@@ -417,6 +417,10 @@ export class NetworkApi extends EventEmitter {
         });
     }
 
+    /**
+     * Detailed list of all devices on site
+     * @returns 
+     */
     public async getDevices(): Promise<NetworkDevice[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getDevices]`
 
@@ -434,6 +438,30 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    /**
+     * List of all active (connected) clients
+     * @returns 
+     */
+    public async getClientsActive(): Promise<NetworkClient[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getClientsActive]`
+
+        try {
+            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.activeClients));
+
+            if (res && res.data) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
+     * List of all configured / known clients on the site
+     * @returns 
+     */
     public async getClients(): Promise<NetworkClient[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getClients]`
 
@@ -453,8 +481,8 @@ export class NetworkApi extends EventEmitter {
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
-        let endpointSuffix;
-        let endpointPrefix = this.port === 443 ? '/proxy/network' : '';
+        let endpointSuffix: string;
+        let endpointPrefix: string = this.port === 443 ? '/proxy/network' : '';
 
         switch (endpoint) {
             case ApiEndpoints.login:
@@ -471,8 +499,12 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = `/api/s/${this.site}/stat/device`;
                 break;
 
-            case ApiEndpoints.clients:
+            case ApiEndpoints.activeClients:
                 endpointSuffix = `/api/s/${this.site}/stat/sta`;
+                break;
+
+            case ApiEndpoints.clients:
+                endpointSuffix = `/api/s/${this.site}/rest/user`;
                 break;
 
             default:
@@ -572,19 +604,12 @@ export class NetworkApi extends EventEmitter {
 
         return true;
     }
-
-    public async blockClient(mac: string) {
-        const result = await this.sendData(`/api/s/${this.site}/cmd/stamgr`, { cmd: 'block-sta', mac: mac.toLowerCase() });
-
-        return result === null ? false : true;
-    }
-
-
 }
 
 export enum ApiEndpoints {
     login = 'login',
     self = 'self',
     devices = 'devices',
-    clients = "clients"
+    clients = 'clients',
+    activeClients = "activeClients"
 }

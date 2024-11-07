@@ -994,7 +994,7 @@ class UnifiNetwork extends utils.Adapter {
 						}
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientOrGuestBlocked || (myEvent.key as string) === WebSocketEventKeys.clientOrGuestUnblocked) {
 						const mac: string = myEvent.client as string;
-						const isGuest = (this.cache.clients[mac] && this.cache.clients[mac].is_guest) || await this.objectExists(`clients.${mac}.blocked`);
+						const isGuest = this.cache.clients[mac].is_guest;
 
 						const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
 
@@ -1003,7 +1003,6 @@ class UnifiNetwork extends utils.Adapter {
 
 							this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' ${(myEvent.key as string) === WebSocketEventKeys.clientOrGuestBlocked ? 'blocked' : 'unblocked'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
 						}
-
 					} else {
 						this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
 					}
