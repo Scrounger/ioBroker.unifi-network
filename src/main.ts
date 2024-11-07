@@ -143,7 +143,7 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (state) {
 				if (myHelper.getIdLastPart(id) === 'imageUrl' && state.val !== null) {
-					if (this.config.clientImageDownload && id.startsWith(`${this.namespace}.clients.`)) {
+					if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
 						await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
 						this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
 					} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.devices.`)) {
@@ -323,6 +323,7 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateDevices(await this.ufn.getDevices(), true);
 
 			this.createOrUpdateChannel('clients', 'clients', undefined, true);
+			this.createOrUpdateChannel('guests', 'guests', undefined, true);
 			this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
 			await this.updateClients(await this.ufn.getClients(), true);
 
@@ -375,13 +376,15 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (this.connected && this.isConnected) {
 				const idChannel = 'clients';
+				const idGuestChannel = 'guests';
+				const idVpnChannel = 'vpn';
 
 				if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} clients`);
 
 				for (let client of data) {
 					const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
 
-					if (client.mac) {
+					if (client.mac && !client.is_guest) {
 
 						// ToDo: uncomment
 						// if (!this.cache.clients[client.mac]) {
@@ -401,6 +404,25 @@ class UnifiNetwork extends utils.Adapter {
 						this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
 
 						await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
+					} else if (client.mac && client.is_guest) {
+						// ToDo: uncomment
+						// if (!this.cache.clients[client.mac]) {
+						// 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+						// }
+
+						if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
+							const lastSeen = this.cache.clients[client.mac].last_seen
+							if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+								continue
+							}
+						}
+
+						this.cache.clients[client.mac] = client;
+						this.cache.clients[client.mac].name = name;
+
+						this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+
+						await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, isAdapterStart);
 					} else {
 						if (client.type === 'VPN' && client.ip) {
 
@@ -419,7 +441,6 @@ class UnifiNetwork extends utils.Adapter {
 							this.cache.vpn[client.ip] = client;
 							this.cache.vpn[client.ip].name = name;
 
-							const idVpnChannel = 'vpn';
 							const preparedIp = client.ip.replaceAll('.', '_');
 
 							this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
@@ -439,7 +460,23 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			//ToDo: vpn and perhaps device to include
 			const clients = await this.getStatesAsync('clients.*.last_seen');
+			await this._updateIsOnlineState(clients);
 
+			const guests = await this.getStatesAsync('guests.*.last_seen');
+			await this._updateIsOnlineState(guests);
+
+			const vpn = await this.getStatesAsync('vpn.*.last_seen');
+			await this._updateIsOnlineState(vpn);
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async _updateIsOnlineState(clients: Record<string, ioBroker.State>) {
+		const logPrefix = '[_updateIsOnlineState]:';
+
+		try {
 			for (const id in clients) {
 
 				const lastSeen = await this.getStateAsync(id);
@@ -509,30 +546,41 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.clientImageDownload) {
 
 				const clients = await this.getStatesAsync('clients.*.imageUrl');
+				await this._updateClientsImages(clients)
 
-				let imgCache: myImgCache = {}
-
-				for (const id in clients) {
-					const url = await this.getStateAsync(id);
-
-					if (url && url.val && url.val !== null) {
-						if (imgCache[url.val as string]) {
-							imgCache[url.val as string].push(myHelper.getIdWithoutLastPart(id))
-						} else {
-							imgCache[url.val as string] = [myHelper.getIdWithoutLastPart(id)]
-						}
-					}
-				}
-
-				for (const url in imgCache) {
-					await this.downloadImage(url, imgCache[url]);
-				}
+				const guests = await this.getStatesAsync('guests.*.imageUrl');
+				await this._updateClientsImages(guests)
 			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
 
+	async _updateClientsImages(clients: Record<string, ioBroker.State>) {
+		const logPrefix = '[_updateClientsImages]:';
+
+		try {
+			let imgCache: myImgCache = {}
+
+			for (const id in clients) {
+				const url = await this.getStateAsync(id);
+
+				if (url && url.val && url.val !== null) {
+					if (imgCache[url.val as string]) {
+						imgCache[url.val as string].push(myHelper.getIdWithoutLastPart(id))
+					} else {
+						imgCache[url.val as string] = [myHelper.getIdWithoutLastPart(id)]
+					}
+				}
+			}
+
+			for (const url in imgCache) {
+				await this.downloadImage(url, imgCache[url]);
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
 	/**
 	 * Download image from a given url and update Channel icon if needed
 	 * @param url 
@@ -892,6 +940,7 @@ class UnifiNetwork extends utils.Adapter {
 					if ((myEvent.key as string).includes('_Connected') || (myEvent.key as string).includes('_Disconnected')) {
 						let mac = undefined
 						let connected = false;
+						const isGuest = myEvent.guest ? true : false;
 
 						if (myEvent.key === WebSocketEventKeys.clientConnected || myEvent.key === WebSocketEventKeys.clientDisconnected) {
 							mac = myEvent.user;
@@ -901,27 +950,28 @@ class UnifiNetwork extends utils.Adapter {
 							connected = myEvent.key === WebSocketEventKeys.guestConnected
 						}
 
-						const id = `clients.${mac}.isOnline`;
+						const id = `${isGuest ? 'guests' : 'clients'}.${mac}.isOnline`;
 
 						if (await this.objectExists(id)) {
 							await this.setState(id, connected, true);
 
-							this.log.info(`${logPrefix} client '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
+							this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
 						}
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientRoamed || (myEvent.key as string) === WebSocketEventKeys.guestRoamed) {
-						let mac: string = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user as string : myEvent.guest as string
+						const mac: string = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user as string : myEvent.guest as string
+						const isGuest = myEvent.guest ? true : false;
 
 						if (myEvent.ap_from && myEvent.ap_to) {
-							this.log.debug(`${logPrefix} client '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from as string].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to as string].name}' (mac: ${myEvent.ap_to})`);
+							this.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from as string].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to as string].name}' (mac: ${myEvent.ap_to})`);
 
-							const idApName = `clients.${mac}.uplink_name`;
+							const idApName = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_name`;
 							if (await this.objectExists(idApName)) {
 								await this.setState(idApName, this.cache.devices[myEvent.ap_to as string].name ? this.cache.devices[myEvent.ap_to as string].name : null, true);
 							} else {
 								this.log.warn(`${logPrefix} state '${idApName}' not exists!`);
 							}
 
-							const ipApMac = `clients.${mac}.uplink_mac`;
+							const ipApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
 							if (await this.objectExists(ipApMac)) {
 								await this.setState(ipApMac, (myEvent.ap_to as string) ? (myEvent.ap_to as string) : null, true);
 							} else {

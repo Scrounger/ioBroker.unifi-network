@@ -56,10 +56,10 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'base64 image'
     },
-    is_guest: {
-        iobType: 'boolean',
-        name: 'is guest'
-    },
+    // is_guest: {
+    //     iobType: 'boolean',
+    //     name: 'is guest'
+    // },
     is_wired: {
         iobType: 'boolean',
         name: 'is wired'
