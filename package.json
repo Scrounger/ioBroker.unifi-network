@@ -58,7 +58,7 @@
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "typescript": "~5.6.2",
-    "@types/ws": "8.5.12"
+    "@types/ws": "8.5.13"
   },
   "type": "module",
   "main": "build/main.js",
