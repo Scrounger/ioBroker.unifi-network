@@ -37,5 +37,7 @@
     "port 443 is used by unifi-os (e.g. UDM-Pro)": "poort 443 wordt gebruikt door unifi-os (bijv. UDM-Pro)",
     "controller site": "controller-site",
     "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' wordt gebruikt door unifi-os (bijv. UDM-Pro)",
-    "port": "haven"
+    "port": "haven",
+    "is guest": "is gast",
+    "is wired": "is bedraad"
 }

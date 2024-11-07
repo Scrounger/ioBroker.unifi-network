@@ -37,5 +37,7 @@
     "port 443 is used by unifi-os (e.g. UDM-Pro)": "端口 443 由 unifi-os 使用（例如 UDM-Pro）",
     "controller site": "控制器站点",
     "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' 由 unifi-os 使用（例如 UDM-Pro）",
-    "port": "港口"
+    "port": "港口",
+    "is guest": "是客人",
+    "is wired": "是有线的"
 }

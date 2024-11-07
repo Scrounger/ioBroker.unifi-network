@@ -764,7 +764,7 @@ class UnifiNetwork extends utils.Adapter {
                         const id = `clients.${mac}.isOnline`;
                         if (await this.objectExists(id)) {
                             await this.setState(id, connected, true);
-                            this.log.info(`${logPrefix} client '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip})` : ''}`);
+                            this.log.info(`${logPrefix} client '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
                         }
                     }
                     else if (myEvent.key === WebSocketEventKeys.clientRoamed || myEvent.key === WebSocketEventKeys.guestRoamed) {

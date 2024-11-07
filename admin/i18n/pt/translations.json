@@ -37,5 +37,7 @@
     "port 443 is used by unifi-os (e.g. UDM-Pro)": "a porta 443 é usada pelo unifi-os (por exemplo, UDM-Pro)",
     "controller site": "site do controlador",
     "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' é usado por unifi-os (por exemplo, UDM-Pro)",
-    "port": "porta"
+    "port": "porta",
+    "is guest": "é convidado",
+    "is wired": "está conectado"
 }

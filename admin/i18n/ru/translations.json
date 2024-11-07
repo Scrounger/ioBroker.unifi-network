@@ -37,5 +37,7 @@
     "port 443 is used by unifi-os (e.g. UDM-Pro)": "порт 443 используется unifi-os (например, UDM-Pro)",
     "controller site": "сайт контроллера",
     "'default' is used by unifi-os (e.g. UDM-Pro)": "«по умолчанию» используется unifi-os (например, UDM-Pro)",
-    "port": "порт"
+    "port": "порт",
+    "is guest": "гость",
+    "is wired": "подключен"
 }

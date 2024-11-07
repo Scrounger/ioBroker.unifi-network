@@ -4,6 +4,23 @@ import { Fingerprint, NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
 
 export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
+    channel: {
+        iobType: 'number',
+        name: 'channel'
+    },
+    channel_name: {
+        id: 'channel_name',
+        iobType: 'string',
+        name: 'channel name',
+        valFromProperty: 'channel',
+        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            if (val <= 13) {
+                return '2.4 GHz'
+            } else {
+                return '5 GHz'
+            }
+        }
+    },
     essid: {
         iobType: 'string',
         name: 'WLAN SSID'
@@ -38,6 +55,14 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         id: 'image',
         iobType: 'string',
         name: 'base64 image'
+    },
+    is_guest: {
+        iobType: 'boolean',
+        name: 'is guest'
+    },
+    is_wired: {
+        iobType: 'boolean',
+        name: 'is wired'
     },
     ip: {
         iobType: 'string',
@@ -77,6 +102,30 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
     network_name: {
         iobType: 'string',
         name: 'network name'
+    },
+    radio: {
+        iobType: 'string',
+        name: 'radio',
+        valFromProperty: 'radio_proto'
+    },
+    radio_name: {
+        id: 'radio_name',
+        iobType: 'string',
+        name: 'radio name',
+        valFromProperty: 'radio_proto',
+        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            if (val) {
+                if (val === 'ax') return 'WiFi 6'
+                if (val === 'ac') return 'WiFi 5'
+                if (val === 'ng') return 'WiFi 4'
+                if (val === 'n') return 'WiFi 4'
+                if (val === 'g') return 'WiFi 3'
+                if (val === 'b') return 'WiFi 2'
+                if (val === 'a') return 'WiFi 1'
+            }
+
+            return 'tbd'
+        }
     },
     signal: {
         iobType: 'number',
