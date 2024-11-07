@@ -32,5 +32,10 @@
     "signal": "sinal",
     "network name": "nome da rede",
     "first seen": "visto pela primeira vez",
-    "last seen": "visto pela última vez"
+    "last seen": "visto pela última vez",
+    "leave empty with a unifi-os system (e.g. UDM Pro)": "deixe vazio com um sistema unifi-os (por exemplo, UDM Pro)",
+    "port 443 is used by unifi-os (e.g. UDM-Pro)": "a porta 443 é usada pelo unifi-os (por exemplo, UDM-Pro)",
+    "controller site": "site do controlador",
+    "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' é usado por unifi-os (por exemplo, UDM-Pro)",
+    "port": "porta"
 }

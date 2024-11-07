@@ -91,6 +91,8 @@
     ],
     "native": {
         "host": "",
+        "port": 443,
+        "site": "default",
         "user": "",
         "password": "",
         "updateInterval": 15,

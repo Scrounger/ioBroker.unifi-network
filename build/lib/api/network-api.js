@@ -13,10 +13,12 @@ export class NetworkApi extends EventEmitter {
     headers;
     log;
     host;
+    port;
+    site;
     password;
     username;
     _eventsWs;
-    constructor(host, username, password, log = console) {
+    constructor(host, port, site, username, password, log = console) {
         // Initialize our parent.
         super();
         this.log = log;
@@ -26,6 +28,8 @@ export class NetworkApi extends EventEmitter {
         this.fetch = context({ alpnProtocols: ["h2" /* ALPNProtocol.ALPN_HTTP2 */], rejectUnauthorized: false, userAgent: 'unifi-network' }).fetch;
         this.headers = new Headers();
         this.host = host;
+        this.port = port;
+        this.site = site;
         this.username = username;
         this.password = password;
     }
@@ -58,7 +62,7 @@ export class NetworkApi extends EventEmitter {
             if (!this.headers.has('X-CSRF-Token')) {
                 // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
                 // controller and checking the headers for it.
-                const response = await this.retrieve('https://' + this.host, { method: 'GET' });
+                const response = await this.retrieve('https://' + this.host + ':' + this.port, { method: 'GET' });
                 if (response?.ok) {
                     const csrfToken = response.headers.get('X-CSRF-Token');
                     // Preserve the CSRF token, if found, for future API calls.
@@ -272,7 +276,7 @@ export class NetworkApi extends EventEmitter {
                         this.log.error(`${logPrefix} Network connection to Network controller has been reset.`);
                         break;
                     case 'ENOTFOUND':
-                        this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct.`);
+                        this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}:${this.port}. Please ensure the address you configured for this UniFi Network controller is correct.`);
                         break;
                     default:
                         // If we're logging when we have an error, do so.
@@ -316,7 +320,7 @@ export class NetworkApi extends EventEmitter {
     getApiEndpoint(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api
         let endpointSuffix;
-        let endpointPrefix = '/proxy/network/api/';
+        let endpointPrefix = this.port === 443 ? '/proxy/network' : '';
         switch (endpoint) {
             case ApiEndpoints.login:
                 endpointPrefix = '/api/';
@@ -327,10 +331,10 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = 'users/self';
                 break;
             case ApiEndpoints.devices:
-                endpointSuffix = 's/default/stat/device';
+                endpointSuffix = `/api/s/${this.site}/stat/device`;
                 break;
             case ApiEndpoints.clients:
-                endpointSuffix = 's/default/stat/sta';
+                endpointSuffix = `/api/s/${this.site}/stat/sta`;
                 break;
             default:
                 break;
@@ -338,7 +342,7 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
-        return 'https://' + this.host + endpointPrefix + endpointSuffix;
+        return 'https://' + this.host + ':' + this.port + endpointPrefix + endpointSuffix;
     }
     async launchEventsWs() {
         const logPrefix = `[${this.logPrefix}.launchEventsWs]`;
@@ -351,7 +355,8 @@ export class NetworkApi extends EventEmitter {
             if (this._eventsWs) {
                 return true;
             }
-            const ws = new WebSocket('wss://' + this.host + '/proxy/network/wss/s/default/events?' + 'clients=v2&next_ai_notifications=true&critical_notifications=true', {
+            const url = `wss://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`;
+            const ws = new WebSocket(url, {
                 headers: {
                     Cookie: this.headers.get('Cookie') ?? ''
                 },

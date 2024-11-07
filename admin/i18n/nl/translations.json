@@ -32,5 +32,10 @@
     "signal": "signaal",
     "network name": "netwerknaam",
     "first seen": "voor het eerst gezien",
-    "last seen": "laatst gezien"
+    "last seen": "laatst gezien",
+    "leave empty with a unifi-os system (e.g. UDM Pro)": "leeg laten met een unifi-os-systeem (bijv. UDM Pro)",
+    "port 443 is used by unifi-os (e.g. UDM-Pro)": "poort 443 wordt gebruikt door unifi-os (bijv. UDM-Pro)",
+    "controller site": "controller-site",
+    "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' wordt gebruikt door unifi-os (bijv. UDM-Pro)",
+    "port": "haven"
 }

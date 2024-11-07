@@ -11,10 +11,12 @@ export declare class NetworkApi extends EventEmitter {
     private headers;
     private log;
     private host;
+    private port;
+    private site;
     private password;
     private username;
     private _eventsWs;
-    constructor(host: string, username: string, password: string, log?: NetworkLogging);
+    constructor(host: string, port: number, site: string, username: string, password: string, log?: NetworkLogging);
     login(): Promise<boolean>;
     private loginController;
     /**

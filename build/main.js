@@ -56,7 +56,7 @@ class UnifiNetwork extends utils.Adapter {
             moment.locale(this.language);
             await utils.I18n.init('admin', this);
             if (this.config.host, this.config.user, this.config.password) {
-                this.ufn = new NetworkApi(this.config.host, this.config.user, this.config.password, this.log);
+                this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this.log);
                 await this.establishConnection(true);
                 this.ufn.on('message', this.eventListener);
             }
@@ -80,7 +80,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 this.ufn.logout();
                 this.setConnectionStatus(false);
-                this.log.info(`${logPrefix} Logged out successfully from the Unifi-Network controller API. (host: ${this.config.host})`);
+                this.log.info(`${logPrefix} Logged out successfully from the Unifi-Network controller API. (host: ${this.config.host}:${this.config.port})`);
             }
             callback();
         }
@@ -183,7 +183,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const loginSuccessful = await this.ufn.login();
                 if (loginSuccessful) {
-                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host})`);
+                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port})`);
                     if (await this.ufn.launchEventsWs()) {
                         this.log.info(`${logPrefix} WebSocket conncection to realtime API successfully established`);
                         await this.setConnectionStatus(true);
@@ -194,7 +194,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 else {
-                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host})`);
+                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host}:${this.config.port})`);
                 }
             }
         }
@@ -563,13 +563,6 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[createGenericState]:';
         try {
             if (this.connected && this.isConnected) {
-                // if (!isAdapterStart && this.config.updateInterval > 0) {
-                // 	// only update data if lastSeen is older than configured in the adapter settings -> with this the load of the adapater can be reduced
-                // 	const lastSeen = await this.getStateAsync(`${channel}.last_seen`);
-                // 	if (lastSeen && lastSeen.val && moment().diff((lastSeen.val as number) * 1000, 'seconds') < this.config.updateInterval) {
-                // 		return
-                // 	}
-                // }
                 for (const key in treeDefinition) {
                     let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
                     try {

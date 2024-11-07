@@ -28,24 +28,41 @@
 					"label": "host",
 					"newLine": true,
 					"sm": 12,
-					"md": 2
+					"md": 3
+				},
+				"port": {
+					"type": "number",
+					"label": "port",
+					"help": "port 443 is used by unifi-os (e.g. UDM-Pro)",
+					"min": 0,
+					"sm": 12,
+					"md": 3
+				},
+				"site": {
+					"type": "text",
+					"label": "controller site",
+					"help": "'default' is used by unifi-os (e.g. UDM-Pro)",
+					"sm": 12,
+					"md": 3
 				},
 				"user": {
 					"type": "text",
 					"label": "Username",
+					"newLine": true,
 					"sm": 12,
-					"md": 2
+					"md": 3
 				},
 				"password": {
 					"type": "password",
 					"label": "Password",
 					"sm": 12,
-					"md": 2
+					"md": 3
 				},
 				"updateInterval": {
 					"type": "number",
 					"label": "update interval",
 					"help": "increase this value for low performance systems",
+					"newLine": true,
 					"min": 0,
 					"max": 10000,
 					"step": 1,
@@ -65,6 +82,7 @@
 				"clientImageDownload": {
 					"type": "checkbox",
 					"label": "download client images",
+					"newLine": true,
 					"sm": 12,
 					"md": 2
 				},

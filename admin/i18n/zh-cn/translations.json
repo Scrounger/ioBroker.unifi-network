@@ -32,5 +32,10 @@
     "signal": "信号",
     "network name": "网络名称",
     "first seen": "第一次看到",
-    "last seen": "最后一次见到"
+    "last seen": "最后一次见到",
+    "leave empty with a unifi-os system (e.g. UDM Pro)": "对于 unifi-os 系统留空（例如 UDM Pro）",
+    "port 443 is used by unifi-os (e.g. UDM-Pro)": "端口 443 由 unifi-os 使用（例如 UDM-Pro）",
+    "controller site": "控制器站点",
+    "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' 由 unifi-os 使用（例如 UDM-Pro）",
+    "port": "港口"
 }
