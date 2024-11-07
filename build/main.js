@@ -122,14 +122,18 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 else if (!state.from.includes(this.namespace) && state.ack === false) {
+                    const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
                     // external changes
                     if (myHelper.getIdLastPart(id) === 'blocked') {
                         if (state.val) {
-                            apiCommands.clients.block(this.ufn, myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)));
+                            apiCommands.clients.block(this.ufn, mac);
                         }
                         else {
-                            apiCommands.clients.unblock(this.ufn, myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)));
+                            apiCommands.clients.unblock(this.ufn, mac);
                         }
+                    }
+                    else if (myHelper.getIdLastPart(id) === 'restart') {
+                        apiCommands.devices.restart(this.ufn, mac);
                     }
                 }
                 else {

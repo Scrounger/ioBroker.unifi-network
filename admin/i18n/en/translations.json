@@ -35,5 +35,6 @@
 	"port": "port",
 	"is guest": "is guest",
 	"is wired": "is wired",
-	"client is blocked": "client is blocked"
+	"client is blocked": "client is blocked",
+	"restart device": "restart device"
 }

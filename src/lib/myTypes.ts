@@ -63,7 +63,19 @@ export enum WebSocketEventKeys {
     guestRoamedRadio = 'EVT_WG_RoamRadio',
 
     clientOrGuestBlocked = 'EVT_WC_Blocked',
-    clientOrGuestUnblocked = 'EVT_WC_Unblocked'
+    clientOrGuestUnblocked = 'EVT_WC_Unblocked',
+
+
+    gatewayRestarted = 'EVT_GW_Restarted',
+
+
+    switchRestarted = 'EVT_SW_Restarted',
+    switchAutoReadopted = 'EVT_SW_AutoReadopted',
+    switchLostContact = 'EVT_SW_Lost_Contact',
+
+
+    accessPointRestarted = 'EVT_AP_Restarted',
+
 }
 
 export interface myCache {

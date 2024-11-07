@@ -68,6 +68,14 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'device name'
     },
+    restart: {
+        id: 'restart',
+        iobType: 'boolean',
+        name: 'restart device',
+        read: false,
+        write: true,
+        role: 'button'
+    },
     state: {
         iobType: 'number',
         name: 'device state',
