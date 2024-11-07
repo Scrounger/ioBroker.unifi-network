@@ -470,7 +470,7 @@ class UnifiNetwork extends utils.Adapter {
 					const data: any = await response.json();
 
 					if (data && data.devices) {
-						await this.setState('devices.publicData', JSON.stringify(data), true);
+						await this.setStateChangedAsync('devices.publicData', JSON.stringify(data), true);
 					}
 				} else {
 					this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
@@ -726,7 +726,7 @@ class UnifiNetwork extends utils.Adapter {
 
 								let changedObj: any = undefined
 
-								if (key === 'last_seen') {
+								if (key === 'last_seen' || key === 'first_seen') {
 									// set lc to last_seen value
 									changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
 								} else {
@@ -875,8 +875,6 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onNetworkEvent]:';
 
 		try {
-
-
 			if (event && event.data) {
 				for (const myEvent of event.data) {
 					if ((myEvent.key as string).includes('_Connected') || (myEvent.key as string).includes('_Disconnected')) {
@@ -904,14 +902,18 @@ class UnifiNetwork extends utils.Adapter {
 						if (myEvent.ap_from && myEvent.ap_to) {
 							this.log.debug(`${logPrefix} client '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from as string].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to as string].name}' (mac: ${myEvent.ap_to})`);
 
-							const idApName = `clients.${mac}.ap_name`;
+							const idApName = `clients.${mac}.uplink_name`;
 							if (await this.objectExists(idApName)) {
 								await this.setState(idApName, this.cache.devices[myEvent.ap_to as string].name ? this.cache.devices[myEvent.ap_to as string].name : null, true);
+							} else {
+								this.log.warn(`${logPrefix} state '${idApName}' not exists!`);
 							}
 
-							const ipApMac = `clients.${mac}.ap_mac`;
+							const ipApMac = `clients.${mac}.uplink_mac`;
 							if (await this.objectExists(ipApMac)) {
 								await this.setState(ipApMac, (myEvent.ap_to as string) ? (myEvent.ap_to as string) : null, true);
+							} else {
+								this.log.warn(`${logPrefix} state '${ipApMac}' not exists!`);
 							}
 
 						} else {

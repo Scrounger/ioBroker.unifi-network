@@ -4,6 +4,7 @@ export var WebSocketEventMessages;
     WebSocketEventMessages["device"] = "device:sync";
     WebSocketEventMessages["user"] = "user:sync";
     WebSocketEventMessages["events"] = "events";
+    WebSocketEventMessages["speedTest"] = "speed-test:update";
 })(WebSocketEventMessages || (WebSocketEventMessages = {}));
 export var WebSocketEventKeys;
 (function (WebSocketEventKeys) {

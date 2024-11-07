@@ -4,22 +4,13 @@ import { Fingerprint, NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
 
 export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
-    ap_mac: {
-        iobType: 'string',
-        name: 'Mac address of the connected access point'
-    },
-    ap_name: {
-        id: 'ap_name',
-        iobType: 'string',
-        name: 'Name of the connected access point',
-        valFromProperty: 'ap_mac',
-        async readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-            return cache.devices[val].name ? cache.devices[val].name : null
-        },
-    },
     essid: {
         iobType: 'string',
         name: 'WLAN SSID'
+    },
+    first_seen: {
+        iobType: 'number',
+        name: 'first seen'
     },
     imageUrl: {
         iobType: 'string',
@@ -65,6 +56,16 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'number',
         name: 'last seen'
     },
+    last_uplink_mac: {
+        id: 'uplink_mac',
+        iobType: 'string',
+        name: 'mac address of the connected access point or switch'
+    },
+    last_uplink_name: {
+        id: 'uplink_name',
+        iobType: 'string',
+        name: 'name of the connected access point or switch'
+    },
     mac: {
         iobType: 'string',
         name: 'mac address'
@@ -73,9 +74,14 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'device name'
     },
-    status: {
+    network_name: {
         iobType: 'string',
-        name: 'status'
+        name: 'network name'
+    },
+    signal: {
+        iobType: 'number',
+        name: 'signal',
+        unit: 'dBm'
     },
     uptime: {
         iobType: 'number',

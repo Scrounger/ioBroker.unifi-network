@@ -26,5 +26,11 @@
     "base64 image": "base64 afbeelding",
     "download client images": "clientafbeeldingen downloaden",
     "download device images": "apparaatafbeeldingen downloaden",
-    "download unifi device images": "unifi-apparaatafbeeldingen downloaden"
+    "download unifi device images": "unifi-apparaatafbeeldingen downloaden",
+    "mac address of the connected access point or switch": "mac-adres van het aangesloten toegangspunt of switch",
+    "name of the connected access point or switch": "naam van het aangesloten toegangspunt of switch",
+    "signal": "signaal",
+    "network name": "netwerknaam",
+    "first seen": "voor het eerst gezien",
+    "last seen": "laatst gezien"
 }

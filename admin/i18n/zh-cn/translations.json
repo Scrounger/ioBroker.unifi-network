@@ -26,5 +26,11 @@
     "base64 image": "Base64 图像",
     "download client images": "下载客户图片",
     "download device images": "下载设备图像",
-    "download unifi device images": "下载unifi设备镜像"
+    "download unifi device images": "下载unifi设备镜像",
+    "mac address of the connected access point or switch": "连接的接入点或交换机的 MAC 地址",
+    "name of the connected access point or switch": "连接的接入点或交换机的名称",
+    "signal": "信号",
+    "network name": "网络名称",
+    "first seen": "第一次看到",
+    "last seen": "最后一次见到"
 }

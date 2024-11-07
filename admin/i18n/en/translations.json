@@ -22,5 +22,11 @@
 	"time [s] after a device is set to offline": "time [s] after a device is set to offline",
 	"base64 image": "base64 image",
 	"download client images": "download client images",
-	"download unifi device images": "download unifi device images"
+	"download unifi device images": "download unifi device images",
+	"mac address of the connected access point or switch": "mac address of the connected access point or switch",
+	"name of the connected access point or switch": "name of the connected access point or switch",
+	"signal": "signal",
+	"network name": "network name",
+	"first seen": "first seen",
+	"last seen": "last seen"
 }

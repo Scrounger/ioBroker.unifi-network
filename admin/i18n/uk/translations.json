@@ -26,5 +26,11 @@
     "base64 image": "зображення base64",
     "download client images": "завантажити зображення клієнта",
     "download device images": "завантажити зображення пристрою",
-    "download unifi device images": "завантажити зображення пристроїв unifi"
+    "download unifi device images": "завантажити зображення пристроїв unifi",
+    "mac address of the connected access point or switch": "mac-адресу підключеної точки доступу або комутатора",
+    "name of the connected access point or switch": "назву підключеної точки доступу або комутатора",
+    "signal": "сигнал",
+    "network name": "ім'я мережі",
+    "first seen": "вперше побачений",
+    "last seen": "востаннє бачив"
 }

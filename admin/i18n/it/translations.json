@@ -26,5 +26,11 @@
     "base64 image": "immagine base64",
     "download client images": "scaricare le immagini del cliente",
     "download device images": "scaricare le immagini del dispositivo",
-    "download unifi device images": "scarica le immagini del dispositivo unifi"
+    "download unifi device images": "scarica le immagini del dispositivo unifi",
+    "mac address of the connected access point or switch": "indirizzo mac del punto di accesso o dello switch connesso",
+    "name of the connected access point or switch": "nome del punto di accesso o dello switch connesso",
+    "signal": "segnale",
+    "network name": "nome della rete",
+    "first seen": "visto per la prima volta",
+    "last seen": "visto l'ultima volta"
 }

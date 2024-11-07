@@ -12,7 +12,7 @@ export interface NetworkClient {
     _uptime_by_usw?: number
     anomalies: number
     anon_client_id?: string
-    ap_mac?: string
+    ap_mac?: string                                         // same as last_uplink_mac
     assoc_time: number
     authorized: boolean
     blocked?: boolean
@@ -27,7 +27,7 @@ export interface NetworkClient {
     dev_vendor?: number
     device_name?: string
     dhcpend_time?: number
-    disconnect_timestamp?: number
+    disconnect_timestamp?: number                           // API
     display_name?: string
     essid?: string
     fingerprint?: Fingerprint
@@ -51,8 +51,8 @@ export interface NetworkClient {
     is_guest: boolean
     is_mlo: boolean
     is_wired: boolean
-    last_connection_network_id?: string
-    last_connection_network_name?: string
+    last_connection_network_id?: string                         // API
+    last_connection_network_name?: string                       // API
     last_ip?: string
     last_radio?: string
     last_seen: number
@@ -65,8 +65,8 @@ export interface NetworkClient {
     mimo?: string
     name: string
     network?: string
-    network_id: string
-    network_name?: string
+    network_id: string                                          // API + WS
+    network_name?: string                                       // WS
     noise?: number
     noted: boolean
     nss?: number
@@ -90,7 +90,7 @@ export interface NetworkClient {
     score?: number
     signal?: number
     site_id: string
-    status?: string
+    status?: string                                     // WS - not working, no offline status on change
     sw_port?: number
     tags?: string[]
     tx_bytes: number

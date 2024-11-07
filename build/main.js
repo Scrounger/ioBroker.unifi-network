@@ -357,6 +357,9 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
+    /**
+     * Download public data from ui with image url infos.
+     */
     async updateDevicesImages() {
         const logPrefix = '[updateDevicesImages]:';
         try {
@@ -379,7 +382,7 @@ class UnifiNetwork extends utils.Adapter {
                 if (response.status === 200) {
                     const data = await response.json();
                     if (data && data.devices) {
-                        await this.setState('devices.publicData', JSON.stringify(data), true);
+                        await this.setStateChangedAsync('devices.publicData', JSON.stringify(data), true);
                     }
                 }
                 else {
@@ -417,6 +420,11 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
+    /**
+     * Download image from a given url and update Channel icon if needed
+     * @param url
+     * @param idChannelList
+     */
     async downloadImage(url, idChannelList) {
         const logPrefix = '[downloadImage]:';
         try {
@@ -594,7 +602,7 @@ class UnifiNetwork extends utils.Adapter {
                             if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
                                 const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
                                 let changedObj = undefined;
-                                if (key === 'last_seen') {
+                                if (key === 'last_seen' || key === 'first_seen') {
                                     // set lc to last_seen value
                                     changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
                                 }
@@ -752,13 +760,19 @@ class UnifiNetwork extends utils.Adapter {
                         let mac = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user : myEvent.guest;
                         if (myEvent.ap_from && myEvent.ap_to) {
                             this.log.debug(`${logPrefix} client '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to].name}' (mac: ${myEvent.ap_to})`);
-                            const idApName = `clients.${mac}.ap_name`;
+                            const idApName = `clients.${mac}.uplink_name`;
                             if (await this.objectExists(idApName)) {
                                 await this.setState(idApName, this.cache.devices[myEvent.ap_to].name ? this.cache.devices[myEvent.ap_to].name : null, true);
                             }
-                            const ipApMac = `clients.${mac}.ap_mac`;
+                            else {
+                                this.log.warn(`${logPrefix} state '${idApName}' not exists!`);
+                            }
+                            const ipApMac = `clients.${mac}.uplink_mac`;
                             if (await this.objectExists(ipApMac)) {
                                 await this.setState(ipApMac, myEvent.ap_to ? myEvent.ap_to : null, true);
+                            }
+                            else {
+                                this.log.warn(`${logPrefix} state '${ipApMac}' not exists!`);
                             }
                         }
                         else {
