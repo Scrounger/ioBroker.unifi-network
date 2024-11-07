@@ -60,7 +60,9 @@ export declare enum WebSocketEventKeys {
     guestConnected = "EVT_WG_Connected",
     guestDisconnected = "EVT_WG_Disconnected",
     guestRoamed = "EVT_WG_Roam",
-    guestRoamedRadio = "EVT_WG_RoamRadio"
+    guestRoamedRadio = "EVT_WG_RoamRadio",
+    clientOrGuestBlocked = "EVT_WC_Blocked",
+    clientOrGuestUnblocked = "EVT_WC_Unblocked"
 }
 export interface myCache {
     devices: {

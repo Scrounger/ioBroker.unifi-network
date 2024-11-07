@@ -12,7 +12,7 @@ export declare class NetworkApi extends EventEmitter {
     private log;
     private host;
     private port;
-    private site;
+    site: string;
     private password;
     private username;
     private _eventsWs;
@@ -55,10 +55,12 @@ export declare class NetworkApi extends EventEmitter {
      */
     retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
     private _retrieve;
+    sendData(cmd: string, payload: any): Promise<Response>;
     getDevices(): Promise<NetworkDevice[] | undefined>;
     getClients(): Promise<NetworkClient[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     launchEventsWs(): Promise<boolean>;
+    blockClient(mac: string): Promise<boolean>;
 }
 export declare enum ApiEndpoints {
     login = "login",

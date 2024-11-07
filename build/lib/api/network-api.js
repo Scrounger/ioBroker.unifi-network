@@ -241,7 +241,7 @@ export class NetworkApi extends EventEmitter {
                 return null;
             }
             if (!response.ok && isServerSideIssue(response.status)) {
-                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots.`);
+                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots. (code: ${response.status})`);
                 return null;
             }
             // Some other unknown error occurred.
@@ -290,6 +290,13 @@ export class NetworkApi extends EventEmitter {
             // Clear out our response timeout if needed.
             signal.clear();
         }
+    }
+    async sendData(cmd, payload) {
+        const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}${cmd}`;
+        return await this.retrieve(url, {
+            body: JSON.stringify(payload),
+            method: 'POST'
+        });
     }
     async getDevices() {
         const logPrefix = `[${this.logPrefix}.getDevices]`;
@@ -405,6 +412,10 @@ export class NetworkApi extends EventEmitter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
         return true;
+    }
+    async blockClient(mac) {
+        const result = await this.sendData(`/api/s/${this.site}/cmd/stamgr`, { cmd: 'block-sta', mac: mac.toLowerCase() });
+        return result === null ? false : true;
     }
 }
 export var ApiEndpoints;

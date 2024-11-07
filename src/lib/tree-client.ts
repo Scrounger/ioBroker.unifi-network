@@ -4,6 +4,12 @@ import { Fingerprint, NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
 
 export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
+    blocked: {
+        iobType: 'boolean',
+        name: 'client is blocked',
+        read: true,
+        write: true
+    },
     channel: {
         iobType: 'number',
         name: 'channel'

@@ -1,5 +1,11 @@
 import moment from 'moment';
 export const clientTree = {
+    blocked: {
+        iobType: 'boolean',
+        name: 'client is blocked',
+        read: true,
+        write: true
+    },
     channel: {
         iobType: 'number',
         name: 'channel'
@@ -55,10 +61,10 @@ export const clientTree = {
         iobType: 'string',
         name: 'base64 image'
     },
-    is_guest: {
-        iobType: 'boolean',
-        name: 'is guest'
-    },
+    // is_guest: {
+    //     iobType: 'boolean',
+    //     name: 'is guest'
+    // },
     is_wired: {
         iobType: 'boolean',
         name: 'is wired'

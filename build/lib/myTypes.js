@@ -16,4 +16,6 @@ export var WebSocketEventKeys;
     WebSocketEventKeys["guestDisconnected"] = "EVT_WG_Disconnected";
     WebSocketEventKeys["guestRoamed"] = "EVT_WG_Roam";
     WebSocketEventKeys["guestRoamedRadio"] = "EVT_WG_RoamRadio";
+    WebSocketEventKeys["clientOrGuestBlocked"] = "EVT_WC_Blocked";
+    WebSocketEventKeys["clientOrGuestUnblocked"] = "EVT_WC_Unblocked";
 })(WebSocketEventKeys || (WebSocketEventKeys = {}));

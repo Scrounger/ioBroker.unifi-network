@@ -13,6 +13,7 @@ import * as myHelper from './lib/helper.js';
 import { WebSocketEventKeys, WebSocketEventMessages } from './lib/myTypes.js';
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
+import { apiCommands } from './lib/api/network-command.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -110,6 +111,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (state) {
                 if (myHelper.getIdLastPart(id) === 'imageUrl' && state.val !== null) {
+                    // internal changes
                     if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
                         await this.downloadImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
                         this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
@@ -117,6 +119,17 @@ class UnifiNetwork extends utils.Adapter {
                     else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.devices.`)) {
                         await this.downloadImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
                         this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
+                    }
+                }
+                else if (!state.from.includes(this.namespace) && state.ack === false) {
+                    // external changes
+                    if (myHelper.getIdLastPart(id) === 'blocked') {
+                        if (state.val) {
+                            apiCommands.clients.block(this.ufn, myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)));
+                        }
+                        else {
+                            apiCommands.clients.unblock(this.ufn, myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)));
+                        }
                     }
                 }
                 else {
@@ -834,8 +847,17 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.warn(`${logPrefix} roam event has no ap information! (data: ${JSON.stringify(event.data)})`);
                         }
                     }
+                    else if (myEvent.key === WebSocketEventKeys.clientOrGuestBlocked || myEvent.key === WebSocketEventKeys.clientOrGuestUnblocked) {
+                        const mac = myEvent.client;
+                        const isGuest = (this.cache.clients[mac] && this.cache.clients[mac].is_guest) || await this.objectExists(`clients.${mac}.blocked`);
+                        const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
+                        if (await this.objectExists(id)) {
+                            await this.setState(id, myEvent.key === WebSocketEventKeys.clientOrGuestBlocked, true);
+                            this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' ${myEvent.key === WebSocketEventKeys.clientOrGuestBlocked ? 'blocked' : 'unblocked'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
+                        }
+                    }
                     else {
-                        this.log.error(`${logPrefix} not implemented event. meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)}`);
+                        this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
                     }
                 }
             }

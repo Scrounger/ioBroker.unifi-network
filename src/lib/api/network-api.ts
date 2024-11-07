@@ -10,7 +10,6 @@ import { NetworkEvent } from './network-types.js'
 import { NetworkDevice } from './network-types-device.js'
 import { NetworkClient } from './network-types-client.js';
 
-
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
 
@@ -25,12 +24,11 @@ export class NetworkApi extends EventEmitter {
 
     private host: string;
     private port: number;
-    private site: string;
+    public site: string;
     private password: string;
     private username: string;
 
     private _eventsWs: WebSocket | null;
-
 
     constructor(host: string, port: number, site: string, username: string, password: string, log: NetworkLogging = console) {
         // Initialize our parent.
@@ -332,7 +330,7 @@ export class NetworkApi extends EventEmitter {
 
             if (!response.ok && isServerSideIssue(response.status)) {
 
-                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots.`);
+                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots. (code: ${response.status})`);
 
                 return null;
             }
@@ -408,6 +406,15 @@ export class NetworkApi extends EventEmitter {
             // Clear out our response timeout if needed.
             signal.clear();
         }
+    }
+
+    public async sendData(cmd: string, payload) {
+        const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}${cmd}`
+
+        return await this.retrieve(url, {
+            body: JSON.stringify(payload),
+            method: 'POST'
+        });
     }
 
     public async getDevices(): Promise<NetworkDevice[] | undefined> {
@@ -565,6 +572,14 @@ export class NetworkApi extends EventEmitter {
 
         return true;
     }
+
+    public async blockClient(mac: string) {
+        const result = await this.sendData(`/api/s/${this.site}/cmd/stamgr`, { cmd: 'block-sta', mac: mac.toLowerCase() });
+
+        return result === null ? false : true;
+    }
+
+
 }
 
 export enum ApiEndpoints {
