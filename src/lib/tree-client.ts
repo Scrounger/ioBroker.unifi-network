@@ -133,6 +133,22 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
             return 'tbd'
         }
     },
+    reconnect: {
+        id: 'reconnect',
+        iobType: 'boolean',
+        name: 'reconnect client',
+        read: false,
+        write: true,
+        role: 'button'
+    },
+    // remove: {
+    //     id: 'remove',
+    //     iobType: 'boolean',
+    //     name: 'remove client from controller',
+    //     read: false,
+    //     write: true,
+    //     role: 'button'
+    // },
     signal: {
         iobType: 'number',
         name: 'signal',

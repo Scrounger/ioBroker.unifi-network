@@ -39,5 +39,8 @@
     "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' wordt gebruikt door unifi-os (bijv. UDM-Pro)",
     "port": "haven",
     "is guest": "is gast",
-    "is wired": "is bedraad"
+    "is wired": "is bedraad",
+    "client is blocked": "cliënt is geblokkeerd",
+    "restart device": "apparaat opnieuw opstarten",
+    "reconnect client": "opnieuw verbinding maken met de klant"
 }

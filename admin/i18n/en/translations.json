@@ -36,5 +36,7 @@
 	"is guest": "is guest",
 	"is wired": "is wired",
 	"client is blocked": "client is blocked",
-	"restart device": "restart device"
+	"restart device": "restart device",
+	"reconnect client": "reconnect client",
+	"remove client from controller": "remove client from controller"
 }

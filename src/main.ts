@@ -152,6 +152,7 @@ class UnifiNetwork extends utils.Adapter {
 						await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
 						this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
 					}
+
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
 					const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
 					// external changes
@@ -161,6 +162,14 @@ class UnifiNetwork extends utils.Adapter {
 						} else {
 							apiCommands.clients.unblock(this.ufn, mac);
 						}
+
+					} else if (myHelper.getIdLastPart(id) === 'reconnect') {
+						apiCommands.clients.reconncet(this.ufn, mac);
+
+						// } else if (myHelper.getIdLastPart(id) === 'remove') {
+						// 	// controller 5.9.x only
+						// 	apiCommands.clients.remove(this.ufn, mac);
+
 					} else if (myHelper.getIdLastPart(id) === 'restart') {
 						apiCommands.devices.restart(this.ufn, mac);
 					}

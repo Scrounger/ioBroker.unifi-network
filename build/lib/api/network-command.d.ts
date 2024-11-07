@@ -6,5 +6,7 @@ export declare const apiCommands: {
     clients: {
         block(ufn: NetworkApi, mac: string): Promise<boolean>;
         unblock(ufn: NetworkApi, mac: string): Promise<boolean>;
+        reconncet(ufn: NetworkApi, mac: string): Promise<boolean>;
+        remove(ufn: NetworkApi, mac: string): Promise<boolean>;
     };
 };

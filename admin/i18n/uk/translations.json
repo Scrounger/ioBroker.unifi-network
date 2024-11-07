@@ -39,5 +39,8 @@
     "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' використовується unifi-os (наприклад, UDM-Pro)",
     "port": "порт",
     "is guest": "є гостем",
-    "is wired": "є дротовим"
+    "is wired": "є дротовим",
+    "client is blocked": "клієнт заблокований",
+    "restart device": "перезавантажте пристрій",
+    "reconnect client": "повторно підключити клієнта"
 }

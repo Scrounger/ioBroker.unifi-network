@@ -39,5 +39,8 @@
     "'default' is used by unifi-os (e.g. UDM-Pro)": "'default' é usado por unifi-os (por exemplo, UDM-Pro)",
     "port": "porta",
     "is guest": "é convidado",
-    "is wired": "está conectado"
+    "is wired": "está conectado",
+    "client is blocked": "cliente está bloqueado",
+    "restart device": "reiniciar dispositivo",
+    "reconnect client": "reconectar cliente"
 }
