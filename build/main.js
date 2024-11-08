@@ -157,7 +157,7 @@ class UnifiNetwork extends utils.Adapter {
                 }
                 else {
                     // The state was changed
-                    this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+                    this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
                 }
             }
             else {

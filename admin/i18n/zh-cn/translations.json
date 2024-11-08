@@ -51,5 +51,14 @@
     "delete clients who have not been online for x days (0 = deactivated)": "删除 x 天未在线的客户（0 = 已停用）",
     "clients": "客户",
     "guests": "客人",
-    "vpn clients": "VPN 客户端"
+    "vpn clients": "VPN 客户端",
+    "POE enabled": "启用 POE",
+    "POE power consumption": "POE功耗",
+    "temporary interruption of the power supply to the poe port of the switch": "交换机poe口供电暂时中断",
+    "total power consumption": "总耗电量",
+    "speed": "速度",
+    "satisfaction": "满意",
+    "POE voltage": "供电电压",
+    "is uplink port": "是上行端口",
+    "new firmware available": "新固件可用"
 }

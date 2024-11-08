@@ -51,5 +51,14 @@
     "delete clients who have not been online for x days (0 = deactivated)": "usuń klientów, którzy nie byli online przez x dni (0 = dezaktywowane)",
     "clients": "klienci",
     "guests": "goście",
-    "vpn clients": "klienci VPN"
+    "vpn clients": "klienci VPN",
+    "POE enabled": "Włączone POE",
+    "POE power consumption": "Pobór mocy POE",
+    "temporary interruption of the power supply to the poe port of the switch": "chwilowa przerwa w zasilaniu portu poe switcha",
+    "total power consumption": "całkowite zużycie energii",
+    "speed": "prędkość",
+    "satisfaction": "zadowolenie",
+    "POE voltage": "Napięcie POE",
+    "is uplink port": "to port łącza zwrotnego",
+    "new firmware available": "dostępne nowe oprogramowanie sprzętowe"
 }

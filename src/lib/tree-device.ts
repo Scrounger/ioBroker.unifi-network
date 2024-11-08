@@ -3,7 +3,19 @@ import { NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
 import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 
-export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
+export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } = {
+    connected_clients: {
+        id: 'connected_clients',
+        iobType: 'number',
+        name: 'connected clients',
+        valFromProperty: 'user-num_sta',
+    },
+    connected_guests: {
+        id: 'connected_guests',
+        iobType: 'number',
+        name: 'connected clients',
+        valFromProperty: 'guest-num_sta',
+    },
     hasError: {
         id: 'hasError',
         iobType: 'boolean',
@@ -56,6 +68,16 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             return val !== 0 && val !== 6 && val !== 9
         },
     },
+    led_override: {
+        iobType: 'number',
+        name: 'led override',
+        write: true,
+        states: {
+            'on': 'on',
+            'off': 'off',
+            'default': 'default'
+        }
+    },
     last_seen: {
         iobType: 'number',
         name: 'last seen'
@@ -106,6 +128,10 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 iobType: 'boolean',
                 name: 'enabled'
             },
+            is_uplink: {
+                iobType: 'boolean',
+                name: 'is uplink port'
+            },
             poe_enable: {
                 id: 'poe_enable',
                 iobType: 'boolean',
@@ -139,8 +165,52 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 iobType: 'number',
                 name: 'POE power consumption',
                 unit: 'W',
+                conditionProperty: 'port_poe',
+                conditionToCreateState(val: boolean) {
+                    // only create state if it's a poe port
+                    return val;
+                },
                 readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
                     return parseFloat(val);
+                }
+            },
+            poe_voltage: {
+                iobType: 'number',
+                name: 'POE voltage',
+                unit: 'V',
+                conditionProperty: 'port_poe',
+                conditionToCreateState(val: boolean) {
+                    // only create state if it's a poe port
+                    return val;
+                },
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                    return parseFloat(val);
+                }
+            },
+            rx_bytes: {
+                iobType: 'number',
+                name: 'RX Bytes',
+                unit: 'GB',
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                }
+            },
+            satisfaction: {
+                iobType: 'number',
+                name: 'satisfaction',
+                unit: '%'
+            },
+            speed: {
+                iobType: 'number',
+                name: 'speed',
+                unit: 'mbps'
+            },
+            tx_bytes: {
+                iobType: 'number',
+                name: 'TX Bytes',
+                unit: 'GB',
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
                 }
             }
         },
@@ -190,6 +260,27 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 },
             },
         },
+    },
+    temperature: {
+        id: 'temperature',
+        iobType: 'number',
+        name: 'temperature',
+        unit: '°C',
+        valFromProperty: 'general_temperature',
+        readVal: function (val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            return Math.round(val * 10) / 10;
+        },
+    },
+    power: {
+        id: 'power',
+        iobType: 'number',
+        name: 'total power consumption',
+        unit: 'W',
+        valFromProperty: 'total_used_power'
+    },
+    upgradable: {
+        iobType: 'boolean',
+        name: 'new firmware available'
     },
     uptime: {
         iobType: 'number',

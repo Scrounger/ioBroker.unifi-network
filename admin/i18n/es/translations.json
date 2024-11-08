@@ -51,5 +51,14 @@
     "delete clients who have not been online for x days (0 = deactivated)": "eliminar clientes que no han estado en línea durante x días (0 = desactivado)",
     "clients": "clientela",
     "guests": "huéspedes",
-    "vpn clients": "clientes vpn"
+    "vpn clients": "clientes vpn",
+    "POE enabled": "POE habilitado",
+    "POE power consumption": "Consumo de energía POE",
+    "temporary interruption of the power supply to the poe port of the switch": "interrupción temporal del suministro de energía al puerto poe del switch",
+    "total power consumption": "consumo total de energía",
+    "speed": "velocidad",
+    "satisfaction": "satisfacción",
+    "POE voltage": "voltaje POE",
+    "is uplink port": "es el puerto de enlace ascendente",
+    "new firmware available": "nuevo firmware disponible"
 }

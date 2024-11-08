@@ -51,5 +51,14 @@
     "delete clients who have not been online for x days (0 = deactivated)": "удалять клиентов, которые не были онлайн в течение x дней (0 = деактивировано)",
     "clients": "клиенты",
     "guests": "гости",
-    "vpn clients": "VPN-клиенты"
+    "vpn clients": "VPN-клиенты",
+    "POE enabled": "POE включено",
+    "POE power consumption": "Потребляемая мощность PoE",
+    "temporary interruption of the power supply to the poe port of the switch": "временное прекращение подачи питания на порт PoE коммутатора",
+    "total power consumption": "общее энергопотребление",
+    "speed": "скорость",
+    "satisfaction": "удовлетворение",
+    "POE voltage": "POE напряжение",
+    "is uplink port": "это восходящий порт",
+    "new firmware available": "доступна новая прошивка"
 }

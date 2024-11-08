@@ -47,5 +47,11 @@
 	"vpn clients": "vpn clients",
 	"POE enabled": "POE enabled",
 	"POE power consumption": "POE power consumption",
-	"temporary interruption of the power supply to the poe port of the switch": "temporary interruption of the power supply to the poe port of the switch"
+	"temporary interruption of the power supply to the poe port of the switch": "temporary interruption of the power supply to the poe port of the switch",
+	"total power consumption": "total power consumption",
+	"speed": "speed",
+	"satisfaction": "satisfaction",
+	"POE voltage": "POE voltage",
+	"is uplink port": "is uplink port",
+	"new firmware available": "new firmware available"
 }
