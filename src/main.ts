@@ -347,7 +347,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			this.createOrUpdateChannel('clients', 'clients', undefined, true);
 			this.createOrUpdateChannel('guests', 'guests', undefined, true);
-			this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
+			this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
 			await this.updateClients(await this.ufn.getClientsActive(), true);
 			await this.updatClientseOffline(await this.ufn.getClients(), true);
 
@@ -994,6 +994,8 @@ class UnifiNetwork extends utils.Adapter {
 				await this.updateClients(event.data as NetworkClient[]);
 			} else if (event.meta.message === WebSocketEventMessages.events) {
 				await this.onNetworkEvent(event as NetworkEvent);
+			} else if (event.meta.message.startsWith(WebSocketEventMessages.user)) {
+				await this.onNetworkUserEvent(event as NetworkEvent);
 			} else {
 				if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
 					this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
@@ -1012,6 +1014,8 @@ class UnifiNetwork extends utils.Adapter {
 			if (event && event.data) {
 				for (const myEvent of event.data) {
 					if ((myEvent.key as string).includes('_Connected') || (myEvent.key as string).includes('_Disconnected')) {
+						// Client connect or disconnect
+
 						let mac = undefined
 						let connected = false;
 						const isGuest = myEvent.guest ? true : false;
@@ -1032,6 +1036,8 @@ class UnifiNetwork extends utils.Adapter {
 							this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
 						}
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientRoamed || (myEvent.key as string) === WebSocketEventKeys.guestRoamed) {
+						// Client roamed between AP's
+
 						const mac: string = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user as string : myEvent.guest as string
 						const isGuest = myEvent.guest ? true : false;
 
@@ -1056,6 +1062,8 @@ class UnifiNetwork extends utils.Adapter {
 							this.log.warn(`${logPrefix} roam event has no ap information! (data: ${JSON.stringify(event.data)})`);
 						}
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientOrGuestBlocked || (myEvent.key as string) === WebSocketEventKeys.clientOrGuestUnblocked) {
+						// Client blocked or unblocked
+
 						const mac: string = myEvent.client as string;
 						const isGuest = this.cache.clients[mac].is_guest;
 
@@ -1068,6 +1076,33 @@ class UnifiNetwork extends utils.Adapter {
 						}
 					} else {
 						this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
+					}
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async onNetworkUserEvent(event: NetworkEvent) {
+		const logPrefix = '[onNetworkUserEvent]:';
+
+		try {
+			if (event && event.data) {
+				for (const myEvent of event.data) {
+					if (event.meta.message === 'user:delete' && myEvent.mac) {
+						if (this.config.keepIobSynchron && this.cache.clients[myEvent.mac as string]) {
+							const mac = myEvent.mac as string;
+							const isGuest = this.cache.clients[mac].is_guest;
+							const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}`
+
+							if (await this.objectExists(idChannel)) {
+								await this.delObjectAsync(idChannel, { recursive: true });
+								this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' deleted, because it's removed by the unifi-controller`);
+							}
+						}
+					} else {
+						this.log.error(`${logPrefix} not implemented user event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
 					}
 				}
 			}

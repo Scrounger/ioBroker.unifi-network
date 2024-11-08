@@ -41,5 +41,8 @@
 	"remove client from controller": "remove client from controller",
 	"keep unifi-controller and ioBroker synchronized": "keep unifi-controller and ioBroker synchronized",
 	"states are deleted when they are deleted in the unifi-controller": "states are deleted when they are deleted in the unifi-controller",
-	"delete clients who have not been online for x days (0 = deactivated)": "delete clients who have not been online for x days (0 = deactivated)"
+	"delete clients who have not been online for x days (0 = deactivated)": "delete clients who have not been online for x days (0 = deactivated)",
+	"clients": "clients",
+	"guests": "guests",
+	"vpn clients": "vpn clients"
 }

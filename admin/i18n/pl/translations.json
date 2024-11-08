@@ -48,5 +48,8 @@
     "states are deleted when they are deleted in the controller": "Stany są usuwane w momencie ich usunięcia w sterowniku",
     "states are deleted when they are deleted in the unifi-controller": "stany są usuwane, gdy są usuwane w kontrolerze unifi",
     "keep unifi-controller and ioBroker synchronized": "synchronizuj kontroler unifi i ioBroker",
-    "delete clients who have not been online for x days (0 = deactivated)": "usuń klientów, którzy nie byli online przez x dni (0 = dezaktywowane)"
+    "delete clients who have not been online for x days (0 = deactivated)": "usuń klientów, którzy nie byli online przez x dni (0 = dezaktywowane)",
+    "clients": "klienci",
+    "guests": "goście",
+    "vpn clients": "klienci VPN"
 }

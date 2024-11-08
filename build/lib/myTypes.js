@@ -2,7 +2,7 @@ export var WebSocketEventMessages;
 (function (WebSocketEventMessages) {
     WebSocketEventMessages["client"] = "client:sync";
     WebSocketEventMessages["device"] = "device:sync";
-    WebSocketEventMessages["user"] = "user:sync";
+    WebSocketEventMessages["user"] = "user:";
     WebSocketEventMessages["events"] = "events";
     WebSocketEventMessages["speedTest"] = "speed-test:update";
 })(WebSocketEventMessages || (WebSocketEventMessages = {}));

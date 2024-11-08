@@ -289,7 +289,7 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateDevices(await this.ufn.getDevices(), true);
             this.createOrUpdateChannel('clients', 'clients', undefined, true);
             this.createOrUpdateChannel('guests', 'guests', undefined, true);
-            this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
+            this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
             await this.updateClients(await this.ufn.getClientsActive(), true);
             await this.updatClientseOffline(await this.ufn.getClients(), true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.updateInterval * 2 * 1000);
@@ -413,10 +413,10 @@ class UnifiNetwork extends utils.Adapter {
                             else if (client.mac && client.is_guest) {
                                 if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
                                     await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
-                                    this.log.debug(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                    this.log.info(`${logPrefix} guest '${name}' deleted, (offline since ${offlineSince} days)`);
                                 }
                                 else {
-                                    this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                    this.log.silly(`${logPrefix} guest '${name}' ingored, (offline since ${offlineSince} days)`);
                                 }
                             }
                             else {
@@ -854,6 +854,9 @@ class UnifiNetwork extends utils.Adapter {
             else if (event.meta.message === WebSocketEventMessages.events) {
                 await this.onNetworkEvent(event);
             }
+            else if (event.meta.message.startsWith(WebSocketEventMessages.user)) {
+                await this.onNetworkUserEvent(event);
+            }
             else {
                 if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
                     this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
@@ -870,6 +873,7 @@ class UnifiNetwork extends utils.Adapter {
             if (event && event.data) {
                 for (const myEvent of event.data) {
                     if (myEvent.key.includes('_Connected') || myEvent.key.includes('_Disconnected')) {
+                        // Client connect or disconnect
                         let mac = undefined;
                         let connected = false;
                         const isGuest = myEvent.guest ? true : false;
@@ -888,6 +892,7 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     else if (myEvent.key === WebSocketEventKeys.clientRoamed || myEvent.key === WebSocketEventKeys.guestRoamed) {
+                        // Client roamed between AP's
                         const mac = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user : myEvent.guest;
                         const isGuest = myEvent.guest ? true : false;
                         if (myEvent.ap_from && myEvent.ap_to) {
@@ -912,6 +917,7 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     else if (myEvent.key === WebSocketEventKeys.clientOrGuestBlocked || myEvent.key === WebSocketEventKeys.clientOrGuestUnblocked) {
+                        // Client blocked or unblocked
                         const mac = myEvent.client;
                         const isGuest = this.cache.clients[mac].is_guest;
                         const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
@@ -922,6 +928,32 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     else {
                         this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
+                    }
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkUserEvent(event) {
+        const logPrefix = '[onNetworkUserEvent]:';
+        try {
+            if (event && event.data) {
+                for (const myEvent of event.data) {
+                    if (event.meta.message === 'user:delete' && myEvent.mac) {
+                        if (this.config.keepIobSynchron && this.cache.clients[myEvent.mac]) {
+                            const mac = myEvent.mac;
+                            const isGuest = this.cache.clients[mac].is_guest;
+                            const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}`;
+                            if (await this.objectExists(idChannel)) {
+                                await this.delObjectAsync(idChannel, { recursive: true });
+                                this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' deleted, because it's removed by the unifi-controller`);
+                            }
+                        }
+                    }
+                    else {
+                        this.log.error(`${logPrefix} not implemented user event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
                     }
                 }
             }
