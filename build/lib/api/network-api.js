@@ -291,11 +291,11 @@ export class NetworkApi extends EventEmitter {
             signal.clear();
         }
     }
-    async sendData(cmd, payload) {
+    async sendData(cmd, payload, method = 'POST') {
         const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}${cmd}`;
         return await this.retrieve(url, {
             body: JSON.stringify(payload),
-            method: 'POST'
+            method: method
         });
     }
     /**
@@ -343,6 +343,20 @@ export class NetworkApi extends EventEmitter {
             if (res && res.data) {
                 return res.data;
             }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    async updateDeviceSettings(idDevice, payload) {
+        const logPrefix = `[${this.logPrefix}.updateDeviceSettings]`;
+        try {
+            const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}/api/s/${this.site}/rest/device/${idDevice.trim()}`;
+            return await this.retrieve(url, {
+                body: JSON.stringify(payload),
+                method: 'PUT'
+            });
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

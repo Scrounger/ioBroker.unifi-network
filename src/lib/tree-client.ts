@@ -8,7 +8,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'client is blocked',
         read: true,
-        write: true
+        write: true,
     },
     channel: {
         iobType: 'number',
@@ -137,6 +137,11 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         id: 'reconnect',
         iobType: 'boolean',
         name: 'reconnect client',
+        conditionProperty: 'is_wired',
+        conditionToCreateState(val: boolean) {
+            // only create state if it's a wireless client
+            return val === false;
+        },
         read: false,
         write: true,
         role: 'button'

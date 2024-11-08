@@ -690,7 +690,8 @@ class UnifiNetwork extends utils.Adapter {
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
                         if (key
                             && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty')))
-                            && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
+                            && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')
+                            && (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') || treeDefinition[key].condition(objValues[treeDefinition[key].conditionProperty]) === true)) {
                             // if we have a 'iobType' property, then it's a state
                             let stateId = key;
                             if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {

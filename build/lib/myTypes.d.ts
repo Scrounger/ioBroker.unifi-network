@@ -24,6 +24,8 @@ export interface myCommonState {
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>;
     valFromProperty?: string;
     statesFromProperty?: string;
+    conditionProperty?: string;
+    condition?(val: ioBroker.StateValue): boolean;
     subscribeMe?: true;
 }
 export interface myCommoneChannelObject {

@@ -44,5 +44,7 @@
 	"delete clients who have not been online for x days (0 = deactivated)": "delete clients who have not been online for x days (0 = deactivated)",
 	"clients": "clients",
 	"guests": "guests",
-	"vpn clients": "vpn clients"
+	"vpn clients": "vpn clients",
+	"POE enabled": "POE enabled",
+	"POE power consumption": "POE power consumption"
 }

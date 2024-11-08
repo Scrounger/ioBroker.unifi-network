@@ -93,6 +93,34 @@ export const deviceTree = {
             name: {
                 iobType: 'string',
                 name: 'port name'
+            },
+            enable: {
+                iobType: 'boolean',
+                name: 'enabled'
+            },
+            poe_enable: {
+                id: 'poe_enabled',
+                iobType: 'boolean',
+                name: 'POE enabled',
+                conditionProperty: 'port_poe',
+                condition(val) {
+                    // only create state if it's a poe port
+                    return val;
+                },
+                valFromProperty: 'poe_mode',
+                read: true,
+                write: true,
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return val === 'auto';
+                }
+            },
+            poe_power: {
+                iobType: 'number',
+                name: 'POE power consumption',
+                unit: 'W',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return parseFloat(val);
+                }
             }
         },
     },

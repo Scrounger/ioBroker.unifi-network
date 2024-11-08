@@ -55,7 +55,7 @@ export declare class NetworkApi extends EventEmitter {
      */
     retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
     private _retrieve;
-    sendData(cmd: string, payload: any): Promise<Response>;
+    sendData(cmd: string, payload: any, method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH'): Promise<Response>;
     /**
      * Detailed list of all devices on site
      * @returns
@@ -71,6 +71,7 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getClients(): Promise<NetworkClient[] | undefined>;
+    updateDeviceSettings(idDevice: string, payload: any): Promise<Response>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     launchEventsWs(): Promise<boolean>;
 }

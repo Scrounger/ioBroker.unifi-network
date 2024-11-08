@@ -408,12 +408,12 @@ export class NetworkApi extends EventEmitter {
         }
     }
 
-    public async sendData(cmd: string, payload) {
+    public async sendData(cmd: string, payload: any, method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH' = 'POST'): Promise<Response> {
         const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}${cmd}`
 
         return await this.retrieve(url, {
             body: JSON.stringify(payload),
-            method: 'POST'
+            method: method
         });
     }
 
@@ -471,6 +471,24 @@ export class NetworkApi extends EventEmitter {
             if (res && res.data) {
                 return res.data;
             }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    public async updateDeviceSettings(idDevice: string, payload: any): Promise<Response> {
+        const logPrefix = `[${this.logPrefix}.updateDeviceSettings]`
+
+        try {
+            const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}/api/s/${this.site}/rest/device/${idDevice.trim()}`;
+
+            return await this.retrieve(url, {
+                body: JSON.stringify(payload),
+                method: 'PUT'
+            });
+
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }

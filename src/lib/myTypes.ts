@@ -21,9 +21,13 @@ export interface myCommonState {
     readVal?(val: ioBroker.StateValue | Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
-    valFromProperty?: string             // Take value from other property in the corresponding tree
-    statesFromProperty?: string         // ToDo: perhaps can be removed
-    subscribeMe?: true                   // subscribe
+    valFromProperty?: string                                        // Take value from other property in the corresponding tree
+    statesFromProperty?: string                                     // ToDo: perhaps can be removed
+
+    conditionProperty?: string                                      // Property to use in condition
+    conditionToCreateState?(val: ioBroker.StateValue): boolean     // condition to create state
+
+    subscribeMe?: true                                              // subscribe
 }
 
 export interface myCommoneChannelObject {

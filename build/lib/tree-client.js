@@ -4,7 +4,7 @@ export const clientTree = {
         iobType: 'boolean',
         name: 'client is blocked',
         read: true,
-        write: true
+        write: true,
     },
     channel: {
         iobType: 'number',
@@ -142,6 +142,11 @@ export const clientTree = {
         id: 'reconnect',
         iobType: 'boolean',
         name: 'reconnect client',
+        conditionProperty: 'is_wired',
+        condition(val) {
+            // only create state if it's a wireless client
+            return val === false;
+        },
         read: false,
         write: true,
         role: 'button'
