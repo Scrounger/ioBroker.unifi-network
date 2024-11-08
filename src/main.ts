@@ -179,11 +179,18 @@ class UnifiNetwork extends utils.Adapter {
 
 						apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
 
-						this.log.info(`${logPrefix} poe power cycle on port ${port_idx} of ${this.cache.devices[mac].name} (mac: ${mac})`);
+						this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: cycle poe power`);
+					} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
+						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+						const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+
+						apiCommands.devices.switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
+
+						this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: switch poe power '${state.val ? 'on' : 'off'}'`);
 					}
 				} else {
 					// The state was changed
-					this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+					this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 				}
 			} else {
 				// The state was deleted

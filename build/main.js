@@ -146,7 +146,13 @@ class UnifiNetwork extends utils.Adapter {
                         const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
                         const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
                         apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
-                        this.log.info(`${logPrefix} poe power cycle on port ${port_idx} of ${this.cache.devices[mac].name} (mac: ${mac})`);
+                        this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: cycle poe power`);
+                    }
+                    else if (myHelper.getIdLastPart(id) === 'poe_enable') {
+                        const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+                        const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+                        apiCommands.devices.switchPoePort(state.val, port_idx, this.ufn, this.cache.devices[mac]);
+                        this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: switch poe power '${state.val ? 'on' : 'off'}'`);
                     }
                 }
                 else {

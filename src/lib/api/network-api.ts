@@ -20,7 +20,7 @@ export class NetworkApi extends EventEmitter {
     private fetch: (url: string | Request, options?: RequestOptions) => Promise<Response>;
     private headers: Headers;
 
-    private log: NetworkLogging;
+    public log: NetworkLogging;
 
     private host: string;
     private port: number;

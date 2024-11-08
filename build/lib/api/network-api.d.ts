@@ -9,7 +9,7 @@ export declare class NetworkApi extends EventEmitter {
     private apiLastSuccess;
     private fetch;
     private headers;
-    private log;
+    log: NetworkLogging;
     private host;
     private port;
     site: string;
