@@ -21,6 +21,7 @@ import { WebSocketEventKeys, WebSocketEventMessages, myCache, myCommonChannelArr
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
 import { apiCommands } from './lib/api/network-command.js';
+import { eventHandler } from './lib/eventHandler.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -1015,91 +1016,20 @@ class UnifiNetwork extends utils.Adapter {
 				for (const myEvent of event.data) {
 					if ((myEvent.key as string).includes('_Connected') || (myEvent.key as string).includes('_Disconnected')) {
 						// Client connect or disconnect
+						eventHandler.client.connection(event.meta, myEvent, this, this.cache);
 
-						let mac = undefined
-						let connected = false;
-						const isGuest = myEvent.guest ? true : false;
-
-						if (myEvent.key === WebSocketEventKeys.clientConnected || myEvent.key === WebSocketEventKeys.clientDisconnected) {
-							mac = myEvent.user;
-							connected = myEvent.key === WebSocketEventKeys.clientConnected
-						} else if ((myEvent.key === WebSocketEventKeys.guestConnected || myEvent.key === WebSocketEventKeys.guestDisconnected)) {
-							mac = myEvent.guest;
-							connected = myEvent.key === WebSocketEventKeys.guestConnected
-						}
-
-						const id = `${isGuest ? 'guests' : 'clients'}.${mac}.isOnline`;
-
-						if (await this.objectExists(id)) {
-							await this.setState(id, connected, true);
-
-							this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
-						}
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientRoamed || (myEvent.key as string) === WebSocketEventKeys.guestRoamed) {
 						// Client roamed between AP's
+						eventHandler.client.roamed(event.meta, myEvent, this, this.cache);
 
-						const mac: string = (myEvent.key === WebSocketEventKeys.clientRoamed) ? myEvent.user as string : myEvent.guest as string
-						const isGuest = myEvent.guest ? true : false;
-
-						if (myEvent.ap_from && myEvent.ap_to) {
-							this.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' (mac: ${mac}) roamed from '${this.cache.devices[myEvent.ap_from as string].name}' (mac: ${myEvent.ap_from}) to '${this.cache.devices[myEvent.ap_to as string].name}' (mac: ${myEvent.ap_to})`);
-
-							const idApName = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_name`;
-							if (await this.objectExists(idApName)) {
-								await this.setState(idApName, this.cache.devices[myEvent.ap_to as string].name ? this.cache.devices[myEvent.ap_to as string].name : null, true);
-							} else {
-								this.log.warn(`${logPrefix} state '${idApName}' not exists!`);
-							}
-
-							const ipApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
-							if (await this.objectExists(ipApMac)) {
-								await this.setState(ipApMac, (myEvent.ap_to as string) ? (myEvent.ap_to as string) : null, true);
-							} else {
-								this.log.warn(`${logPrefix} state '${ipApMac}' not exists!`);
-							}
-
-						} else {
-							this.log.warn(`${logPrefix} roam event has no ap information! (data: ${JSON.stringify(event.data)})`);
-						}
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientRoamedRadio || (myEvent.key as string) === WebSocketEventKeys.guestRoamedRadio) {
-						const mac: string = (myEvent.key === WebSocketEventKeys.clientRoamedRadio) ? myEvent.user as string : myEvent.guest as string
-						const isGuest = myEvent.guest ? true : false;
-
-						if (myEvent.channel_from && myEvent.channel_to && myEvent.ap) {
-							this.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' (mac: ${mac}) roamed radio from channel '${myEvent.channel_from as string}' to '${myEvent.channel_to as string}' on ${this.cache.devices[myEvent.ap as string].name} (mac: ${this.cache.devices[myEvent.ap as string].mac})`);
-
-							const ipChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
-							const valChannel = parseInt(myEvent.channel_to as string);
-							if (await this.objectExists(ipChannel)) {
-								await this.setState(ipChannel, valChannel, true);
-							} else {
-								this.log.warn(`${logPrefix} state '${ipChannel}' not exists!`);
-							}
-
-							const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_name`;
-							if (await this.objectExists(ipChannelName)) {
-								await this.setState(ipChannelName, (clientTree as any).channel_name.readVal(valChannel), true);
-							} else {
-								this.log.warn(`${logPrefix} state '${ipChannelName}' not exists!`);
-							}
-
-						} else {
-							this.log.warn(`${logPrefix} roam radio event has no ap information! (data: ${JSON.stringify(event.data)})`);
-						}
+						// Client roamed radio -> change channel
+						eventHandler.client.roamedRadio(event.meta, myEvent, this, this.cache);
 
 					} else if ((myEvent.key as string) === WebSocketEventKeys.clientOrGuestBlocked || (myEvent.key as string) === WebSocketEventKeys.clientOrGuestUnblocked) {
 						// Client blocked or unblocked
+						eventHandler.client.block(event.meta, myEvent, this, this.cache);
 
-						const mac: string = myEvent.client as string;
-						const isGuest = this.cache.clients[mac].is_guest;
-
-						const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
-
-						if (await this.objectExists(id)) {
-							await this.setState(id, (myEvent.key as string) === WebSocketEventKeys.clientOrGuestBlocked, true);
-
-							this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' ${(myEvent.key as string) === WebSocketEventKeys.clientOrGuestBlocked ? 'blocked' : 'unblocked'} (mac: ${mac}${this.cache.clients[mac].ip ? `, ip: ${this.cache.clients[mac].ip}` : ''})`);
-						}
 					} else {
 						this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
 					}
@@ -1116,20 +1046,8 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (event && event.data) {
 				for (const myEvent of event.data) {
-					if (event.meta.message === 'user:delete' && myEvent.mac) {
-						if (this.config.keepIobSynchron && this.cache.clients[myEvent.mac as string]) {
-							const mac = myEvent.mac as string;
-							const isGuest = this.cache.clients[mac].is_guest;
-							const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}`
-
-							if (await this.objectExists(idChannel)) {
-								await this.delObjectAsync(idChannel, { recursive: true });
-								this.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' deleted, because it's removed by the unifi-controller`);
-							}
-						}
-					} else {
-						this.log.error(`${logPrefix} not implemented user event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
-					}
+					// user removed client from unifi-controller
+					eventHandler.user.clientRemoved(event.meta, myEvent, this, this.cache);
 				}
 			}
 		} catch (error) {
