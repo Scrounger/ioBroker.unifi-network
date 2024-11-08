@@ -134,9 +134,9 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     else if (myHelper.getIdLastPart(id) === 'reconnect') {
                         apiCommands.clients.reconncet(this.ufn, mac);
-                    }
-                    else if (myHelper.getIdLastPart(id) === 'remove') {
-                        apiCommands.clients.remove(this.ufn, mac);
+                        // } else if (myHelper.getIdLastPart(id) === 'remove') {
+                        // 	// controller 5.9.x only
+                        // 	apiCommands.clients.remove(this.ufn, mac);
                     }
                     else if (myHelper.getIdLastPart(id) === 'restart') {
                         apiCommands.devices.restart(this.ufn, mac);
@@ -290,7 +290,8 @@ class UnifiNetwork extends utils.Adapter {
             this.createOrUpdateChannel('clients', 'clients', undefined, true);
             this.createOrUpdateChannel('guests', 'guests', undefined, true);
             this.createOrUpdateChannel('vpn', 'vpn', undefined, true);
-            await this.updateClients(await this.ufn.getClients(), true);
+            await this.updateClients(await this.ufn.getClientsActive(), true);
+            await this.updatClientseOffline(await this.ufn.getClients(), true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.updateInterval * 2 * 1000);
         }
         catch (error) {
@@ -327,7 +328,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateClients(data, isAdapterStart = false) {
+    async updateClients(data, isAdapterStart = false, isOfflineClients = false) {
         const logPrefix = '[updateClients]:';
         try {
             if (this.connected && this.isConnected) {
@@ -335,63 +336,112 @@ class UnifiNetwork extends utils.Adapter {
                 const idGuestChannel = 'guests';
                 const idVpnChannel = 'vpn';
                 if (data) {
-                    if (isAdapterStart)
-                        this.log.info(`${logPrefix} Discovered ${data.length} clients`);
-                    for (let client of data) {
-                        const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
-                        if (client.mac && !client.is_guest) {
-                            // ToDo: uncomment
-                            // if (!this.cache.clients[client.mac]) {
-                            // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-                            // }
-                            if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
-                                const lastSeen = this.cache.clients[client.mac].last_seen;
-                                if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                    continue;
-                                }
-                            }
-                            this.cache.clients[client.mac] = client;
-                            this.cache.clients[client.mac].name = name;
-                            this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                            await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
-                        }
-                        else if (client.mac && client.is_guest) {
-                            // ToDo: uncomment
-                            // if (!this.cache.clients[client.mac]) {
-                            // 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-                            // }
-                            if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
-                                const lastSeen = this.cache.clients[client.mac].last_seen;
-                                if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                    continue;
-                                }
-                            }
-                            this.cache.clients[client.mac] = client;
-                            this.cache.clients[client.mac].name = name;
-                            this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                            await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, isAdapterStart);
+                    if (isAdapterStart) {
+                        if (!isOfflineClients) {
+                            this.log.info(`${logPrefix} Discovered ${data.length} connected clients`);
                         }
                         else {
-                            if (client.type === 'VPN' && client.ip) {
+                            this.log.info(`${logPrefix} Discovered ${data.length} disconnected clients`);
+                        }
+                    }
+                    for (let client of data) {
+                        const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
+                        const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
+                        if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
+                            if (client.mac && !client.is_guest) {
                                 // ToDo: uncomment
-                                // if (this.cache.vpn[client.ip]) {
-                                // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                // if (!this.cache.clients[client.mac]) {
+                                // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                                 // }
-                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
-                                    const lastSeen = this.cache.vpn[client.ip].last_seen;
+                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
+                                    const lastSeen = this.cache.clients[client.mac].last_seen;
                                     if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
                                         continue;
                                     }
                                 }
-                                this.cache.vpn[client.ip] = client;
-                                this.cache.vpn[client.ip].name = name;
-                                const preparedIp = client.ip.replaceAll('.', '_');
-                                this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                await this.createGenericState(`${idVpnChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
+                                this.cache.clients[client.mac] = client;
+                                this.cache.clients[client.mac].name = name;
+                                this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
+                            }
+                            else if (client.mac && client.is_guest) {
+                                // ToDo: uncomment
+                                // if (!this.cache.clients[client.mac]) {
+                                // 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                // }
+                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
+                                    const lastSeen = this.cache.clients[client.mac].last_seen;
+                                    if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                        continue;
+                                    }
+                                }
+                                this.cache.clients[client.mac] = client;
+                                this.cache.clients[client.mac].name = name;
+                                this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, isAdapterStart);
+                            }
+                            else {
+                                if (client.type === 'VPN' && client.ip) {
+                                    // ToDo: uncomment
+                                    // if (this.cache.vpn[client.ip]) {
+                                    // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                    // }
+                                    if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
+                                        const lastSeen = this.cache.vpn[client.ip].last_seen;
+                                        if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                            continue;
+                                        }
+                                    }
+                                    this.cache.vpn[client.ip] = client;
+                                    this.cache.vpn[client.ip].name = name;
+                                    const preparedIp = client.ip.replaceAll('.', '_');
+                                    this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+                                    await this.createGenericState(`${idVpnChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
+                                }
+                            }
+                        }
+                        else {
+                            if (client.mac && !client.is_guest) {
+                                if (await this.objectExists(`${idChannel}.${client.mac}`)) {
+                                    await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
+                                    this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                }
+                                else {
+                                    this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                }
+                            }
+                            else if (client.mac && client.is_guest) {
+                                if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
+                                    await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
+                                    this.log.debug(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                }
+                                else {
+                                    this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                }
+                            }
+                            else {
+                                this.log.silly(`${logPrefix} '${name}' ingored, because it's offline since ${offlineSince} days`);
                             }
                         }
                     }
                 }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updatClientseOffline(data, isAdapterStart = false) {
+        const logPrefix = '[updatClientseOffline]:';
+        try {
+            if (data) {
+                let result = [];
+                for (let client of data) {
+                    if (!this.cache.clients[client.mac] && !this.cache.clients[client.ip]) {
+                        result.push(client);
+                    }
+                }
+                await this.updateClients(result, isAdapterStart, true);
             }
         }
         catch (error) {

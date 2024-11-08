@@ -98,7 +98,9 @@
         "updateInterval": 15,
         "deviceImageDownload": false,
         "clientOfflineTimeout": 92,
-        "clientImageDownload": false
+        "clientImageDownload": false,
+        "keepIobSynchron": false,
+        "deleteClientsOlderThan": 0
     },
     "objects": [],
     "instanceObjects": [

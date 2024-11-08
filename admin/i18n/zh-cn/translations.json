@@ -42,5 +42,11 @@
     "is wired": "是有线的",
     "client is blocked": "客户端被阻止",
     "restart device": "重启设备",
-    "reconnect client": "重新连接客户端"
+    "reconnect client": "重新连接客户端",
+    "remove client from controller": "从控制器中删除客户端",
+    "keep controller and ioBroker synchronized": "保持控制器和 ioBroker 同步",
+    "states are deleted when they are deleted in the controller": "状态在控制器中删除时也被删除",
+    "states are deleted when they are deleted in the unifi-controller": "在unifi-controller中删除状态时也会被删除",
+    "keep unifi-controller and ioBroker synchronized": "保持 unifi-controller 和 ioBroker 同步",
+    "delete clients who have not been online for x days (0 = deactivated)": "删除 x 天未在线的客户（0 = 已停用）"
 }

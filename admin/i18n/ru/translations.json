@@ -42,5 +42,11 @@
     "is wired": "подключен",
     "client is blocked": "клиент заблокирован",
     "restart device": "перезагрузить устройство",
-    "reconnect client": "повторно подключить клиент"
+    "reconnect client": "повторно подключить клиент",
+    "remove client from controller": "удалить клиента из контроллера",
+    "keep controller and ioBroker synchronized": "синхронизировать контроллер и ioBroker",
+    "states are deleted when they are deleted in the controller": "состояния удаляются при их удалении в контроллере",
+    "states are deleted when they are deleted in the unifi-controller": "состояния удаляются при их удалении в unifi-контроллере",
+    "keep unifi-controller and ioBroker synchronized": "синхронизировать unifi-контроллер и ioBroker",
+    "delete clients who have not been online for x days (0 = deactivated)": "удалять клиентов, которые не были онлайн в течение x дней (0 = деактивировано)"
 }

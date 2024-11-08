@@ -91,6 +91,21 @@
 					"label": "download unifi device images",
 					"sm": 12,
 					"md": 2
+				},
+				"keepIobSynchron": {
+					"type": "checkbox",
+					"label": "keep unifi-controller and ioBroker synchronized",
+					"help": "states are deleted when they are deleted in the unifi-controller",
+					"sm": 12,
+					"md": 3
+				},
+				"deleteClientsOlderThan": {
+					"type": "number",
+					"label": "delete clients who have not been online for x days (0 = deactivated)",
+					"min": 0,
+					"step": 1,
+					"sm": 12,
+					"md": 3
 				}
 			}
 		}

@@ -42,5 +42,11 @@
     "is wired": "está conectado",
     "client is blocked": "cliente está bloqueado",
     "restart device": "reiniciar dispositivo",
-    "reconnect client": "reconectar cliente"
+    "reconnect client": "reconectar cliente",
+    "remove client from controller": "remover cliente do controlador",
+    "keep controller and ioBroker synchronized": "mantenha o controlador e o ioBroker sincronizados",
+    "states are deleted when they are deleted in the controller": "estados são excluídos quando são excluídos no controlador",
+    "states are deleted when they are deleted in the unifi-controller": "estados são excluídos quando são excluídos no controlador unifi",
+    "keep unifi-controller and ioBroker synchronized": "mantenha o unifi-controller e o ioBroker sincronizados",
+    "delete clients who have not been online for x days (0 = deactivated)": "excluir clientes que não estão online há x dias (0 = desativado)"
 }

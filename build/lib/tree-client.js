@@ -146,14 +146,14 @@ export const clientTree = {
         write: true,
         role: 'button'
     },
-    remove: {
-        id: 'remove',
-        iobType: 'boolean',
-        name: 'remove client from controller',
-        read: false,
-        write: true,
-        role: 'button'
-    },
+    // remove: {
+    //     id: 'remove',
+    //     iobType: 'boolean',
+    //     name: 'remove client from controller',
+    //     read: false,
+    //     write: true,
+    //     role: 'button'
+    // },
     signal: {
         iobType: 'number',
         name: 'signal',

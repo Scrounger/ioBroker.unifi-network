@@ -42,5 +42,11 @@
     "is wired": "is bedraad",
     "client is blocked": "cliënt is geblokkeerd",
     "restart device": "apparaat opnieuw opstarten",
-    "reconnect client": "opnieuw verbinding maken met de klant"
+    "reconnect client": "opnieuw verbinding maken met de klant",
+    "remove client from controller": "verwijder de client van de controller",
+    "keep controller and ioBroker synchronized": "houd de controller en ioBroker gesynchroniseerd",
+    "states are deleted when they are deleted in the controller": "statussen worden verwijderd wanneer ze in de controller worden verwijderd",
+    "states are deleted when they are deleted in the unifi-controller": "staten worden verwijderd wanneer ze worden verwijderd in de unifi-controller",
+    "keep unifi-controller and ioBroker synchronized": "houd unifi-controller en ioBroker gesynchroniseerd",
+    "delete clients who have not been online for x days (0 = deactivated)": "verwijder klanten die x dagen niet online zijn geweest (0 = gedeactiveerd)"
 }

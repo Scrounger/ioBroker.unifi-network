@@ -13,6 +13,8 @@ declare global {
 			deviceImageDownload: boolean;
 			clientOfflineTimeout: number;
 			clientImageDownload: boolean;
+			keepIobSynchron: boolean;
+			deleteClientsOlderThan: number;
 		}
 	}
 }
