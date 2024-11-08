@@ -96,6 +96,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         arrayChannelIdPrefix: 'Port_',
         arrayChannelIdZeroPad: 2,
         arrayChannelNameFromProperty: 'name',
+        arrayStartNumber: 1,
         array: {
             name: {
                 iobType: 'string',
