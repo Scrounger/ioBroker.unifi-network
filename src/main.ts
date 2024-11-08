@@ -173,6 +173,13 @@ class UnifiNetwork extends utils.Adapter {
 
 					} else if (myHelper.getIdLastPart(id) === 'restart') {
 						apiCommands.devices.restart(this.ufn, mac);
+					} else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
+						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+						const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+
+						apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
+
+						this.log.info(`${logPrefix} poe power cycle on port ${port_idx} of ${this.cache.devices[mac].name} (mac: ${mac})`);
 					}
 				} else {
 					// The state was changed

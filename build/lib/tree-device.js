@@ -99,11 +99,11 @@ export const deviceTree = {
                 name: 'enabled'
             },
             poe_enable: {
-                id: 'poe_enabled',
+                id: 'poe_enable',
                 iobType: 'boolean',
                 name: 'POE enabled',
                 conditionProperty: 'port_poe',
-                condition(val) {
+                conditionToCreateState(val) {
                     // only create state if it's a poe port
                     return val;
                 },
@@ -112,6 +112,19 @@ export const deviceTree = {
                 write: true,
                 readVal(val, adapter, cache, deviceOrClient) {
                     return val === 'auto';
+                }
+            },
+            poe_cycle: {
+                id: 'poe_cycle',
+                iobType: 'boolean',
+                name: 'temporary interruption of the power supply to the poe port of the switch',
+                read: false,
+                write: true,
+                role: 'button',
+                conditionProperty: 'port_poe',
+                conditionToCreateState(val) {
+                    // only create state if it's a poe port
+                    return val;
                 }
             },
             poe_power: {

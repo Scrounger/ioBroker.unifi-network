@@ -143,7 +143,7 @@ export const clientTree = {
         iobType: 'boolean',
         name: 'reconnect client',
         conditionProperty: 'is_wired',
-        condition(val) {
+        conditionToCreateState(val) {
             // only create state if it's a wireless client
             return val === false;
         },

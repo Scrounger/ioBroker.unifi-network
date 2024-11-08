@@ -106,7 +106,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'enabled'
             },
             poe_enable: {
-                id: 'poe_enabled',
+                id: 'poe_enable',
                 iobType: 'boolean',
                 name: 'POE enabled',
                 conditionProperty: 'port_poe',
@@ -119,6 +119,19 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 write: true,
                 readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
                     return val === 'auto';
+                }
+            },
+            poe_cycle: {
+                id: 'poe_cycle',
+                iobType: 'boolean',
+                name: 'temporary interruption of the power supply to the poe port of the switch',
+                read: false,
+                write: true,
+                role: 'button',
+                conditionProperty: 'port_poe',
+                conditionToCreateState(val: boolean) {
+                    // only create state if it's a poe port
+                    return val;
                 }
             },
             poe_power: {

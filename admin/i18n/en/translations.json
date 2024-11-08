@@ -46,5 +46,6 @@
 	"guests": "guests",
 	"vpn clients": "vpn clients",
 	"POE enabled": "POE enabled",
-	"POE power consumption": "POE power consumption"
+	"POE power consumption": "POE power consumption",
+	"temporary interruption of the power supply to the poe port of the switch": "temporary interruption of the power supply to the poe port of the switch"
 }

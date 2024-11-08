@@ -142,6 +142,11 @@ class UnifiNetwork extends utils.Adapter {
                     else if (myHelper.getIdLastPart(id) === 'restart') {
                         apiCommands.devices.restart(this.ufn, mac);
                     }
+                    else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
+                        const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+                        const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+                        apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
+                    }
                 }
                 else {
                     // The state was changed
@@ -691,7 +696,7 @@ class UnifiNetwork extends utils.Adapter {
                         if (key
                             && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty')))
                             && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')
-                            && (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') || treeDefinition[key].condition(objValues[treeDefinition[key].conditionProperty]) === true)) {
+                            && (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') || treeDefinition[key].conditionToCreateState(objValues[treeDefinition[key].conditionProperty]) === true)) {
                             // if we have a 'iobType' property, then it's a state
                             let stateId = key;
                             if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {

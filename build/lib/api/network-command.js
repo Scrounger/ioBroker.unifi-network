@@ -3,6 +3,10 @@ export const apiCommands = {
         async restart(ufn, mac) {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'restart', mac: mac.toLowerCase() });
             return result === null ? false : true;
+        },
+        async cyclePoePortPower(ufn, mac, port_idx) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
+            return result === null ? false : true;
         }
     },
     clients: {
