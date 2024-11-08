@@ -916,6 +916,31 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.warn(`${logPrefix} roam event has no ap information! (data: ${JSON.stringify(event.data)})`);
                         }
                     }
+                    else if (myEvent.key === WebSocketEventKeys.clientRoamedRadio || myEvent.key === WebSocketEventKeys.guestRoamedRadio) {
+                        const mac = (myEvent.key === WebSocketEventKeys.clientRoamedRadio) ? myEvent.user : myEvent.guest;
+                        const isGuest = myEvent.guest ? true : false;
+                        if (myEvent.channel_from && myEvent.channel_to && myEvent.ap) {
+                            this.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${this.cache.clients[mac].name}' (mac: ${mac}) roamed radio from channel '${myEvent.channel_from}' to '${myEvent.channel_to}' on ${this.cache.devices[myEvent.ap].name} (mac: ${this.cache.devices[myEvent.ap].mac})`);
+                            const ipChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
+                            const valChannel = parseInt(myEvent.channel_to);
+                            if (await this.objectExists(ipChannel)) {
+                                await this.setState(ipChannel, valChannel, true);
+                            }
+                            else {
+                                this.log.warn(`${logPrefix} state '${ipChannel}' not exists!`);
+                            }
+                            const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_name`;
+                            if (await this.objectExists(ipChannelName)) {
+                                await this.setState(ipChannelName, clientTree.channel_name.readVal(valChannel), true);
+                            }
+                            else {
+                                this.log.warn(`${logPrefix} state '${ipChannelName}' not exists!`);
+                            }
+                        }
+                        else {
+                            this.log.warn(`${logPrefix} roam radio event has no ap information! (data: ${JSON.stringify(event.data)})`);
+                        }
+                    }
                     else if (myEvent.key === WebSocketEventKeys.clientOrGuestBlocked || myEvent.key === WebSocketEventKeys.clientOrGuestUnblocked) {
                         // Client blocked or unblocked
                         const mac = myEvent.client;
