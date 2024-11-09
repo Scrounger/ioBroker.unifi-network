@@ -61,5 +61,7 @@
     "POE voltage": "POE напряжение",
     "is uplink port": "это восходящий порт",
     "new firmware available": "доступна новая прошивка",
-    "upgrade device to new firmware": "обновить устройство до новой прошивки"
+    "upgrade device to new firmware": "обновить устройство до новой прошивки",
+    "RX Bytes": "Полученные байты RX",
+    "TX Bytes": "Отправленные байты передачи"
 }

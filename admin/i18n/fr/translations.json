@@ -61,5 +61,7 @@
     "POE voltage": "Tension POE",
     "is uplink port": "est le port de liaison montante",
     "new firmware available": "nouveau firmware disponible",
-    "upgrade device to new firmware": "mettre à niveau l'appareil vers le nouveau firmware"
+    "upgrade device to new firmware": "mettre à niveau l'appareil vers le nouveau firmware",
+    "RX Bytes": "Octets RX reçus",
+    "TX Bytes": "Octets d'émission envoyés"
 }

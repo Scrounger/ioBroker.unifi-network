@@ -61,5 +61,7 @@
     "POE voltage": "POE-spanning",
     "is uplink port": "is een uplink-poort",
     "new firmware available": "nieuwe firmware beschikbaar",
-    "upgrade device to new firmware": "upgrade apparaat naar nieuwe firmware"
+    "upgrade device to new firmware": "upgrade apparaat naar nieuwe firmware",
+    "RX Bytes": "Ontvangen RX-bytes",
+    "TX Bytes": "Verzonden TX-bytes"
 }

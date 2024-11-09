@@ -91,6 +91,14 @@ export const deviceTree = {
         write: true,
         role: 'button'
     },
+    rx_bytes: {
+        iobType: 'number',
+        name: 'RX Bytes',
+        unit: 'GB',
+        readVal(val, adapter, cache, deviceOrClient) {
+            return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+        }
+    },
     state: {
         iobType: 'number',
         name: 'device state',
@@ -223,6 +231,68 @@ export const deviceTree = {
         },
         unit: '%'
     },
+    'speedtest-status': {
+        channelName: 'speed test',
+        object: {
+            latency: {
+                iobType: 'number',
+                name: 'latency',
+                unit: 'ms'
+            },
+            rundate: {
+                iobType: 'number',
+                name: 'last run',
+            },
+            download: {
+                id: 'download',
+                iobType: 'number',
+                name: 'download',
+                unit: 'Mbps',
+                valFromProperty: 'xput_download'
+            },
+            upload: {
+                id: 'upload',
+                iobType: 'number',
+                name: 'upload',
+                unit: 'Mbps',
+                valFromProperty: 'xput_upload'
+            },
+        }
+    },
+    storage: {
+        channelName: 'storage',
+        arrayChannelNameFromProperty: 'name',
+        array: {
+            'mount_point': {
+                iobType: 'string',
+                name: 'mount point'
+            },
+            name: {
+                iobType: 'string',
+                name: 'name'
+            },
+            size: {
+                iobType: 'number',
+                name: 'size',
+                unit: 'GB',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                }
+            },
+            type: {
+                iobType: 'string',
+                name: 'type'
+            },
+            used: {
+                iobType: 'number',
+                name: 'used',
+                unit: 'GB',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                }
+            }
+        }
+    },
     "system-stats": {
         channelName: 'system statistics',
         object: {
@@ -277,6 +347,14 @@ export const deviceTree = {
         readVal: function (val, adapter, cache, deviceOrClient) {
             return Math.round(val * 10) / 10;
         },
+    },
+    tx_bytes: {
+        iobType: 'number',
+        name: 'TX Bytes',
+        unit: 'GB',
+        readVal(val, adapter, cache, deviceOrClient) {
+            return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+        }
     },
     power: {
         id: 'power',

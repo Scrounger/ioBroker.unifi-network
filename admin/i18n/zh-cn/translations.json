@@ -61,5 +61,7 @@
     "POE voltage": "供电电压",
     "is uplink port": "是上行端口",
     "new firmware available": "新固件可用",
-    "upgrade device to new firmware": "将设备升级到新固件"
+    "upgrade device to new firmware": "将设备升级到新固件",
+    "RX Bytes": "接收到的 RX 字节",
+    "TX Bytes": "发送的 TX 字节"
 }

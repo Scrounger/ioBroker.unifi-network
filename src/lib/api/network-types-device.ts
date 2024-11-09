@@ -154,6 +154,7 @@ export interface NetworkDevice {
     snmp_contact: string
     snmp_location: string
     spectrum_scanning?: boolean
+    "speedtest-status"?: SpeedtestStatus
     ssh_session_table: any[]
     start_connected_millis: number
     start_disconnected_millis: number
@@ -955,4 +956,28 @@ interface MacTable {
     ip: string
     lastReachable: number
     mac: string
+}
+
+export interface SpeedtestStatus {
+    latency: number
+    rundate: number
+    runtime: number
+    server: Server
+    source_interface: string
+    status_download: number
+    status_ping: number
+    status_summary: number
+    status_upload: number
+    xput_download: number
+    xput_upload: number
+}
+
+export interface Server {
+    cc: string
+    city: string
+    country: string
+    lat: number
+    lon: number
+    provider: string
+    provider_url: string
 }
