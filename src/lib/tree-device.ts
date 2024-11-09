@@ -126,7 +126,9 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         channelName: 'port table',
         arrayChannelIdPrefix: 'Port_',
         arrayChannelIdZeroPad: 2,
-        arrayChannelNameFromProperty: 'name',
+        arrayChannelNameFromProperty(objValues: any) {
+            return objValues['name']
+        },
         arrayStartNumber: 1,
         array: {
             name: {
@@ -232,6 +234,13 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
     radio_table: {
         idChannel: 'radio',
         channelName: 'WiFi Radio',
+        arrayChannelNameFromProperty(objValues: any) {
+            if (objValues['channel'] <= 13) {
+                return `2.4 GHz`
+            } else {
+                return `5 GHz`
+            }
+        },
         array: {
             channel: {
                 iobType: 'number',
@@ -268,6 +277,13 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
     radio_table_stats: {
         idChannel: 'radio',
         channelName: 'WiFi Radio',
+        arrayChannelNameFromProperty(objValues: any) {
+            if (objValues['channel'] <= 13) {
+                return `2.4 GHz`
+            } else {
+                return `5 GHz`
+            }
+        },
         array: {
             connected_clients: {
                 id: 'connected_clients',
@@ -342,7 +358,9 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
     },
     storage: {
         channelName: 'storage',
-        arrayChannelNameFromProperty: 'name',
+        arrayChannelNameFromProperty(objValues: any) {
+            return objValues['name']
+        },
         array: {
             'mount_point': {
                 iobType: 'string',
@@ -397,7 +415,9 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
     temperatures: {
         channelName: 'temperature',
         arrayChannelIdFromProperty: 'name',
-        arrayChannelNameFromProperty: 'name',
+        arrayChannelNameFromProperty(objValues: any) {
+            return objValues['name']
+        },
         array: {
             type: {
                 iobType: 'string',
@@ -490,8 +510,14 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
     vap_table: {
         idChannel: 'wifi',
         channelName: 'WiFi Network Statistics',
-        arrayChannelNameFromProperty: 'essid',
-        arrayChannelIdZeroPad: 1,
+        arrayChannelNameFromProperty(objValues: any) {
+            if (objValues['channel'] <= 13) {
+                return `${objValues['essid']} - 2.4 GHz`
+            } else {
+                return `${objValues['essid']} - 5 GHz`
+            }
+        },
+        arrayChannelIdZeroPad: 2,
         array: {
             avg_client_signal: {
                 iobType: 'number',

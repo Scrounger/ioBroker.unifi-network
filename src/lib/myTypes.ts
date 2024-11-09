@@ -45,7 +45,7 @@ export interface myCommonChannelArray {
     arrayChannelIdZeroPad?: number,                 // Array item id get a padding for the number
     arrayChannelIdFromProperty?: string,            // Array item id is taken from a property in the corresponding tree
     arrayChannelNamePrefix?: string,                // Array item common.name get a prefix e.g. myPrefix_0
-    arrayChannelNameFromProperty?: string,          // Array item common.name is taken from a property in the corresponding tree
+    arrayChannelNameFromProperty?(objValues: any): string,          // Array item common.name is taken from a property in the corresponding tree
     arrayStartNumber?: number,                      // Array custom start number of array
     array: { [key: string]: myCommonState; },
 }

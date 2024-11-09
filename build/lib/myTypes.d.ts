@@ -44,7 +44,7 @@ export interface myCommonChannelArray {
     arrayChannelIdZeroPad?: number;
     arrayChannelIdFromProperty?: string;
     arrayChannelNamePrefix?: string;
-    arrayChannelNameFromProperty?: string;
+    arrayChannelNameFromProperty?(objValues: any): string;
     arrayStartNumber?: number;
     array: {
         [key: string]: myCommonState;

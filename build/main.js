@@ -815,7 +815,7 @@ class UnifiNetwork extends utils.Adapter {
                                     for (let i = 0; i <= objValues[key].length - 1; i++) {
                                         let nr = i + arrayNumberAdd;
                                         const idChannelArray = `${idChannel}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
-                                        await this.createOrUpdateChannel(idChannelArray, objValues[key][i][treeDefinition[key].arrayChannelNameFromProperty] || treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
+                                        await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objValues[key][i]) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
                                         await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
                                     }
                                 }
