@@ -196,6 +196,11 @@ class UnifiNetwork extends utils.Adapter {
 						const res = await apiCommands.devices.upgrade(this.ufn, this.cache.devices[mac]);
 
 						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - upgrade to new firmware version`);
+					} else if (myHelper.getIdLastPart(id) === 'run') {
+						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
+						const res = await apiCommands.devices.runSpeedtest(this.ufn);
+
+						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - speedtest started`);
 					}
 				} else {
 					// The state was changed
@@ -892,7 +897,7 @@ class UnifiNetwork extends utils.Adapter {
 
 								let changedObj: any = undefined
 
-								if (key === 'last_seen' || key === 'first_seen') {
+								if (key === 'last_seen' || key === 'first_seen' || key === 'rundate') {
 									// set lc to last_seen value
 									changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
 								} else {
@@ -922,9 +927,11 @@ class UnifiNetwork extends utils.Adapter {
 
 							// it's a channel from type object
 							if (objValues[key] && objValues[key].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object')) {
-								await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+								const idChannel = `${channel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
 
-								await this.createGenericState(`${channel}.${key}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+								await this.createOrUpdateChannel(`${idChannel}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+
+								await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
 							}
 
 							// it's a channel from type array
