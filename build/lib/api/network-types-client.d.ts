@@ -63,7 +63,7 @@ export interface NetworkClient {
     local_dns_record_enabled: boolean;
     mac: string;
     mimo?: string;
-    name: string;
+    name?: string;
     network?: string;
     network_id: string;
     network_name?: string;

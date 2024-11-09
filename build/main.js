@@ -134,13 +134,14 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     else if (myHelper.getIdLastPart(id) === 'reconnect') {
-                        await apiCommands.clients.reconncet(this.ufn, mac);
-                        // } else if (myHelper.getIdLastPart(id) === 'remove') {
-                        // 	// controller 5.9.x only
-                        // 	apiCommands.clients.remove(this.ufn, mac);
+                        const res = await apiCommands.clients.reconncet(this.ufn, mac);
+                        if (res)
+                            this.log.info(`${logPrefix} ${this.cache.clients[mac].name} (mac: ${mac}) - is going to reconnect`);
                     }
                     else if (myHelper.getIdLastPart(id) === 'restart') {
-                        await apiCommands.devices.restart(this.ufn, mac);
+                        const res = await apiCommands.devices.restart(this.ufn, mac);
+                        if (res)
+                            this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - is going to restart`);
                     }
                     else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
                         const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
@@ -822,7 +823,7 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     catch (error) {
-                        this.log.error(`${logPrefix} [id: ${key}] error: ${error}, stack: ${error.stack}`);
+                        this.log.error(`${logPrefix} [id: ${key}, mac: ${objOrg.mac || objOrg.ip}] error: ${error}, stack: ${error.stack}`);
                     }
                 }
             }
