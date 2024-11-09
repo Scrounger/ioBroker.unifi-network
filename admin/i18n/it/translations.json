@@ -63,5 +63,21 @@
     "new firmware available": "nuovo firmware disponibile",
     "upgrade device to new firmware": "aggiornare il dispositivo al nuovo firmware",
     "RX Bytes": "Byte RX ricevuti",
-    "TX Bytes": "Byte TX inviati"
+    "TX Bytes": "Byte TX inviati",
+    "channel width / frequency": "larghezza/frequenza del canale",
+    "transmit power": "trasmettere potenza",
+    "channel": "canale",
+    "channel name": "nome del canale",
+    "connected clients": "client connessi",
+    "connected guests": "ospiti collegati",
+    "uplink device": "dispositivo di collegamento in salita",
+    "uplink device MAC address": "Indirizzo MAC del dispositivo uplink",
+    "uplink device port number": "numero di porta del dispositivo uplink",
+    "uplink speed to device": "velocità di uplink al dispositivo",
+    "uplink type to device": "tipo di uplink al dispositivo",
+    "is device online": "il dispositivo è online",
+    "device reported errors": "il dispositivo ha segnalato errori",
+    "led override": "comando principale",
+    "enabled": "abilitato",
+    "uplink device name": "nome del dispositivo di uplink"
 }

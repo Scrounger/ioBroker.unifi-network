@@ -63,5 +63,21 @@
     "new firmware available": "nieuwe firmware beschikbaar",
     "upgrade device to new firmware": "upgrade apparaat naar nieuwe firmware",
     "RX Bytes": "Ontvangen RX-bytes",
-    "TX Bytes": "Verzonden TX-bytes"
+    "TX Bytes": "Verzonden TX-bytes",
+    "channel width / frequency": "kanaalbreedte/frequentie",
+    "transmit power": "kracht overbrengen",
+    "channel": "kanaal",
+    "channel name": "kanaalnaam",
+    "connected clients": "aangesloten klanten",
+    "connected guests": "aangesloten gasten",
+    "uplink device": "uplink-apparaat",
+    "uplink device MAC address": "MAC-adres van het uplink-apparaat",
+    "uplink device port number": "poortnummer van het uplink-apparaat",
+    "uplink speed to device": "uplinksnelheid naar apparaat",
+    "uplink type to device": "uplinktype naar apparaat",
+    "is device online": "is apparaat online",
+    "device reported errors": "apparaat heeft fouten gerapporteerd",
+    "led override": "geleide overschrijving",
+    "enabled": "ingeschakeld",
+    "uplink device name": "uplink-apparaatnaam"
 }

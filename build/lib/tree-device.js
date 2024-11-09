@@ -9,7 +9,7 @@ export const deviceTree = {
     connected_guests: {
         id: 'connected_guests',
         iobType: 'number',
-        name: 'connected clients',
+        name: 'connected guests',
         valFromProperty: 'guest-num_sta',
     },
     hasError: {
@@ -55,7 +55,7 @@ export const deviceTree = {
     isOnline: {
         id: 'isOnline',
         iobType: 'boolean',
-        name: 'Is device online',
+        name: 'is device online',
         valFromProperty: 'state',
         readVal(val, adapter, cache, deviceOrClient) {
             return val !== 0 && val !== 6 && val !== 9;
@@ -222,6 +222,71 @@ export const deviceTree = {
             }
         },
     },
+    radio_table: {
+        idChannel: 'radio',
+        channelName: 'WiFi Radio',
+        array: {
+            channel: {
+                iobType: 'number',
+                name: 'channel'
+            },
+            channel_name: {
+                id: 'channel_name',
+                iobType: 'string',
+                name: 'channel name',
+                valFromProperty: 'channel',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    if (val <= 13) {
+                        return '2.4 GHz';
+                    }
+                    else {
+                        return '5 GHz';
+                    }
+                }
+            },
+            channel_width: {
+                id: 'channel_width',
+                iobType: 'number',
+                name: 'channel width / frequency',
+                valFromProperty: 'ht',
+                unit: 'MHz'
+            },
+            transmit_power: {
+                id: 'transmit_power',
+                iobType: 'string',
+                name: 'transmit power',
+                valFromProperty: 'tx_power_mode'
+            }
+        }
+    },
+    radio_table_stats: {
+        idChannel: 'radio',
+        channelName: 'WiFi Radio',
+        array: {
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+                valFromProperty: 'user-num_sta',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+                valFromProperty: 'guest-num_sta',
+            },
+            satisfaction: {
+                iobType: 'number',
+                name: 'satisfaction',
+                conditionProperty: 'satisfaction',
+                conditionToCreateState(val) {
+                    // only create state if it's a poe port
+                    return val >= 0 ? true : false;
+                },
+                unit: '%'
+            },
+        }
+    },
     satisfaction: {
         iobType: 'number',
         name: 'satisfaction',
@@ -319,14 +384,7 @@ export const deviceTree = {
                 readVal(val, adapter, cache, deviceOrClient) {
                     return parseFloat(val);
                 },
-            },
-            uptime: {
-                iobType: 'number',
-                unit: 's',
-                readVal(val, adapter, cache, deviceOrClient) {
-                    return parseFloat(val);
-                },
-            },
+            }
         }
     },
     temperatures: {
@@ -397,7 +455,7 @@ export const deviceTree = {
             mac: {
                 id: 'mac',
                 iobType: 'string',
-                name: 'uplink device mac',
+                name: 'uplink device MAC address',
                 valFromProperty: 'uplink_mac'
             },
             port_id: {
@@ -421,5 +479,88 @@ export const deviceTree = {
         iobType: 'number',
         name: 'uptime',
         unit: 's',
+    },
+    vap_table: {
+        idChannel: 'wifi',
+        channelName: 'WiFi Network Statistics',
+        arrayChannelNameFromProperty: 'essid',
+        arrayChannelIdZeroPad: 1,
+        array: {
+            avg_client_signal: {
+                iobType: 'number',
+                name: 'average client signal',
+                unit: 'dBm'
+            },
+            channel: {
+                iobType: 'number',
+                name: 'channel'
+            },
+            channel_name: {
+                id: 'channel_name',
+                iobType: 'string',
+                name: 'channel name',
+                valFromProperty: 'channel',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    if (val <= 13) {
+                        return '2.4 GHz';
+                    }
+                    else {
+                        return '5 GHz';
+                    }
+                }
+            },
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+                conditionProperty: 'is_guest',
+                conditionToCreateState(val) {
+                    return !val;
+                },
+                valFromProperty: 'num_sta',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+                conditionProperty: 'is_guest',
+                conditionToCreateState(val) {
+                    return val;
+                },
+                valFromProperty: 'num_sta',
+            },
+            essid: {
+                iobType: 'string',
+                name: 'WLAN SSID'
+            },
+            is_guest: {
+                iobType: 'boolean',
+                name: 'is guest wifi'
+            },
+            rx_bytes: {
+                iobType: 'number',
+                name: 'RX Bytes',
+                unit: 'GB',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                }
+            },
+            satisfaction: {
+                iobType: 'number',
+                name: 'satisfaction',
+                unit: '%',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return val >= 0 ? val : 0;
+                },
+            },
+            tx_bytes: {
+                iobType: 'number',
+                name: 'TX Bytes',
+                unit: 'GB',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                }
+            },
+        }
     }
 };

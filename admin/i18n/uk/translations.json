@@ -63,5 +63,21 @@
     "new firmware available": "доступна нова мікропрограма",
     "upgrade device to new firmware": "оновіть пристрій до нової мікропрограми",
     "RX Bytes": "Отримано RX байтів",
-    "TX Bytes": "Надіслані байти TX"
+    "TX Bytes": "Надіслані байти TX",
+    "channel width / frequency": "ширина каналу / частота",
+    "transmit power": "потужність передачі",
+    "channel": "канал",
+    "channel name": "назва каналу",
+    "connected clients": "підключених клієнтів",
+    "connected guests": "підключених гостей",
+    "uplink device": "пристрій висхідної лінії зв'язку",
+    "uplink device MAC address": "MAC-адреса пристрою висхідної лінії зв’язку",
+    "uplink device port number": "номер порту пристрою висхідної лінії зв'язку",
+    "uplink speed to device": "швидкість висхідного зв'язку з пристроєм",
+    "uplink type to device": "тип висхідного зв’язку з пристроєм",
+    "is device online": "пристрій онлайн",
+    "device reported errors": "пристрій повідомив про помилки",
+    "led override": "перевизначення світлодіодів",
+    "enabled": "включено",
+    "uplink device name": "ім'я пристрою висхідної лінії зв'язку"
 }

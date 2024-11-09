@@ -63,5 +63,21 @@
     "new firmware available": "dostępne nowe oprogramowanie sprzętowe",
     "upgrade device to new firmware": "uaktualnij urządzenie do nowego oprogramowania",
     "RX Bytes": "Odebrane bajty RX",
-    "TX Bytes": "Wysłano bajty TX"
+    "TX Bytes": "Wysłano bajty TX",
+    "channel width / frequency": "szerokość kanału/częstotliwość",
+    "transmit power": "transmitować moc",
+    "channel": "kanał",
+    "channel name": "nazwa kanału",
+    "connected clients": "podłączonych klientów",
+    "connected guests": "podłączonych gości",
+    "uplink device": "urządzenie łącza zwrotnego",
+    "uplink device MAC address": "Adres MAC urządzenia łącza zwrotnego",
+    "uplink device port number": "numer portu urządzenia łącza zwrotnego",
+    "uplink speed to device": "prędkość wysyłania do urządzenia",
+    "uplink type to device": "typ połączenia do urządzenia",
+    "is device online": "jest urządzenie online",
+    "device reported errors": "urządzenie zgłosiło błędy",
+    "led override": "zastąpienie diody LED",
+    "enabled": "włączony",
+    "uplink device name": "nazwa urządzenia łącza zwrotnego"
 }

@@ -185,7 +185,7 @@ export interface NetworkDevice {
     unsupported_reason: number;
     upgradable: boolean;
     upgrade_duration: number;
-    uplink: Uplink;
+    uplink?: Uplink;
     uplink_depth: number;
     uptime: number;
     uptime_stats?: UptimeStats;

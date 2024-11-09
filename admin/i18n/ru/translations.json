@@ -63,5 +63,21 @@
     "new firmware available": "доступна новая прошивка",
     "upgrade device to new firmware": "обновить устройство до новой прошивки",
     "RX Bytes": "Полученные байты RX",
-    "TX Bytes": "Отправленные байты передачи"
+    "TX Bytes": "Отправленные байты передачи",
+    "channel width / frequency": "ширина канала/частота",
+    "transmit power": "передавать мощность",
+    "channel": "канал",
+    "channel name": "название канала",
+    "connected clients": "подключенные клиенты",
+    "connected guests": "подключенные гости",
+    "uplink device": "устройство восходящей линии связи",
+    "uplink device MAC address": "MAC-адрес устройства восходящей линии связи",
+    "uplink device port number": "номер порта устройства восходящей линии связи",
+    "uplink speed to device": "скорость восходящего канала к устройству",
+    "uplink type to device": "тип восходящей линии связи с устройством",
+    "is device online": "устройство онлайн",
+    "device reported errors": "устройство сообщило об ошибках",
+    "led override": "светодиодное переопределение",
+    "enabled": "включено",
+    "uplink device name": "имя устройства восходящей линии связи"
 }

@@ -63,5 +63,21 @@
     "new firmware available": "新固件可用",
     "upgrade device to new firmware": "将设备升级到新固件",
     "RX Bytes": "接收到的 RX 字节",
-    "TX Bytes": "发送的 TX 字节"
+    "TX Bytes": "发送的 TX 字节",
+    "channel width / frequency": "通道宽度/频率",
+    "transmit power": "发射功率",
+    "channel": "渠道",
+    "channel name": "频道名称",
+    "connected clients": "连接的客户端",
+    "connected guests": "已连接的客人",
+    "uplink device": "上行设备",
+    "uplink device MAC address": "上行设备MAC地址",
+    "uplink device port number": "上行设备端口号",
+    "uplink speed to device": "到设备的上行速度",
+    "uplink type to device": "设备的上行链路类型",
+    "is device online": "设备是否在线",
+    "device reported errors": "设备报告错误",
+    "led override": "领导超越",
+    "enabled": "已启用",
+    "uplink device name": "上行设备名称"
 }

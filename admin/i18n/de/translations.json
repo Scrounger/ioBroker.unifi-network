@@ -62,5 +62,21 @@
     "new firmware available": "neue Firmware verfügbar",
     "upgrade device to new firmware": "Gerät auf neue Firmware aktualisieren",
     "RX Bytes": "Empfangene RX-Bytes",
-    "TX Bytes": "Gesendete TX-Bytes"
+    "TX Bytes": "Gesendete TX-Bytes",
+    "channel width / frequency": "Kanalbreite / Frequenz",
+    "transmit power": "Sendeleistung",
+    "channel": "Kanal",
+    "channel name": "Kanalname",
+    "connected clients": "verbundene Clients",
+    "connected guests": "verbundene Gäste",
+    "uplink device": "Uplink-Gerät",
+    "uplink device MAC address": "MAC-Adresse des Uplink-Geräts",
+    "uplink device port number": "Portnummer des Uplink-Geräts",
+    "uplink speed to device": "Uplink-Geschwindigkeit zum Gerät",
+    "uplink type to device": "Uplink-Typ zum Gerät",
+    "is device online": "ist das Gerät online",
+    "device reported errors": "Gerät hat Fehler gemeldet",
+    "led override": "LED-Überbrückung",
+    "enabled": "ermöglicht",
+    "uplink device name": "Name des Uplink-Geräts"
 }
