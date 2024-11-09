@@ -59,5 +59,6 @@
     "satisfaction": "Zufriedenheit",
     "POE voltage": "POE-Spannung",
     "is uplink port": "ist der Uplink-Port",
-    "new firmware available": "neue Firmware verfügbar"
+    "new firmware available": "neue Firmware verfügbar",
+    "upgrade device to new firmware": "Gerät auf neue Firmware aktualisieren"
 }

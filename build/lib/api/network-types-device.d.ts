@@ -98,9 +98,9 @@ export interface NetworkDevice {
     lcm_orientation_override?: number;
     lcm_tracker_enabled?: boolean;
     lcm_tracker_seed?: string;
-    led_override: string;
-    led_override_color: string;
-    led_override_color_brightness: number;
+    led_override?: string;
+    led_override_color?: string;
+    led_override_color_brightness?: number;
     led_state?: LedState;
     license_state: string;
     lldp_table: LldpTable[];

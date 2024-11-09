@@ -349,20 +349,6 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
-    async updateDeviceSettings(idDevice, payload) {
-        const logPrefix = `[${this.logPrefix}.updateDeviceSettings]`;
-        try {
-            const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}/api/s/${this.site}/rest/device/${idDevice.trim()}`;
-            return await this.retrieve(url, {
-                body: JSON.stringify(payload),
-                method: 'PUT'
-            });
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-        return undefined;
-    }
     getApiEndpoint(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api
         let endpointSuffix;

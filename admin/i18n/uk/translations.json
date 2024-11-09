@@ -60,5 +60,6 @@
     "satisfaction": "задоволення",
     "POE voltage": "Напруга POE",
     "is uplink port": "це висхідний порт",
-    "new firmware available": "доступна нова мікропрограма"
+    "new firmware available": "доступна нова мікропрограма",
+    "upgrade device to new firmware": "оновіть пристрій до нової мікропрограми"
 }

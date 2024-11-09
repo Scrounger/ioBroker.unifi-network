@@ -3,7 +3,7 @@ import { NetworkDevice } from "./network-types-device";
 
 export const apiCommands = {
     devices: {
-        async restart(ufn: NetworkApi, mac: string) {
+        async restart(ufn: NetworkApi, mac: string): Promise<boolean> {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'restart', mac: mac.toLowerCase() });
 
             return result === null ? false : true;
@@ -13,7 +13,7 @@ export const apiCommands = {
 
             return result === null ? false : true;
         },
-        async switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice) {
+        async switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean> {
             const logPrefix = '[apiCommands.switchPoePort]'
 
             let port_overrides = device.port_overrides;
@@ -27,7 +27,7 @@ export const apiCommands = {
                     if (port_overrides[indexOfPort].portconf_id) {
                         // ethernet profil is configured, change poe not possible
                         ufn.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
-                        return;
+                        return false;
                     } else {
                         port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
                     }
@@ -37,25 +37,47 @@ export const apiCommands = {
                     port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
                 }
 
-                ufn.updateDeviceSettings(device.device_id, { port_overrides: port_overrides });
+                const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
+
+                return result === null ? false : true;
 
             } else {
                 ufn.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
+
+                return false;
             }
+        },
+        async ledOverride(val: string, ufn: NetworkApi, device: NetworkDevice): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+
+            return result === null ? false : true;
+        },
+        async upgrade(ufn: NetworkApi, device: NetworkDevice): Promise<boolean> {
+            const logPrefix = '[apiCommands.upgrade]'
+
+            if (device.upgradable) {
+                const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr/upgrade`, { mac: device.mac.toLowerCase() });
+
+                return result === null ? false : true;
+            } else {
+                ufn.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): upgrade not possible, no new firmware avaiable`);
+            }
+
+            return false;
         }
     },
     clients: {
-        async block(ufn: NetworkApi, mac: string) {
+        async block(ufn: NetworkApi, mac: string): Promise<boolean> {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'block-sta', mac: mac.toLowerCase() });
 
             return result === null ? false : true;
         },
-        async unblock(ufn: NetworkApi, mac: string) {
+        async unblock(ufn: NetworkApi, mac: string): Promise<boolean> {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unblock-sta', mac: mac.toLowerCase() });
 
             return result === null ? false : true;
         },
-        async reconncet(ufn: NetworkApi, mac: string) {
+        async reconncet(ufn: NetworkApi, mac: string): Promise<boolean> {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'kick-sta', mac: mac.toLowerCase() });
 
             return result === null ? false : true;

@@ -69,7 +69,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         },
     },
     led_override: {
-        iobType: 'number',
+        iobType: 'string',
         name: 'led override',
         write: true,
         states: {
@@ -281,6 +281,14 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
     upgradable: {
         iobType: 'boolean',
         name: 'new firmware available'
+    },
+    upgrade: {
+        id: 'upgrade',
+        iobType: 'boolean',
+        name: 'upgrade device to new firmware',
+        read: false,
+        write: true,
+        role: 'button'
     },
     uptime: {
         iobType: 'number',

@@ -60,5 +60,6 @@
     "satisfaction": "tevredenheid",
     "POE voltage": "POE-spanning",
     "is uplink port": "is een uplink-poort",
-    "new firmware available": "nieuwe firmware beschikbaar"
+    "new firmware available": "nieuwe firmware beschikbaar",
+    "upgrade device to new firmware": "upgrade apparaat naar nieuwe firmware"
 }

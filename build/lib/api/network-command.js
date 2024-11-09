@@ -18,7 +18,7 @@ export const apiCommands = {
                     if (port_overrides[indexOfPort].portconf_id) {
                         // ethernet profil is configured, change poe not possible
                         ufn.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
-                        return;
+                        return false;
                     }
                     else {
                         port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
@@ -29,11 +29,28 @@ export const apiCommands = {
                     ufn.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
                     port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
                 }
-                ufn.updateDeviceSettings(device.device_id, { port_overrides: port_overrides });
+                const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
+                return result === null ? false : true;
             }
             else {
                 ufn.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
+                return false;
             }
+        },
+        async ledOverride(val, ufn, device) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+            return result === null ? false : true;
+        },
+        async upgrade(ufn, device) {
+            const logPrefix = '[apiCommands.upgrade]';
+            if (device.upgradable) {
+                const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr/upgrade`, { mac: device.mac.toLowerCase() });
+                return result === null ? false : true;
+            }
+            else {
+                ufn.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): upgrade not possible, no new firmware avaiable`);
+            }
+            return false;
         }
     },
     clients: {

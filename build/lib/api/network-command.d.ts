@@ -4,7 +4,9 @@ export declare const apiCommands: {
     devices: {
         restart(ufn: NetworkApi, mac: string): Promise<boolean>;
         cyclePoePortPower(ufn: NetworkApi, mac: string, port_idx: number): Promise<boolean>;
-        switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<void>;
+        switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
+        ledOverride(val: string, ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
+        upgrade(ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
     };
     clients: {
         block(ufn: NetworkApi, mac: string): Promise<boolean>;

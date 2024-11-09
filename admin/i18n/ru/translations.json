@@ -60,5 +60,6 @@
     "satisfaction": "удовлетворение",
     "POE voltage": "POE напряжение",
     "is uplink port": "это восходящий порт",
-    "new firmware available": "доступна новая прошивка"
+    "new firmware available": "доступна новая прошивка",
+    "upgrade device to new firmware": "обновить устройство до новой прошивки"
 }

@@ -60,5 +60,6 @@
     "satisfaction": "满意",
     "POE voltage": "供电电压",
     "is uplink port": "是上行端口",
-    "new firmware available": "新固件可用"
+    "new firmware available": "新固件可用",
+    "upgrade device to new firmware": "将设备升级到新固件"
 }

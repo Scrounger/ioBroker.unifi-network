@@ -127,32 +127,44 @@ class UnifiNetwork extends utils.Adapter {
                     // external changes
                     if (myHelper.getIdLastPart(id) === 'blocked') {
                         if (state.val) {
-                            apiCommands.clients.block(this.ufn, mac);
+                            await apiCommands.clients.block(this.ufn, mac);
                         }
                         else {
-                            apiCommands.clients.unblock(this.ufn, mac);
+                            await apiCommands.clients.unblock(this.ufn, mac);
                         }
                     }
                     else if (myHelper.getIdLastPart(id) === 'reconnect') {
-                        apiCommands.clients.reconncet(this.ufn, mac);
+                        await apiCommands.clients.reconncet(this.ufn, mac);
                         // } else if (myHelper.getIdLastPart(id) === 'remove') {
                         // 	// controller 5.9.x only
                         // 	apiCommands.clients.remove(this.ufn, mac);
                     }
                     else if (myHelper.getIdLastPart(id) === 'restart') {
-                        apiCommands.devices.restart(this.ufn, mac);
+                        await apiCommands.devices.restart(this.ufn, mac);
                     }
                     else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
                         const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
                         const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
-                        apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
-                        this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: cycle poe power`);
+                        const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
+                        if (res)
+                            this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: cycle poe power`);
                     }
                     else if (myHelper.getIdLastPart(id) === 'poe_enable') {
                         const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
                         const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
-                        apiCommands.devices.switchPoePort(state.val, port_idx, this.ufn, this.cache.devices[mac]);
-                        this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: switch poe power '${state.val ? 'on' : 'off'}'`);
+                        const res = await apiCommands.devices.switchPoePort(state.val, port_idx, this.ufn, this.cache.devices[mac]);
+                        if (res)
+                            this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: switch poe power '${state.val ? 'on' : 'off'}'`);
+                    }
+                    else if (myHelper.getIdLastPart(id) === 'led_override') {
+                        const res = await apiCommands.devices.ledOverride(state.val, this.ufn, this.cache.devices[mac]);
+                        if (res)
+                            this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - LED override to '${state.val}'`);
+                    }
+                    else if (myHelper.getIdLastPart(id) === 'upgrade') {
+                        const res = await apiCommands.devices.upgrade(this.ufn, this.cache.devices[mac]);
+                        if (res)
+                            this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - upgrade to new firmware version`);
                     }
                 }
                 else {

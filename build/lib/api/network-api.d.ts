@@ -71,7 +71,6 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getClients(): Promise<NetworkClient[] | undefined>;
-    updateDeviceSettings(idDevice: string, payload: any): Promise<Response>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     launchEventsWs(): Promise<boolean>;
 }
