@@ -232,6 +232,7 @@ export const deviceTree = {
         unit: '%'
     },
     'speedtest-status': {
+        idChannel: 'speedtest',
         channelName: 'speed test',
         object: {
             latency: {
@@ -256,6 +257,14 @@ export const deviceTree = {
                 name: 'upload',
                 unit: 'Mbps',
                 valFromProperty: 'xput_upload'
+            },
+            run: {
+                id: 'run',
+                iobType: 'boolean',
+                name: 'run speedtest',
+                read: false,
+                write: true,
+                role: 'button'
             },
         }
     },

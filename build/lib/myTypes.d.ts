@@ -29,6 +29,7 @@ export interface myCommonState {
     subscribeMe?: true;
 }
 export interface myCommoneChannelObject {
+    idChannel?: string;
     channelName: string;
     icon?: string;
     object: {

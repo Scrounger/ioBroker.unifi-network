@@ -31,6 +31,7 @@ export interface myCommonState {
 }
 
 export interface myCommoneChannelObject {
+    idChannel?: string;
     channelName: string;
     icon?: string;
     object: { [key: string]: myCommonState; };

@@ -64,6 +64,11 @@ export const apiCommands = {
             }
 
             return false;
+        },
+        async runSpeedtest(ufn: NetworkApi): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'speedtest' });
+
+            return result === null ? false : true;
         }
     },
     clients: {

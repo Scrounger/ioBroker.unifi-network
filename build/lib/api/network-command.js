@@ -51,6 +51,10 @@ export const apiCommands = {
                 ufn.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): upgrade not possible, no new firmware avaiable`);
             }
             return false;
+        },
+        async runSpeedtest(ufn) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'speedtest' });
+            return result === null ? false : true;
         }
     },
     clients: {
