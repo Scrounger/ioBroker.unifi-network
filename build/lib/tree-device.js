@@ -115,6 +115,7 @@ export const deviceTree = {
         }
     },
     port_table: {
+        idChannel: 'ports',
         channelName: 'port table',
         arrayChannelIdPrefix: 'Port_',
         arrayChannelIdZeroPad: 2,

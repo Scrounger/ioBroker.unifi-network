@@ -938,16 +938,18 @@ class UnifiNetwork extends utils.Adapter {
 							if (objValues[key] && objValues[key].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
 
 								if (objValues[key].length > 0) {
-									await this.createOrUpdateChannel(`${channel}.${key}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+									const idChannel = `${channel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
+
+									await this.createOrUpdateChannel(`${idChannel}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
 
 									const arrayNumberAdd = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0
 
 									for (let i = 0; i <= objValues[key].length - 1; i++) {
 										let nr = i + arrayNumberAdd;
 
-										const idChannel = `${channel}.${key}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
-										await this.createOrUpdateChannel(idChannel, objValues[key][i][treeDefinition[key].arrayChannelNameFromProperty] || treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart)
-										await this.createGenericState(idChannel, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+										const idChannelArray = `${idChannel}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
+										await this.createOrUpdateChannel(idChannelArray, objValues[key][i][treeDefinition[key].arrayChannelNameFromProperty] || treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart)
+										await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
 									}
 								}
 							}

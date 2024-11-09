@@ -32,13 +32,14 @@ export interface myCommonState {
 
 export interface myCommoneChannelObject {
     idChannel?: string;
-    channelName: string;
+    channelName?: string;
     icon?: string;
     object: { [key: string]: myCommonState; };
 }
 
 export interface myCommonChannelArray {
-    channelName: string,
+    idChannel?: string;
+    channelName?: string,
     icon?: string,
     arrayChannelIdPrefix?: string,                  // Array item id get a prefix e.g. myPrefix_0
     arrayChannelIdZeroPad?: number,                 // Array item id get a padding for the number

@@ -122,6 +122,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         }
     },
     port_table: {
+        idChannel: 'ports',
         channelName: 'port table',
         arrayChannelIdPrefix: 'Port_',
         arrayChannelIdZeroPad: 2,

@@ -30,14 +30,15 @@ export interface myCommonState {
 }
 export interface myCommoneChannelObject {
     idChannel?: string;
-    channelName: string;
+    channelName?: string;
     icon?: string;
     object: {
         [key: string]: myCommonState;
     };
 }
 export interface myCommonChannelArray {
-    channelName: string;
+    idChannel?: string;
+    channelName?: string;
     icon?: string;
     arrayChannelIdPrefix?: string;
     arrayChannelIdZeroPad?: number;
