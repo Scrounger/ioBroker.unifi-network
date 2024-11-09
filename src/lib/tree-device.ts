@@ -198,6 +198,11 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             satisfaction: {
                 iobType: 'number',
                 name: 'satisfaction',
+                conditionProperty: 'satisfaction',
+                conditionToCreateState(val: number) {
+                    // only create state if it's a poe port
+                    return val >= 0 ? true : false;
+                },
                 unit: '%'
             },
             speed: {
@@ -214,6 +219,16 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 }
             }
         },
+    },
+    satisfaction: {
+        iobType: 'number',
+        name: 'satisfaction',
+        conditionProperty: 'satisfaction',
+        conditionToCreateState(val: number) {
+            // only create state if it's a poe port
+            return val >= 0 ? true : false;
+        },
+        unit: '%'
     },
     "system-stats": {
         channelName: 'system statistics',

@@ -712,10 +712,16 @@ class UnifiNetwork extends utils.Adapter {
                     try {
                         // if we have an own defined state which takes val from other property
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
-                        if (key
-                            && (objValues[valKey] || objValues[valKey] === 0 || objValues[valKey] === false || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty')))
-                            && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')
-                            && (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') || treeDefinition[key].conditionToCreateState(objValues[treeDefinition[key].conditionProperty]) === true)) {
+                        const cond1 = (Object.prototype.hasOwnProperty.call(objValues, valKey) && objValues[valKey] !== undefined) || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty'));
+                        const cond2 = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array');
+                        const cond3 = (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') && treeDefinition[key].conditionToCreateState(objValues[treeDefinition[key].conditionProperty]) === true) || !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty');
+                        // if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
+                        // 	this.log.warn(`cond 1: ${cond1}`);
+                        // 	this.log.warn(`cond 2: ${cond2}`);
+                        // 	this.log.warn(`cond 3: ${cond3}`)
+                        // 	this.log.warn(`val: ${objValues[valKey]}`);
+                        // }
+                        if (key && cond1 && cond2 && cond3) {
                             // if we have a 'iobType' property, then it's a state
                             let stateId = key;
                             if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
