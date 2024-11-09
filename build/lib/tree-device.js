@@ -385,6 +385,38 @@ export const deviceTree = {
         write: true,
         role: 'button'
     },
+    uplink: {
+        channelName: 'uplink device',
+        object: {
+            name: {
+                id: 'name',
+                iobType: 'string',
+                name: 'uplink device name',
+                valFromProperty: 'uplink_device_name'
+            },
+            mac: {
+                id: 'mac',
+                iobType: 'string',
+                name: 'uplink device mac',
+                valFromProperty: 'uplink_mac'
+            },
+            port_id: {
+                id: 'port_id',
+                iobType: 'number',
+                name: 'uplink device port number',
+                valFromProperty: 'uplink_remote_port'
+            },
+            speed: {
+                iobType: 'number',
+                name: 'uplink speed to device',
+                unit: 'mbps'
+            },
+            type: {
+                iobType: 'string',
+                name: 'uplink type to device'
+            }
+        }
+    },
     uptime: {
         iobType: 'number',
         name: 'uptime',
