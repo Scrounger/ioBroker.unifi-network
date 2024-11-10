@@ -444,7 +444,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 
 					for (let client of data) {
-						const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
+						const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
 						const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
 
 						if (client.mac && !client.is_guest) {

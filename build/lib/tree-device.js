@@ -96,7 +96,7 @@ export const deviceTree = {
         name: 'RX Bytes',
         unit: 'GB',
         readVal(val, adapter, cache, deviceOrClient) {
-            return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
         }
     },
     state: {
@@ -196,7 +196,7 @@ export const deviceTree = {
                 name: 'RX Bytes',
                 unit: 'GB',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
             satisfaction: {
@@ -219,7 +219,7 @@ export const deviceTree = {
                 name: 'TX Bytes',
                 unit: 'GB',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             }
         },
@@ -371,7 +371,7 @@ export const deviceTree = {
                 name: 'size',
                 unit: 'GB',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
             type: {
@@ -383,7 +383,7 @@ export const deviceTree = {
                 name: 'used',
                 unit: 'GB',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             }
         }
@@ -443,7 +443,7 @@ export const deviceTree = {
         name: 'TX Bytes',
         unit: 'GB',
         readVal(val, adapter, cache, deviceOrClient) {
-            return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
         }
     },
     power: {
@@ -571,7 +571,7 @@ export const deviceTree = {
                 name: 'RX Bytes',
                 unit: 'GB',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
             satisfaction: {
@@ -587,7 +587,7 @@ export const deviceTree = {
                 name: 'TX Bytes',
                 unit: 'GB',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
         }

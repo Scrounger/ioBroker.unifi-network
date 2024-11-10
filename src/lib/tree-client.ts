@@ -101,6 +101,15 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'string',
         name: 'name of the connected access point or switch'
     },
+    sw_port: {
+        id: 'uplink_port',
+        iobType: 'number',
+        name: 'port of the connected switch',
+        conditionProperty: 'is_wired',
+        conditionToCreateState(val: boolean) {
+            return val;
+        }
+    },
     mac: {
         iobType: 'string',
         name: 'mac address'
@@ -158,10 +167,72 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
     //     write: true,
     //     role: 'button'
     // },
+    rx_bytes: {
+        iobType: 'number',
+        name: 'RX Bytes',
+        unit: 'GB',
+        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+        }
+    },
+    rx_rate: {
+        iobType: 'number',
+        name: 'Rx Rate',
+        unit: 'mbps',
+        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            return Math.round(val / 1000);
+        }
+    },
     signal: {
         iobType: 'number',
         name: 'signal',
         unit: 'dBm'
+    },
+    tx_bytes: {
+        iobType: 'number',
+        name: 'TX Bytes',
+        unit: 'GB',
+        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+        }
+    },
+    tx_rate: {
+        iobType: 'number',
+        name: 'Tx Rate',
+        unit: 'mbps',
+        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+            return Math.round(val / 1000);
+        }
+    },
+    wired_rate_mbps: {
+        id: 'speed',
+        iobType: 'number',
+        name: 'wired speed',
+        unit: 'mbps',
+        conditionProperty: 'is_wired',
+        conditionToCreateState(val: boolean) {
+            return val;
+        },
+    },
+    wifi_experience_average: {
+        id: 'wifi_experience',
+        iobType: 'number',
+        name: 'experience',
+        unit: '%',
+        conditionProperty: 'is_wired',
+        conditionToCreateState(val: boolean) {
+            return !val;
+        },
+    },
+    wifi_tx_retries_percentage: {
+        id: 'wifi_tx_retries',
+        iobType: 'number',
+        name: 'TX Retries',
+        unit: '%',
+        conditionProperty: 'is_wired',
+        conditionToCreateState(val: boolean) {
+            return !val;
+        },
     },
     uptime: {
         iobType: 'number',

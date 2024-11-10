@@ -103,7 +103,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'RX Bytes',
         unit: 'GB',
         readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-            return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
         }
     },
     state: {
@@ -203,7 +203,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'RX Bytes',
                 unit: 'GB',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
             satisfaction: {
@@ -226,7 +226,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'TX Bytes',
                 unit: 'GB',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             }
         },
@@ -375,7 +375,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'size',
                 unit: 'GB',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
             type: {
@@ -387,7 +387,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'used',
                 unit: 'GB',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             }
         }
@@ -448,7 +448,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'TX Bytes',
         unit: 'GB',
         readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-            return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
         }
     },
     power: {
@@ -574,7 +574,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'RX Bytes',
                 unit: 'GB',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
             satisfaction: {
@@ -590,7 +590,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 name: 'TX Bytes',
                 unit: 'GB',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 100) / 100;
+                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
         }
