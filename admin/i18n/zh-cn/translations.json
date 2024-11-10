@@ -79,5 +79,6 @@
     "device reported errors": "设备报告错误",
     "led override": "领导超越",
     "enabled": "已启用",
-    "uplink device name": "上行设备名称"
+    "uplink device name": "上行设备名称",
+    "delete guests who have not been online for x days (0 = deactivated)": "删除 x 天未在线的访客（0 = 已停用）"
 }

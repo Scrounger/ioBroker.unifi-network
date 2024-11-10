@@ -15,6 +15,7 @@ declare global {
 			clientImageDownload: boolean;
 			keepIobSynchron: boolean;
 			deleteClientsOlderThan: number;
+			deleteGuestsOlderThan: number;
 		}
 	}
 }

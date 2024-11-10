@@ -79,5 +79,6 @@
     "device reported errors": "urządzenie zgłosiło błędy",
     "led override": "zastąpienie diody LED",
     "enabled": "włączony",
-    "uplink device name": "nazwa urządzenia łącza zwrotnego"
+    "uplink device name": "nazwa urządzenia łącza zwrotnego",
+    "delete guests who have not been online for x days (0 = deactivated)": "usuń gości, którzy nie byli online przez x dni (0 = dezaktywowane)"
 }

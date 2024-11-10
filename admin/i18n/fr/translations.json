@@ -79,5 +79,6 @@
     "device reported errors": "l'appareil a signalé des erreurs",
     "led override": "LED de remplacement",
     "enabled": "activé",
-    "uplink device name": "nom du périphérique de liaison montante"
+    "uplink device name": "nom du périphérique de liaison montante",
+    "delete guests who have not been online for x days (0 = deactivated)": "supprimer les invités qui ne sont pas en ligne depuis x jours (0 = désactivé)"
 }

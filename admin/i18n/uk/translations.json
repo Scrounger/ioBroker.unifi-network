@@ -79,5 +79,6 @@
     "device reported errors": "пристрій повідомив про помилки",
     "led override": "перевизначення світлодіодів",
     "enabled": "включено",
-    "uplink device name": "ім'я пристрою висхідної лінії зв'язку"
+    "uplink device name": "ім'я пристрою висхідної лінії зв'язку",
+    "delete guests who have not been online for x days (0 = deactivated)": "видалити гостей, які не були онлайн протягом x днів (0 = дезактивовано)"
 }

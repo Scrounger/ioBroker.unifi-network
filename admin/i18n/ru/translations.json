@@ -79,5 +79,6 @@
     "device reported errors": "устройство сообщило об ошибках",
     "led override": "светодиодное переопределение",
     "enabled": "включено",
-    "uplink device name": "имя устройства восходящей линии связи"
+    "uplink device name": "имя устройства восходящей линии связи",
+    "delete guests who have not been online for x days (0 = deactivated)": "удалить гостей, которые не были в сети x дней (0 = деактивировано)"
 }

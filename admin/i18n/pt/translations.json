@@ -79,5 +79,6 @@
     "device reported errors": "erros relatados pelo dispositivo",
     "led override": "substituição de led",
     "enabled": "habilitado",
-    "uplink device name": "nome do dispositivo de uplink"
+    "uplink device name": "nome do dispositivo de uplink",
+    "delete guests who have not been online for x days (0 = deactivated)": "excluir convidados que não estão online há x dias (0 = desativado)"
 }

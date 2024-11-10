@@ -379,8 +379,8 @@ class UnifiNetwork extends utils.Adapter {
                     for (let client of data) {
                         const name = client.unifi_device_info_from_ucore?.name || client.name || client.hostname;
                         const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
-                        if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
-                            if (client.mac && !client.is_guest) {
+                        if (client.mac && !client.is_guest) {
+                            if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
                                 // ToDo: uncomment
                                 // if (!this.cache.clients[client.mac]) {
                                 // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
@@ -396,7 +396,18 @@ class UnifiNetwork extends utils.Adapter {
                                 this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
                                 await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
                             }
-                            else if (client.mac && client.is_guest) {
+                            else {
+                                if (await this.objectExists(`${idChannel}.${client.mac}`)) {
+                                    await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
+                                    this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                }
+                                else {
+                                    this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                }
+                            }
+                        }
+                        else if (client.mac && client.is_guest) {
+                            if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
                                 // ToDo: uncomment
                                 // if (!this.cache.clients[client.mac]) {
                                 // 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
@@ -413,36 +424,6 @@ class UnifiNetwork extends utils.Adapter {
                                 await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, isAdapterStart);
                             }
                             else {
-                                if (client.type === 'VPN' && client.ip) {
-                                    // ToDo: uncomment
-                                    // if (this.cache.vpn[client.ip]) {
-                                    // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-                                    // }
-                                    if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
-                                        const lastSeen = this.cache.vpn[client.ip].last_seen;
-                                        if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                            continue;
-                                        }
-                                    }
-                                    this.cache.vpn[client.ip] = client;
-                                    this.cache.vpn[client.ip].name = name;
-                                    const preparedIp = client.ip.replaceAll('.', '_');
-                                    this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(`${idVpnChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
-                                }
-                            }
-                        }
-                        else {
-                            if (client.mac && !client.is_guest) {
-                                if (await this.objectExists(`${idChannel}.${client.mac}`)) {
-                                    await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
-                                    this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
-                                }
-                                else {
-                                    this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
-                                }
-                            }
-                            else if (client.mac && client.is_guest) {
                                 if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
                                     await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
                                     this.log.info(`${logPrefix} guest '${name}' deleted, (offline since ${offlineSince} days)`);
@@ -451,8 +432,24 @@ class UnifiNetwork extends utils.Adapter {
                                     this.log.silly(`${logPrefix} guest '${name}' ingored, (offline since ${offlineSince} days)`);
                                 }
                             }
-                            else {
-                                this.log.silly(`${logPrefix} '${name}' ingored, because it's offline since ${offlineSince} days`);
+                        }
+                        else {
+                            if (client.type === 'VPN' && client.ip) {
+                                // ToDo: uncomment
+                                // if (this.cache.vpn[client.ip]) {
+                                // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                // }
+                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
+                                    const lastSeen = this.cache.vpn[client.ip].last_seen;
+                                    if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                        continue;
+                                    }
+                                }
+                                this.cache.vpn[client.ip] = client;
+                                this.cache.vpn[client.ip].name = name;
+                                const preparedIp = client.ip.replaceAll('.', '_');
+                                this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+                                await this.createGenericState(`${idVpnChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
                             }
                         }
                     }
@@ -504,7 +501,7 @@ class UnifiNetwork extends utils.Adapter {
                 const t = moment(isOnline.lc);
                 const before = moment(lastSeen.val * 1000);
                 const now = moment();
-                if (!t.isBetween(before, now)) {
+                if (!t.isBetween(before, now) || t.diff(before, 'seconds') <= 2) {
                     // isOnline not changed between now an last reported last_seen val
                     await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.clientOfflineTimeout, true);
                     //ToDo: Debug log message inkl. name, mac, ip

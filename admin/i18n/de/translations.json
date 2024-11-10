@@ -78,5 +78,6 @@
     "device reported errors": "Gerät hat Fehler gemeldet",
     "led override": "LED-Überbrückung",
     "enabled": "ermöglicht",
-    "uplink device name": "Name des Uplink-Geräts"
+    "uplink device name": "Name des Uplink-Geräts",
+    "delete guests who have not been online for x days (0 = deactivated)": "Gäste löschen, die x Tage nicht online waren (0 = deaktiviert)"
 }

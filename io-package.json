@@ -100,7 +100,8 @@
         "clientOfflineTimeout": 92,
         "clientImageDownload": false,
         "keepIobSynchron": false,
-        "deleteClientsOlderThan": 0
+        "deleteClientsOlderThan": 0,
+        "deleteGuestsOlderThan": 0
     },
     "objects": [],
     "instanceObjects": [

@@ -106,6 +106,14 @@
 					"step": 1,
 					"sm": 12,
 					"md": 3
+				},
+				"deleteGuestsOlderThan": {
+					"type": "number",
+					"label": "delete guests who have not been online for x days (0 = deactivated)",
+					"min": 0,
+					"step": 1,
+					"sm": 12,
+					"md": 3
 				}
 			}
 		}
