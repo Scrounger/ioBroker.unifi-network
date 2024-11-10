@@ -80,5 +80,6 @@
     "led override": "перевизначення світлодіодів",
     "enabled": "включено",
     "uplink device name": "ім'я пристрою висхідної лінії зв'язку",
-    "delete guests who have not been online for x days (0 = deactivated)": "видалити гостей, які не були онлайн протягом x днів (0 = дезактивовано)"
+    "delete guests who have not been online for x days (0 = deactivated)": "видалити гостей, які не були онлайн протягом x днів (0 = дезактивовано)",
+    "time [s] after a VPN device is set to offline": "час [с] після того, як пристрій VPN переведено в автономний режим"
 }

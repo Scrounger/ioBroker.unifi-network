@@ -12,6 +12,7 @@ declare global {
 			updateInterval: number;
 			deviceImageDownload: boolean;
 			clientOfflineTimeout: number;
+			vpnOfflineTimeout: number;
 			clientImageDownload: boolean;
 			keepIobSynchron: boolean;
 			deleteClientsOlderThan: number;

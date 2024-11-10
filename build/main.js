@@ -426,10 +426,10 @@ class UnifiNetwork extends utils.Adapter {
                             else {
                                 if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
                                     await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
-                                    this.log.info(`${logPrefix} guest '${name}' deleted, (offline since ${offlineSince} days)`);
+                                    this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
                                 }
                                 else {
-                                    this.log.silly(`${logPrefix} guest '${name}' ingored, (offline since ${offlineSince} days)`);
+                                    this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
                                 }
                             }
                         }
@@ -482,17 +482,17 @@ class UnifiNetwork extends utils.Adapter {
         try {
             //ToDo: vpn and perhaps device to include
             const clients = await this.getStatesAsync('clients.*.last_seen');
-            await this._updateIsOnlineState(clients);
+            await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout);
             const guests = await this.getStatesAsync('guests.*.last_seen');
-            await this._updateIsOnlineState(guests);
+            await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout);
             const vpn = await this.getStatesAsync('vpn.*.last_seen');
-            await this._updateIsOnlineState(vpn);
+            await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async _updateIsOnlineState(clients) {
+    async _updateIsOnlineState(clients, offlineTimeout) {
         const logPrefix = '[_updateIsOnlineState]:';
         try {
             for (const id in clients) {
@@ -503,7 +503,7 @@ class UnifiNetwork extends utils.Adapter {
                 const now = moment();
                 if (!t.isBetween(before, now) || t.diff(before, 'seconds') <= 2) {
                     // isOnline not changed between now an last reported last_seen val
-                    await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.clientOfflineTimeout, true);
+                    await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= offlineTimeout, true);
                     //ToDo: Debug log message inkl. name, mac, ip
                 }
             }

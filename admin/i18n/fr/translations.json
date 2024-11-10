@@ -80,5 +80,6 @@
     "led override": "LED de remplacement",
     "enabled": "activé",
     "uplink device name": "nom du périphérique de liaison montante",
-    "delete guests who have not been online for x days (0 = deactivated)": "supprimer les invités qui ne sont pas en ligne depuis x jours (0 = désactivé)"
+    "delete guests who have not been online for x days (0 = deactivated)": "supprimer les invités qui ne sont pas en ligne depuis x jours (0 = désactivé)",
+    "time [s] after a VPN device is set to offline": "temps [s] après qu'un périphérique VPN soit mis hors ligne"
 }

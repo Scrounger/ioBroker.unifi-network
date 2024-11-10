@@ -80,5 +80,6 @@
     "led override": "领导超越",
     "enabled": "已启用",
     "uplink device name": "上行设备名称",
-    "delete guests who have not been online for x days (0 = deactivated)": "删除 x 天未在线的访客（0 = 已停用）"
+    "delete guests who have not been online for x days (0 = deactivated)": "删除 x 天未在线的访客（0 = 已停用）",
+    "time [s] after a VPN device is set to offline": "VPN 设备设置为离线后的时间 [s]"
 }

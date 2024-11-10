@@ -72,7 +72,15 @@
 				"clientOfflineTimeout": {
 					"type": "number",
 					"label": "time [s] after a device is set to offline",
-					"help": "increase this value for low performance systems",
+					"min": 5,
+					"max": 10000,
+					"step": 1,
+					"sm": 12,
+					"md": 3
+				},
+				"vpnOfflineTimeout": {
+					"type": "number",
+					"label": "time [s] after a VPN device is set to offline",
 					"min": 5,
 					"max": 10000,
 					"step": 1,

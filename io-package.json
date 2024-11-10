@@ -98,6 +98,7 @@
         "updateInterval": 15,
         "deviceImageDownload": false,
         "clientOfflineTimeout": 92,
+        "vpnOfflineTimeout": 300,
         "clientImageDownload": false,
         "keepIobSynchron": false,
         "deleteClientsOlderThan": 0,

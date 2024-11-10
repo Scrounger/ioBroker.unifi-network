@@ -564,20 +564,20 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			//ToDo: vpn and perhaps device to include
 			const clients = await this.getStatesAsync('clients.*.last_seen');
-			await this._updateIsOnlineState(clients);
+			await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout);
 
 			const guests = await this.getStatesAsync('guests.*.last_seen');
-			await this._updateIsOnlineState(guests);
+			await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout);
 
 			const vpn = await this.getStatesAsync('vpn.*.last_seen');
-			await this._updateIsOnlineState(vpn);
+			await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
 
-	async _updateIsOnlineState(clients: Record<string, ioBroker.State>) {
+	async _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number) {
 		const logPrefix = '[_updateIsOnlineState]:';
 
 		try {
@@ -592,7 +592,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (!t.isBetween(before, now) || t.diff(before, 'seconds') <= 2) {
 					// isOnline not changed between now an last reported last_seen val
-					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= this.config.clientOfflineTimeout, true);
+					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= offlineTimeout, true);
 
 					//ToDo: Debug log message inkl. name, mac, ip
 				}

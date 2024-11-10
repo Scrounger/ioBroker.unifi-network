@@ -79,7 +79,13 @@ export const clientTree = {
         name: 'Is client online',
         valFromProperty: 'last_seen',
         readVal(val, adapter, cache, deviceOrClient) {
-            return moment().diff(val * 1000, 'seconds') <= adapter.config.clientOfflineTimeout;
+            if (deviceOrClient.mac) {
+                return moment().diff(val * 1000, 'seconds') <= adapter.config.clientOfflineTimeout;
+            }
+            else {
+                adapter.log.warn(JSON.stringify(deviceOrClient));
+                return moment().diff(val * 1000, 'seconds') <= adapter.config.vpnOfflineTimeout;
+            }
         }
     },
     last_seen: {
