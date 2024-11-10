@@ -439,6 +439,8 @@ class UnifiNetwork extends utils.Adapter {
                                 // if (this.cache.vpn[client.ip]) {
                                 // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                                 // }
+                                const idChannel = client.network_id;
+                                this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '');
                                 if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
                                     const lastSeen = this.cache.vpn[client.ip].last_seen;
                                     if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
@@ -448,8 +450,8 @@ class UnifiNetwork extends utils.Adapter {
                                 this.cache.vpn[client.ip] = client;
                                 this.cache.vpn[client.ip].name = name;
                                 const preparedIp = client.ip.replaceAll('.', '_');
-                                this.createOrUpdateDevice(`${idVpnChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                await this.createGenericState(`${idVpnChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
+                                this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+                                await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
                             }
                         }
                     }
