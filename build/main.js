@@ -915,20 +915,24 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (event && event.data) {
                 for (const myEvent of event.data) {
-                    if (myEvent.key.includes('_Connected') || myEvent.key.includes('_Disconnected')) {
+                    if (myEvent.key.includes(WebSocketEventKeys.connected) || myEvent.key.includes(WebSocketEventKeys.disconnected)) {
                         // Client connect or disconnect
+                        this.log.debug(`${logPrefix} event connected / disconnected (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.client.connection(event.meta, myEvent, this, this.cache);
                     }
-                    else if (myEvent.key === WebSocketEventKeys.clientRoamed || myEvent.key === WebSocketEventKeys.guestRoamed) {
+                    else if (myEvent.key.endsWith(WebSocketEventKeys.roamed)) {
                         // Client roamed between AP's
+                        this.log.debug(`${logPrefix} roamed (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.client.roamed(event.meta, myEvent, this, this.cache);
                     }
-                    else if (myEvent.key === WebSocketEventKeys.clientRoamedRadio || myEvent.key === WebSocketEventKeys.guestRoamedRadio) {
+                    else if (myEvent.key.endsWith(WebSocketEventKeys.roamedRadio)) {
                         // Client roamed radio -> change channel
+                        this.log.debug(`${logPrefix} roamed radio (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.client.roamedRadio(event.meta, myEvent, this, this.cache);
                     }
-                    else if (myEvent.key === WebSocketEventKeys.clientOrGuestBlocked || myEvent.key === WebSocketEventKeys.clientOrGuestUnblocked) {
+                    else if (myEvent.key.includes(WebSocketEventKeys.blocked) || myEvent.key.includes(WebSocketEventKeys.unblocked)) {
                         // Client blocked or unblocked
+                        this.log.debug(`${logPrefix} event block / unblock (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.client.block(event.meta, myEvent, this, this.cache);
                     }
                     else {
@@ -947,6 +951,7 @@ class UnifiNetwork extends utils.Adapter {
             if (event && event.data) {
                 for (const myEvent of event.data) {
                     // user removed client from unifi-controller
+                    this.log.debug(`${logPrefix} client removed (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     eventHandler.user.clientRemoved(event.meta, myEvent, this, this.cache);
                 }
             }

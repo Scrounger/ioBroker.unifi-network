@@ -59,23 +59,45 @@ export enum WebSocketEventMessages {
 }
 
 export enum WebSocketEventKeys {
-    clientConnected = 'EVT_WU_Connected',
-    clientDisconnected = 'EVT_WU_Disconnected',
-    clientRoamed = 'EVT_WU_Roam',
-    clientRoamedRadio = 'EVT_WU_RoamRadio',
+    connected = '_Connected',
+    disconnected = '_Disconnected',
+    blocked = '_Blocked',
+    unblocked = '_Unblocked',
+    roamed = '_Roam',
+    roamedRadio = '_RoamRadio',
 
-    guestConnected = 'EVT_WG_Connected',
-    guestDisconnected = 'EVT_WG_Disconnected',
-    guestRoamed = 'EVT_WG_Roam',
-    guestRoamedRadio = 'EVT_WG_RoamRadio',
+    // client Wireless
+    clientWirelessConnected = 'EVT_WU_Connected',
+    clientWirelessDisconnected = 'EVT_WU_Disconnected',
+    clientWirelessRoamed = 'EVT_WU_Roam',
+    clientWirelessRoamedRadio = 'EVT_WU_RoamRadio',
 
-    clientOrGuestBlocked = 'EVT_WC_Blocked',
-    clientOrGuestUnblocked = 'EVT_WC_Unblocked',
+    // client LAN
+    clientLanConnected = 'EVT_LU_Connected',
+    clientLanDisconnected = 'EVT_LU_Disconnected',
+    clientLanBlocked = 'EVT_LU_Blocked',
+    clientLanUnblocked = 'EVT_LU_Unblocked',
 
+    // guest Wireless
+    guestWirelessConnected = 'EVT_WG_Connected',
+    guestWirelessDisconnected = 'EVT_WG_Disconnected',
+    guestWirelessRoamed = 'EVT_WG_Roam',
+    guestWirelessRoamedRadio = 'EVT_WG_RoamRadio',
 
+    // guest LAN
+    guestLanConnected = 'EVT_LG_Connected',
+    guestLanDisconnected = 'EVT_LG_Disconnected',
+    guestLanBlocked = 'EVT_LG_Blocked',
+    guestLanUnblocked = 'EVT_LG_Unblocked',
+
+    // client or guest Wireless
+    clientOrGuestWirelessBlocked = 'EVT_WC_Blocked',
+    clientOrGuestWirelessUnblocked = 'EVT_WC_Unblocked',
+
+    // Gateway
     gatewayRestarted = 'EVT_GW_Restarted',
 
-
+    // Switch
     switchRestarted = 'EVT_SW_Restarted',
     switchAutoReadopted = 'EVT_SW_AutoReadopted',
     switchLostContact = 'EVT_SW_Lost_Contact',
