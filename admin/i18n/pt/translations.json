@@ -81,5 +81,7 @@
     "enabled": "habilitado",
     "uplink device name": "nome do dispositivo de uplink",
     "delete guests who have not been online for x days (0 = deactivated)": "excluir convidados que não estão online há x dias (0 = desativado)",
-    "time [s] after a VPN device is set to offline": "tempo [s] após um dispositivo VPN ser definido como off-line"
+    "time [s] after a VPN device is set to offline": "tempo [s] após um dispositivo VPN ser definido como off-line",
+    "download images": "baixar imagens",
+    "clients / guests / vpn": "clientes / convidados / vpn"
 }

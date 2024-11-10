@@ -81,5 +81,7 @@
     "enabled": "включено",
     "uplink device name": "имя устройства восходящей линии связи",
     "delete guests who have not been online for x days (0 = deactivated)": "удалить гостей, которые не были в сети x дней (0 = деактивировано)",
-    "time [s] after a VPN device is set to offline": "время [с] после перевода VPN-устройства в автономный режим"
+    "time [s] after a VPN device is set to offline": "время [с] после перевода VPN-устройства в автономный режим",
+    "download images": "скачать изображения",
+    "clients / guests / vpn": "клиенты/гости/vpn"
 }

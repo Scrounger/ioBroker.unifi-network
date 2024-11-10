@@ -2,7 +2,7 @@
 	"i18n": true,
 	"type": "tabs",
 	"items": {
-		"tab_1": {
+		"tab_general": {
 			"type": "panel",
 			"label": "General",
 			"items": {
@@ -69,9 +69,76 @@
 					"sm": 12,
 					"md": 3
 				},
+				"keepIobSynchron": {
+					"type": "checkbox",
+					"label": "keep unifi-controller and ioBroker synchronized",
+					"help": "states are deleted when they are deleted in the unifi-controller",
+					"sm": 12,
+					"md": 3
+				}
+			}
+		},
+		"tab_devices": {
+			"type": "panel",
+			"label": "Devices",
+			"items": {
+				"donation_link": {
+					"type": "staticLink",
+					"text": "You like the adapter? Then support me.",
+					"sm": 12,
+					"button": true,
+					"newLine": true,
+					"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+					"style": {
+						"justifyContent": "flex-start !important"
+					}
+				},
+				"dividerDevices": {
+					"newLine": true,
+					"type": "header",
+					"text": "unifi devices",
+					"size": 2
+				},
+				"deviceImageDownload": {
+					"type": "checkbox",
+					"label": "download images",
+					"sm": 12,
+					"md": 2
+				}
+			}
+		},
+		"tab_clients": {
+			"type": "panel",
+			"label": "Clients",
+			"items": {
+				"donation_link": {
+					"type": "staticLink",
+					"text": "You like the adapter? Then support me.",
+					"sm": 12,
+					"button": true,
+					"newLine": true,
+					"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+					"style": {
+						"justifyContent": "flex-start !important"
+					}
+				},
+				"dividerClients": {
+					"newLine": true,
+					"type": "header",
+					"text": "clients / guests / vpn",
+					"size": 2
+				},
+				"clientImageDownload": {
+					"type": "checkbox",
+					"label": "download images",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				},
 				"clientOfflineTimeout": {
 					"type": "number",
 					"label": "time [s] after a device is set to offline",
+					"newLine": true,
 					"min": 5,
 					"max": 10000,
 					"step": 1,
@@ -87,29 +154,10 @@
 					"sm": 12,
 					"md": 3
 				},
-				"clientImageDownload": {
-					"type": "checkbox",
-					"label": "download client images",
-					"newLine": true,
-					"sm": 12,
-					"md": 2
-				},
-				"deviceImageDownload": {
-					"type": "checkbox",
-					"label": "download unifi device images",
-					"sm": 12,
-					"md": 2
-				},
-				"keepIobSynchron": {
-					"type": "checkbox",
-					"label": "keep unifi-controller and ioBroker synchronized",
-					"help": "states are deleted when they are deleted in the unifi-controller",
-					"sm": 12,
-					"md": 3
-				},
 				"deleteClientsOlderThan": {
 					"type": "number",
 					"label": "delete clients who have not been online for x days (0 = deactivated)",
+					"newLine": true,
 					"min": 0,
 					"step": 1,
 					"sm": 12,

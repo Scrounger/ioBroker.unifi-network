@@ -83,7 +83,6 @@ export const clientTree = {
                 return moment().diff(val * 1000, 'seconds') <= adapter.config.clientOfflineTimeout;
             }
             else {
-                adapter.log.warn(JSON.stringify(deviceOrClient));
                 return moment().diff(val * 1000, 'seconds') <= adapter.config.vpnOfflineTimeout;
             }
         }

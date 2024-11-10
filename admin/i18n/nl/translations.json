@@ -81,5 +81,7 @@
     "enabled": "ingeschakeld",
     "uplink device name": "uplink-apparaatnaam",
     "delete guests who have not been online for x days (0 = deactivated)": "verwijder gasten die x dagen niet online zijn geweest (0 = gedeactiveerd)",
-    "time [s] after a VPN device is set to offline": "tijd [s] nadat een VPN-apparaat offline is gezet"
+    "time [s] after a VPN device is set to offline": "tijd [s] nadat een VPN-apparaat offline is gezet",
+    "download images": "afbeeldingen downloaden",
+    "clients / guests / vpn": "klanten / gasten / vpn"
 }
