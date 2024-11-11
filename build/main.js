@@ -679,8 +679,12 @@ class UnifiNetwork extends utils.Adapter {
                 const base64ImgString = `data:image/png;base64,` + imageBase64;
                 this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
                 for (const idChannel of idChannelList) {
-                    await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
-                    this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+                    if (await this.objectExists(`${idChannel}.image`)) {
+                        await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+                    }
+                    if (await this.objectExists(`${idChannel}`)) {
+                        this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+                    }
                 }
             }
             else {
@@ -966,7 +970,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             this.aliveTimestamp = moment().valueOf();
             if (event.meta.message === WebSocketEventMessages.device) {
-                await this.updateDevices(event.data);
+                // await this.updateDevices(event.data as NetworkDevice[]);
             }
             else if (event.meta.message === WebSocketEventMessages.client) {
                 await this.updateClients(event.data);

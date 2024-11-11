@@ -788,9 +788,14 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
 
 				for (const idChannel of idChannelList) {
-					await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
 
-					this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+					if (await this.objectExists(`${idChannel}.image`)) {
+						await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+					}
+
+					if (await this.objectExists(`${idChannel}`)) {
+						this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+					}
 				}
 			} else {
 				this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
