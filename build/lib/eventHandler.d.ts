@@ -1,7 +1,9 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
 import { myCache } from "./myTypes.js";
 export declare const eventHandler: {
-    device: {};
+    device: {
+        restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+    };
     client: {
         connection(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         roamed(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;

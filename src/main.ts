@@ -17,7 +17,7 @@ import { NetworkClient } from './lib/api/network-types-client.js';
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
-import { WebSocketEventKeys, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache } from './lib/myTypes.js';
+import { WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache } from './lib/myTypes.js';
 import { clientTree } from './lib/tree-client.js';
 import { deviceTree } from './lib/tree-device.js';
 import { apiCommands } from './lib/api/network-command.js';
@@ -167,12 +167,12 @@ class UnifiNetwork extends utils.Adapter {
 					} else if (myHelper.getIdLastPart(id) === 'reconnect') {
 						const res = await apiCommands.clients.reconncet(this.ufn, mac);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.clients[mac].name} (mac: ${mac}) - is going to reconnect`);
+						if (res) this.log.info(`${logPrefix} command sent: reconnect - '${this.cache.clients[mac].name}' (mac: ${mac})`);
 
 					} else if (myHelper.getIdLastPart(id) === 'restart') {
 						const res = await apiCommands.devices.restart(this.ufn, mac);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - is going to restart`);
+						if (res) this.log.info(`${logPrefix} command sent: restart - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 
 					} else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
 						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
@@ -180,27 +180,27 @@ class UnifiNetwork extends utils.Adapter {
 
 						const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: cycle poe power`);
+						if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 					} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
 						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
 						const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
 
 						const res = await apiCommands.devices.switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - Port ${port_idx}: switch poe power '${state.val ? 'on' : 'off'}'`);
+						if (res) this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
 					} else if (myHelper.getIdLastPart(id) === 'led_override') {
 						const res = await apiCommands.devices.ledOverride(state.val as string, this.ufn, this.cache.devices[mac]);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - LED override to '${state.val}'`);
+						if (res) this.log.info(`${logPrefix} command sent: LED override to '${state.val}' - '${this.cache.devices[mac].name}' (mac: ${mac}) - `);
 					} else if (myHelper.getIdLastPart(id) === 'upgrade') {
 						const res = await apiCommands.devices.upgrade(this.ufn, this.cache.devices[mac]);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - upgrade to new firmware version`);
+						if (res) this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 					} else if (myHelper.getIdLastPart(id) === 'run') {
 						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
 						const res = await apiCommands.devices.runSpeedtest(this.ufn);
 
-						if (res) this.log.info(`${logPrefix} ${this.cache.devices[mac].name} (mac: ${mac}) - speedtest started`);
+						if (res) this.log.info(`${logPrefix} command sent:  speedtest started - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 					}
 				} else {
 					// The state was changed
@@ -1151,34 +1151,38 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (event && event.data) {
 				for (const myEvent of event.data) {
-					if (myEvent.key.includes(WebSocketEventKeys.connected) || myEvent.key.includes(WebSocketEventKeys.disconnected)) {
+					if (WebSocketEvent.client.Connected.includes(myEvent.key) || WebSocketEvent.client.Disconnected.includes(myEvent.key)) {
 						// Client connect or disconnect
 
-						this.log.debug(`${logPrefix} event connected / disconnected (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+						this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.connection(event.meta, myEvent, this, this.cache);
 
-					} else if (myEvent.key.endsWith(WebSocketEventKeys.roamed)) {
+					} else if (WebSocketEvent.client.Roamed.includes(myEvent.key)) {
 						// Client roamed between AP's
 
-						this.log.debug(`${logPrefix} roamed (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+						this.log.debug(`${logPrefix} event 'roamed' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.roamed(event.meta, myEvent, this, this.cache);
 
-					} else if (myEvent.key.endsWith(WebSocketEventKeys.roamedRadio)) {
+					} else if (WebSocketEvent.client.RoamedRadio.includes(myEvent.key)) {
 						// Client roamed radio -> change channel
 
-						this.log.debug(`${logPrefix} roamed radio (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+						this.log.debug(`${logPrefix} event 'roamed radio' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.roamedRadio(event.meta, myEvent, this, this.cache);
 
-					} else if ((myEvent.key as string).includes(WebSocketEventKeys.blocked) || (myEvent.key as string).includes(WebSocketEventKeys.unblocked)) {
+					} else if (WebSocketEvent.client.Blocked.includes(myEvent.key) || WebSocketEvent.client.Unblocked.includes(myEvent.key)) {
 						// Client blocked or unblocked
 
-						this.log.debug(`${logPrefix} event block / unblock (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+						this.log.debug(`${logPrefix} event 'block / unblock' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.block(event.meta, myEvent, this, this.cache);
+					} else if (WebSocketEvent.device.Restarted.includes(myEvent.key)) {
 
+						this.log.debug(`${logPrefix} event 'restarted' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+						eventHandler.device.restarted(event.meta, myEvent, this, this.cache);
 					} else {
 						this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
 					}
@@ -1197,7 +1201,7 @@ class UnifiNetwork extends utils.Adapter {
 				for (const myEvent of event.data) {
 					// user removed client from unifi-controller
 
-					this.log.debug(`${logPrefix} client removed (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+					this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 					eventHandler.user.clientRemoved(event.meta, myEvent, this, this.cache);
 				}

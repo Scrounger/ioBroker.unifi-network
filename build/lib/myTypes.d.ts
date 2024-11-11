@@ -57,37 +57,21 @@ export declare enum WebSocketEventMessages {
     events = "events",
     speedTest = "speed-test:update"
 }
-export declare enum WebSocketEventKeys {
-    connected = "_Connected",
-    disconnected = "_Disconnected",
-    blocked = "_Blocked",
-    unblocked = "_Unblocked",
-    roamed = "_Roam",
-    roamedRadio = "_RoamRadio",
-    clientWirelessConnected = "EVT_WU_Connected",
-    clientWirelessDisconnected = "EVT_WU_Disconnected",
-    clientWirelessRoamed = "EVT_WU_Roam",
-    clientWirelessRoamedRadio = "EVT_WU_RoamRadio",
-    clientLanConnected = "EVT_LU_Connected",
-    clientLanDisconnected = "EVT_LU_Disconnected",
-    clientLanBlocked = "EVT_LU_Blocked",
-    clientLanUnblocked = "EVT_LU_Unblocked",
-    guestWirelessConnected = "EVT_WG_Connected",
-    guestWirelessDisconnected = "EVT_WG_Disconnected",
-    guestWirelessRoamed = "EVT_WG_Roam",
-    guestWirelessRoamedRadio = "EVT_WG_RoamRadio",
-    guestLanConnected = "EVT_LG_Connected",
-    guestLanDisconnected = "EVT_LG_Disconnected",
-    guestLanBlocked = "EVT_LG_Blocked",
-    guestLanUnblocked = "EVT_LG_Unblocked",
-    clientOrGuestWirelessBlocked = "EVT_WC_Blocked",
-    clientOrGuestWirelessUnblocked = "EVT_WC_Unblocked",
-    gatewayRestarted = "EVT_GW_Restarted",
-    switchRestarted = "EVT_SW_Restarted",
-    switchAutoReadopted = "EVT_SW_AutoReadopted",
-    switchLostContact = "EVT_SW_Lost_Contact",
-    accessPointRestarted = "EVT_AP_Restarted"
-}
+export declare const WebSocketEvent_Connected: string[];
+export declare const WebSocketEvent_Disconnected: string[];
+export declare const WebSocketEvent: {
+    device: {
+        Restarted: string[];
+    };
+    client: {
+        Connected: string[];
+        Disconnected: string[];
+        Roamed: string[];
+        RoamedRadio: string[];
+        Blocked: string[];
+        Unblocked: string[];
+    };
+};
 export interface myCache {
     devices: {
         [key: string]: NetworkDevice;

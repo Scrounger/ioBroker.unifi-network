@@ -19,7 +19,7 @@ export interface NetworkEventMeta {
     product_line?: string;
 }
 export interface NetworkEventData {
-    ap: string;
+    ap?: string;
     ap_displayName?: string;
     ap_from?: string;
     ap_name?: string;
@@ -30,6 +30,7 @@ export interface NetworkEventData {
     client?: string;
     datetime: string;
     guest?: string;
+    gw?: string;
     key: string;
     msg: string;
     port?: number;

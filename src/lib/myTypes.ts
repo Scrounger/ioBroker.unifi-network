@@ -58,54 +58,72 @@ export enum WebSocketEventMessages {
     speedTest = 'speed-test:update'
 }
 
-export enum WebSocketEventKeys {
-    connected = '_Connected',
-    disconnected = '_Disconnected',
-    blocked = '_Blocked',
-    unblocked = '_Unblocked',
-    roamed = '_Roam',
-    roamedRadio = '_RoamRadio',
+export const WebSocketEvent_Connected = ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'];
+export const WebSocketEvent_Disconnected = ['EVT_WU_Disconnected', 'EVT_WG_Disconnected', 'EVT_LU_Disconnected', 'EVT_LG_Disconnected'];
 
-    // client Wireless
-    clientWirelessConnected = 'EVT_WU_Connected',
-    clientWirelessDisconnected = 'EVT_WU_Disconnected',
-    clientWirelessRoamed = 'EVT_WU_Roam',
-    clientWirelessRoamedRadio = 'EVT_WU_RoamRadio',
-
-    // client LAN
-    clientLanConnected = 'EVT_LU_Connected',
-    clientLanDisconnected = 'EVT_LU_Disconnected',
-    clientLanBlocked = 'EVT_LU_Blocked',
-    clientLanUnblocked = 'EVT_LU_Unblocked',
-
-    // guest Wireless
-    guestWirelessConnected = 'EVT_WG_Connected',
-    guestWirelessDisconnected = 'EVT_WG_Disconnected',
-    guestWirelessRoamed = 'EVT_WG_Roam',
-    guestWirelessRoamedRadio = 'EVT_WG_RoamRadio',
-
-    // guest LAN
-    guestLanConnected = 'EVT_LG_Connected',
-    guestLanDisconnected = 'EVT_LG_Disconnected',
-    guestLanBlocked = 'EVT_LG_Blocked',
-    guestLanUnblocked = 'EVT_LG_Unblocked',
-
-    // client or guest Wireless
-    clientOrGuestWirelessBlocked = 'EVT_WC_Blocked',
-    clientOrGuestWirelessUnblocked = 'EVT_WC_Unblocked',
-
-    // Gateway
-    gatewayRestarted = 'EVT_GW_Restarted',
-
-    // Switch
-    switchRestarted = 'EVT_SW_Restarted',
-    switchAutoReadopted = 'EVT_SW_AutoReadopted',
-    switchLostContact = 'EVT_SW_Lost_Contact',
-
-
-    accessPointRestarted = 'EVT_AP_Restarted',
-
+export const WebSocketEvent = {
+    device: {
+        Restarted: ['EVT_SW_Restarted', 'EVT_AP_Restarted', 'EVT_GW_Restarted'],
+    },
+    client: {
+        Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],
+        Disconnected: ['EVT_WU_Disconnected', 'EVT_WG_Disconnected', 'EVT_LU_Disconnected', 'EVT_LG_Disconnected'],
+        Roamed: ['EVT_WU_Roam', 'EVT_WG_Roam'],
+        RoamedRadio: ['EVT_WU_RoamRadio', 'EVT_WG_RoamRadio'],
+        Blocked: ['EVT_WC_Blocked', 'EVT_LC_Blocked'],
+        Unblocked: ['EVT_WC_Unblocked', 'EVT_LC_Unblocked'],
+    }
 }
+
+// export enum WebSocketEventKeys {
+//     connected = '_Connected',
+//     disconnected = '_Disconnected',
+//     blocked = '_Blocked',
+//     unblocked = '_Unblocked',
+//     roamed = '_Roam',
+//     roamedRadio = '_RoamRadio',
+//     restarted = '_Restarted',
+
+//     // client Wireless
+//     clientWirelessConnected = 'EVT_WU_Connected',
+//     clientWirelessDisconnected = 'EVT_WU_Disconnected',
+//     clientWirelessRoamed = 'EVT_WU_Roam',
+//     clientWirelessRoamedRadio = 'EVT_WU_RoamRadio',
+
+//     // client LAN
+//     clientLanConnected = 'EVT_LU_Connected',
+//     clientLanDisconnected = 'EVT_LU_Disconnected',
+//     clientLanBlocked = 'EVT_LU_Blocked',
+//     clientLanUnblocked = 'EVT_LU_Unblocked',
+
+//     // guest Wireless
+//     guestWirelessConnected = 'EVT_WG_Connected',
+//     guestWirelessDisconnected = 'EVT_WG_Disconnected',
+//     guestWirelessRoamed = 'EVT_WG_Roam',
+//     guestWirelessRoamedRadio = 'EVT_WG_RoamRadio',
+
+//     // guest LAN
+//     guestLanConnected = 'EVT_LG_Connected',
+//     guestLanDisconnected = 'EVT_LG_Disconnected',
+//     guestLanBlocked = 'EVT_LG_Blocked',
+//     guestLanUnblocked = 'EVT_LG_Unblocked',
+
+//     // client or guest Wireless
+//     clientOrGuestWirelessBlocked = 'EVT_WC_Blocked',
+//     clientOrGuestWirelessUnblocked = 'EVT_WC_Unblocked',
+
+//     // Gateway
+//     gatewayRestarted = 'EVT_GW_Restarted',
+
+//     // Switch
+//     switchRestarted = 'EVT_SW_Restarted',
+//     switchAutoReadopted = 'EVT_SW_AutoReadopted',
+//     switchLostContact = 'EVT_SW_Lost_Contact',
+
+
+//     accessPointRestarted = 'EVT_AP_Restarted',
+
+// }
 
 export interface myCache {
     devices: { [key: string]: NetworkDevice; },

@@ -1,13 +1,35 @@
-import { WebSocketEventKeys } from "./myTypes.js";
+import { WebSocketEvent } from "./myTypes.js";
 import { clientTree } from "./tree-client.js";
 export const eventHandler = {
-    device: {},
+    device: {
+        async restarted(meta, data, adapter, cache) {
+            const logPrefix = '[eventHandler.device.restarted]:';
+            try {
+                const mac = data.sw || data.ap || data.gw;
+                if (mac) {
+                    if (await adapter.objectExists(`devices.${mac}.state`)) {
+                        await adapter.setState(`devices.${mac}.state`, 999, true);
+                    }
+                    if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
+                        await adapter.setState(`devices.${mac}.isOnline`, false, true);
+                    }
+                    adapter.log.info(`${logPrefix} '${cache.devices[mac].name}' (mac: ${mac}) is going to restart`);
+                }
+                else {
+                    adapter.log.warn(`${logPrefix} event 'restarted' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+            }
+            catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        },
+    },
     client: {
         async connection(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.connection]:';
+            const logPrefix = '[eventHandler.client.connection]:';
             try {
                 const mac = data.user || data.guest;
-                const connected = data.key.includes(WebSocketEventKeys.connected);
+                const connected = WebSocketEvent.client.Connected.includes(data.key);
                 const isGuest = data.guest ? true : false;
                 if (mac) {
                     const id = `${isGuest ? 'guests' : 'clients'}.${mac}.isOnline`;
@@ -22,7 +44,7 @@ export const eventHandler = {
                     }
                 }
                 else {
-                    adapter.log.warn(`${logPrefix} event connected / disconnected has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                    adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
             }
             catch (error) {
@@ -30,11 +52,11 @@ export const eventHandler = {
             }
         },
         async roamed(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.roamed]:';
+            const logPrefix = '[eventHandler.client.roamed]:';
             try {
-                const mac = data.key === WebSocketEventKeys.clientWirelessRoamed ? data.user : data.guest;
+                const mac = data.user || data.guest;
                 const isGuest = data.guest ? true : false;
-                if (data.ap_from && data.ap_to) {
+                if (mac && data.ap_from && data.ap_to) {
                     adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac].name}' (mac: ${mac}, ip: ${cache.clients[mac].ip}) roamed from '${cache.devices[data.ap_from].name}' (mac: ${data.ap_from}) to '${cache.devices[data.ap_to].name}' (mac: ${data.ap_to})`);
                     const idApName = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_name`;
                     if (await adapter.objectExists(idApName)) {
@@ -52,7 +74,7 @@ export const eventHandler = {
                     }
                 }
                 else {
-                    adapter.log.warn(`${logPrefix} roam event has no ap information! (data: ${JSON.stringify(data)})`);
+                    adapter.log.warn(`${logPrefix} event 'roam' has no mac or ap information! (data: ${JSON.stringify(data)})`);
                 }
             }
             catch (error) {
@@ -60,11 +82,11 @@ export const eventHandler = {
             }
         },
         async roamedRadio(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.roamedRadio]:';
+            const logPrefix = '[eventHandler.client.roamedRadio]:';
             try {
-                const mac = (data.key === WebSocketEventKeys.clientWirelessRoamedRadio) ? data.user : data.guest;
+                const mac = data.user || data.guest;
                 const isGuest = data.guest ? true : false;
-                if (data.channel_from && data.channel_to && data.ap) {
+                if (mac && data.channel_from && data.channel_to && data.ap) {
                     adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac].name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache.devices[data.ap].name}' (mac: ${cache.devices[data.ap].mac})`);
                     const ipChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
                     const valChannel = parseInt(data.channel_to);
@@ -83,7 +105,7 @@ export const eventHandler = {
                     }
                 }
                 else {
-                    adapter.log.warn(`${logPrefix} roam radio event has no ap information! (data: ${JSON.stringify(data)})`);
+                    adapter.log.warn(`${logPrefix} event 'roam radio' has no mac or ap information! (data: ${JSON.stringify(data)})`);
                 }
             }
             catch (error) {
@@ -91,15 +113,20 @@ export const eventHandler = {
             }
         },
         async block(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.block]:';
+            const logPrefix = '[eventHandler.client.block]:';
             try {
                 const mac = data.client;
-                const isGuest = cache.clients[mac].is_guest;
-                const blocked = data.key.includes('_Blocked');
-                const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
-                if (await adapter.objectExists(id)) {
-                    await adapter.setState(id, blocked, true);
-                    adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac].name}' ${blocked ? 'blocked' : 'unblocked'} (mac: ${mac}${cache.clients[mac].ip ? `, ip: ${cache.clients[mac].ip}` : ''})`);
+                if (mac) {
+                    const isGuest = cache.clients[mac].is_guest;
+                    const blocked = data.key.includes('_Blocked');
+                    const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
+                    if (await adapter.objectExists(id)) {
+                        await adapter.setState(id, blocked, true);
+                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac].name}' ${blocked ? 'blocked' : 'unblocked'} (mac: ${mac}${cache.clients[mac].ip ? `, ip: ${cache.clients[mac].ip}` : ''})`);
+                    }
+                }
+                else {
+                    adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
             }
             catch (error) {
@@ -109,7 +136,7 @@ export const eventHandler = {
     },
     user: {
         async clientRemoved(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.clientRemoved]:';
+            const logPrefix = '[eventHandler.user.clientRemoved]:';
             try {
                 if (meta.message === 'user:delete' && data.mac) {
                     if (adapter.config.keepIobSynchron && cache.clients[data.mac]) {
