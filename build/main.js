@@ -698,7 +698,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isDeviceCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.getObjectDiff(common, obj.common))})`);
+                            this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.difference(common, obj.common))})`);
                         }
                     }
                 }
@@ -738,7 +738,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isChannelCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.getObjectDiff(common, obj.common))})`);
+                            this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.difference(common, obj.common))})`);
                         }
                     }
                 }
@@ -795,7 +795,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (obj && obj.common) {
                                         if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
                                             await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                            this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.getObjectDiff(commonUpdated, obj.common))})`);
+                                            this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.difference(commonUpdated, obj.common))})`);
                                         }
                                     }
                                 }
