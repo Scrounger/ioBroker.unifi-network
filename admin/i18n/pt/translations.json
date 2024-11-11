@@ -83,5 +83,8 @@
     "delete guests who have not been online for x days (0 = deactivated)": "excluir convidados que não estão online há x dias (0 = desativado)",
     "time [s] after a VPN device is set to offline": "tempo [s] após um dispositivo VPN ser definido como off-line",
     "download images": "baixar imagens",
-    "clients / guests / vpn": "clientes / convidados / vpn"
+    "clients / guests / vpn": "clientes / convidados / vpn",
+    "clients enabled": "clientes habilitados",
+    "guests enabled": "convidados habilitados",
+    "vpn clients enabled": "clientes VPN habilitados"
 }

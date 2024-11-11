@@ -17,6 +17,10 @@ declare global {
 			keepIobSynchron: boolean;
 			deleteClientsOlderThan: number;
 			deleteGuestsOlderThan: number;
+			devicesEnabled: boolean;
+			clientsEnabled: boolean;
+			guestsEnabled: boolean;
+			vpnEnabled: boolean;
 		}
 	}
 }

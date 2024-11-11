@@ -83,5 +83,8 @@
     "delete guests who have not been online for x days (0 = deactivated)": "видалити гостей, які не були онлайн протягом x днів (0 = дезактивовано)",
     "time [s] after a VPN device is set to offline": "час [с] після того, як пристрій VPN переведено в автономний режим",
     "download images": "завантажити зображення",
-    "clients / guests / vpn": "клієнти / гості / vpn"
+    "clients / guests / vpn": "клієнти / гості / vpn",
+    "clients enabled": "клієнти включені",
+    "guests enabled": "гості включені",
+    "vpn clients enabled": "клієнти vpn увімкнено"
 }

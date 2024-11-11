@@ -83,5 +83,8 @@
     "delete guests who have not been online for x days (0 = deactivated)": "删除 x 天未在线的访客（0 = 已停用）",
     "time [s] after a VPN device is set to offline": "VPN 设备设置为离线后的时间 [s]",
     "download images": "下载图片",
-    "clients / guests / vpn": "客户/客人/VPN"
+    "clients / guests / vpn": "客户/客人/VPN",
+    "clients enabled": "启用客户端",
+    "guests enabled": "启用访客",
+    "vpn clients enabled": "VPN 客户端已启用"
 }

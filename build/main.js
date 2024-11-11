@@ -316,13 +316,8 @@ class UnifiNetwork extends utils.Adapter {
     async updateData() {
         const logPrefix = '[updateData]:';
         try {
-            await this.updateDevicesImages();
-            this.createOrUpdateChannel('devices', 'unifi devices', undefined, true);
-            await this.updateDevices(await this.ufn.getDevices(), true);
-            this.createOrUpdateChannel('clients', 'clients', undefined, true);
-            this.createOrUpdateChannel('guests', 'guests', undefined, true);
-            this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
-            await this.updateClients(await this.ufn.getClientsActive(), true);
+            await this.updateDevices(null, true);
+            await this.updateClients(null, true);
             await this.updatClientseOffline(await this.ufn.getClients(), true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.updateInterval * 2 * 1000);
         }
@@ -330,37 +325,50 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateDevices(data, isAdapterStart = false) {
+    async updateDevices(data = null, isAdapterStart = false) {
         const logPrefix = '[updateDevices]:';
         try {
             if (this.connected && this.isConnected) {
                 const idChannel = 'devices';
-                if (data) {
-                    if (isAdapterStart)
-                        this.log.info(`${logPrefix} Discovered ${data.length} devices`);
-                    for (let device of data) {
-                        // ToDo: uncomment
-                        // if (!this.cache.devices[device.mac]) {
-                        // 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-                        // }
-                        if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.devices[device.mac]) {
-                            const lastSeen = this.cache.devices[device.mac].last_seen;
-                            if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                continue;
+                if (this.config.devicesEnabled) {
+                    if (isAdapterStart) {
+                        await this.createOrUpdateChannel(idChannel, 'unifi devices', undefined, true);
+                        await this.updateDevicesImages();
+                        data = await this.ufn.getDevices();
+                    }
+                    if (data) {
+                        if (isAdapterStart)
+                            this.log.info(`${logPrefix} Discovered ${data.length} devices`);
+                        for (let device of data) {
+                            // ToDo: uncomment
+                            // if (!this.cache.devices[device.mac]) {
+                            // 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                            // }
+                            if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.devices[device.mac]) {
+                                const lastSeen = this.cache.devices[device.mac].last_seen;
+                                if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                    continue;
+                                }
+                            }
+                            let dataToProcess = device;
+                            if (this.cache.devices[device.mac]) {
+                                dataToProcess = myHelper.difference(device, this.cache.devices[device.mac]);
+                            }
+                            this.cache.devices[device.mac] = device;
+                            if (Object.keys(dataToProcess).length > 0) {
+                                dataToProcess.mac = device.mac;
+                                if (!isAdapterStart)
+                                    this.log.silly(`${logPrefix} device ${device.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
+                                await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, device, isAdapterStart);
                             }
                         }
-                        let dataToProcess = device;
-                        if (this.cache.devices[device.mac]) {
-                            dataToProcess = myHelper.difference(device, this.cache.devices[device.mac]);
-                        }
-                        this.cache.devices[device.mac] = device;
-                        if (Object.keys(dataToProcess).length > 0) {
-                            dataToProcess.mac = device.mac;
-                            if (!isAdapterStart)
-                                this.log.silly(`${logPrefix} device ${device.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                            this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
-                            await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, device, isAdapterStart);
-                        }
+                    }
+                }
+                else {
+                    if (await this.objectExists(idChannel)) {
+                        await this.delObjectAsync(idChannel, { recursive: true });
+                        this.log.debug(`${logPrefix} '${idChannel}' deleted`);
                     }
                 }
             }
@@ -369,131 +377,156 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateClients(data, isAdapterStart = false, isOfflineClients = false) {
+    async updateClients(data = null, isAdapterStart = false, isOfflineClients = false) {
         const logPrefix = '[updateClients]:';
         try {
             if (this.connected && this.isConnected) {
                 const idChannel = 'clients';
                 const idGuestChannel = 'guests';
                 const idVpnChannel = 'vpn';
-                if (data) {
-                    if (isAdapterStart) {
-                        if (!isOfflineClients) {
-                            this.log.info(`${logPrefix} Discovered ${data.length} connected clients`);
-                        }
-                        else {
-                            this.log.info(`${logPrefix} Discovered ${data.length} disconnected clients`);
-                        }
+                if (isAdapterStart && !isOfflineClients) {
+                    if (this.config.clientsEnabled)
+                        await this.createOrUpdateChannel('clients', 'clients', undefined, true);
+                    if (this.config.guestsEnabled)
+                        await this.createOrUpdateChannel('guests', 'guests', undefined, true);
+                    if (this.config.vpnEnabled)
+                        await this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
+                    if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
+                        data = await this.ufn.getClientsActive();
                     }
-                    for (let client of data) {
-                        const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
-                        const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
-                        if (client.mac && !client.is_guest) {
-                            if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
-                                // ToDo: uncomment
-                                // if (!this.cache.clients[client.mac]) {
-                                // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-                                // }
-                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
-                                    const lastSeen = this.cache.clients[client.mac].last_seen;
-                                    if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                        continue;
+                }
+                if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
+                    if (data) {
+                        if (isAdapterStart) {
+                            if (!isOfflineClients) {
+                                this.log.info(`${logPrefix} Discovered ${data.length} connected clients`);
+                            }
+                            else {
+                                this.log.info(`${logPrefix} Discovered ${data.length} disconnected clients`);
+                            }
+                        }
+                        for (let client of data) {
+                            const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
+                            const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
+                            if (this.config.clientsEnabled && client.mac && !client.is_guest) {
+                                if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
+                                    // ToDo: uncomment
+                                    // if (!this.cache.clients[client.mac]) {
+                                    // 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                    // }
+                                    if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
+                                        const lastSeen = this.cache.clients[client.mac].last_seen;
+                                        if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                            continue;
+                                        }
+                                    }
+                                    let dataToProcess = client;
+                                    if (this.cache.devices[client.mac]) {
+                                        dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]);
+                                    }
+                                    this.cache.clients[client.mac] = client;
+                                    this.cache.clients[client.mac].name = name;
+                                    if (Object.keys(dataToProcess).length > 0) {
+                                        dataToProcess.mac = client.mac;
+                                        dataToProcess.name = name;
+                                        if (!isAdapterStart)
+                                            this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                        this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                        await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, client, isAdapterStart);
                                     }
                                 }
-                                let dataToProcess = client;
-                                if (this.cache.devices[client.mac]) {
-                                    dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]);
+                                else {
+                                    if (await this.objectExists(`${idChannel}.${client.mac}`)) {
+                                        await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
+                                        this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                    }
+                                    else {
+                                        this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                    }
                                 }
-                                this.cache.clients[client.mac] = client;
-                                this.cache.clients[client.mac].name = name;
-                                if (Object.keys(dataToProcess).length > 0) {
-                                    dataToProcess.mac = client.mac;
-                                    dataToProcess.name = name;
-                                    if (!isAdapterStart)
-                                        this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                    this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, client, isAdapterStart);
+                            }
+                            else if (this.config.guestsEnabled && client.mac && client.is_guest) {
+                                if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
+                                    // ToDo: uncomment
+                                    // if (!this.cache.clients[client.mac]) {
+                                    // 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                    // }
+                                    if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
+                                        const lastSeen = this.cache.clients[client.mac].last_seen;
+                                        if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                            continue;
+                                        }
+                                    }
+                                    let dataToProcess = client;
+                                    if (this.cache.devices[client.mac]) {
+                                        dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]);
+                                    }
+                                    this.cache.clients[client.mac] = client;
+                                    this.cache.clients[client.mac].name = name;
+                                    if (Object.keys(dataToProcess).length > 0) {
+                                        dataToProcess.mac = client.mac;
+                                        dataToProcess.name = name;
+                                        if (!isAdapterStart)
+                                            this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                        this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                        await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, client, isAdapterStart);
+                                    }
+                                }
+                                else {
+                                    if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
+                                        await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
+                                        this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                    }
+                                    else {
+                                        this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                    }
                                 }
                             }
                             else {
-                                if (await this.objectExists(`${idChannel}.${client.mac}`)) {
-                                    await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
-                                    this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
-                                }
-                                else {
-                                    this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
-                                }
-                            }
-                        }
-                        else if (client.mac && client.is_guest) {
-                            if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
-                                // ToDo: uncomment
-                                // if (!this.cache.clients[client.mac]) {
-                                // 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-                                // }
-                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
-                                    const lastSeen = this.cache.clients[client.mac].last_seen;
-                                    if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                        continue;
+                                if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
+                                    // ToDo: uncomment
+                                    // if (this.cache.vpn[client.ip]) {
+                                    // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                    // }
+                                    const idChannel = client.network_id;
+                                    this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '');
+                                    if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
+                                        const lastSeen = this.cache.vpn[client.ip].last_seen;
+                                        if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+                                            continue;
+                                        }
                                     }
-                                }
-                                let dataToProcess = client;
-                                if (this.cache.devices[client.mac]) {
-                                    dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]);
-                                }
-                                this.cache.clients[client.mac] = client;
-                                this.cache.clients[client.mac].name = name;
-                                if (Object.keys(dataToProcess).length > 0) {
-                                    dataToProcess.mac = client.mac;
-                                    dataToProcess.name = name;
-                                    if (!isAdapterStart)
-                                        this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                    this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, client, isAdapterStart);
-                                }
-                            }
-                            else {
-                                if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
-                                    await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
-                                    this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
-                                }
-                                else {
-                                    this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
-                                }
-                            }
-                        }
-                        else {
-                            if (client.type === 'VPN' && client.ip) {
-                                // ToDo: uncomment
-                                // if (this.cache.vpn[client.ip]) {
-                                // 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-                                // }
-                                const idChannel = client.network_id;
-                                this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '');
-                                if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
-                                    const lastSeen = this.cache.vpn[client.ip].last_seen;
-                                    if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-                                        continue;
+                                    let dataToProcess = client;
+                                    if (this.cache.devices[client.ip]) {
+                                        dataToProcess = myHelper.difference(client, this.cache.clients[client.ip]);
                                     }
-                                }
-                                let dataToProcess = client;
-                                if (this.cache.devices[client.ip]) {
-                                    dataToProcess = myHelper.difference(client, this.cache.clients[client.ip]);
-                                }
-                                this.cache.vpn[client.ip] = client;
-                                this.cache.vpn[client.ip].name = name;
-                                const preparedIp = client.ip.replaceAll('.', '_');
-                                if (Object.keys(dataToProcess).length > 0) {
-                                    dataToProcess.ip = client.ip;
-                                    dataToProcess.name = name;
-                                    if (!isAdapterStart)
-                                        this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                    this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, clientTree, client, 'vpn', client, client, isAdapterStart);
+                                    this.cache.vpn[client.ip] = client;
+                                    this.cache.vpn[client.ip].name = name;
+                                    const preparedIp = client.ip.replaceAll('.', '_');
+                                    if (Object.keys(dataToProcess).length > 0) {
+                                        dataToProcess.ip = client.ip;
+                                        dataToProcess.name = name;
+                                        if (!isAdapterStart)
+                                            this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                        this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+                                        await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, clientTree, client, 'vpn', client, client, isAdapterStart);
+                                    }
                                 }
                             }
                         }
                     }
+                }
+                if (!this.config.clientsEnabled && await this.objectExists(idChannel)) {
+                    await this.delObjectAsync(idChannel, { recursive: true });
+                    this.log.debug(`${logPrefix} channel '${idChannel}' deleted`);
+                }
+                if (!this.config.guestsEnabled && await this.objectExists(idGuestChannel)) {
+                    await this.delObjectAsync(idGuestChannel, { recursive: true });
+                    this.log.debug(`${logPrefix} channel '${idGuestChannel}' deleted`);
+                }
+                if (!this.config.vpnEnabled && await this.objectExists(idVpnChannel)) {
+                    await this.delObjectAsync(idVpnChannel, { recursive: true });
+                    this.log.debug(`${logPrefix} channel '${idVpnChannel}' deleted`);
                 }
             }
         }
@@ -594,10 +627,14 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateClientsImages]:';
         try {
             if (this.config.clientImageDownload) {
-                const clients = await this.getStatesAsync('clients.*.imageUrl');
-                await this._updateClientsImages(clients);
-                const guests = await this.getStatesAsync('guests.*.imageUrl');
-                await this._updateClientsImages(guests);
+                if (this.config.clientsEnabled) {
+                    const clients = await this.getStatesAsync('clients.*.imageUrl');
+                    await this._updateClientsImages(clients);
+                }
+                if (this.config.guestsEnabled) {
+                    const guests = await this.getStatesAsync('guests.*.imageUrl');
+                    await this._updateClientsImages(guests);
+                }
             }
         }
         catch (error) {

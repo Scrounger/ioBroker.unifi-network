@@ -99,9 +99,16 @@
 					"text": "unifi devices",
 					"size": 2
 				},
+				"devicesEnabled": {
+					"type": "checkbox",
+					"label": "enabled",
+					"sm": 12,
+					"md": 2
+				},
 				"deviceImageDownload": {
 					"type": "checkbox",
 					"label": "download images",
+					"disabled": "!data.devicesEnabled",
 					"sm": 12,
 					"md": 2
 				}
@@ -128,45 +135,69 @@
 					"text": "clients / guests / vpn",
 					"size": 2
 				},
+				"clientsEnabled": {
+					"type": "checkbox",
+					"label": "clients enabled",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				},
+				"deleteClientsOlderThan": {
+					"type": "number",
+					"label": "delete clients who have not been online for x days (0 = deactivated)",
+					"disabled": "!data.clientsEnabled",
+					"min": 0,
+					"step": 1,
+					"sm": 12,
+					"md": 3
+				},
+				"guestsEnabled": {
+					"type": "checkbox",
+					"label": "guests enabled",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				},
+				"deleteGuestsOlderThan": {
+					"type": "number",
+					"label": "delete guests who have not been online for x days (0 = deactivated)",
+					"disabled": "!data.guestsEnabled",
+					"min": 0,
+					"step": 1,
+					"sm": 12,
+					"md": 3
+				},
+				"vpnEnabled": {
+					"type": "checkbox",
+					"label": "vpn clients enabled",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				},
+				"vpnOfflineTimeout": {
+					"type": "number",
+					"label": "time [s] after a VPN device is set to offline",
+					"disabled": "!data.vpnEnabled",
+					"min": 5,
+					"max": 10000,
+					"step": 1,
+					"sm": 12,
+					"md": 3
+				},
 				"clientImageDownload": {
 					"type": "checkbox",
 					"label": "download images",
 					"newLine": true,
+					"disabled": "!data.clientsEnabled && !data.guestsEnabled && !data.vpnEnabled",
 					"sm": 12,
 					"md": 2
 				},
 				"clientOfflineTimeout": {
 					"type": "number",
 					"label": "time [s] after a device is set to offline",
-					"newLine": true,
+					"disabled": "!data.clientsEnabled && !data.guestsEnabled",
 					"min": 5,
 					"max": 10000,
-					"step": 1,
-					"sm": 12,
-					"md": 3
-				},
-				"vpnOfflineTimeout": {
-					"type": "number",
-					"label": "time [s] after a VPN device is set to offline",
-					"min": 5,
-					"max": 10000,
-					"step": 1,
-					"sm": 12,
-					"md": 3
-				},
-				"deleteClientsOlderThan": {
-					"type": "number",
-					"label": "delete clients who have not been online for x days (0 = deactivated)",
-					"newLine": true,
-					"min": 0,
-					"step": 1,
-					"sm": 12,
-					"md": 3
-				},
-				"deleteGuestsOlderThan": {
-					"type": "number",
-					"label": "delete guests who have not been online for x days (0 = deactivated)",
-					"min": 0,
 					"step": 1,
 					"sm": 12,
 					"md": 3

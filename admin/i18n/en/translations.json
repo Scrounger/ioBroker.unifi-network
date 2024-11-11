@@ -74,5 +74,8 @@
 	"device reported errors": "device reported errors",
 	"led override": "led override",
 	"enabled": "enabled",
-	"uplink device name": "uplink device name"
+	"uplink device name": "uplink device name",
+	"clients enabled": "clients enabled",
+	"guests enabled": "guests enabled",
+	"vpn clients enabled": "vpn clients enabled"
 }

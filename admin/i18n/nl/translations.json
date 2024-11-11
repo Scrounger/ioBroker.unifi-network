@@ -83,5 +83,8 @@
     "delete guests who have not been online for x days (0 = deactivated)": "verwijder gasten die x dagen niet online zijn geweest (0 = gedeactiveerd)",
     "time [s] after a VPN device is set to offline": "tijd [s] nadat een VPN-apparaat offline is gezet",
     "download images": "afbeeldingen downloaden",
-    "clients / guests / vpn": "klanten / gasten / vpn"
+    "clients / guests / vpn": "klanten / gasten / vpn",
+    "clients enabled": "klanten ingeschakeld",
+    "guests enabled": "gasten ingeschakeld",
+    "vpn clients enabled": "vpn-clients ingeschakeld"
 }

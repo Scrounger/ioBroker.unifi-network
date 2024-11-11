@@ -102,7 +102,11 @@
         "clientImageDownload": false,
         "keepIobSynchron": false,
         "deleteClientsOlderThan": 0,
-        "deleteGuestsOlderThan": 0
+        "deleteGuestsOlderThan": 0,
+        "devicesEnabled": true,
+        "clientsEnabled": true,
+        "guestsEnabled": true,
+        "vpnEnabled": true
     },
     "objects": [],
     "instanceObjects": [
