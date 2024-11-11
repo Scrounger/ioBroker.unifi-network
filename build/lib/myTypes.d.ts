@@ -25,7 +25,7 @@ export interface myCommonState {
     valFromProperty?: string;
     statesFromProperty?: string;
     conditionProperty?: string;
-    conditionToCreateState?(val: ioBroker.StateValue): boolean;
+    conditionToCreateState?(val: ioBroker.StateValue, adapter: ioBroker.Adapter): boolean;
     subscribeMe?: true;
 }
 export interface myCommoneChannelObject {

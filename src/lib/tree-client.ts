@@ -106,7 +106,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'number',
         name: 'port of the connected switch',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val: boolean) {
+        conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
             return val;
         }
     },
@@ -151,7 +151,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         iobType: 'boolean',
         name: 'reconnect client',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val: boolean) {
+        conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
             // only create state if it's a wireless client
             return val === false;
         },
@@ -210,7 +210,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'wired speed',
         unit: 'mbps',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val: boolean) {
+        conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
             return val;
         },
     },
@@ -220,7 +220,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'experience',
         unit: '%',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val: boolean) {
+        conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
             return !val;
         },
     },
@@ -230,7 +230,7 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'TX Retries',
         unit: '%',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val: boolean) {
+        conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
             return !val;
         },
     },

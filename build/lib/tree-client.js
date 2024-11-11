@@ -106,7 +106,7 @@ export const clientTree = {
         iobType: 'number',
         name: 'port of the connected switch',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val) {
+        conditionToCreateState(val, adapter) {
             return val;
         }
     },
@@ -157,7 +157,7 @@ export const clientTree = {
         iobType: 'boolean',
         name: 'reconnect client',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val) {
+        conditionToCreateState(val, adapter) {
             // only create state if it's a wireless client
             return val === false;
         },
@@ -216,7 +216,7 @@ export const clientTree = {
         name: 'wired speed',
         unit: 'mbps',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val) {
+        conditionToCreateState(val, adapter) {
             return val;
         },
     },
@@ -226,7 +226,7 @@ export const clientTree = {
         name: 'experience',
         unit: '%',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val) {
+        conditionToCreateState(val, adapter) {
             return !val;
         },
     },
@@ -236,7 +236,7 @@ export const clientTree = {
         name: 'TX Retries',
         unit: '%',
         conditionProperty: 'is_wired',
-        conditionToCreateState(val) {
+        conditionToCreateState(val, adapter) {
             return !val;
         },
     },

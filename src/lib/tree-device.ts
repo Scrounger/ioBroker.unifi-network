@@ -393,6 +393,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
         }
     },
     "system-stats": {
+        idChannel: 'system',
         channelName: 'system statistics',
         object: {
             cpu: {
@@ -546,7 +547,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 iobType: 'number',
                 name: 'connected clients',
                 conditionProperty: 'is_guest',
-                conditionToCreateState(val: boolean): boolean {
+                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
                     return !val
                 },
                 valFromProperty: 'num_sta',
@@ -556,7 +557,7 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
                 iobType: 'number',
                 name: 'connected guests',
                 conditionProperty: 'is_guest',
-                conditionToCreateState(val: boolean): boolean {
+                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
                     return val
                 },
                 valFromProperty: 'num_sta',

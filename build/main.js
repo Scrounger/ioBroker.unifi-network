@@ -349,9 +349,18 @@ class UnifiNetwork extends utils.Adapter {
                                 continue;
                             }
                         }
+                        let dataToProcess = device;
+                        if (this.cache.devices[device.mac]) {
+                            dataToProcess = myHelper.difference(device, this.cache.devices[device.mac]);
+                        }
                         this.cache.devices[device.mac] = device;
-                        this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
-                        await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, isAdapterStart);
+                        if (Object.keys(dataToProcess).length > 0) {
+                            dataToProcess.mac = device.mac;
+                            if (!isAdapterStart)
+                                this.log.silly(`${logPrefix} device ${device.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                            this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
+                            await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, device, isAdapterStart);
+                        }
                     }
                 }
             }
@@ -391,10 +400,20 @@ class UnifiNetwork extends utils.Adapter {
                                         continue;
                                     }
                                 }
+                                let dataToProcess = client;
+                                if (this.cache.devices[client.mac]) {
+                                    dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]);
+                                }
                                 this.cache.clients[client.mac] = client;
                                 this.cache.clients[client.mac].name = name;
-                                this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, isAdapterStart);
+                                if (Object.keys(dataToProcess).length > 0) {
+                                    dataToProcess.mac = client.mac;
+                                    dataToProcess.name = name;
+                                    if (!isAdapterStart)
+                                        this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                    this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                    await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, client, isAdapterStart);
+                                }
                             }
                             else {
                                 if (await this.objectExists(`${idChannel}.${client.mac}`)) {
@@ -418,10 +437,20 @@ class UnifiNetwork extends utils.Adapter {
                                         continue;
                                     }
                                 }
+                                let dataToProcess = client;
+                                if (this.cache.devices[client.mac]) {
+                                    dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]);
+                                }
                                 this.cache.clients[client.mac] = client;
                                 this.cache.clients[client.mac].name = name;
-                                this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, isAdapterStart);
+                                if (Object.keys(dataToProcess).length > 0) {
+                                    dataToProcess.mac = client.mac;
+                                    dataToProcess.name = name;
+                                    if (!isAdapterStart)
+                                        this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                    this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                    await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, client, isAdapterStart);
+                                }
                             }
                             else {
                                 if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
@@ -447,11 +476,21 @@ class UnifiNetwork extends utils.Adapter {
                                         continue;
                                     }
                                 }
+                                let dataToProcess = client;
+                                if (this.cache.devices[client.ip]) {
+                                    dataToProcess = myHelper.difference(client, this.cache.clients[client.ip]);
+                                }
                                 this.cache.vpn[client.ip] = client;
                                 this.cache.vpn[client.ip].name = name;
                                 const preparedIp = client.ip.replaceAll('.', '_');
-                                this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, clientTree, client, 'vpn', client, isAdapterStart);
+                                if (Object.keys(dataToProcess).length > 0) {
+                                    dataToProcess.ip = client.ip;
+                                    dataToProcess.name = name;
+                                    if (!isAdapterStart)
+                                        this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                    this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+                                    await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, clientTree, client, 'vpn', client, client, isAdapterStart);
+                                }
                             }
                         }
                     }
@@ -709,7 +748,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, isAdapterStart = false) {
+    async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, objOrgValues, isAdapterStart = false) {
         const logPrefix = '[createGenericState]:';
         try {
             if (this.connected && this.isConnected) {
@@ -720,7 +759,7 @@ class UnifiNetwork extends utils.Adapter {
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
                         const cond1 = (Object.prototype.hasOwnProperty.call(objValues, valKey) && objValues[valKey] !== undefined) || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty'));
                         const cond2 = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array');
-                        const cond3 = (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') && treeDefinition[key].conditionToCreateState(objValues[treeDefinition[key].conditionProperty]) === true) || !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty');
+                        const cond3 = (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') && treeDefinition[key].conditionToCreateState(objOrgValues[treeDefinition[key].conditionProperty], this) === true) || !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty');
                         // if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
                         // 	this.log.warn(`cond 1: ${cond1}`);
                         // 	this.log.warn(`cond 2: ${cond2}`);
@@ -800,22 +839,24 @@ class UnifiNetwork extends utils.Adapter {
                         else {
                             // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
                             // it's a channel from type object
-                            if (objValues[key] && objValues[key].constructor.name === 'Object' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object')) {
+                            if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && Object.prototype.hasOwnProperty.call(objValues, key)) {
                                 const idChannel = `${channel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
                                 await this.createOrUpdateChannel(`${idChannel}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                                await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+                                await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key], isAdapterStart);
                             }
                             // it's a channel from type array
-                            if (objValues[key] && objValues[key].constructor.name === 'Array' && Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array')) {
-                                if (objValues[key].length > 0) {
+                            if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array') && Object.prototype.hasOwnProperty.call(objValues, key)) {
+                                if (objValues[key] !== null && objValues[key].length > 0) {
                                     const idChannel = `${channel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
                                     await this.createOrUpdateChannel(`${idChannel}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
                                     const arrayNumberAdd = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0;
                                     for (let i = 0; i <= objValues[key].length - 1; i++) {
                                         let nr = i + arrayNumberAdd;
-                                        const idChannelArray = `${idChannel}.${objValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
-                                        await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objValues[key][i]) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
-                                        await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, isAdapterStart);
+                                        if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
+                                            const idChannelArray = `${idChannel}.${objOrgValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
+                                            await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i]) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
+                                            await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], isAdapterStart);
+                                        }
                                     }
                                 }
                             }
@@ -830,7 +871,7 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     catch (error) {
-                        this.log.error(`${logPrefix} [id: ${key}, mac: ${objOrg.mac || objOrg.ip}] error: ${error}, stack: ${error.stack}`);
+                        this.log.error(`${logPrefix} [id: ${key}, mac: ${objOrg?.mac || objOrg?.ip}, key: ${key}] error: ${error}, stack: ${error.stack}, data: ${JSON.stringify(objValues[key])}`);
                     }
                 }
             }

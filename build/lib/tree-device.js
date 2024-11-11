@@ -389,6 +389,7 @@ export const deviceTree = {
         }
     },
     "system-stats": {
+        idChannel: 'system',
         channelName: 'system statistics',
         object: {
             cpu: {
@@ -543,7 +544,7 @@ export const deviceTree = {
                 iobType: 'number',
                 name: 'connected clients',
                 conditionProperty: 'is_guest',
-                conditionToCreateState(val) {
+                conditionToCreateState(val, adapter) {
                     return !val;
                 },
                 valFromProperty: 'num_sta',
@@ -553,7 +554,7 @@ export const deviceTree = {
                 iobType: 'number',
                 name: 'connected guests',
                 conditionProperty: 'is_guest',
-                conditionToCreateState(val) {
+                conditionToCreateState(val, adapter) {
                     return val;
                 },
                 valFromProperty: 'num_sta',

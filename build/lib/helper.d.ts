@@ -29,3 +29,4 @@ export declare function getIdLastPart(id: string): string;
  * @returns
  */
 export declare function getObjectDiff(obj1: any, obj2: any, compareRef?: boolean): string[];
+export declare function difference(object: any, base: any): unknown;
