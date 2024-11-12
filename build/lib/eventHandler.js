@@ -7,11 +7,8 @@ export const eventHandler = {
             try {
                 const mac = data.sw || data.ap || data.gw;
                 if (mac) {
-                    if (await adapter.objectExists(`devices.${mac}.state`)) {
-                        await adapter.setState(`devices.${mac}.state`, 999, true);
-                    }
                     if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                        await adapter.setState(`devices.${mac}.isOnline`, false, true);
+                        await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, false, true);
                     }
                     adapter.log.info(`${logPrefix} '${cache.devices[mac].name}' (mac: ${mac}) is going to restart`);
                 }
@@ -23,10 +20,29 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
         },
+        async connected(meta, data, adapter, cache) {
+            const logPrefix = '[eventHandler.device.connected]:';
+            try {
+                const mac = data.sw || data.ap || data.gw;
+                const connected = WebSocketEvent.device.Connected.includes(data.key);
+                if (mac) {
+                    if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
+                        await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, connected, true);
+                    }
+                    adapter.log.info(`${logPrefix} '${cache.devices[mac].name}' (mac: ${mac}) ${connected ? 'connected' : 'disconnected'}`);
+                }
+                else {
+                    adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+            }
+            catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        },
     },
     client: {
-        async connection(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.client.connection]:';
+        async connected(meta, data, adapter, cache) {
+            const logPrefix = '[eventHandler.client.connected]:';
             try {
                 const mac = data.user || data.guest;
                 const connected = WebSocketEvent.client.Connected.includes(data.key);

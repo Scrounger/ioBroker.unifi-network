@@ -61,6 +61,8 @@ export declare const WebSocketEvent_Connected: string[];
 export declare const WebSocketEvent_Disconnected: string[];
 export declare const WebSocketEvent: {
     device: {
+        Connected: string[];
+        Disconnected: string[];
         Restarted: string[];
     };
     client: {

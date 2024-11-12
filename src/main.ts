@@ -1156,7 +1156,7 @@ class UnifiNetwork extends utils.Adapter {
 
 						this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
-						eventHandler.client.connection(event.meta, myEvent, this, this.cache);
+						eventHandler.client.connected(event.meta, myEvent, this, this.cache);
 
 					} else if (WebSocketEvent.client.Roamed.includes(myEvent.key)) {
 						// Client roamed between AP's
@@ -1178,11 +1178,23 @@ class UnifiNetwork extends utils.Adapter {
 						this.log.debug(`${logPrefix} event 'block / unblock' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.block(event.meta, myEvent, this, this.cache);
+
+
+
+
 					} else if (WebSocketEvent.device.Restarted.includes(myEvent.key)) {
+						// Device connect or disconnect
 
 						this.log.debug(`${logPrefix} event 'restarted' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.device.restarted(event.meta, myEvent, this, this.cache);
+					} else if (WebSocketEvent.device.Connected.includes(myEvent.key) || WebSocketEvent.device.Disconnected.includes(myEvent.key)) {
+						// Device restarted
+
+						this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+						eventHandler.device.connected(event.meta, myEvent, this, this.cache);
+
 					} else {
 						this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
 					}

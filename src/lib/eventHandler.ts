@@ -25,10 +25,30 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
         },
+        async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.device.connected]:'
+
+            try {
+                const mac: string = data.sw || data.ap || data.gw
+                const connected = WebSocketEvent.device.Connected.includes(data.key);
+
+                if (mac) {
+                    if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
+                        await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, connected, true);
+                    }
+
+                    adapter.log.info(`${logPrefix} '${cache.devices[mac].name}' (mac: ${mac}) ${connected ? 'connected' : 'disconnected'}`);
+                } else {
+                    adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        },
     },
     client: {
-        async connection(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
-            const logPrefix = '[eventHandler.client.connection]:'
+        async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.client.connected]:'
 
             try {
                 const mac: string = data.user || data.guest;
