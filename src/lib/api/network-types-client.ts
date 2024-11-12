@@ -129,6 +129,8 @@ export interface NetworkClient {
     "wired-tx_packets"?: number
     wired_rate_mbps?: number
     wlanconf_id?: string
+
+    iobTimestamp: number;
 }
 
 export interface SatisfactionAvg {

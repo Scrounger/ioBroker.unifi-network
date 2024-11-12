@@ -1,4 +1,5 @@
 import moment from 'moment';
+import * as myHelper from './helper.js';
 export const clientTree = {
     blocked: {
         iobType: 'boolean',
@@ -246,3 +247,10 @@ export const clientTree = {
         unit: 's',
     },
 };
+let keys = undefined;
+export function getClientKeys() {
+    if (keys === undefined) {
+        keys = myHelper.getAllKeysOfTreeDefinition(clientTree);
+    }
+    return keys;
+}

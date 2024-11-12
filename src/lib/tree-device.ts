@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
 import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
+import * as myHelper from './helper.js';
 
 export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } = {
     connected_clients: {
@@ -597,4 +598,14 @@ export const deviceTree: { [key: string]: myCommonState | myCommoneChannelObject
             },
         }
     }
+}
+
+let keys: string[] = undefined;
+
+export function getDeviceKeys(): string[] {
+    if (keys === undefined) {
+        keys = myHelper.getAllKeysOfTreeDefinition(deviceTree)
+    }
+
+    return keys
 }

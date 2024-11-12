@@ -27,4 +27,10 @@ export declare function getIdLastPart(id: string): string;
  * @param obj2
  * @returns
  */
-export declare function difference(object: any, base: any): unknown;
+export declare const deepDiffBetweenObjects: (object: any, base: any, allowedKeys?: any, prefix?: string) => unknown;
+/**
+ * Collect all properties used in tree defintions
+ * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
+ * @returns
+ */
+export declare function getAllKeysOfTreeDefinition(treefDefintion: any): any[];

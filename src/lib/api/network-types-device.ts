@@ -209,6 +209,8 @@ export interface NetworkDevice {
     x_inform_authkey?: string
     x_ssh_hostkey_fingerprint?: string
     x_vwirekey?: string
+
+    iobTimestamp: number;
 }
 
 interface ActiveGeoInfo {

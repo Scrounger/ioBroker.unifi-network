@@ -74,13 +74,61 @@ export function getIdLastPart(id) {
  * @param obj2
  * @returns
  */
-export function difference(object, base) {
-    function changes(object, base) {
-        return _.transform(object, function (result, value, key) {
-            if (!_.isEqual(value, base[key])) {
-                result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value;
+export const deepDiffBetweenObjects = (object, base, allowedKeys = undefined, prefix = '') => {
+    const changes = (object, base) => {
+        return _.transform(object, (result, value, key) => {
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+            if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
+                if (_.isArray(value)) {
+                    result[key] = [];
+                    for (var i = 0; i <= value.length - 1; i++) {
+                        const res = deepDiffBetweenObjects(value[i], base[key][i], allowedKeys, fullKey);
+                        result[key].push(!_.isEmpty(res) ? res : null);
+                    }
+                }
+                else if (_.isObject(value) && _.isObject(base[key])) {
+                    const res = changes(value, base[key]);
+                    if (!_.isEmpty(res)) {
+                        result[key] = res;
+                    }
+                }
+                else {
+                    result[key] = value;
+                }
+            }
+        });
+    };
+    return changes(object, base);
+};
+/**
+ * Collect all properties used in tree defintions
+ * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
+ * @returns
+ */
+export function getAllKeysOfTreeDefinition(treefDefintion) {
+    let keys = [];
+    // Hilfsfunktion für rekursive Durchsuchung des Objekts
+    function recurse(currentObj, prefix = '') {
+        _.forOwn(currentObj, (value, key) => {
+            const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '.');
+            // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
+            if (_.isObject(value) && typeof value !== 'function') {
+                keys.push(fullKey);
+                // Wenn es ein Array oder Object ist, dann rekursiv weitergehen
+                if (_.isArray(value) || _.isObject(value)) {
+                    // Nur unter "array" oder "object" rekursiv weiter
+                    recurse(value, fullKey);
+                }
+            }
+            else {
+                if (key === 'valFromProperty' || key === 'conditionProperty') {
+                    const prefixCleared = getIdWithoutLastPart(prefix);
+                    keys.push(`${prefixCleared ? `${prefixCleared}.` : ''}${value}`);
+                }
             }
         });
     }
-    return changes(object, base);
+    // Start der Rekursion
+    recurse(treefDefintion);
+    return _.uniq(keys);
 }

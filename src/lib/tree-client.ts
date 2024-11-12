@@ -2,6 +2,7 @@ import moment from 'moment';
 import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from './myTypes.js';
 import { Fingerprint, NetworkClient } from './api/network-types-client.js';
 import { NetworkDevice } from './api/network-types-device.js';
+import * as myHelper from './helper.js';
 
 export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; } = {
     blocked: {
@@ -239,4 +240,15 @@ export const clientTree: { [key: string]: myCommonState | myCommoneChannelObject
         name: 'uptime',
         unit: 's',
     },
+}
+
+
+let keys: string[] = undefined;
+
+export function getClientKeys(): string[] {
+    if (keys === undefined) {
+        keys = myHelper.getAllKeysOfTreeDefinition(clientTree)
+    }
+
+    return keys
 }

@@ -2,3 +2,4 @@ import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from './m
 export declare const deviceTree: {
     [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
 };
+export declare function getDeviceKeys(): string[];

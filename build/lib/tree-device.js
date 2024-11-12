@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import * as myHelper from './helper.js';
 export const deviceTree = {
     connected_clients: {
         id: 'connected_clients',
@@ -595,3 +596,10 @@ export const deviceTree = {
         }
     }
 };
+let keys = undefined;
+export function getDeviceKeys() {
+    if (keys === undefined) {
+        keys = myHelper.getAllKeysOfTreeDefinition(deviceTree);
+    }
+    return keys;
+}

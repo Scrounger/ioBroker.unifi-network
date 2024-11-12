@@ -18,8 +18,8 @@ import { NetworkClient } from './lib/api/network-types-client.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache } from './lib/myTypes.js';
-import { clientTree } from './lib/tree-client.js';
-import { deviceTree } from './lib/tree-device.js';
+import { clientTree, getClientKeys } from './lib/tree-client.js';
+import { deviceTree, getDeviceKeys } from './lib/tree-device.js';
 import { apiCommands } from './lib/api/network-command.js';
 import { eventHandler } from './lib/eventHandler.js';
 
@@ -401,29 +401,32 @@ class UnifiNetwork extends utils.Adapter {
 
 						for (let device of data) {
 
-							// ToDo: uncomment
-							// if (!this.cache.devices[device.mac]) {
-							// 	this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-							// }
-
 							if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.devices[device.mac]) {
-								const lastSeen = this.cache.devices[device.mac].last_seen
-								if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
+								// debounce real time data
+								const lastSeen = this.cache.devices[device.mac].last_seen;
+								const iobTimestamp = this.cache.devices[device.mac].iobTimestamp;
+								if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.updateInterval) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.updateInterval)) {
 									continue
 								}
 							}
 
+							if (!this.cache.devices[device.mac]) {
+								this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+							}
+
 							let dataToProcess = device;
 							if (this.cache.devices[device.mac]) {
-								dataToProcess = myHelper.difference(device, this.cache.devices[device.mac]) as NetworkDevice;
+								// filter out unchanged properties
+								dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], getDeviceKeys()) as NetworkDevice;
 							}
 
 							this.cache.devices[device.mac] = device;
+							this.cache.devices[device.mac].iobTimestamp = moment().unix();
 
-							if (Object.keys(dataToProcess).length > 0) {
+							if (!_.isEmpty(dataToProcess)) {
 								dataToProcess.mac = device.mac;
 
-								if (!isAdapterStart) this.log.silly(`${logPrefix} device ${device.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+								if (!isAdapterStart) this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 
 								this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
 								await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, device, isAdapterStart);
@@ -472,30 +475,36 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						for (let client of data) {
+
+							if (!isAdapterStart && this.config.updateInterval > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
+								// debounce real time data
+								const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
+								const iobTimestamp = this.cache.clients[client.mac].iobTimestamp || this.cache.clients[client.ip].iobTimestamp;
+
+								if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.updateInterval) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.updateInterval)) {
+									continue
+								}
+							}
+
 							const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
 							const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
 
 							if (this.config.clientsEnabled && client.mac && !client.is_guest) {
 								if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
-									// ToDo: uncomment
-									// if (!this.cache.clients[client.mac]) {
-									// 	this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-									// }
 
-									if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
-										const lastSeen = this.cache.clients[client.mac].last_seen
-										if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-											continue
-										}
+									if (!this.cache.clients[client.mac]) {
+										this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
 									}
 
 									let dataToProcess = client;
-									if (this.cache.devices[client.mac]) {
-										dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]) as NetworkClient;
+									if (this.cache.clients[client.mac]) {
+										// filter out unchanged properties
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], getClientKeys()) as NetworkClient;
 									}
 
 									this.cache.clients[client.mac] = client;
 									this.cache.clients[client.mac].name = name;
+									this.cache.clients[client.mac].iobTimestamp = moment().unix();
 
 									if (Object.keys(dataToProcess).length > 0) {
 										dataToProcess.mac = client.mac;
@@ -517,25 +526,20 @@ class UnifiNetwork extends utils.Adapter {
 								}
 							} else if (this.config.guestsEnabled && client.mac && client.is_guest) {
 								if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
-									// ToDo: uncomment
-									// if (!this.cache.clients[client.mac]) {
-									// 	this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-									// }
 
-									if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.clients[client.mac]) {
-										const lastSeen = this.cache.clients[client.mac].last_seen
-										if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-											continue
-										}
+									if (!this.cache.clients[client.mac]) {
+										this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
 									}
 
 									let dataToProcess = client;
-									if (this.cache.devices[client.mac]) {
-										dataToProcess = myHelper.difference(client, this.cache.clients[client.mac]) as NetworkClient;
+									if (this.cache.clients[client.mac]) {
+										// filter out unchanged properties
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], getClientKeys()) as NetworkClient;
 									}
 
 									this.cache.clients[client.mac] = client;
 									this.cache.clients[client.mac].name = name;
+									this.cache.clients[client.mac].iobTimestamp = moment().unix();
 
 									if (Object.keys(dataToProcess).length > 0) {
 										dataToProcess.mac = client.mac;
@@ -559,28 +563,22 @@ class UnifiNetwork extends utils.Adapter {
 							} else {
 								if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
 
-									// ToDo: uncomment
-									// if (this.cache.vpn[client.ip]) {
-									// 	this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
-									// }
+									if (this.cache.vpn[client.ip]) {
+										this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+									}
 
 									const idChannel = client.network_id;
 									this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '');
 
-									if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.vpn[client.ip]) {
-										const lastSeen = this.cache.vpn[client.ip].last_seen
-										if (lastSeen && moment().diff((lastSeen) * 1000, 'seconds') < this.config.updateInterval) {
-											continue
-										}
-									}
-
 									let dataToProcess = client;
-									if (this.cache.devices[client.ip]) {
-										dataToProcess = myHelper.difference(client, this.cache.clients[client.ip]) as NetworkClient;
+									if (this.cache.clients[client.ip]) {
+										// filter out unchanged properties
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], getClientKeys()) as NetworkClient;
 									}
 
 									this.cache.vpn[client.ip] = client;
 									this.cache.vpn[client.ip].name = name;
+									this.cache.clients[client.ip].iobTimestamp = moment().unix();
 
 									const preparedIp = client.ip.replaceAll('.', '_');
 
@@ -769,6 +767,7 @@ class UnifiNetwork extends utils.Adapter {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
+
 	/**
 	 * Download image from a given url and update Channel icon if needed
 	 * @param url 
@@ -857,7 +856,7 @@ class UnifiNetwork extends utils.Adapter {
 						if (!myHelper.isDeviceCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
 							await this.extendObject(id, { common: common });
 
-							this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.difference(common, obj.common))})`);
+							this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common))})`);
 						}
 					}
 				}
@@ -900,7 +899,7 @@ class UnifiNetwork extends utils.Adapter {
 					if (obj && obj.common) {
 						if (!myHelper.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
 							await this.extendObject(id, { common: common });
-							this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.difference(common, obj.common))})`);
+							this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common))})`);
 						}
 					}
 				}
@@ -968,7 +967,7 @@ class UnifiNetwork extends utils.Adapter {
 									if (obj && obj.common) {
 										if (!myHelper.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
 											await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-											this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.difference(commonUpdated, obj.common))})`);
+											this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common))})`);
 										}
 									}
 								}
