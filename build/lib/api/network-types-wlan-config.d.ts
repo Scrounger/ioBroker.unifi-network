@@ -33,7 +33,7 @@ export interface WlanConfig {
     minrate_ng_data_rate_kbps?: number;
     minrate_ng_enabled?: boolean;
     minrate_setting_preference?: string;
-    name?: string;
+    name: string;
     name_combine_enabled?: boolean;
     networkconf_id?: string;
     no2ghz_oui?: boolean;
