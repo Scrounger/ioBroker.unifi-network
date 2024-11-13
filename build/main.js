@@ -12,10 +12,9 @@ import { NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
-import { clientTree, getClientKeys } from './lib/tree-client.js';
-import { deviceTree, getDeviceKeys } from './lib/tree-device.js';
 import { apiCommands } from './lib/api/network-command.js';
 import { eventHandler } from './lib/eventHandler.js';
+import * as tree from './lib/tree/index.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -214,8 +213,9 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[establishConnection]:';
         try {
             if (await this.login()) {
-                await this.updateData();
+                await this.updateRealTimeApiData();
                 await this.updateIsOnlineState();
+                await this.updateApiData();
             }
             // start the alive checker
             if (this.aliveTimeout) {
@@ -314,13 +314,21 @@ class UnifiNetwork extends utils.Adapter {
     }
     //#endregion
     //#region updateData
-    async updateData() {
-        const logPrefix = '[updateData]:';
+    async updateRealTimeApiData() {
+        const logPrefix = '[updateRealTimeApiData]:';
         try {
             await this.updateDevices(null, true);
             await this.updateClients(null, true);
             await this.updatClientseOffline(await this.ufn.getClients(), true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateApiData() {
+        const logPrefix = '[updateApiData]:';
+        try {
             const wlan = await this.ufn.getWlanConfig();
             this.log.warn(JSON.stringify(wlan));
         }
@@ -357,7 +365,7 @@ class UnifiNetwork extends utils.Adapter {
                             let dataToProcess = device;
                             if (this.cache.devices[device.mac]) {
                                 // filter out unchanged properties
-                                dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], getDeviceKeys());
+                                dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], tree.device.getKeys());
                             }
                             this.cache.devices[device.mac] = device;
                             this.cache.devices[device.mac].iobTimestamp = moment().unix();
@@ -366,7 +374,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!isAdapterStart)
                                     this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                 this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
-                                await this.createGenericState(`${idChannel}.${device.mac}`, deviceTree, device, 'devices', device, device, isAdapterStart);
+                                await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), device, 'devices', device, device, isAdapterStart);
                             }
                         }
                     }
@@ -430,7 +438,7 @@ class UnifiNetwork extends utils.Adapter {
                                     let dataToProcess = client;
                                     if (this.cache.clients[client.mac]) {
                                         // filter out unchanged properties
-                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], getClientKeys());
+                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], tree.client.getKeys());
                                     }
                                     this.cache.clients[client.mac] = client;
                                     this.cache.clients[client.mac].name = name;
@@ -441,7 +449,7 @@ class UnifiNetwork extends utils.Adapter {
                                         if (!isAdapterStart)
                                             this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                         this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                        await this.createGenericState(`${idChannel}.${client.mac}`, clientTree, client, 'clients', client, client, isAdapterStart);
+                                        await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), client, 'clients', client, client, isAdapterStart);
                                     }
                                 }
                                 else {
@@ -462,7 +470,7 @@ class UnifiNetwork extends utils.Adapter {
                                     let dataToProcess = client;
                                     if (this.cache.clients[client.mac]) {
                                         // filter out unchanged properties
-                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], getClientKeys());
+                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], tree.client.getKeys());
                                     }
                                     this.cache.clients[client.mac] = client;
                                     this.cache.clients[client.mac].name = name;
@@ -473,7 +481,7 @@ class UnifiNetwork extends utils.Adapter {
                                         if (!isAdapterStart)
                                             this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                         this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                        await this.createGenericState(`${idGuestChannel}.${client.mac}`, clientTree, client, 'guests', client, client, isAdapterStart);
+                                        await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), client, 'guests', client, client, isAdapterStart);
                                     }
                                 }
                                 else {
@@ -496,7 +504,7 @@ class UnifiNetwork extends utils.Adapter {
                                     let dataToProcess = client;
                                     if (this.cache.clients[client.ip]) {
                                         // filter out unchanged properties
-                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], getClientKeys());
+                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], tree.client.getKeys());
                                     }
                                     this.cache.vpn[client.ip] = client;
                                     this.cache.vpn[client.ip].name = name;
@@ -508,7 +516,7 @@ class UnifiNetwork extends utils.Adapter {
                                         if (!isAdapterStart)
                                             this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                         this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                        await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, clientTree, client, 'vpn', client, client, isAdapterStart);
+                                        await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), client, 'vpn', client, client, isAdapterStart);
                                     }
                                 }
                             }

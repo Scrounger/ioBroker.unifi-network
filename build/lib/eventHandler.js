@@ -1,5 +1,5 @@
 import { WebSocketEvent } from "./myTypes.js";
-import { clientTree } from "./tree-client.js";
+import * as tree from "./tree/index.js";
 export const eventHandler = {
     device: {
         async restarted(meta, data, adapter, cache) {
@@ -114,7 +114,7 @@ export const eventHandler = {
                         }
                         const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_name`;
                         if (await adapter.objectExists(ipChannelName)) {
-                            await adapter.setState(ipChannelName, clientTree.channel_name.readVal(valChannel), true);
+                            await adapter.setState(ipChannelName, tree.client.get().channel_name.readVal(valChannel), true);
                         }
                     }
                 }

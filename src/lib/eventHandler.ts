@@ -1,7 +1,6 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
 import { WebSocketEvent, myCache } from "./myTypes.js";
-import { clientTree } from "./tree-client.js";
-
+import * as tree from "./tree/index.js";
 
 export const eventHandler = {
     device: {
@@ -125,7 +124,7 @@ export const eventHandler = {
 
                         const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_name`;
                         if (await adapter.objectExists(ipChannelName)) {
-                            await adapter.setState(ipChannelName, (clientTree as any).channel_name.readVal(valChannel), true);
+                            await adapter.setState(ipChannelName, (tree.client.get() as any).channel_name.readVal(valChannel), true);
                         }
                     }
                 } else {
