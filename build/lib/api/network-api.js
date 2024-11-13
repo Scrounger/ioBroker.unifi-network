@@ -300,12 +300,13 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * Detailed list of all devices on site
+     * @param mac optional: mac address to receive only the data for this device
      * @returns
      */
-    async getDevices() {
+    async getDevices(mac = undefined) {
         const logPrefix = `[${this.logPrefix}.getDevices]`;
         try {
-            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.devices));
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.devices)}${mac ? `/${mac.trim()}` : ''}`);
             if (res && res.data) {
                 return res.data;
             }
@@ -349,6 +350,24 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    /**
+     * List all WLan configurations
+     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
+     * @returns
+     */
+    async getWlanConfig(wlan_id = undefined) {
+        const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.wlanConfig)}${wlan_id ? `/${wlan_id.trim()}` : ''}`);
+            if (res && res.data) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
     getApiEndpoint(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api
         let endpointSuffix;
@@ -370,6 +389,9 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints.clients:
                 endpointSuffix = `/api/s/${this.site}/rest/user`;
+                break;
+            case ApiEndpoints.wlanConfig:
+                endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
                 break;
             default:
                 break;
@@ -449,4 +471,5 @@ export var ApiEndpoints;
     ApiEndpoints["devices"] = "devices";
     ApiEndpoints["clients"] = "clients";
     ApiEndpoints["activeClients"] = "activeClients";
+    ApiEndpoints["wlanConfig"] = "wlanConfig";
 })(ApiEndpoints || (ApiEndpoints = {}));

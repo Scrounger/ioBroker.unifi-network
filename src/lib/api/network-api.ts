@@ -9,6 +9,7 @@ import { NetworkLogging } from './network-logging.js';
 import { NetworkEvent } from './network-types.js'
 import { NetworkDevice } from './network-types-device.js'
 import { NetworkClient } from './network-types-client.js';
+import { WlanConfig } from './network-types-wlan-config.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -419,13 +420,14 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * Detailed list of all devices on site
+     * @param mac optional: mac address to receive only the data for this device
      * @returns 
      */
-    public async getDevices(): Promise<NetworkDevice[] | undefined> {
+    public async getDevices(mac: string | undefined = undefined): Promise<NetworkDevice[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getDevices]`
 
         try {
-            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.devices));
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.devices)}${mac ? `/${mac.trim()}` : ''}`);
 
             if (res && res.data) {
                 return res.data;
@@ -478,6 +480,27 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    /**
+     * List all WLan configurations
+     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
+     * @returns 
+     */
+    public async getWlanConfig(wlan_id = undefined): Promise<WlanConfig[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getWlanConfig]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.wlanConfig)}${wlan_id ? `/${wlan_id.trim()}` : ''}`);
+
+            if (res && res.data) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
@@ -505,6 +528,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints.clients:
                 endpointSuffix = `/api/s/${this.site}/rest/user`;
+                break;
+
+            case ApiEndpoints.wlanConfig:
+                endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
                 break;
 
             default:
@@ -611,5 +638,6 @@ export enum ApiEndpoints {
     self = 'self',
     devices = 'devices',
     clients = 'clients',
-    activeClients = "activeClients"
+    activeClients = "activeClients",
+    wlanConfig = 'wlanConfig'
 }

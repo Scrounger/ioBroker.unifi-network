@@ -321,6 +321,8 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateClients(null, true);
             await this.updatClientseOffline(await this.ufn.getClients(), true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
+            const wlan = await this.ufn.getWlanConfig();
+            this.log.warn(JSON.stringify(wlan));
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

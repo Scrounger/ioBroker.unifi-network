@@ -3,6 +3,7 @@ import { EventEmitter } from 'node:events';
 import { NetworkLogging } from './network-logging.js';
 import { NetworkDevice } from './network-types-device.js';
 import { NetworkClient } from './network-types-client.js';
+import { WlanConfig } from './network-types-wlan-config.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -58,9 +59,10 @@ export declare class NetworkApi extends EventEmitter {
     sendData(cmd: string, payload: any, method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH'): Promise<Response>;
     /**
      * Detailed list of all devices on site
+     * @param mac optional: mac address to receive only the data for this device
      * @returns
      */
-    getDevices(): Promise<NetworkDevice[] | undefined>;
+    getDevices(mac?: string | undefined): Promise<NetworkDevice[] | undefined>;
     /**
      * List of all active (connected) clients
      * @returns
@@ -71,6 +73,12 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getClients(): Promise<NetworkClient[] | undefined>;
+    /**
+     * List all WLan configurations
+     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
+     * @returns
+     */
+    getWlanConfig(wlan_id?: any): Promise<WlanConfig[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     launchEventsWs(): Promise<boolean>;
 }
@@ -79,5 +87,6 @@ export declare enum ApiEndpoints {
     self = "self",
     devices = "devices",
     clients = "clients",
-    activeClients = "activeClients"
+    activeClients = "activeClients",
+    wlanConfig = "wlanConfig"
 }
