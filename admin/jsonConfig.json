@@ -58,10 +58,20 @@
 					"sm": 12,
 					"md": 3
 				},
-				"updateInterval": {
+				"dividerRealTimeApi": {
+					"newLine": true,
+					"type": "header",
+					"text": "realtime api",
+					"size": 2
+				},
+				"realTimeApiDebounceTime": {
 					"type": "number",
-					"label": "update interval",
+					"label": "debounce time",
 					"help": "increase this value for low performance systems",
+					"validator": "data.realTimeApiDebounceTime < (data.clientOfflineTimeout / 2)",
+					"validatorErrorText": "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!",
+					"tooltip": "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!",
+					"validatorNoSaveOnError": true,
 					"newLine": true,
 					"min": 0,
 					"max": 10000,
@@ -73,6 +83,21 @@
 					"type": "checkbox",
 					"label": "keep unifi-controller and ioBroker synchronized",
 					"help": "states are deleted when they are deleted in the unifi-controller",
+					"sm": 12,
+					"md": 3
+				},
+				"dividerApi": {
+					"newLine": true,
+					"type": "header",
+					"text": "api",
+					"size": 2
+				},
+				"apiUpdateInterval": {
+					"type": "number",
+					"label": "api poll interval",
+					"newLine": true,
+					"min": 5,
+					"max": 10000,
 					"sm": 12,
 					"md": 3
 				}
@@ -96,7 +121,7 @@
 				"dividerDevices": {
 					"newLine": true,
 					"type": "header",
-					"text": "unifi devices",
+					"text": "unifi devices (realtime api)",
 					"size": 2
 				},
 				"devicesEnabled": {
@@ -132,7 +157,7 @@
 				"dividerClients": {
 					"newLine": true,
 					"type": "header",
-					"text": "clients / guests / vpn",
+					"text": "clients / guests / vpn (realtime api)",
 					"size": 2
 				},
 				"clientsEnabled": {
@@ -147,6 +172,21 @@
 					"label": "delete clients who have not been online for x days (0 = deactivated)",
 					"disabled": "!data.clientsEnabled",
 					"min": 0,
+					"step": 1,
+					"sm": 12,
+					"md": 3
+				},
+				"clientOfflineTimeout": {
+					"type": "number",
+					"label": "time [s] after a device is set to offline",
+					"disabled": "!data.clientsEnabled && !data.guestsEnabled",
+					"help": "Fallback solution if realtime api does not communicate an event",
+					"validator": "(data.clientOfflineTimeout / 2) > data.realTimeApiDebounceTime",
+					"validatorErrorText": "must be two times bigger than 'debounce time' on tab general!",
+					"tooltip": "must be two times bigger than 'debounce time' on tab general!",
+					"validatorNoSaveOnError": true,
+					"min": 5,
+					"max": 10000,
 					"step": 1,
 					"sm": 12,
 					"md": 3
@@ -178,6 +218,10 @@
 					"type": "number",
 					"label": "time [s] after a VPN device is set to offline",
 					"disabled": "!data.vpnEnabled",
+					"validator": "(data.vpnOfflineTimeout / 2) > data.realTimeApiDebounceTime",
+					"validatorErrorText": "must be two times bigger than 'debounce time' on tab general!",
+					"tooltip": "must be two times bigger than 'debounce time' on tab general!",
+					"validatorNoSaveOnError": true,
 					"min": 5,
 					"max": 10000,
 					"step": 1,
@@ -191,16 +235,6 @@
 					"disabled": "!data.clientsEnabled && !data.guestsEnabled && !data.vpnEnabled",
 					"sm": 12,
 					"md": 2
-				},
-				"clientOfflineTimeout": {
-					"type": "number",
-					"label": "time [s] after a device is set to offline",
-					"disabled": "!data.clientsEnabled && !data.guestsEnabled",
-					"min": 5,
-					"max": 10000,
-					"step": 1,
-					"sm": 12,
-					"md": 3
 				}
 			}
 		}

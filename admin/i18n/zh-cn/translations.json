@@ -86,5 +86,14 @@
     "clients / guests / vpn": "客户/客人/VPN",
     "clients enabled": "启用客户端",
     "guests enabled": "启用访客",
-    "vpn clients enabled": "VPN 客户端已启用"
+    "vpn clients enabled": "VPN 客户端已启用",
+    "debounce time": "去抖时间",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab client!": "必须比选项卡客户端上设置的“设备设置为离线后的时间[秒]小两倍”！",
+    "must be two times bigger than 'debounce time' on tab general!": "必须比常规选项卡上的“去抖时间”大两倍！",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "必须比选项卡客户端上的“设备设置为离线后的时间[秒]”小两倍！",
+    "Fallback solution if realtime api does not communicate an event": "如果实时 api 不传达事件的后备解决方案",
+    "realtime api": "实时API",
+    "api poll interval": "API 轮询间隔",
+    "unifi devices (realtime api)": "unifi 设备（实时 API）",
+    "clients / guests / vpn (realtime api)": "客户/客人/VPN（实时API）"
 }

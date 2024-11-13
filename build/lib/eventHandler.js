@@ -7,10 +7,12 @@ export const eventHandler = {
             try {
                 const mac = data.sw || data.ap || data.gw;
                 if (mac) {
-                    if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                        await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, false, true);
+                    if (adapter.config.devicesEnabled) {
+                        if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, false, true);
+                        }
+                        adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) is going to restart`);
                     }
-                    adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) is going to restart`);
                 }
                 else {
                     adapter.log.warn(`${logPrefix} event 'restarted' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
@@ -25,10 +27,12 @@ export const eventHandler = {
             try {
                 const mac = data.sw || data.ap || data.gw;
                 const connected = WebSocketEvent.device.Connected.includes(data.key);
-                adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) ${connected ? 'connected' : 'disconnected'}`);
                 if (mac) {
-                    if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                        await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, connected, true);
+                    if (adapter.config.devicesEnabled) {
+                        adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) ${connected ? 'connected' : 'disconnected'}`);
+                        if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, connected, true);
+                        }
                     }
                 }
                 else {

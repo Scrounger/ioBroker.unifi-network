@@ -9,7 +9,8 @@ declare global {
 			site: string;
 			user: string;
 			password: string;
-			updateInterval: number;
+			realTimeApiDebounceTime: number;
+			apiUpdateInterval: number;
 			deviceImageDownload: boolean;
 			clientOfflineTimeout: number;
 			vpnOfflineTimeout: number;

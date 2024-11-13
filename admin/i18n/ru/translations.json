@@ -86,5 +86,14 @@
     "clients / guests / vpn": "клиенты/гости/vpn",
     "clients enabled": "клиенты включены",
     "guests enabled": "гости включены",
-    "vpn clients enabled": "VPN-клиенты включены"
+    "vpn clients enabled": "VPN-клиенты включены",
+    "debounce time": "время устранения дребезга",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab client!": "должно быть в два раза меньше, чем параметр «время [с] после перевода устройства в автономный режим» в вкладке клиента!",
+    "must be two times bigger than 'debounce time' on tab general!": "должно быть в два раза больше, чем «время устранения дребезга» на вкладке «Общие»!",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "должно быть в два раза меньше, чем параметр «время [с] после перевода устройства в автономный режим» в клиентах вкладок!",
+    "Fallback solution if realtime api does not communicate an event": "Резервное решение, если API реального времени не передает событие",
+    "realtime api": "API реального времени",
+    "api poll interval": "интервал опроса API",
+    "unifi devices (realtime api)": "устройства unifi (API реального времени)",
+    "clients / guests / vpn (realtime api)": "клиенты/гости/vpn (API в реальном времени)"
 }

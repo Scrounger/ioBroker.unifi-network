@@ -42,8 +42,8 @@
 	"states are deleted when they are deleted in the unifi-controller": "states are deleted when they are deleted in the unifi-controller",
 	"delete clients who have not been online for x days (0 = deactivated)": "delete clients who have not been online for x days (0 = deactivated)",
 	"delete guests who have not been online for x days (0 = deactivated)": "delete guests who have not been online for x days (0 = deactivated)",
-	"unifi devices": "unifi devices",
-	"clients / guests / vpn": "clients / guests / vpn",
+	"unifi devices (realtime api)": "unifi devices (realtime api)",
+	"clients / guests / vpn (realtime api)": "clients / guests / vpn (realtime api)",
 	"clients": "clients",
 	"guests": "guests",
 	"vpn clients": "vpn clients",
@@ -77,5 +77,11 @@
 	"uplink device name": "uplink device name",
 	"clients enabled": "clients enabled",
 	"guests enabled": "guests enabled",
-	"vpn clients enabled": "vpn clients enabled"
+	"vpn clients enabled": "vpn clients enabled",
+	"debounce time": "debounce time",
+	"must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!",
+	"must be two times bigger than 'debounce time' on tab general!": "must be two times bigger than 'debounce time' on tab general!",
+	"Fallback solution if realtime api does not communicate an event": "Fallback solution if realtime api does not communicate an event",
+	"realtime api": "realtime api",
+	"api poll interval": "api poll interval"
 }

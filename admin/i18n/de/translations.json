@@ -85,5 +85,14 @@
     "clients / guests / vpn": "Kunden / Gäste / VPN",
     "clients enabled": "Clients aktiviert",
     "guests enabled": "Gäste aktiviert",
-    "vpn clients enabled": "VPN-Clients aktiviert"
+    "vpn clients enabled": "VPN-Clients aktiviert",
+    "debounce time": "Entprellzeit",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab client!": "muss zwei Mal kleiner sein als die Einstellung „Zeit [s], nachdem ein Gerät offline geschaltet wurde“ im Tab Client!",
+    "must be two times bigger than 'debounce time' on tab general!": "Muss doppelt so groß sein wie „Entprellzeit“ auf der Registerkarte „Allgemein“!",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "muss zwei Mal kleiner sein als die Einstellung „Zeit [s], nachdem ein Gerät offline geschaltet wurde“ auf Tab-Clients!",
+    "Fallback solution if realtime api does not communicate an event": "Fallback-Lösung, wenn die Echtzeit-API kein Ereignis kommuniziert",
+    "realtime api": "Echtzeit-API",
+    "api poll interval": "API-Abfrageintervall",
+    "unifi devices (realtime api)": "Unifi-Geräte (Echtzeit-API)",
+    "clients / guests / vpn (realtime api)": "Kunden / Gäste / VPN (Echtzeit-API)"
 }

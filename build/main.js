@@ -320,7 +320,7 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateDevices(null, true);
             await this.updateClients(null, true);
             await this.updatClientseOffline(await this.ufn.getClients(), true);
-            this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.updateInterval * 2 * 1000);
+            this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -341,11 +341,11 @@ class UnifiNetwork extends utils.Adapter {
                         if (isAdapterStart)
                             this.log.info(`${logPrefix} Discovered ${data.length} devices`);
                         for (let device of data) {
-                            if (!isAdapterStart && this.config.updateInterval > 0 && this.cache.devices[device.mac]) {
+                            if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
                                 // debounce real time data
                                 const lastSeen = this.cache.devices[device.mac].last_seen;
                                 const iobTimestamp = this.cache.devices[device.mac].iobTimestamp;
-                                if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.updateInterval) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.updateInterval)) {
+                                if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
                                     continue;
                                 }
                             }
@@ -410,11 +410,11 @@ class UnifiNetwork extends utils.Adapter {
                             }
                         }
                         for (let client of data) {
-                            if (!isAdapterStart && this.config.updateInterval > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
+                            if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
                                 // debounce real time data
                                 const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
                                 const iobTimestamp = this.cache.clients[client.mac].iobTimestamp || this.cache.clients[client.ip].iobTimestamp;
-                                if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.updateInterval) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.updateInterval)) {
+                                if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
                                     continue;
                                 }
                             }

@@ -86,5 +86,14 @@
     "clients / guests / vpn": "klienci / goście / VPN",
     "clients enabled": "klienci włączeni",
     "guests enabled": "goście włączeni",
-    "vpn clients enabled": "Klienci VPN włączeni"
+    "vpn clients enabled": "Klienci VPN włączeni",
+    "debounce time": "czas odbicia",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab client!": "musi być dwa razy krótsze niż ustawienie „czas [s] po przełączeniu urządzenia w tryb offline” na karcie klienta!",
+    "must be two times bigger than 'debounce time' on tab general!": "musi być dwa razy większy niż „czas odbicia” na karcie Ogólne!",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "musi być dwa razy krótsze niż ustawienie „czas [s] po przełączeniu urządzenia w tryb offline” na klientach kart!",
+    "Fallback solution if realtime api does not communicate an event": "Rozwiązanie awaryjne, jeśli interfejs API czasu rzeczywistego nie przekazuje zdarzenia",
+    "realtime api": "API czasu rzeczywistego",
+    "api poll interval": "interwał sondowania interfejsu API",
+    "unifi devices (realtime api)": "urządzenia unifi (api czasu rzeczywistego)",
+    "clients / guests / vpn (realtime api)": "klienci / goście / VPN (api w czasie rzeczywistym)"
 }

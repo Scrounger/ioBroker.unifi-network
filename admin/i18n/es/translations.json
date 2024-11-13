@@ -86,5 +86,14 @@
     "clients / guests / vpn": "clientes/invitados/vpn",
     "clients enabled": "clientes habilitados",
     "guests enabled": "invitados habilitados",
-    "vpn clients enabled": "clientes vpn habilitados"
+    "vpn clients enabled": "clientes vpn habilitados",
+    "debounce time": "tiempo de rebote",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab client!": "debe ser dos veces menor que la configuración 'tiempo [s] después de que un dispositivo se configura como desconectado' en la pestaña cliente.",
+    "must be two times bigger than 'debounce time' on tab general!": "¡Debe ser dos veces mayor que el 'tiempo de rebote' en la pestaña general!",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "debe ser dos veces menor que la configuración 'tiempo [s] después de que un dispositivo se configura como desconectado' en los clientes de pestañas.",
+    "Fallback solution if realtime api does not communicate an event": "Solución alternativa si la API en tiempo real no comunica un evento",
+    "realtime api": "API en tiempo real",
+    "api poll interval": "intervalo de encuesta API",
+    "unifi devices (realtime api)": "dispositivos unifi (api en tiempo real)",
+    "clients / guests / vpn (realtime api)": "clientes/invitados/vpn (api en tiempo real)"
 }

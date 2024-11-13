@@ -86,5 +86,14 @@
     "clients / guests / vpn": "klanten / gasten / vpn",
     "clients enabled": "klanten ingeschakeld",
     "guests enabled": "gasten ingeschakeld",
-    "vpn clients enabled": "vpn-clients ingeschakeld"
+    "vpn clients enabled": "vpn-clients ingeschakeld",
+    "debounce time": "debounce tijd",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab client!": "moet twee keer kleiner zijn dan de instelling 'tijd [s] nadat een apparaat offline is gezet' op tabbladclient!",
+    "must be two times bigger than 'debounce time' on tab general!": "moet twee keer groter zijn dan de 'debouncetijd' op het tabblad Algemeen!",
+    "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!": "moet twee keer kleiner zijn dan de instelling 'tijd [s] nadat een apparaat offline is gezet' op tabbladclients!",
+    "Fallback solution if realtime api does not communicate an event": "Fallback-oplossing als realtime API geen gebeurtenis communiceert",
+    "realtime api": "realtime-API",
+    "api poll interval": "API poll-interval",
+    "unifi devices (realtime api)": "unifi-apparaten (realtime API)",
+    "clients / guests / vpn (realtime api)": "klanten / gasten / vpn (realtime API)"
 }
