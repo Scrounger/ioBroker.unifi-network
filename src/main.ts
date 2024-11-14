@@ -156,52 +156,61 @@ class UnifiNetwork extends utils.Adapter {
 					}
 
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
+					// state changed from outside of the adapter
 					const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
-					// external changes
-					if (myHelper.getIdLastPart(id) === 'blocked') {
-						if (state.val) {
-							await apiCommands.clients.block(this.ufn, mac);
+
+					if (id.startsWith(`${this.namespace}.clients.`)) {
+						// Client state changed
+						if (myHelper.getIdLastPart(id) === 'blocked') {
+							if (state.val) {
+								await apiCommands.clients.block(this.ufn, mac);
+							} else {
+								await apiCommands.clients.unblock(this.ufn, mac);
+							}
+
+						} else if (myHelper.getIdLastPart(id) === 'reconnect') {
+							const res = await apiCommands.clients.reconncet(this.ufn, mac);
+
+							if (res) this.log.info(`${logPrefix} command sent: reconnect - '${this.cache.clients[mac].name}' (mac: ${mac})`);
 						} else {
-							await apiCommands.clients.unblock(this.ufn, mac);
+							this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
+					} else if (id.startsWith(`${this.namespace}.devices.`)) {
+						if (myHelper.getIdLastPart(id) === 'restart') {
+							const res = await apiCommands.devices.restart(this.ufn, mac);
 
-					} else if (myHelper.getIdLastPart(id) === 'reconnect') {
-						const res = await apiCommands.clients.reconncet(this.ufn, mac);
+							if (res) this.log.info(`${logPrefix} command sent: restart - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 
-						if (res) this.log.info(`${logPrefix} command sent: reconnect - '${this.cache.clients[mac].name}' (mac: ${mac})`);
+						} else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
+							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
 
-					} else if (myHelper.getIdLastPart(id) === 'restart') {
-						const res = await apiCommands.devices.restart(this.ufn, mac);
+							const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
 
-						if (res) this.log.info(`${logPrefix} command sent: restart - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+							if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+						} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
+							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
 
-					} else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
-						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-						const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+							const res = await apiCommands.devices.switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
 
-						const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
+							if (res) this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
+						} else if (myHelper.getIdLastPart(id) === 'led_override') {
+							const res = await apiCommands.devices.ledOverride(state.val as string, this.ufn, this.cache.devices[mac]);
 
-						if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
-					} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
-						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-						const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+							if (res) this.log.info(`${logPrefix} command sent: LED override to '${state.val}' - '${this.cache.devices[mac].name}' (mac: ${mac}) - `);
+						} else if (myHelper.getIdLastPart(id) === 'upgrade') {
+							const res = await apiCommands.devices.upgrade(this.ufn, this.cache.devices[mac]);
 
-						const res = await apiCommands.devices.switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
+							if (res) this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+						} else if (myHelper.getIdLastPart(id) === 'run') {
+							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
+							const res = await apiCommands.devices.runSpeedtest(this.ufn);
 
-						if (res) this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
-					} else if (myHelper.getIdLastPart(id) === 'led_override') {
-						const res = await apiCommands.devices.ledOverride(state.val as string, this.ufn, this.cache.devices[mac]);
-
-						if (res) this.log.info(`${logPrefix} command sent: LED override to '${state.val}' - '${this.cache.devices[mac].name}' (mac: ${mac}) - `);
-					} else if (myHelper.getIdLastPart(id) === 'upgrade') {
-						const res = await apiCommands.devices.upgrade(this.ufn, this.cache.devices[mac]);
-
-						if (res) this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
-					} else if (myHelper.getIdLastPart(id) === 'run') {
-						const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
-						const res = await apiCommands.devices.runSpeedtest(this.ufn);
-
-						if (res) this.log.info(`${logPrefix} command sent:  speedtest started - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+							if (res) this.log.info(`${logPrefix} command sent:  speedtest started - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+						} else {
+							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
+						}
 					}
 				} else {
 					// The state was changed
