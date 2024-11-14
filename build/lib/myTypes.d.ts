@@ -43,9 +43,9 @@ export interface myCommonChannelArray {
     icon?: string;
     arrayChannelIdPrefix?: string;
     arrayChannelIdZeroPad?: number;
-    arrayChannelIdFromProperty?(objValues: any, i: number): string;
+    arrayChannelIdFromProperty?(objValues: any, i: number, adapter: ioBroker.Adapter): string;
     arrayChannelNamePrefix?: string;
-    arrayChannelNameFromProperty?(objValues: any): string;
+    arrayChannelNameFromProperty?(objValues: any, adapter: ioBroker.Adapter): string;
     arrayStartNumber?: number;
     array: {
         [key: string]: myCommonState;

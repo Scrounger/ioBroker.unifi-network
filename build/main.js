@@ -960,8 +960,8 @@ class UnifiNetwork extends utils.Adapter {
                                     for (let i = 0; i <= objValues[key].length - 1; i++) {
                                         let nr = i + arrayNumberAdd;
                                         if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
-                                            const idChannelArray = `${idChannel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelIdFromProperty') ? treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i) : `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
-                                            await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i]) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
+                                            const idChannelArray = `${idChannel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelIdFromProperty') ? treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this) : `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
+                                            await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
                                             await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], isAdapterStart);
                                         }
                                     }

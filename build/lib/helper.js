@@ -147,3 +147,15 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
     recurse(treefDefintion);
     return _.uniq(keys);
 }
+export function radioToFrequency(radioVal, adapter) {
+    if (radioVal === 'ng') {
+        return '2.4 GHz';
+    }
+    else if (radioVal === 'na') {
+        return '5 GHz';
+    }
+    else {
+        adapter.log.warn(`radio ${radioVal} interpreter not implemented! Please create an issue on github.`);
+        return radioVal;
+    }
+}

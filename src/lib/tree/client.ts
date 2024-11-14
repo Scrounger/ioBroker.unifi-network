@@ -24,13 +24,9 @@ export namespace client {
                 id: 'channel_name',
                 iobType: 'string',
                 name: 'channel name',
-                valFromProperty: 'channel',
+                valFromProperty: 'radio',
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    if (val <= 13) {
-                        return '2.4 GHz'
-                    } else {
-                        return '5 GHz'
-                    }
+                    return myHelper.radioToFrequency(val, adapter);
                 }
             },
             essid: {

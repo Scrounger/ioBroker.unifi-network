@@ -125,7 +125,7 @@ export var device;
                 channelName: 'port table',
                 arrayChannelIdPrefix: 'Port_',
                 arrayChannelIdZeroPad: 2,
-                arrayChannelNameFromProperty(objValues) {
+                arrayChannelNameFromProperty(objValues, adapter) {
                     return objValues['name'];
                 },
                 arrayStartNumber: 1,
@@ -233,13 +233,8 @@ export var device;
             radio_table: {
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
-                arrayChannelNameFromProperty(objValues) {
-                    if (objValues['channel'] <= 13) {
-                        return `2.4 GHz`;
-                    }
-                    else {
-                        return `5 GHz`;
-                    }
+                arrayChannelNameFromProperty(objValues, adapter) {
+                    return myHelper.radioToFrequency(objValues['radio'], adapter);
                 },
                 array: {
                     channel: {
@@ -250,14 +245,9 @@ export var device;
                         id: 'channel_name',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'channel',
+                        valFromProperty: 'radio',
                         readVal(val, adapter, cache, deviceOrClient) {
-                            if (val <= 13) {
-                                return '2.4 GHz';
-                            }
-                            else {
-                                return '5 GHz';
-                            }
+                            return myHelper.radioToFrequency(val, adapter);
                         }
                     },
                     channel_width: {
@@ -278,13 +268,8 @@ export var device;
             radio_table_stats: {
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
-                arrayChannelNameFromProperty(objValues) {
-                    if (objValues['channel'] <= 13) {
-                        return `2.4 GHz`;
-                    }
-                    else {
-                        return `5 GHz`;
-                    }
+                arrayChannelNameFromProperty(objValues, adapter) {
+                    return myHelper.radioToFrequency(objValues['radio'], adapter);
                 },
                 array: {
                     connected_clients: {
@@ -360,7 +345,7 @@ export var device;
             },
             storage: {
                 channelName: 'storage',
-                arrayChannelNameFromProperty(objValues) {
+                arrayChannelNameFromProperty(objValues, adapter) {
                     return objValues['name'];
                 },
                 array: {
@@ -416,10 +401,10 @@ export var device;
             },
             temperatures: {
                 channelName: 'temperature',
-                arrayChannelIdFromProperty(objValues, i) {
+                arrayChannelIdFromProperty(objValues, i, adapter) {
                     return objValues['name'];
                 },
-                arrayChannelNameFromProperty(objValues) {
+                arrayChannelNameFromProperty(objValues, adapter) {
                     return objValues['name'];
                 },
                 array: {
@@ -514,11 +499,11 @@ export var device;
             vap_table: {
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
-                arrayChannelIdFromProperty(objValues, i) {
+                arrayChannelIdFromProperty(objValues, i, adapter) {
                     return `${objValues['id']}.${objValues['radio'] === 'ng' ? '2_4_GHz' : '5_GHz'}`;
                 },
-                arrayChannelNameFromProperty(objValues) {
-                    return `${objValues['essid']} - ${objValues['radio'] == 'ng' ? '2.4 GHz' : '5 GHz'}`;
+                arrayChannelNameFromProperty(objValues, adapter) {
+                    return `${objValues['essid']} - ${myHelper.radioToFrequency(objValues['radio'], adapter)}`;
                 },
                 arrayChannelIdZeroPad: 2,
                 array: {
@@ -537,7 +522,7 @@ export var device;
                         name: 'channel name',
                         valFromProperty: 'radio',
                         readVal(val, adapter, cache, deviceOrClient) {
-                            return val === 'ng' ? '2.4 GHz' : '5 GHz';
+                            return myHelper.radioToFrequency(val, adapter);
                         }
                     },
                     connected_clients: {
