@@ -42,12 +42,12 @@ export interface myCommonChannelArray {
     idChannel?: string;
     channelName?: string,
     icon?: string,
-    arrayChannelIdPrefix?: string,                  // Array item id get a prefix e.g. myPrefix_0
-    arrayChannelIdZeroPad?: number,                 // Array item id get a padding for the number
-    arrayChannelIdFromProperty?: string,            // Array item id is taken from a property in the corresponding tree
-    arrayChannelNamePrefix?: string,                // Array item common.name get a prefix e.g. myPrefix_0
-    arrayChannelNameFromProperty?(objValues: any): string,          // Array item common.name is taken from a property in the corresponding tree
-    arrayStartNumber?: number,                      // Array custom start number of array
+    arrayChannelIdPrefix?: string,                                      // Array item id get a prefix e.g. myPrefix_0
+    arrayChannelIdZeroPad?: number,                                     // Array item id get a padding for the number
+    arrayChannelIdFromProperty?(objValues: any, i: number): string,     // Array item id is taken from a property in the corresponding tree
+    arrayChannelNamePrefix?: string,                                    // Array item common.name get a prefix e.g. myPrefix_0
+    arrayChannelNameFromProperty?(objValues: any): string,              // Array item common.name is taken from a property in the corresponding tree
+    arrayStartNumber?: number,                                          // Array custom start number of array
     array: { [key: string]: myCommonState; },
 }
 

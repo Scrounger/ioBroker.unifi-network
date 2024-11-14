@@ -416,7 +416,9 @@ export var device;
             },
             temperatures: {
                 channelName: 'temperature',
-                arrayChannelIdFromProperty: 'name',
+                arrayChannelIdFromProperty(objValues, i) {
+                    return objValues['name'];
+                },
                 arrayChannelNameFromProperty(objValues) {
                     return objValues['name'];
                 },
@@ -512,13 +514,11 @@ export var device;
             vap_table: {
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
+                arrayChannelIdFromProperty(objValues, i) {
+                    return `${objValues['id']}.${objValues['radio'] === 'ng' ? '2_4_GHz' : '5_GHz'}`;
+                },
                 arrayChannelNameFromProperty(objValues) {
-                    if (objValues['channel'] <= 13) {
-                        return `${objValues['essid']} - 2.4 GHz`;
-                    }
-                    else {
-                        return `${objValues['essid']} - 5 GHz`;
-                    }
+                    return `${objValues['essid']} - ${objValues['radio'] == 'ng' ? '2.4 GHz' : '5 GHz'}`;
                 },
                 arrayChannelIdZeroPad: 2,
                 array: {
@@ -535,14 +535,9 @@ export var device;
                         id: 'channel_name',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'channel',
+                        valFromProperty: 'radio',
                         readVal(val, adapter, cache, deviceOrClient) {
-                            if (val <= 13) {
-                                return '2.4 GHz';
-                            }
-                            else {
-                                return '5 GHz';
-                            }
+                            return val === 'ng' ? '2.4 GHz' : '5 GHz';
                         }
                     },
                     connected_clients: {

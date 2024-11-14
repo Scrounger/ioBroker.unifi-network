@@ -422,7 +422,9 @@ export namespace device {
             },
             temperatures: {
                 channelName: 'temperature',
-                arrayChannelIdFromProperty: 'name',
+                arrayChannelIdFromProperty(objValues: any, i: number) {
+                    return objValues['name']
+                },
                 arrayChannelNameFromProperty(objValues: any) {
                     return objValues['name']
                 },
@@ -518,12 +520,11 @@ export namespace device {
             vap_table: {
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
+                arrayChannelIdFromProperty(objValues: any, i: number) {
+                    return `${objValues['id']}.${objValues['radio'] === 'ng' ? '2_4_GHz' : '5_GHz'}`
+                },
                 arrayChannelNameFromProperty(objValues: any) {
-                    if (objValues['channel'] <= 13) {
-                        return `${objValues['essid']} - 2.4 GHz`
-                    } else {
-                        return `${objValues['essid']} - 5 GHz`
-                    }
+                    return `${objValues['essid']} - ${objValues['radio'] == 'ng' ? '2.4 GHz' : '5 GHz'}`
                 },
                 arrayChannelIdZeroPad: 2,
                 array: {
@@ -540,13 +541,9 @@ export namespace device {
                         id: 'channel_name',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'channel',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                            if (val <= 13) {
-                                return '2.4 GHz'
-                            } else {
-                                return '5 GHz'
-                            }
+                        valFromProperty: 'radio',
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                            return val === 'ng' ? '2.4 GHz' : '5 GHz'
                         }
                     },
                     connected_clients: {

@@ -43,7 +43,7 @@ export interface myCommonChannelArray {
     icon?: string;
     arrayChannelIdPrefix?: string;
     arrayChannelIdZeroPad?: number;
-    arrayChannelIdFromProperty?: string;
+    arrayChannelIdFromProperty?(objValues: any, i: number): string;
     arrayChannelNamePrefix?: string;
     arrayChannelNameFromProperty?(objValues: any): string;
     arrayStartNumber?: number;
