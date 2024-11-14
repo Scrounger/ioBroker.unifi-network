@@ -596,7 +596,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[_updateIsOnlineState]:';
         try {
             for (const id in clients) {
-                const lastSeen = await this.getStateAsync(id);
+                const lastSeen = clients[id];
                 const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
                 const t = moment(isOnline.lc);
                 const before = moment(lastSeen.val * 1000);
@@ -712,7 +712,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             let imgCache = {};
             for (const id in clients) {
-                const url = await this.getStateAsync(id);
+                const url = clients[id];
                 if (url && url.val && url.val !== null) {
                     if (imgCache[url.val]) {
                         imgCache[url.val].push(myHelper.getIdWithoutLastPart(id));
@@ -1132,17 +1132,16 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.debug(`${logPrefix} '${idChannel}' deleted`);
                         }
                         if (this.config.devicesEnabled && this.config.keepIobSynchron) {
-                            // Todo: delete from devices
-                            // const devices = await this.getStatesAsync(`devices.*.wifi.${wlan._id}.id`);
-                            // for (const id in devices) {
-                            // 	if (devices[id].val = wlan._id) {
-                            // 		const idChannel = myHelper.getIdWithoutLastPart(id);
-                            // 		if (await this.objectExists(idChannel)) {
-                            // 			await this.delObjectAsync(idChannel, { recursive: true });
-                            // 			this.log.debug(`${logPrefix} '${idChannel}' deleted`);
-                            // 		}
-                            // 	}
-                            // }
+                            const devices = await this.getStatesAsync(`devices.*.wifi.*.id`);
+                            for (const id in devices) {
+                                if (devices[id].val === wlan._id) {
+                                    const idChannel = myHelper.getIdWithoutLastPart(id);
+                                    if (await this.objectExists(idChannel)) {
+                                        await this.delObjectAsync(idChannel, { recursive: true });
+                                        this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+                                    }
+                                }
+                            }
                         }
                     }
                 }

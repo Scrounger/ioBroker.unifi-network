@@ -695,7 +695,7 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			for (const id in clients) {
 
-				const lastSeen = await this.getStateAsync(id);
+				const lastSeen = clients[id];
 				const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
 
 				const t = moment(isOnline.lc);
@@ -830,7 +830,7 @@ class UnifiNetwork extends utils.Adapter {
 			let imgCache: myImgCache = {}
 
 			for (const id in clients) {
-				const url = await this.getStateAsync(id);
+				const url = clients[id];
 
 				if (url && url.val && url.val !== null) {
 					if (imgCache[url.val as string]) {
@@ -1320,20 +1320,18 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						if (this.config.devicesEnabled && this.config.keepIobSynchron) {
-							// Todo: delete from devices
+							const devices = await this.getStatesAsync(`devices.*.wifi.*.id`);
 
-							// const devices = await this.getStatesAsync(`devices.*.wifi.${wlan._id}.id`);
+							for (const id in devices) {
+								if (devices[id].val === wlan._id) {
+									const idChannel = myHelper.getIdWithoutLastPart(id);
 
-							// for (const id in devices) {
-							// 	if (devices[id].val = wlan._id) {
-							// 		const idChannel = myHelper.getIdWithoutLastPart(id);
-
-							// 		if (await this.objectExists(idChannel)) {
-							// 			await this.delObjectAsync(idChannel, { recursive: true });
-							// 			this.log.debug(`${logPrefix} '${idChannel}' deleted`);
-							// 		}
-							// 	}
-							// }
+									if (await this.objectExists(idChannel)) {
+										await this.delObjectAsync(idChannel, { recursive: true });
+										this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+									}
+								}
+							}
 						}
 					}
 				}
