@@ -86,30 +86,47 @@ export function getIdLastPart(id: string): string {
  * @param obj2 
  * @returns 
  */
-export const deepDiffBetweenObjects = (object, base, allowedKeys = undefined, prefix = '') => {
-    const changes = (object, base) => {
-        return _.transform(object, (result, value, key) => {
-            const fullKey: string = prefix ? `${prefix}.${key as string}` : (key as string);
+export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
+    const logPrefix = '[deepDiffBetweenObjects]:';
 
-            if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
-                if (_.isArray(value)) {
-                    result[key] = []
-                    for (var i = 0; i <= value.length - 1; i++) {
-                        const res = deepDiffBetweenObjects(value[i], base[key][i], allowedKeys, fullKey);
-                        result[key].push(!_.isEmpty(res) ? res : null);
+    try {
+        const changes = (object, base) => {
+            return _.transform(object, (result, value, key) => {
+                const fullKey: string = prefix ? `${prefix}.${key as string}` : (key as string);
+
+                try {
+                    if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
+                        if (_.isArray(value)) {
+                            for (var i = 0; i <= value.length - 1; i++) {
+                                const res = deepDiffBetweenObjects(value[i], (base[key] && base[key][i]) ? base[key][i] : {}, adapter, allowedKeys, fullKey);
+
+                                if (!_.isEmpty(res)) {
+                                    if (!_.has(result, key)) result[key] = [];
+                                    result[key].push(res);
+                                }
+                            }
+                        } else if (_.isObject(value) && _.isObject(base[key])) {
+                            const res = changes(value, base[key])
+                            if (!_.isEmpty(res)) {
+                                result[key] = res;
+                            }
+                        } else {
+                            result[key] = value
+                        }
                     }
-                } else if (_.isObject(value) && _.isObject(base[key])) {
-                    const res = changes(value, base[key])
-                    if (!_.isEmpty(res)) {
-                        result[key] = res;
-                    }
-                } else {
-                    result[key] = value
+                } catch (error) {
+                    adapter.log.error(`${logPrefix} transform error: ${error}, stack: ${error.stack}, fullKey: ${fullKey}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
                 }
-            }
-        })
+            })
+        }
+
+        return changes(object, base);
+
+    } catch (error) {
+        adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
     }
-    return changes(object, base)
+
+    return object;
 }
 
 /**

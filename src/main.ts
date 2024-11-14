@@ -439,7 +439,7 @@ class UnifiNetwork extends utils.Adapter {
 							let dataToProcess = device;
 							if (this.cache.devices[device.mac]) {
 								// filter out unchanged properties
-								dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], tree.device.getKeys()) as NetworkDevice;
+								dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys()) as NetworkDevice;
 							}
 
 							this.cache.devices[device.mac] = device;
@@ -521,7 +521,7 @@ class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.clients[client.mac]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as NetworkClient;
 									}
 
 									this.cache.clients[client.mac] = client;
@@ -556,7 +556,7 @@ class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.clients[client.mac]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as NetworkClient;
 									}
 
 									this.cache.clients[client.mac] = client;
@@ -595,7 +595,7 @@ class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.clients[client.ip]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], this, tree.client.getKeys()) as NetworkClient;
 									}
 
 									this.cache.vpn[client.ip] = client;
@@ -913,7 +913,7 @@ class UnifiNetwork extends utils.Adapter {
 						if (!myHelper.isDeviceCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
 							await this.extendObject(id, { common: common });
 
-							this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common))})`);
+							this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common, this))})`);
 						}
 					}
 				}
@@ -956,7 +956,7 @@ class UnifiNetwork extends utils.Adapter {
 					if (obj && obj.common) {
 						if (!myHelper.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
 							await this.extendObject(id, { common: common });
-							this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common))})`);
+							this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common, this))})`);
 						}
 					}
 				}
@@ -1024,7 +1024,7 @@ class UnifiNetwork extends utils.Adapter {
 									if (obj && obj.common) {
 										if (!myHelper.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
 											await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-											this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common))})`);
+											this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
 										}
 									}
 								}

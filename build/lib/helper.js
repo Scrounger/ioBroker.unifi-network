@@ -74,31 +74,46 @@ export function getIdLastPart(id) {
  * @param obj2
  * @returns
  */
-export const deepDiffBetweenObjects = (object, base, allowedKeys = undefined, prefix = '') => {
-    const changes = (object, base) => {
-        return _.transform(object, (result, value, key) => {
-            const fullKey = prefix ? `${prefix}.${key}` : key;
-            if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
-                if (_.isArray(value)) {
-                    result[key] = [];
-                    for (var i = 0; i <= value.length - 1; i++) {
-                        const res = deepDiffBetweenObjects(value[i], base[key][i], allowedKeys, fullKey);
-                        result[key].push(!_.isEmpty(res) ? res : null);
+export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
+    const logPrefix = '[deepDiffBetweenObjects]:';
+    try {
+        const changes = (object, base) => {
+            return _.transform(object, (result, value, key) => {
+                const fullKey = prefix ? `${prefix}.${key}` : key;
+                try {
+                    if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
+                        if (_.isArray(value)) {
+                            for (var i = 0; i <= value.length - 1; i++) {
+                                const res = deepDiffBetweenObjects(value[i], (base[key] && base[key][i]) ? base[key][i] : {}, adapter, allowedKeys, fullKey);
+                                if (!_.isEmpty(res)) {
+                                    if (!_.has(result, key))
+                                        result[key] = [];
+                                    result[key].push(res);
+                                }
+                            }
+                        }
+                        else if (_.isObject(value) && _.isObject(base[key])) {
+                            const res = changes(value, base[key]);
+                            if (!_.isEmpty(res)) {
+                                result[key] = res;
+                            }
+                        }
+                        else {
+                            result[key] = value;
+                        }
                     }
                 }
-                else if (_.isObject(value) && _.isObject(base[key])) {
-                    const res = changes(value, base[key]);
-                    if (!_.isEmpty(res)) {
-                        result[key] = res;
-                    }
+                catch (error) {
+                    adapter.log.error(`${logPrefix} transform error: ${error}, stack: ${error.stack}, fullKey: ${fullKey}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
                 }
-                else {
-                    result[key] = value;
-                }
-            }
-        });
-    };
-    return changes(object, base);
+            });
+        };
+        return changes(object, base);
+    }
+    catch (error) {
+        adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
+    }
+    return object;
 };
 /**
  * Collect all properties used in tree defintions
