@@ -342,10 +342,6 @@ class UnifiNetwork extends utils.Adapter {
             await this.updatClientsOffline(await this.ufn.getClients(), true);
             await this.updateWlanConfig(null, true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
-            const devices = await this.getStatesAsync(`devices.*.wifi.61fd772205662900cf450ec7.id`);
-            for (const id in devices) {
-                this.log.warn(JSON.stringify(devices[id]));
-            }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -965,7 +961,7 @@ class UnifiNetwork extends utils.Adapter {
                                         let nr = i + arrayNumberAdd;
                                         if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
                                             const idChannelArray = `${idChannel}.${objOrgValues[key][i][treeDefinition[key].arrayChannelIdFromProperty] || `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
-                                            await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i]) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
+                                            await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i]) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, isAdapterStart);
                                             await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], isAdapterStart);
                                         }
                                     }
@@ -1136,16 +1132,17 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.debug(`${logPrefix} '${idChannel}' deleted`);
                         }
                         if (this.config.devicesEnabled && this.config.keepIobSynchron) {
-                            const devices = await this.getStatesAsync(`devices.*.wifi.${wlan._id}.id`);
-                            for (const id in devices) {
-                                if (devices[id].val = wlan._id) {
-                                    const idChannel = myHelper.getIdWithoutLastPart(id);
-                                    if (await this.objectExists(idChannel)) {
-                                        await this.delObjectAsync(idChannel, { recursive: true });
-                                        this.log.debug(`${logPrefix} '${idChannel}' deleted`);
-                                    }
-                                }
-                            }
+                            // Todo: delete from devices
+                            // const devices = await this.getStatesAsync(`devices.*.wifi.${wlan._id}.id`);
+                            // for (const id in devices) {
+                            // 	if (devices[id].val = wlan._id) {
+                            // 		const idChannel = myHelper.getIdWithoutLastPart(id);
+                            // 		if (await this.objectExists(idChannel)) {
+                            // 			await this.delObjectAsync(idChannel, { recursive: true });
+                            // 			this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+                            // 		}
+                            // 	}
+                            // }
                         }
                     }
                 }

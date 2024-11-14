@@ -152,7 +152,7 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
                     recurse(value, fullKey);
                 }
             } else {
-                if (key === 'valFromProperty' || key === 'conditionProperty') {
+                if (key === 'valFromProperty' || key === 'conditionProperty' || key === 'arrayChannelIdFromProperty') {
                     const prefixCleared = getIdWithoutLastPart(prefix);
                     keys.push(`${prefixCleared ? `${prefixCleared}.` : ''}${value}`);
                 }
