@@ -1,6 +1,6 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
 import { WebSocketEvent, myCache } from "./myTypes.js";
-import * as tree from "./tree/index.js";
+import * as myHelper from './helper.js';
 
 export const eventHandler = {
     device: {
@@ -122,9 +122,9 @@ export const eventHandler = {
                             await adapter.setState(ipChannel, valChannel, true);
                         }
 
-                        const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_name`;
+                        const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_frequency`;
                         if (await adapter.objectExists(ipChannelName)) {
-                            await adapter.setState(ipChannelName, (tree.client.get() as any).channel_name.readVal(valChannel), true);
+                            await adapter.setState(ipChannelName, myHelper.radioToFrequency(data.radio_to, adapter), true);
                         }
                     }
                 } else {

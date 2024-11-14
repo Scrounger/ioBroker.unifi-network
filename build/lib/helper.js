@@ -159,3 +159,15 @@ export function radioToFrequency(radioVal, adapter) {
         return radioVal;
     }
 }
+export function radio_nameToFrequency(radio_nameVal, adapter) {
+    if (radio_nameVal === 'wifi0' || radio_nameVal === 'ra0') {
+        return '2.4 GHz';
+    }
+    else if (radio_nameVal === 'wifi1' || radio_nameVal === 'rai0') {
+        return '5 GHz';
+    }
+    else {
+        adapter.log.warn(`radio ${radio_nameVal} interpreter not implemented! Please create an issue on github.`);
+        return 'n/a';
+    }
+}

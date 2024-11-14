@@ -21,12 +21,12 @@ export namespace client {
                 name: 'channel'
             },
             channel_name: {
-                id: 'channel_name',
+                id: 'channel_frequency',
                 iobType: 'string',
                 name: 'channel name',
-                valFromProperty: 'radio',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                    return myHelper.radioToFrequency(val, adapter);
+                valFromProperty: 'radio_name',
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                    return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
             essid: {

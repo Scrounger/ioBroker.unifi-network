@@ -16,17 +16,12 @@ export var client;
                 name: 'channel'
             },
             channel_name: {
-                id: 'channel_name',
+                id: 'channel_frequency',
                 iobType: 'string',
                 name: 'channel name',
-                valFromProperty: 'channel',
+                valFromProperty: 'radio_name',
                 readVal(val, adapter, cache, deviceOrClient) {
-                    if (val <= 13) {
-                        return '2.4 GHz';
-                    }
-                    else {
-                        return '5 GHz';
-                    }
+                    return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
             essid: {

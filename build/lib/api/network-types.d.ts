@@ -39,6 +39,8 @@ export interface NetworkEventData {
     key: string;
     msg: string;
     port?: number;
+    radio_from?: string;
+    radio_to?: string;
     ssid?: string;
     sw?: string;
     sw_name?: string;

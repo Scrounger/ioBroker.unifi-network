@@ -242,7 +242,7 @@ export namespace device {
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
                 arrayChannelNameFromProperty(objValues: any, adapter: ioBroker.Adapter): string {
-                    return myHelper.radioToFrequency(objValues['radio'], adapter);
+                    return myHelper.radio_nameToFrequency(objValues['name'], adapter);
                 },
                 array: {
                     channel: {
@@ -250,12 +250,12 @@ export namespace device {
                         name: 'channel'
                     },
                     channel_name: {
-                        id: 'channel_name',
+                        id: 'channel_frequency',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'radio',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                            return myHelper.radioToFrequency(val, adapter);
+                        valFromProperty: 'name',
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                            return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
                     channel_width: {
@@ -277,7 +277,7 @@ export namespace device {
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
                 arrayChannelNameFromProperty(objValues: any, adapter: ioBroker.Adapter): string {
-                    return myHelper.radioToFrequency(objValues['radio'], adapter);
+                    return myHelper.radio_nameToFrequency(objValues['name'], adapter);
                 },
                 array: {
                     connected_clients: {
@@ -509,10 +509,10 @@ export namespace device {
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
                 arrayChannelIdFromProperty(objValues: any, i: number, adapter: ioBroker.Adapter): string {
-                    return `${objValues['id']}.${objValues['radio'] === 'ng' ? '2_4_GHz' : '5_GHz'}`
+                    return `${objValues['id']}_${objValues['radio_name'].replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`
                 },
                 arrayChannelNameFromProperty(objValues: any, adapter: ioBroker.Adapter): string {
-                    return `${objValues['essid']} - ${myHelper.radioToFrequency(objValues['radio'], adapter)}`
+                    return `${objValues['essid']} - ${myHelper.radio_nameToFrequency(objValues['radio_name'], adapter)}`
                 },
                 arrayChannelIdZeroPad: 2,
                 array: {
@@ -526,12 +526,12 @@ export namespace device {
                         name: 'channel'
                     },
                     channel_name: {
-                        id: 'channel_name',
+                        id: 'channel_frequency',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'radio',
+                        valFromProperty: 'radio_name',
                         readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
-                            return myHelper.radioToFrequency(val, adapter);
+                            return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
                     connected_clients: {

@@ -165,7 +165,7 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
     return _.uniq(keys);
 }
 
-export function radioToFrequency(radioVal, adapter): string {
+export function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string {
     if (radioVal === 'ng') {
         return '2.4 GHz'
     } else if (radioVal === 'na') {
@@ -173,5 +173,16 @@ export function radioToFrequency(radioVal, adapter): string {
     } else {
         adapter.log.warn(`radio ${radioVal} interpreter not implemented! Please create an issue on github.`);
         return radioVal
+    }
+}
+
+export function radio_nameToFrequency(radio_nameVal: string, adapter: ioBroker.Adapter): string {
+    if (radio_nameVal === 'wifi0' || radio_nameVal === 'ra0') {
+        return '2.4 GHz'
+    } else if (radio_nameVal === 'wifi1' || radio_nameVal === 'rai0') {
+        return '5 GHz'
+    } else {
+        adapter.log.warn(`radio ${radio_nameVal} interpreter not implemented! Please create an issue on github.`);
+        return 'n/a'
     }
 }

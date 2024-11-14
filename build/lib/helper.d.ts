@@ -34,4 +34,5 @@ export declare const deepDiffBetweenObjects: (object: any, base: any, adapter: a
  * @returns
  */
 export declare function getAllKeysOfTreeDefinition(treefDefintion: any): any[];
-export declare function radioToFrequency(radioVal: any, adapter: any): string;
+export declare function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string;
+export declare function radio_nameToFrequency(radio_nameVal: string, adapter: ioBroker.Adapter): string;

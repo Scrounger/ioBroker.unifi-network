@@ -234,7 +234,7 @@ export var device;
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return myHelper.radioToFrequency(objValues['radio'], adapter);
+                    return myHelper.radio_nameToFrequency(objValues['name'], adapter);
                 },
                 array: {
                     channel: {
@@ -242,12 +242,12 @@ export var device;
                         name: 'channel'
                     },
                     channel_name: {
-                        id: 'channel_name',
+                        id: 'channel_frequency',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'radio',
+                        valFromProperty: 'name',
                         readVal(val, adapter, cache, deviceOrClient) {
-                            return myHelper.radioToFrequency(val, adapter);
+                            return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
                     channel_width: {
@@ -269,7 +269,7 @@ export var device;
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return myHelper.radioToFrequency(objValues['radio'], adapter);
+                    return myHelper.radio_nameToFrequency(objValues['name'], adapter);
                 },
                 array: {
                     connected_clients: {
@@ -500,10 +500,10 @@ export var device;
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
                 arrayChannelIdFromProperty(objValues, i, adapter) {
-                    return `${objValues['id']}.${objValues['radio'] === 'ng' ? '2_4_GHz' : '5_GHz'}`;
+                    return `${objValues['id']}_${objValues['radio_name'].replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
                 },
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return `${objValues['essid']} - ${myHelper.radioToFrequency(objValues['radio'], adapter)}`;
+                    return `${objValues['essid']} - ${myHelper.radio_nameToFrequency(objValues['radio_name'], adapter)}`;
                 },
                 arrayChannelIdZeroPad: 2,
                 array: {
@@ -517,12 +517,12 @@ export var device;
                         name: 'channel'
                     },
                     channel_name: {
-                        id: 'channel_name',
+                        id: 'channel_frequency',
                         iobType: 'string',
                         name: 'channel name',
-                        valFromProperty: 'radio',
+                        valFromProperty: 'radio_name',
                         readVal(val, adapter, cache, deviceOrClient) {
-                            return myHelper.radioToFrequency(val, adapter);
+                            return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
                     connected_clients: {
