@@ -9,7 +9,7 @@ import { NetworkLogging } from './network-logging.js';
 import { NetworkEvent } from './network-types.js'
 import { NetworkDevice } from './network-types-device.js'
 import { NetworkClient } from './network-types-client.js';
-import { WlanConfig } from './network-types-wlan-config.js';
+import { NetworkWlanConfig } from './network-types-wlan-config.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -485,7 +485,7 @@ export class NetworkApi extends EventEmitter {
      * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns 
      */
-    public async getWlanConfig(wlan_id = undefined): Promise<WlanConfig[] | undefined> {
+    public async getWlanConfig(wlan_id = undefined): Promise<NetworkWlanConfig[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`
 
         try {

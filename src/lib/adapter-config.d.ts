@@ -22,6 +22,7 @@ declare global {
 			clientsEnabled: boolean;
 			guestsEnabled: boolean;
 			vpnEnabled: boolean;
+			wlanConfigEnabled: boolean;
 		}
 	}
 }

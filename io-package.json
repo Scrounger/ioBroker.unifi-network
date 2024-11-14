@@ -107,7 +107,8 @@
         "devicesEnabled": true,
         "clientsEnabled": true,
         "guestsEnabled": true,
-        "vpnEnabled": true
+        "vpnEnabled": true,
+        "wlanConfigEnabled": false
     },
     "objects": [],
     "instanceObjects": [

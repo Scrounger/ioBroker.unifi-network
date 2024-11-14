@@ -22,6 +22,7 @@ import { apiCommands } from './lib/api/network-command.js';
 import { eventHandler } from './lib/eventHandler.js';
 
 import * as tree from './lib/tree/index.js'
+import { NetworkWlanConfig } from './lib/api/network-types-wlan-config.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -82,7 +83,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.host, this.config.user, this.config.password) {
 				this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this.log);
 
-				await this.establishConnection(true);
+				await this.establishConnection();
 
 				this.ufn.on('message', this.eventListener);
 
@@ -241,7 +242,7 @@ class UnifiNetwork extends utils.Adapter {
 	 * Establish Connection to NVR and starting the alive checker
 	 * @param isAdapterStart 
 	 */
-	async establishConnection(isAdapterStart: boolean = false) {
+	async establishConnection() {
 		const logPrefix = '[establishConnection]:';
 
 		try {
@@ -374,7 +375,7 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateDevices(null, true);
 
 			await this.updateClients(null, true);
-			await this.updatClientseOffline(await this.ufn.getClients(), true);
+			await this.updatClientsOffline(await this.ufn.getClients(), true);
 
 			this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 		} catch (error) {
@@ -386,10 +387,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateApiData]:';
 
 		try {
-			const wlan = await this.ufn.getWlanConfig();
-			this.log.warn(JSON.stringify(wlan));
-
-
+			await this.updateWlanConfig(await this.ufn.getWlanConfig(), true)
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -632,8 +630,8 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updatClientseOffline(data: NetworkClient[], isAdapterStart: boolean = false) {
-		const logPrefix = '[updatClientseOffline]:';
+	async updatClientsOffline(data: NetworkClient[], isAdapterStart: boolean = false) {
+		const logPrefix = '[updatClientsOffline]:';
 
 		try {
 			if (data) {
@@ -694,6 +692,41 @@ class UnifiNetwork extends utils.Adapter {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
+
+	async updateWlanConfig(data: NetworkWlanConfig[], isAdapterStart: boolean = false): Promise<void> {
+		const logPrefix = '[updateWlanConfig]:';
+
+		try {
+			if (this.connected && this.isConnected) {
+				const idChannel = 'wlan';
+
+				if (this.config.wlanConfigEnabled) {
+					if (isAdapterStart) {
+						await this.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
+					}
+
+					if (data) {
+						if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} wlan's`);
+
+						for (let wlan of data) {
+							this.createOrUpdateChannel(`${idChannel}.${wlan.name}`, wlan.name, undefined, isAdapterStart);
+							await this.createGenericState(`${idChannel}.${wlan.name}`, tree.wlan.get(), wlan, 'wlan', wlan, wlan, isAdapterStart);
+						}
+
+					}
+				} else {
+					if (await this.objectExists(idChannel)) {
+						await this.delObjectAsync(idChannel, { recursive: true });
+						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+					}
+				}
+			}
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
 
 	/**
 	 * Download public data from ui with image url infos.
@@ -924,7 +957,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | NetworkClient, filterComparisonId: string, objOrg: NetworkDevice | NetworkClient, objOrgValues, isAdapterStart: boolean = false) {
+	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | NetworkClient | NetworkWlanConfig, filterComparisonId: string, objOrg: NetworkDevice | NetworkClient | NetworkWlanConfig, objOrgValues, isAdapterStart: boolean = false) {
 		const logPrefix = '[createGenericState]:';
 
 		try {

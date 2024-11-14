@@ -1,4 +1,4 @@
-export interface WlanConfig {
+export interface NetworkWlanConfig {
     _id?: string;
     ap_group_ids?: string[];
     ap_group_mode?: string;
