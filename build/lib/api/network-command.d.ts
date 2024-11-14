@@ -14,4 +14,7 @@ export declare const apiCommands: {
         unblock(ufn: NetworkApi, mac: string): Promise<boolean>;
         reconncet(ufn: NetworkApi, mac: string): Promise<boolean>;
     };
+    wlan: {
+        enable(ufn: NetworkApi, wlan_id: string, enabled: boolean): Promise<boolean>;
+    };
 };

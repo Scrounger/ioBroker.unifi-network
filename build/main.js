@@ -27,7 +27,8 @@ class UnifiNetwork extends utils.Adapter {
     cache = {
         devices: {},
         clients: {},
-        vpn: {}
+        vpn: {},
+        wlan: {}
     };
     subscribedList = [];
     eventListener = (event) => this.onNetworkMessage(event);
@@ -182,6 +183,14 @@ class UnifiNetwork extends utils.Adapter {
                         }
                         else {
                             this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
+                        }
+                    }
+                    else if (id.startsWith(`${this.namespace}.wlan.`)) {
+                        if (myHelper.getIdLastPart(id) === 'enabled') {
+                            const wlan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+                            const res = await apiCommands.wlan.enable(this.ufn, wlan_id, state.val);
+                            if (res)
+                                this.log.info(`${logPrefix} command sent:  wlan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.wlan[wlan_id].name}' (mac: ${wlan_id})`);
                         }
                     }
                 }
@@ -616,8 +625,9 @@ class UnifiNetwork extends utils.Adapter {
                         if (isAdapterStart)
                             this.log.info(`${logPrefix} Discovered ${data.length} wlan's`);
                         for (let wlan of data) {
-                            this.createOrUpdateChannel(`${idChannel}.${wlan.name}`, wlan.name, undefined, isAdapterStart);
-                            await this.createGenericState(`${idChannel}.${wlan.name}`, tree.wlan.get(), wlan, 'wlan', wlan, wlan, isAdapterStart);
+                            this.cache.wlan[wlan._id] = wlan;
+                            this.createOrUpdateChannel(`${idChannel}.${wlan._id}`, wlan.name, undefined, isAdapterStart);
+                            await this.createGenericState(`${idChannel}.${wlan._id}`, tree.wlan.get(), wlan, 'wlan', wlan, wlan, isAdapterStart);
                         }
                     }
                 }

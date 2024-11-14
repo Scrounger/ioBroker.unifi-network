@@ -1,5 +1,6 @@
 import { Fingerprint, NetworkClient } from "./api/network-types-client";
 import { NetworkDevice } from "./api/network-types-device";
+import { NetworkWlanConfig } from "./api/network-types-wlan-config";
 export interface myCommonState {
     id?: string;
     iobType: ioBroker.CommonType;
@@ -83,6 +84,9 @@ export interface myCache {
     };
     vpn: {
         [key: string]: NetworkClient;
+    };
+    wlan: {
+        [key: string]: NetworkWlanConfig;
     };
 }
 export interface myImgCache {

@@ -93,5 +93,12 @@ export const apiCommands = {
 
         //     return result === null ? false : true;
         // },
+    },
+    wlan: {
+        async enable(ufn: NetworkApi, wlan_id: string, enabled: boolean): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/wlanconf/${wlan_id.trim()}`, { enabled: enabled }, 'PUT');
+
+            return result === null ? false : true;
+        }
     }
 }
