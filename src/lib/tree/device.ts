@@ -573,6 +573,11 @@ export namespace device {
                         iobType: 'string',
                         name: 'WLAN SSID'
                     },
+                    id: {
+                        iobType: 'string',
+                        name: 'Wifi internal id',
+                        expert: true
+                    },
                     is_guest: {
                         iobType: 'boolean',
                         name: 'is guest wifi'

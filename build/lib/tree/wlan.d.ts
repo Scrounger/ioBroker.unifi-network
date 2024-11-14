@@ -3,4 +3,5 @@ export declare namespace wlan {
     function get(): {
         [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
     };
+    function getKeys(): string[];
 }

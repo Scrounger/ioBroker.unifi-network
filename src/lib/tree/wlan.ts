@@ -1,7 +1,8 @@
 import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "../myTypes";
-
+import * as myHelper from '../helper.js';
 
 export namespace wlan {
+    let keys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -24,5 +25,13 @@ export namespace wlan {
                 name: 'security'
             }
         }
+    }
+
+    export function getKeys(): string[] {
+        if (keys === undefined) {
+            keys = myHelper.getAllKeysOfTreeDefinition(get());
+        }
+
+        return keys
     }
 }

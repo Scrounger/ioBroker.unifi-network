@@ -56,7 +56,8 @@ export enum WebSocketEventMessages {
     device = 'device:sync',
     user = 'user:',
     events = 'events',
-    speedTest = 'speed-test:update'
+    speedTest = 'speed-test:update',
+    wlanConf = 'wlanconf:'
 }
 
 export const WebSocketEvent_Connected = ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'];
@@ -75,7 +76,7 @@ export const WebSocketEvent = {
         RoamedRadio: ['EVT_WU_RoamRadio', 'EVT_WG_RoamRadio'],
         Blocked: ['EVT_WC_Blocked', 'EVT_LC_Blocked'],
         Unblocked: ['EVT_WC_Unblocked', 'EVT_LC_Unblocked'],
-    }
+    },
 }
 
 // export enum WebSocketEventKeys {

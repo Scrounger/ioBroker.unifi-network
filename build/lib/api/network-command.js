@@ -76,7 +76,7 @@ export const apiCommands = {
         //     return result === null ? false : true;
         // },
     },
-    wlan: {
+    wlanConf: {
         async enable(ufn, wlan_id, enabled) {
             const result = await ufn.sendData(`/api/s/${ufn.site}/rest/wlanconf/${wlan_id.trim()}`, { enabled: enabled }, 'PUT');
             return result === null ? false : true;
