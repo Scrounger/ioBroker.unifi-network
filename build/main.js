@@ -9,10 +9,10 @@ import { FetchError, context } from '@adobe/fetch';
 import _ from 'lodash';
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
+import { apiCommands } from './lib/api/network-command.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
-import { apiCommands } from './lib/api/network-command.js';
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js';
 import { base64 } from './lib/base64.js';
@@ -516,21 +516,22 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             else {
                                 if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
-                                    if (this.cache.vpn[client.ip]) {
-                                        this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                    if (!this.cache.vpn[client.ip]) {
+                                        this.log.debug(`${logPrefix} Discovered vpn client '${client.name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
                                     }
                                     const idChannel = client.network_id;
                                     this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
                                     let dataToProcess = client;
-                                    if (this.cache.clients[client.ip]) {
+                                    if (this.cache.vpn[client.ip]) {
                                         // filter out unchanged properties
-                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], this, tree.client.getKeys());
+                                        dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys());
                                     }
                                     const preparedIp = client.ip.replaceAll('.', '_');
                                     if (Object.keys(dataToProcess).length > 0) {
                                         this.cache.vpn[client.ip] = client;
                                         this.cache.vpn[client.ip].name = name;
                                         this.cache.vpn[client.ip].iobTimestamp = moment().unix();
+                                        this.log.warn(JSON.stringify(this.cache.vpn[client.ip]));
                                         dataToProcess.ip = client.ip;
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
@@ -601,7 +602,7 @@ class UnifiNetwork extends utils.Adapter {
                 const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
                 const mac = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.mac`);
                 const ip = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.ip`);
-                const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val] : this.cache.clients[ip.val];
+                const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val] : this.cache.vpn[ip.val];
                 const t = moment(isOnline.lc);
                 const before = moment(lastSeen.val * 1000);
                 const now = moment();
@@ -1046,8 +1047,13 @@ class UnifiNetwork extends utils.Adapter {
             if (event.meta.message === WebSocketEventMessages.device) {
                 await this.updateDevices(event.data);
             }
-            else if (event.meta.message === WebSocketEventMessages.client) {
-                await this.updateClients(event.data);
+            else if (event.meta.message.startsWith(WebSocketEventMessages.client)) {
+                if (event.meta.message.endsWith(':sync')) {
+                    await this.updateClients(event.data);
+                }
+                else {
+                    await this.onNetworkClientEvent(event);
+                }
             }
             else if (event.meta.message === WebSocketEventMessages.events) {
                 await this.onNetworkEvent(event);
@@ -1113,14 +1119,37 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async onNetworkUserEvent(event) {
+    async onNetworkClientEvent(events) {
         const logPrefix = '[onNetworkUserEvent]:';
         try {
-            if (event && event.data) {
-                for (const myEvent of event.data) {
+            if (events.meta.message.endsWith(':disconnected')) {
+                for (const event of events.data) {
+                    if (event.type === 'VPN') {
+                        // VPN disconnect
+                        this.log.debug(`${logPrefix} event 'vpn disconnected' (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+                        eventHandler.client.vpnDisconnect(events.meta, event, this, this.cache);
+                    }
+                    else {
+                        this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+                    }
+                }
+            }
+            else {
+                this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkUserEvent(events) {
+        const logPrefix = '[onNetworkUserEvent]:';
+        try {
+            if (events && events.data) {
+                for (const event of events.data) {
                     // user removed client from unifi-controller
-                    this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-                    eventHandler.user.clientRemoved(event.meta, myEvent, this, this.cache);
+                    this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+                    eventHandler.user.clientRemoved(events.meta, event, this, this.cache);
                 }
             }
         }

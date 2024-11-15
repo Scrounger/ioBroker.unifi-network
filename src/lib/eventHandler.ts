@@ -1,6 +1,7 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
 import { WebSocketEvent, myCache } from "./myTypes.js";
 import * as myHelper from './helper.js';
+import { NetworkClient } from "./api/network-types-client.js";
 
 export const eventHandler = {
     device: {
@@ -93,9 +94,9 @@ export const eventHandler = {
                             await adapter.setState(idApName, cache.devices[data.ap_to].name ? cache.devices[data.ap_to].name : null, true);
                         }
 
-                        const ipApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
-                        if (await adapter.objectExists(ipApMac)) {
-                            await adapter.setState(ipApMac, (data.ap_to) ? (data.ap_to) : null, true);
+                        const idApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
+                        if (await adapter.objectExists(idApMac)) {
+                            await adapter.setState(idApMac, (data.ap_to) ? (data.ap_to) : null, true);
                         }
                     }
                 } else {
@@ -116,15 +117,15 @@ export const eventHandler = {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
                         adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache?.devices[data.ap]?.name}' (mac: ${cache?.devices[data.ap]?.mac})`);
 
-                        const ipChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
+                        const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
                         const valChannel = parseInt(data.channel_to);
-                        if (await adapter.objectExists(ipChannel)) {
-                            await adapter.setState(ipChannel, valChannel, true);
+                        if (await adapter.objectExists(idChannel)) {
+                            await adapter.setState(idChannel, valChannel, true);
                         }
 
-                        const ipChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_frequency`;
-                        if (await adapter.objectExists(ipChannelName)) {
-                            await adapter.setState(ipChannelName, myHelper.radioToFrequency(data.radio_to, adapter), true);
+                        const idChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_frequency`;
+                        if (await adapter.objectExists(idChannelName)) {
+                            await adapter.setState(idChannelName, myHelper.radioToFrequency(data.radio_to, adapter), true);
                         }
                     }
                 } else {
@@ -161,6 +162,27 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
         },
+        async vpnDisconnect(meta: NetworkEventMeta, data: NetworkClient, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.client.vpnDisconnect]:'
+
+            try {
+                if (data.ip && data.network_id) {
+                    const preparedIp = data.ip.replaceAll('.', '_');
+
+                    const id = `vpn.${data.network_id}.${preparedIp}.isOnline`;
+
+                    if (await adapter.objectExists(id)) {
+                        await adapter.setState(id, false, true);
+                    }
+
+                    adapter.log.info(`${logPrefix} vpn client '${cache?.vpn[data.ip]?.name}' 'disconnected' (ip: ${cache?.vpn[data.ip].ip}, remote_ip: ${cache?.vpn[data.ip].remote_ip})`);
+                } else {
+                    adapter.log.warn(`${logPrefix} event 'vpn disconnected' has no ip address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        }
     },
     user: {
         async clientRemoved(meta: NetworkEventMeta, data: { [key: string]: boolean | number | object | string } | any, adapter: ioBroker.Adapter, cache: myCache) {

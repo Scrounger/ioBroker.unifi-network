@@ -1,6 +1,6 @@
 export var WebSocketEventMessages;
 (function (WebSocketEventMessages) {
-    WebSocketEventMessages["client"] = "client:sync";
+    WebSocketEventMessages["client"] = "client";
     WebSocketEventMessages["device"] = "device:sync";
     WebSocketEventMessages["user"] = "user:";
     WebSocketEventMessages["events"] = "events";

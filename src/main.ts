@@ -598,17 +598,17 @@ class UnifiNetwork extends utils.Adapter {
 							} else {
 								if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
 
-									if (this.cache.vpn[client.ip]) {
-										this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+									if (!this.cache.vpn[client.ip]) {
+										this.log.debug(`${logPrefix} Discovered vpn client '${client.name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
 									}
 
 									const idChannel = client.network_id;
 									this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
 
 									let dataToProcess = client;
-									if (this.cache.clients[client.ip]) {
+									if (this.cache.vpn[client.ip]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], this, tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as NetworkClient;
 									}
 
 									const preparedIp = client.ip.replaceAll('.', '_');
@@ -617,6 +617,8 @@ class UnifiNetwork extends utils.Adapter {
 										this.cache.vpn[client.ip] = client;
 										this.cache.vpn[client.ip].name = name;
 										this.cache.vpn[client.ip].iobTimestamp = moment().unix();
+
+										this.log.warn(JSON.stringify(this.cache.vpn[client.ip]));
 
 										dataToProcess.ip = client.ip;
 										dataToProcess.name = name
@@ -701,7 +703,7 @@ class UnifiNetwork extends utils.Adapter {
 				const mac = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.mac`);
 				const ip = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.ip`);
 
-				const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val as string] : this.cache.clients[ip.val as string];
+				const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val as string] : this.cache.vpn[ip.val as string];
 
 				const t = moment(isOnline.lc);
 				const before = moment(lastSeen.val as number * 1000);
@@ -714,7 +716,7 @@ class UnifiNetwork extends utils.Adapter {
 
 					//ToDo: Debug log message inkl. name, mac, ip
 					if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
-						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} ${client?.name} (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
+						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
 					}
 				}
 			}
@@ -1217,8 +1219,12 @@ class UnifiNetwork extends utils.Adapter {
 
 			if (event.meta.message === WebSocketEventMessages.device) {
 				await this.updateDevices(event.data as NetworkDevice[]);
-			} else if (event.meta.message === WebSocketEventMessages.client) {
-				await this.updateClients(event.data as NetworkClient[]);
+			} else if (event.meta.message.startsWith(WebSocketEventMessages.client)) {
+				if (event.meta.message.endsWith(':sync')) {
+					await this.updateClients(event.data as NetworkClient[]);
+				} else {
+					await this.onNetworkClientEvent(event as NetworkEventClient);
+				}
 			} else if (event.meta.message === WebSocketEventMessages.events) {
 				await this.onNetworkEvent(event as NetworkEvent);
 			} else if (event.meta.message.startsWith(WebSocketEventMessages.user)) {
@@ -1270,9 +1276,6 @@ class UnifiNetwork extends utils.Adapter {
 
 						eventHandler.client.block(event.meta, myEvent, this, this.cache);
 
-
-
-
 					} else if (WebSocketEvent.device.Restarted.includes(myEvent.key)) {
 						// Device connect or disconnect
 
@@ -1296,17 +1299,40 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkUserEvent(event: NetworkEvent) {
+	async onNetworkClientEvent(events: NetworkEventClient) {
 		const logPrefix = '[onNetworkUserEvent]:';
 
 		try {
-			if (event && event.data) {
-				for (const myEvent of event.data) {
+			if (events.meta.message.endsWith(':disconnected')) {
+				for (const event of events.data) {
+					if (event.type === 'VPN') {
+						// VPN disconnect
+						this.log.debug(`${logPrefix} event 'vpn disconnected' (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+
+						eventHandler.client.vpnDisconnect(events.meta, event, this, this.cache);
+					} else {
+						this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+					}
+				}
+			} else {
+				this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async onNetworkUserEvent(events: NetworkEvent) {
+		const logPrefix = '[onNetworkUserEvent]:';
+
+		try {
+			if (events && events.data) {
+				for (const event of events.data) {
 					// user removed client from unifi-controller
 
-					this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+					this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
 
-					eventHandler.user.clientRemoved(event.meta, myEvent, this, this.cache);
+					eventHandler.user.clientRemoved(events.meta, event, this, this.cache);
 				}
 			}
 		} catch (error) {

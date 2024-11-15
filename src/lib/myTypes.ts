@@ -51,7 +51,7 @@ export interface myCommonChannelArray {
 }
 
 export enum WebSocketEventMessages {
-    client = 'client:sync',
+    client = 'client',
     device = 'device:sync',
     user = 'user:',
     events = 'events',
