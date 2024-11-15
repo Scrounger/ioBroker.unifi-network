@@ -11,18 +11,19 @@ import _ from 'lodash';
 
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
+import { apiCommands } from './lib/api/network-command.js';
 import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 import { NetworkClient } from './lib/api/network-types-client.js';
+import { NetworkWlanConfig } from './lib/api/network-types-wlan-config.js';
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache } from './lib/myTypes.js';
-import { apiCommands } from './lib/api/network-command.js';
-import { eventHandler } from './lib/eventHandler.js';
 
+import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
-import { NetworkWlanConfig } from './lib/api/network-types-wlan-config.js';
+import { base64 } from './lib/base64.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -602,7 +603,7 @@ class UnifiNetwork extends utils.Adapter {
 									}
 
 									const idChannel = client.network_id;
-									this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '');
+									this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
 
 									let dataToProcess = client;
 									if (this.cache.clients[client.ip]) {

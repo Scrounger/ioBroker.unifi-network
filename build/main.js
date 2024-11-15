@@ -15,6 +15,7 @@ import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
 import { apiCommands } from './lib/api/network-command.js';
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js';
+import { base64 } from './lib/base64.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -519,7 +520,7 @@ class UnifiNetwork extends utils.Adapter {
                                         this.log.debug(`${logPrefix} Discovered vpn '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                                     }
                                     const idChannel = client.network_id;
-                                    this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '');
+                                    this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
                                     let dataToProcess = client;
                                     if (this.cache.clients[client.ip]) {
                                         // filter out unchanged properties
