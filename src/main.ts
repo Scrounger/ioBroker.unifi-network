@@ -266,7 +266,7 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (await this.login()) {
 				await this.updateRealTimeApiData();
-				await this.updateIsOnlineState();
+				await this.updateIsOnlineState(true);
 
 				await this.updateApiData();
 			}
@@ -670,26 +670,26 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateIsOnlineState() {
+	async updateIsOnlineState(isAdapterStart: boolean = false) {
 		const logPrefix = '[updateIsOnlineState]:';
 
 		try {
 			//ToDo: vpn and perhaps device to include
 			const clients = await this.getStatesAsync('clients.*.last_seen');
-			await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout);
+			await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout, 'clients', isAdapterStart);
 
 			const guests = await this.getStatesAsync('guests.*.last_seen');
-			await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout);
+			await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout, 'guests', isAdapterStart);
 
 			const vpn = await this.getStatesAsync('vpn.*.last_seen');
-			await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout);
+			await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout, 'vpn', isAdapterStart);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
 
-	async _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number) {
+	async _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number, typeOfClient: string, isAdapterStart: boolean = false) {
 		const logPrefix = '[_updateIsOnlineState]:';
 
 		try {
@@ -697,6 +697,9 @@ class UnifiNetwork extends utils.Adapter {
 
 				const lastSeen = clients[id];
 				const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
+				const indentifier = typeOfClient !== 'vpn' ? await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.mac`) : await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.ip`);
+
+				const client = this.cache.clients[indentifier.val as string];
 
 				const t = moment(isOnline.lc);
 				const before = moment(lastSeen.val as number * 1000);
@@ -704,9 +707,13 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (!t.isBetween(before, now) || t.diff(before, 'seconds') <= 2) {
 					// isOnline not changed between now an last reported last_seen val
-					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, now.diff(before, 'seconds') <= offlineTimeout, true);
+					const diff = now.diff(before, 'seconds');
+					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
 
 					//ToDo: Debug log message inkl. name, mac, ip
+					if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
+						this.log.info(`${logPrefix} fallback detection - client ${client?.name} (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
+					}
 				}
 			}
 		} catch (error) {
