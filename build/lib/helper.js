@@ -83,18 +83,26 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
                 try {
                     if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
                         if (_.isArray(value)) {
+                            const tmp = [];
+                            let empty = true;
                             for (var i = 0; i <= value.length - 1; i++) {
                                 const res = deepDiffBetweenObjects(value[i], (base[key] && base[key][i]) ? base[key][i] : {}, adapter, allowedKeys, fullKey);
-                                if (!_.isEmpty(res)) {
-                                    if (!_.has(result, key))
-                                        result[key] = [];
-                                    result[key].push(res);
+                                if (!_.isEmpty(res) || res === 0 || res === false) {
+                                    // if (!_.has(result, key)) result[key] = [];
+                                    tmp.push(res);
+                                    empty = false;
                                 }
+                                else {
+                                    tmp.push(null);
+                                }
+                            }
+                            if (!empty) {
+                                result[key] = tmp;
                             }
                         }
                         else if (_.isObject(value) && _.isObject(base[key])) {
                             const res = changes(value, base[key]);
-                            if (!_.isEmpty(res)) {
+                            if (!_.isEmpty(res) || res === 0 || res === false) {
                                 result[key] = res;
                             }
                         }

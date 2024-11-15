@@ -386,9 +386,9 @@ class UnifiNetwork extends utils.Adapter {
                                 // filter out unchanged properties
                                 dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys());
                             }
-                            this.cache.devices[device.mac] = device;
-                            this.cache.devices[device.mac].iobTimestamp = moment().unix();
                             if (!_.isEmpty(dataToProcess)) {
+                                this.cache.devices[device.mac] = device;
+                                this.cache.devices[device.mac].iobTimestamp = moment().unix();
                                 dataToProcess.mac = device.mac;
                                 if (!isAdapterStart)
                                     this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
@@ -459,10 +459,10 @@ class UnifiNetwork extends utils.Adapter {
                                         // filter out unchanged properties
                                         dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
                                     }
-                                    this.cache.clients[client.mac] = client;
-                                    this.cache.clients[client.mac].name = name;
-                                    this.cache.clients[client.mac].iobTimestamp = moment().unix();
                                     if (Object.keys(dataToProcess).length > 0) {
+                                        this.cache.clients[client.mac] = client;
+                                        this.cache.clients[client.mac].name = name;
+                                        this.cache.clients[client.mac].iobTimestamp = moment().unix();
                                         dataToProcess.mac = client.mac;
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
@@ -491,10 +491,10 @@ class UnifiNetwork extends utils.Adapter {
                                         // filter out unchanged properties
                                         dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
                                     }
-                                    this.cache.clients[client.mac] = client;
-                                    this.cache.clients[client.mac].name = name;
-                                    this.cache.clients[client.mac].iobTimestamp = moment().unix();
                                     if (Object.keys(dataToProcess).length > 0) {
+                                        this.cache.clients[client.mac] = client;
+                                        this.cache.clients[client.mac].name = name;
+                                        this.cache.clients[client.mac].iobTimestamp = moment().unix();
                                         dataToProcess.mac = client.mac;
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
@@ -525,11 +525,11 @@ class UnifiNetwork extends utils.Adapter {
                                         // filter out unchanged properties
                                         dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.ip], this, tree.client.getKeys());
                                     }
-                                    this.cache.vpn[client.ip] = client;
-                                    this.cache.vpn[client.ip].name = name;
-                                    this.cache.clients[client.ip].iobTimestamp = moment().unix();
                                     const preparedIp = client.ip.replaceAll('.', '_');
                                     if (Object.keys(dataToProcess).length > 0) {
+                                        this.cache.vpn[client.ip] = client;
+                                        this.cache.vpn[client.ip].name = name;
+                                        this.cache.clients[client.ip].iobTimestamp = moment().unix();
                                         dataToProcess.ip = client.ip;
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
