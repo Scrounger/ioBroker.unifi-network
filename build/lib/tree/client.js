@@ -105,9 +105,8 @@ export var client;
                 id: 'uplink_port',
                 iobType: 'number',
                 name: 'port of the connected switch',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val, adapter) {
-                    return val;
+                conditionToCreateState(objValues, adapter) {
+                    return objValues.is_wired;
                 }
             },
             mac: {
@@ -156,10 +155,9 @@ export var client;
                 id: 'reconnect',
                 iobType: 'boolean',
                 name: 'reconnect client',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val, adapter) {
+                conditionToCreateState(objValues, adapter) {
                     // only create state if it's a wireless client
-                    return val === false;
+                    return !objValues.is_wired;
                 },
                 read: false,
                 write: true,
@@ -215,9 +213,8 @@ export var client;
                 iobType: 'number',
                 name: 'wired speed',
                 unit: 'mbps',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val, adapter) {
-                    return val;
+                conditionToCreateState(objValues, adapter) {
+                    return objValues.is_wired;
                 },
             },
             wifi_experience_average: {
@@ -225,9 +222,8 @@ export var client;
                 iobType: 'number',
                 name: 'experience',
                 unit: '%',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val, adapter) {
-                    return !val;
+                conditionToCreateState(objValues, adapter) {
+                    return !objValues.is_wired;
                 },
             },
             wifi_tx_retries_percentage: {
@@ -235,9 +231,8 @@ export var client;
                 iobType: 'number',
                 name: 'TX Retries',
                 unit: '%',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val, adapter) {
-                    return !val;
+                conditionToCreateState(objValues, adapter) {
+                    return !objValues.is_wired;
                 },
             },
             uptime: {

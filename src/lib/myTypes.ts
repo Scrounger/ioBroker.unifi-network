@@ -25,8 +25,7 @@ export interface myCommonState {
     valFromProperty?: string                                        // Take value from other property in the corresponding tree
     statesFromProperty?: string                                     // ToDo: perhaps can be removed
 
-    conditionProperty?: string                                      // Property to use in condition
-    conditionToCreateState?(val: ioBroker.StateValue, adapter: ioBroker.Adapter): boolean     // condition to create state
+    conditionToCreateState?(objValues: any, adapter: ioBroker.Adapter): boolean     // condition to create state
 
     subscribeMe?: true                                              // subscribe
 }

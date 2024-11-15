@@ -50,7 +50,7 @@ export interface NetworkClient {
     is_allowed_in_visual_programming?: boolean;
     is_guest: boolean;
     is_mlo: boolean;
-    is_wired: boolean;
+    is_wired?: boolean;
     last_connection_network_id?: string;
     last_connection_network_name?: string;
     last_ip?: string;
@@ -115,6 +115,8 @@ export interface NetworkClient {
     usergroup_id: string;
     virtual_network_override_enabled: boolean;
     virtual_network_override_id: string;
+    vpn_interface?: string;
+    vpn_type?: string;
     vlan: number;
     wifi_experience_average?: number;
     wifi_experience_score?: number;

@@ -25,7 +25,7 @@ export namespace client {
                 iobType: 'string',
                 name: 'channel name',
                 valFromProperty: 'radio_name',
-                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
@@ -43,7 +43,7 @@ export namespace client {
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'fingerprint',
-                readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     if (val && adapter.config.clientImageDownload) {
                         const client = deviceOrClient as NetworkClient;
                         if (client.unifi_device_info && client.unifi_device_info.icon_filename) {
@@ -81,7 +81,7 @@ export namespace client {
                 iobType: 'boolean',
                 name: 'Is client online',
                 valFromProperty: 'last_seen',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     if (deviceOrClient.mac) {
                         return moment().diff(val * 1000, 'seconds') <= adapter.config.clientOfflineTimeout;
                     } else {
@@ -107,9 +107,8 @@ export namespace client {
                 id: 'uplink_port',
                 iobType: 'number',
                 name: 'port of the connected switch',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
-                    return val;
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    return objValues.is_wired;
                 }
             },
             mac: {
@@ -134,7 +133,7 @@ export namespace client {
                 iobType: 'string',
                 name: 'radio name',
                 valFromProperty: 'radio_proto',
-                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     if (val) {
                         if (val === 'ax') return 'WiFi 6'
                         if (val === 'ac') return 'WiFi 5'
@@ -152,10 +151,9 @@ export namespace client {
                 id: 'reconnect',
                 iobType: 'boolean',
                 name: 'reconnect client',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only create state if it's a wireless client
-                    return val === false;
+                    return !objValues.is_wired;
                 },
                 read: false,
                 write: true,
@@ -173,7 +171,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -181,7 +179,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'Rx Rate',
                 unit: 'mbps',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     return Math.round(val / 1000);
                 }
             },
@@ -194,7 +192,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -202,7 +200,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'Tx Rate',
                 unit: 'mbps',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient) {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     return Math.round(val / 1000);
                 }
             },
@@ -211,9 +209,8 @@ export namespace client {
                 iobType: 'number',
                 name: 'wired speed',
                 unit: 'mbps',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
-                    return val;
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    return objValues.is_wired;
                 },
             },
             wifi_experience_average: {
@@ -221,9 +218,8 @@ export namespace client {
                 iobType: 'number',
                 name: 'experience',
                 unit: '%',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
-                    return !val;
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    return !objValues.is_wired;
                 },
             },
             wifi_tx_retries_percentage: {
@@ -231,9 +227,8 @@ export namespace client {
                 iobType: 'number',
                 name: 'TX Retries',
                 unit: '%',
-                conditionProperty: 'is_wired',
-                conditionToCreateState(val: boolean, adapter: ioBroker.Adapter): boolean {
-                    return !val;
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    return !objValues.is_wired;
                 },
             },
             uptime: {

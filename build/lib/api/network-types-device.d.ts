@@ -292,7 +292,7 @@ interface RadioTable {
     has_fccdfs?: boolean;
     has_ht160?: boolean;
 }
-interface RadioTableStat {
+export interface RadioTableStat {
     ast_be_xmit: any;
     ast_cst: any;
     ast_txto: any;
@@ -343,7 +343,7 @@ interface PortOverride {
     voice_networkconf_id?: string;
     excluded_networkconf_ids?: string[];
 }
-interface PortTable {
+export interface PortTable {
     aggregated_by: boolean;
     anomalies: number;
     autoneg: boolean;
@@ -490,7 +490,7 @@ interface Uplink {
     uplink_remote_port: number;
     uplink_source: string;
 }
-interface VapTable {
+export interface VapTable {
     anomalies_bar_chart: AnomaliesBarChart;
     anomalies_bar_chart_now: AnomaliesBarChartNow;
     ap_mac: string;
@@ -815,7 +815,7 @@ interface RulesetInterfaces {
     eth7: string;
     eth8: string;
 }
-interface Temperature {
+export interface Temperature {
     name: string;
     type: string;
     value: number;

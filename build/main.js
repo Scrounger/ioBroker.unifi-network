@@ -872,7 +872,7 @@ class UnifiNetwork extends utils.Adapter {
                         const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
                         const cond1 = (Object.prototype.hasOwnProperty.call(objValues, valKey) && objValues[valKey] !== undefined) || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty'));
                         const cond2 = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array');
-                        const cond3 = (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty') && treeDefinition[key].conditionToCreateState(objOrgValues[treeDefinition[key].conditionProperty], this) === true) || !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionProperty');
+                        const cond3 = (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionToCreateState') && treeDefinition[key].conditionToCreateState(objOrgValues, this) === true) || !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionToCreateState');
                         // if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
                         // 	this.log.warn(`cond 1: ${cond1}`);
                         // 	this.log.warn(`cond 2: ${cond2}`);
@@ -968,7 +968,7 @@ class UnifiNetwork extends utils.Adapter {
                                         if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
                                             const idChannelArray = `${idChannel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelIdFromProperty') ? treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this) : `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
                                             await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
-                                            await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], isAdapterStart);
+                                            await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], true);
                                         }
                                     }
                                 }
