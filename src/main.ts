@@ -1007,11 +1007,11 @@ class UnifiNetwork extends utils.Adapter {
 
 					try {
 						// if we have an own defined state which takes val from other property
-						const valKey = Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key
+						const valKey = Object.hasOwn(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key
 
-						const cond1 = (Object.prototype.hasOwnProperty.call(objValues, valKey) && objValues[valKey] !== undefined) || (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'valFromProperty'));
-						const cond2 = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'iobType') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array');
-						const cond3 = (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionToCreateState') && treeDefinition[key].conditionToCreateState(objOrgValues, this) === true) || !Object.prototype.hasOwnProperty.call(treeDefinition[key], 'conditionToCreateState');
+						const cond1 = (Object.hasOwn(objValues, valKey) && objValues[valKey] !== undefined) || (Object.hasOwn(treeDefinition[key], 'id') && !Object.hasOwn(treeDefinition[key], 'valFromProperty'));
+						const cond2 = Object.hasOwn(treeDefinition[key], 'iobType') && !Object.hasOwn(treeDefinition[key], 'object') && !Object.hasOwn(treeDefinition[key], 'array');
+						const cond3 = (Object.hasOwn(treeDefinition[key], 'conditionToCreateState') && treeDefinition[key].conditionToCreateState(objOrgValues, this) === true) || !Object.hasOwn(treeDefinition[key], 'conditionToCreateState');
 
 						// if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
 						// 	this.log.warn(`cond 1: ${cond1}`);
@@ -1024,7 +1024,7 @@ class UnifiNetwork extends utils.Adapter {
 							// if we have a 'iobType' property, then it's a state
 							let stateId = key;
 
-							if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
+							if (Object.hasOwn(treeDefinition[key], 'id')) {
 								// if we have a custom state, use defined id
 								stateId = treeDefinition[key].id;
 							}
@@ -1061,7 +1061,7 @@ class UnifiNetwork extends utils.Adapter {
 								}
 							}
 
-							if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.prototype.hasOwnProperty.call(treeDefinition[key], 'subscribeMe'))) {
+							if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.hasOwn(treeDefinition[key], 'subscribeMe'))) {
 								// state is writeable or has subscribeMe Property -> subscribe it
 								this.log.silly(`${logPrefix} ${objOrg.name} - subscribing state '${logMsgState}'`);
 								await this.subscribeStatesAsync(`${channel}.${stateId}`);
@@ -1069,7 +1069,7 @@ class UnifiNetwork extends utils.Adapter {
 								this.subscribedList.push(`${channel}.${stateId}`);
 							}
 
-							if (objValues && (Object.prototype.hasOwnProperty.call(objValues, key) || (Object.prototype.hasOwnProperty.call(objValues, treeDefinition[key].valFromProperty)))) {
+							if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
 								const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
 
 								let changedObj: any = undefined
@@ -1081,11 +1081,11 @@ class UnifiNetwork extends utils.Adapter {
 									changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
 								}
 
-								if (!isAdapterStart && changedObj && Object.prototype.hasOwnProperty.call(changedObj, 'notChanged') && !changedObj.notChanged) {
+								if (!isAdapterStart && changedObj && Object.hasOwn(changedObj, 'notChanged') && !changedObj.notChanged) {
 									this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
 								}
 							} else {
-								if (!Object.prototype.hasOwnProperty.call(treeDefinition[key], 'id')) {
+								if (!Object.hasOwn(treeDefinition[key], 'id')) {
 									// only report it if it's not a custom defined state
 									this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
 								}
@@ -1103,31 +1103,31 @@ class UnifiNetwork extends utils.Adapter {
 							// if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
 
 							// it's a channel from type object
-							if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'object') && Object.prototype.hasOwnProperty.call(objValues, key)) {
-								const idChannel = `${channel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
+							if (Object.hasOwn(treeDefinition[key], 'object') && Object.hasOwn(objValues, key)) {
+								const idChannel = `${channel}.${Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
 
-								await this.createOrUpdateChannel(`${idChannel}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+								await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
 
 								await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key], isAdapterStart);
 							}
 
 							// it's a channel from type array
-							if (Object.prototype.hasOwnProperty.call(treeDefinition[key], 'array') && Object.prototype.hasOwnProperty.call(objValues, key)) {
+							if (Object.hasOwn(treeDefinition[key], 'array') && Object.hasOwn(objValues, key)) {
 
 								if (objValues[key] !== null && objValues[key].length > 0) {
-									const idChannel = `${channel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
+									const idChannel = `${channel}.${Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
 
-									await this.createOrUpdateChannel(`${idChannel}`, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+									await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
 
-									const arrayNumberAdd = Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0
+									const arrayNumberAdd = Object.hasOwn(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0
 
 									for (let i = 0; i <= objValues[key].length - 1; i++) {
 										let nr = i + arrayNumberAdd;
 
 										if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
-											const idChannelArray = `${idChannel}.${Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelIdFromProperty') ? treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this) : `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
+											const idChannelArray = `${idChannel}.${Object.hasOwn(treeDefinition[key], 'arrayChannelIdFromProperty') ? treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this) : `${treeDefinition[key].arrayChannelIdPrefix || ''}${myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0)}`}`;
 
-											await this.createOrUpdateChannel(idChannelArray, Object.prototype.hasOwnProperty.call(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true)
+											await this.createOrUpdateChannel(idChannelArray, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true)
 											await this.createGenericState(idChannelArray, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], true);
 										}
 									}
@@ -1186,7 +1186,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			if (treeDefinition[id].states) {
 				common.states = treeDefinition[id].states;
-			} else if (Object.prototype.hasOwnProperty.call(treeDefinition[id], 'statesFromProperty')) {
+			} else if (Object.hasOwn(treeDefinition[id], 'statesFromProperty')) {
 				const statesFromProp = myHelper.getAllowedCommonStates(treeDefinition[id].statesFromProperty, objOrg);
 
 				common.states = statesFromProp;
