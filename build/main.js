@@ -582,9 +582,9 @@ class UnifiNetwork extends utils.Adapter {
         try {
             //ToDo: vpn and perhaps device to include
             const clients = await this.getStatesAsync('clients.*.last_seen');
-            await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout, 'clients', isAdapterStart);
+            await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout, 'client', isAdapterStart);
             const guests = await this.getStatesAsync('guests.*.last_seen');
-            await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout, 'guests', isAdapterStart);
+            await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout, 'guest', isAdapterStart);
             const vpn = await this.getStatesAsync('vpn.*.last_seen');
             await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout, 'vpn', isAdapterStart);
         }
@@ -598,8 +598,9 @@ class UnifiNetwork extends utils.Adapter {
             for (const id in clients) {
                 const lastSeen = clients[id];
                 const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
-                const indentifier = typeOfClient !== 'vpn' ? await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.mac`) : await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.ip`);
-                const client = this.cache.clients[indentifier.val];
+                const mac = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.mac`);
+                const ip = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.ip`);
+                const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val] : this.cache.clients[ip.val];
                 const t = moment(isOnline.lc);
                 const before = moment(lastSeen.val * 1000);
                 const now = moment();
@@ -609,7 +610,7 @@ class UnifiNetwork extends utils.Adapter {
                     await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
                     //ToDo: Debug log message inkl. name, mac, ip
                     if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
-                        this.log.info(`${logPrefix} fallback detection - client ${client?.name} (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
+                        this.log.info(`${logPrefix} fallback detection - ${typeOfClient} ${client?.name} (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
                     }
                 }
             }
