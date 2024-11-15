@@ -43,6 +43,10 @@ export namespace client {
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'fingerprint',
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wired and wireless clients
+                    return objValues.type === undefined || objValues.type !== "VPN";
+                },
                 readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     if (val && adapter.config.clientImageDownload) {
                         const client = deviceOrClient as NetworkClient;
@@ -62,7 +66,11 @@ export namespace client {
             image: {
                 id: 'image',
                 iobType: 'string',
-                name: 'base64 image'
+                name: 'base64 image',
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wired and wireless clients
+                    return objValues.type === undefined || objValues.type !== "VPN";
+                }
             },
             // is_guest: {
             //     iobType: 'boolean',
@@ -96,19 +104,28 @@ export namespace client {
             last_uplink_mac: {
                 id: 'uplink_mac',
                 iobType: 'string',
-                name: 'mac address of the connected access point or switch'
+                name: 'mac address of the connected access point or switch',
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wired and wireless clients
+                    return objValues.type === undefined || objValues.type !== "VPN";
+                }
             },
             last_uplink_name: {
                 id: 'uplink_name',
                 iobType: 'string',
-                name: 'name of the connected access point or switch'
+                name: 'name of the connected access point or switch',
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wired and wireless clients
+                    return objValues.type === undefined || objValues.type !== "VPN";
+                }
             },
             sw_port: {
                 id: 'uplink_port',
                 iobType: 'number',
                 name: 'port of the connected switch',
                 conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
-                    return objValues.is_wired;
+                    // only wired clients
+                    return (objValues.is_wired && objValues.type === undefined) || objValues.type === "WIRED";
                 }
             },
             mac: {
@@ -152,12 +169,20 @@ export namespace client {
                 iobType: 'boolean',
                 name: 'reconnect client',
                 conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
-                    // only create state if it's a wireless client
-                    return !objValues.is_wired;
+                    // only wireless clients
+                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
                 },
                 read: false,
                 write: true,
                 role: 'button'
+            },
+            remote_ip: {
+                iobType: 'string',
+                name: 'remote ip',
+                conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wireless clients
+                    return objValues.type === 'VPN';
+                },
             },
             // remove: {
             //     id: 'remove',
@@ -210,7 +235,8 @@ export namespace client {
                 name: 'wired speed',
                 unit: 'mbps',
                 conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
-                    return objValues.is_wired;
+                    // only wired clients
+                    return (objValues.is_wired && objValues.type === undefined) || objValues.type === "WIRED";
                 },
             },
             wifi_experience_average: {
@@ -219,7 +245,8 @@ export namespace client {
                 name: 'experience',
                 unit: '%',
                 conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
-                    return !objValues.is_wired;
+                    // only wireless clients
+                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS'
                 },
             },
             wifi_tx_retries_percentage: {
@@ -228,7 +255,8 @@ export namespace client {
                 name: 'TX Retries',
                 unit: '%',
                 conditionToCreateState(objValues: NetworkClient, adapter: ioBroker.Adapter): boolean {
-                    return !objValues.is_wired;
+                    // only wireless clients
+                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
                 },
             },
             uptime: {

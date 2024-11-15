@@ -77,6 +77,7 @@ export interface NetworkClient {
     radio_name?: string;
     radio_proto?: string;
     rate_imbalance?: number;
+    remote_ip?: string;
     rssi?: number;
     rx_bytes?: number;
     "rx_bytes-r"?: number;
