@@ -448,7 +448,28 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getClientsActive]`
 
         try {
-            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.activeClients));
+            const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.clientsActive));
+
+            if (res && res.data) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
+     *  V2 API - List of all active (connected) clients
+     * @returns 
+     */
+    public async getClientsActive_V2(includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`
+
+        try {
+            const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`
+            const res = await this.retrievData(url);
 
             if (res && res.data) {
                 return res.data;
@@ -469,6 +490,27 @@ export class NetworkApi extends EventEmitter {
 
         try {
             const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.clients));
+
+            if (res && res.data) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
+     *  V2 API - List of all disconnected clients
+     * @returns 
+     */
+    public async getClientsHistory_V2(withinHour: number = 0, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getClientsHistory_V2]`
+
+        try {
+            const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsHistory)}?includeUnifiDevices=${includeUnifiDevices}&withinHours=${withinHour}`
+            const res = await this.retrievData(url);
 
             if (res && res.data) {
                 return res.data;
@@ -522,7 +564,7 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = `/api/s/${this.site}/stat/device`;
                 break;
 
-            case ApiEndpoints.activeClients:
+            case ApiEndpoints.clientsActive:
                 endpointSuffix = `/api/s/${this.site}/stat/sta`;
                 break;
 
@@ -532,6 +574,43 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints.wlanConfig:
                 endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
+                break;
+
+            default:
+                break;
+        }
+
+        if (!endpointSuffix) {
+
+            return '';
+        }
+
+        return 'https://' + this.host + ':' + this.port + endpointPrefix + endpointSuffix;
+    }
+
+    public getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string {
+        //https://ubntwiki.com/products/software/unifi-controller/api
+
+        let endpointSuffix: string;
+        let endpointPrefix: string = this.port === 443 ? '/proxy/network' : '';
+
+        switch (endpoint) {
+            case ApiEndpoints_V2.devices:
+                endpointSuffix = `/v2/api/site/${this.site}/device?includeTrafficUsage=false`;
+                break;
+
+            case ApiEndpoints_V2.clientsActive:
+                endpointSuffix = `/v2/api/site/${this.site}/clients/active`;
+                break;
+
+            case ApiEndpoints_V2.clientsHistory:
+                endpointSuffix = `v2/api/site/${this.site}/clients/history`;
+                // onlyNonBlocked=false
+                // onlyBlocked=true
+                break;
+
+            case ApiEndpoints_V2.wlanConfig:
+                endpointSuffix = `/v2/api/site/${this.site}/wlan/enriched-configuration`;
                 break;
 
             default:
@@ -638,6 +717,13 @@ export enum ApiEndpoints {
     self = 'self',
     devices = 'devices',
     clients = 'clients',
-    activeClients = "activeClients",
+    clientsActive = "clientsActive",
+    wlanConfig = 'wlanConfig',
+}
+
+export enum ApiEndpoints_V2 {
+    devices = 'devices',
+    clientsActive = "clientsActive",
+    clientsHistory = "clientsHistory",
     wlanConfig = 'wlanConfig'
 }
