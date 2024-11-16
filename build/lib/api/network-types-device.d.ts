@@ -1,3 +1,6 @@
+export interface NetworkDevice_V2 {
+    network_devices: NetworkDevice[];
+}
 export interface NetworkDevice {
     _id: string;
     _uptime: number;

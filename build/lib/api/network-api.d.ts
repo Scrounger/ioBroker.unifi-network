@@ -1,7 +1,7 @@
 import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
 import { NetworkLogging } from './network-logging.js';
-import { NetworkDevice } from './network-types-device.js';
+import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig } from './network-types-wlan-config.js';
 export declare class NetworkApi extends EventEmitter {
@@ -63,6 +63,12 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getDevices(mac?: string | undefined): Promise<NetworkDevice[] | undefined>;
+    /**
+     * API V2 - Detailed list of all devices on site
+     * @param mac optional: mac address to receive only the data for this device
+     * @returns
+     */
+    getDevices_V2(separateUnmanaged?: boolean, includeTrafficUsage?: boolean): Promise<NetworkDevice_V2 | undefined>;
     /**
      * List of all active (connected) clients
      * @returns

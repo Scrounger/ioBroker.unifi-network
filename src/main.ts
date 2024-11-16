@@ -391,7 +391,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateRealTimeApiData]:';
 
 		try {
-			await this.updateDevices(null, true);
+			await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
 
 			await this.updateClients(null, true);
 			await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
@@ -429,7 +429,6 @@ class UnifiNetwork extends utils.Adapter {
 					if (isAdapterStart) {
 						await this.createOrUpdateChannel(idChannel, 'unifi devices', undefined, true);
 						await this.updateDevicesImages();
-						data = await this.ufn.getDevices();
 					}
 
 					if (data) {

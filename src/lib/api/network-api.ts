@@ -7,7 +7,7 @@ import WebSocket from 'ws';
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-settings.js';
 import { NetworkLogging } from './network-logging.js';
 import { NetworkEvent } from './network-types.js'
-import { NetworkDevice } from './network-types-device.js'
+import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig } from './network-types-wlan-config.js';
 
@@ -441,6 +441,30 @@ export class NetworkApi extends EventEmitter {
     }
 
     /**
+     * API V2 - Detailed list of all devices on site
+     * @param mac optional: mac address to receive only the data for this device
+     * @returns 
+     */
+    public async getDevices_V2(separateUnmanaged: boolean = false, includeTrafficUsage: boolean = false): Promise<NetworkDevice_V2 | undefined> {
+        const logPrefix = `[${this.logPrefix}.getDevices_V2]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.devices)}?separateUnmanaged=${separateUnmanaged}&includeTrafficUsage=${includeTrafficUsage}`);
+
+            this.log.warn(JSON.stringify(res));
+
+            if (res) {
+                return res;
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
      * List of all active (connected) clients
      * @returns 
      */
@@ -596,7 +620,7 @@ export class NetworkApi extends EventEmitter {
 
         switch (endpoint) {
             case ApiEndpoints_V2.devices:
-                endpointSuffix = `/v2/api/site/${this.site}/device?includeTrafficUsage=false`;
+                endpointSuffix = `/v2/api/site/${this.site}/device`;
                 break;
 
             case ApiEndpoints_V2.clientsActive:
