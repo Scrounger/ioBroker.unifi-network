@@ -32,6 +32,10 @@ export var client;
                 iobType: 'number',
                 name: 'first seen'
             },
+            hostname: {
+                iobType: 'string',
+                name: 'hostname'
+            },
             imageUrl: {
                 iobType: 'string',
                 name: 'imageUrl',
@@ -130,9 +134,18 @@ export var client;
                 iobType: 'string',
                 name: 'mac address'
             },
+            model_name: {
+                id: 'model',
+                iobType: 'string',
+                name: 'model name'
+            },
             name: {
                 iobType: 'string',
                 name: 'device name'
+            },
+            network_id: {
+                iobType: 'string',
+                name: 'network id'
             },
             network_name: {
                 iobType: 'string',
@@ -232,6 +245,20 @@ export var client;
                 readVal(val, adapter, cache, deviceOrClient) {
                     return Math.round(val / 1000);
                 }
+            },
+            type: {
+                iobType: 'string',
+                name: 'client type',
+                states: {
+                    "WIRED": 'Wired',
+                    "WIRELESS": 'WiFi',
+                    "VPN": 'VPN'
+                }
+            },
+            vlan: {
+                id: 'network_vlan',
+                iobType: 'number',
+                name: 'VLAN number'
             },
             wired_rate_mbps: {
                 id: 'speed',

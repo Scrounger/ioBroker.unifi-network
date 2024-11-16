@@ -471,8 +471,8 @@ export class NetworkApi extends EventEmitter {
             const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`
             const res = await this.retrievData(url);
 
-            if (res && res.data) {
-                return res.data;
+            if (res) {
+                return res;
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -512,8 +512,8 @@ export class NetworkApi extends EventEmitter {
             const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsHistory)}?includeUnifiDevices=${includeUnifiDevices}&withinHours=${withinHour}`
             const res = await this.retrievData(url);
 
-            if (res && res.data) {
-                return res.data;
+            if (res) {
+                return res;
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -604,7 +604,7 @@ export class NetworkApi extends EventEmitter {
                 break;
 
             case ApiEndpoints_V2.clientsHistory:
-                endpointSuffix = `v2/api/site/${this.site}/clients/history`;
+                endpointSuffix = `/v2/api/site/${this.site}/clients/history`;
                 // onlyNonBlocked=false
                 // onlyBlocked=true
                 break;

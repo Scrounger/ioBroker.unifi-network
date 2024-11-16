@@ -340,7 +340,8 @@ class UnifiNetwork extends utils.Adapter {
         try {
             await this.updateDevices(null, true);
             await this.updateClients(null, true);
-            await this.updatClientsOffline(await this.ufn.getClients(), true);
+            await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
+            // await this.updatClientsOffline(await this.ufn.getClients(), true);
             await this.updateWlanConfig(null, true);
             this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
@@ -426,19 +427,14 @@ class UnifiNetwork extends utils.Adapter {
                     if (this.config.vpnEnabled)
                         await this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
                     if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-                        data = await this.ufn.getClientsActive();
+                        data = await this.ufn.getClientsActive_V2();
                     }
                 }
                 if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
                     if (data) {
-                        if (isAdapterStart) {
-                            if (!isOfflineClients) {
-                                this.log.info(`${logPrefix} Discovered ${data.length} connected clients`);
-                            }
-                            else {
-                                this.log.info(`${logPrefix} Discovered ${data.length} disconnected clients`);
-                            }
-                        }
+                        let countClients = 0;
+                        let countGuests = 0;
+                        let countVpn = 0;
                         for (let client of data) {
                             if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
                                 // debounce real time data
@@ -452,6 +448,8 @@ class UnifiNetwork extends utils.Adapter {
                             const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
                             if (this.config.clientsEnabled && client.mac && !client.is_guest) {
                                 if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
+                                    if (isAdapterStart)
+                                        countClients++;
                                     if (!this.cache.clients[client.mac]) {
                                         this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                                     }
@@ -484,6 +482,8 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             else if (this.config.guestsEnabled && client.mac && client.is_guest) {
                                 if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
+                                    if (isAdapterStart)
+                                        countGuests++;
                                     if (!this.cache.clients[client.mac]) {
                                         this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
                                     }
@@ -516,6 +516,8 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             else {
                                 if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
+                                    if (isAdapterStart)
+                                        countVpn++;
                                     if (!this.cache.vpn[client.ip]) {
                                         this.log.debug(`${logPrefix} Discovered vpn client '${client.name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
                                     }
@@ -541,6 +543,9 @@ class UnifiNetwork extends utils.Adapter {
                                     }
                                 }
                             }
+                        }
+                        if (isAdapterStart) {
+                            this.log.info(`${logPrefix} Discovered ${data.length} ${!isOfflineClients ? 'connected' : 'disconnected'} clients (clients: ${countClients}, guests: ${countGuests}, vpn: ${countVpn})`);
                         }
                     }
                 }
@@ -612,7 +617,7 @@ class UnifiNetwork extends utils.Adapter {
                     await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
                     //ToDo: Debug log message inkl. name, mac, ip
                     if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
-                        this.log.info(`${logPrefix} fallback detection - ${typeOfClient} ${client?.name} (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
+                        this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
                     }
                 }
             }

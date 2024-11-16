@@ -69,10 +69,20 @@ export declare class NetworkApi extends EventEmitter {
      */
     getClientsActive(): Promise<NetworkClient[] | undefined>;
     /**
+     *  V2 API - List of all active (connected) clients
+     * @returns
+     */
+    getClientsActive_V2(includeTrafficUsage?: boolean, includeUnifiDevices?: boolean): Promise<NetworkClient[] | undefined>;
+    /**
      * List of all configured / known clients on the site
      * @returns
      */
     getClients(): Promise<NetworkClient[] | undefined>;
+    /**
+     *  V2 API - List of all disconnected clients
+     * @returns
+     */
+    getClientsHistory_V2(withinHour?: number, includeUnifiDevices?: boolean): Promise<NetworkClient[] | undefined>;
     /**
      * List all WLan configurations
      * @param wlan_id optional: wlan id to receive only the configuration for this wlan
@@ -80,6 +90,7 @@ export declare class NetworkApi extends EventEmitter {
      */
     getWlanConfig(wlan_id?: any): Promise<NetworkWlanConfig[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
+    getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;
 }
 export declare enum ApiEndpoints {
@@ -87,6 +98,12 @@ export declare enum ApiEndpoints {
     self = "self",
     devices = "devices",
     clients = "clients",
-    activeClients = "activeClients",
+    clientsActive = "clientsActive",
+    wlanConfig = "wlanConfig"
+}
+export declare enum ApiEndpoints_V2 {
+    devices = "devices",
+    clientsActive = "clientsActive",
+    clientsHistory = "clientsHistory",
     wlanConfig = "wlanConfig"
 }

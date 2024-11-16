@@ -63,6 +63,7 @@ export interface NetworkClient {
     local_dns_record_enabled: boolean
     mac: string
     mimo?: string
+    model_name?: string
     name?: string
     network?: string
     network_id: string                                          // API + WS
