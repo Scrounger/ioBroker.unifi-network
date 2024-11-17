@@ -40,9 +40,10 @@ class UnifiNetwork extends utils.Adapter {
 
 	cache: myCache = {
 		devices: {},
+		deviceModels: [],
 		clients: {},
 		vpn: {},
-		wlan: {}
+		wlan: {},
 	}
 
 	subscribedList: string[] = [];
@@ -431,7 +432,7 @@ class UnifiNetwork extends utils.Adapter {
 						await this.updateDevicesImages();
 					}
 
-					if (data) {
+					if (data && data !== null) {
 						if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} devices`);
 
 						for (let device of data) {
@@ -447,6 +448,9 @@ class UnifiNetwork extends utils.Adapter {
 
 							if (!this.cache.devices[device.mac]) {
 								this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+
+								// id is not include in V2 API, first in ws data
+								delete device.vap_table;
 							}
 
 							let dataToProcess = device;
@@ -495,12 +499,12 @@ class UnifiNetwork extends utils.Adapter {
 					if (this.config.vpnEnabled) await this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
 
 					if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-						data = await this.ufn.getClientsActive_V2();
+						data = await this.ufn.getClientsActive_V2() as NetworkClient[];
 					}
 				}
 
 				if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-					if (data) {
+					if (data && data !== null) {
 						let countClients = 0;
 						let countGuests = 0;
 						let countVpn = 0;
@@ -741,7 +745,7 @@ class UnifiNetwork extends utils.Adapter {
 						data = (await this.ufn.getWlanConfig_V2()) as NetworkWlanConfig_V2[];
 					}
 
-					if (data) {
+					if (data && data !== null) {
 						if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} wlan's`);
 
 						for (let wlan of data) {
