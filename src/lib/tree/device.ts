@@ -201,6 +201,10 @@ export namespace device {
                             return parseFloat(val);
                         }
                     },
+                    port_idx: {
+                        iobType: 'number',
+                        name: 'Port number'
+                    },
                     rx_bytes: {
                         iobType: 'number',
                         name: 'RX Bytes',

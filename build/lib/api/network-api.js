@@ -325,7 +325,6 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getDevices_V2]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.devices)}?separateUnmanaged=${separateUnmanaged}&includeTrafficUsage=${includeTrafficUsage}`);
-            this.log.warn(JSON.stringify(res));
             if (res) {
                 return res;
             }
@@ -416,6 +415,24 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.wlanConfig)}${wlan_id ? `/${wlan_id.trim()}` : ''}`);
             if (res && res.data) {
                 return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    /**
+     * API V2 - List all WLan configurations
+     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
+     * @returns
+     */
+    async getWlanConfig_V2(wlan_id = undefined) {
+        const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.wlanConfig)}`);
+            if (res) {
+                return res;
             }
         }
         catch (error) {

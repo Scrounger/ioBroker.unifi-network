@@ -21,7 +21,33 @@ export var wlan;
             security: {
                 iobType: 'string',
                 name: 'security'
-            }
+            },
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+                conditionToCreateState(objValues, adapter) {
+                    return !objValues.is_guest;
+                },
+                valFromProperty: 'current_client_count',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+                conditionToCreateState(objValues, adapter) {
+                    return objValues.is_guest;
+                },
+                valFromProperty: 'current_client_count',
+            },
+            current_satisfaction: {
+                iobType: 'number',
+                name: 'satisfaction',
+                unit: '%',
+                readVal(val, adapter, cache, deviceOrClient) {
+                    return val >= 0 ? val : 0;
+                },
+            },
         };
     }
     wlan.get = get;

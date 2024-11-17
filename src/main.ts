@@ -15,7 +15,7 @@ import { apiCommands } from './lib/api/network-command.js';
 import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 import { NetworkClient } from './lib/api/network-types-client.js';
-import { NetworkWlanConfig } from './lib/api/network-types-wlan-config.js';
+import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
@@ -728,7 +728,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateWlanConfig(data: NetworkWlanConfig[], isAdapterStart: boolean = false): Promise<void> {
+	async updateWlanConfig(data: NetworkWlanConfig[] | NetworkWlanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateWlanConfig]:';
 
 		try {
@@ -738,13 +738,25 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.wlanConfigEnabled) {
 					if (isAdapterStart) {
 						await this.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
-						data = await this.ufn.getWlanConfig();
+						data = (await this.ufn.getWlanConfig_V2()) as NetworkWlanConfig_V2[];
 					}
 
 					if (data) {
 						if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} wlan's`);
 
 						for (let wlan of data) {
+
+							// Convert API V2 to V1, because event is from type V1
+							if ((wlan as NetworkWlanConfig_V2) && (wlan as NetworkWlanConfig_V2).configuration) {
+								wlan = { ...(wlan as NetworkWlanConfig_V2).configuration, ...(wlan as NetworkWlanConfig_V2).statistics }
+							}
+
+							wlan = (wlan as NetworkWlanConfig);
+
+							if (!this.cache.wlan[wlan._id]) {
+								this.log.debug(`${logPrefix} Discovered wlan '${wlan.name}'`);
+							}
+
 							let dataToProcess = wlan;
 							if (this.cache.wlan[wlan._id]) {
 								// filter out unchanged properties
@@ -1347,6 +1359,9 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onNetworkWlanConfEvent]:';
 
 		try {
+
+			this.log.debug(`${logPrefix} wlan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+
 			if (event.meta.message.endsWith(':delete')) {
 				if (event.data) {
 					for (let wlan of event.data) {

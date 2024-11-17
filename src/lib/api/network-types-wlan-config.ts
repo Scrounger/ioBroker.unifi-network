@@ -1,3 +1,9 @@
+export interface NetworkWlanConfig_V2 {
+    configuration: NetworkWlanConfig,
+    details: NetworkWlanConfigDetails,
+    statistics: NetworkWlanConfigStatistics
+}
+
 export interface NetworkWlanConfig {
     _id?: string
     ap_group_ids?: string[]
@@ -76,4 +82,15 @@ export interface NetworkWlanConfig {
     wpa_mode?: string
     x_iapp_key?: string
     x_passphrase?: string
+}
+
+interface NetworkWlanConfigDetails {
+    creation_timestamp: number
+}
+
+interface NetworkWlanConfigStatistics {
+    current_access_point_count: number
+    current_client_count: number
+    current_satisfaction: number
+    peak_client_count: number
 }

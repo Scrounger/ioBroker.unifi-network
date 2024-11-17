@@ -1,5 +1,8 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "../myTypes";
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache } from "../myTypes";
 import * as myHelper from '../helper.js';
+import { NetworkWlanConfig } from "../api/network-types-wlan-config";
+import { NetworkDevice } from "../api/network-types-device";
+import { NetworkClient } from "../api/network-types-client";
 
 export namespace wlan {
     let keys: string[] = undefined;
@@ -23,7 +26,33 @@ export namespace wlan {
             security: {
                 iobType: 'string',
                 name: 'security'
-            }
+            },
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+                conditionToCreateState(objValues: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                    return !objValues.is_guest
+                },
+                valFromProperty: 'current_client_count',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+                conditionToCreateState(objValues: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                    return objValues.is_guest
+                },
+                valFromProperty: 'current_client_count',
+            },
+            current_satisfaction: {
+                iobType: 'number',
+                name: 'satisfaction',
+                unit: '%',
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
+                    return val >= 0 ? val : 0
+                },
+            },
         }
     }
 

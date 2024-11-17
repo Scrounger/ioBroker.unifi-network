@@ -9,7 +9,7 @@ import { NetworkLogging } from './network-logging.js';
 import { NetworkEvent } from './network-types.js'
 import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
 import { NetworkClient } from './network-types-client.js';
-import { NetworkWlanConfig } from './network-types-wlan-config.js';
+import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -451,8 +451,6 @@ export class NetworkApi extends EventEmitter {
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.devices)}?separateUnmanaged=${separateUnmanaged}&includeTrafficUsage=${includeTrafficUsage}`);
 
-            this.log.warn(JSON.stringify(res));
-
             if (res) {
                 return res;
             }
@@ -559,6 +557,27 @@ export class NetworkApi extends EventEmitter {
 
             if (res && res.data) {
                 return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
+     * API V2 - List all WLan configurations
+     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
+     * @returns 
+     */
+    public async getWlanConfig_V2(wlan_id = undefined): Promise<NetworkWlanConfig_V2[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getWlanConfig]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.wlanConfig)}`);
+
+            if (res) {
+                return res;
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

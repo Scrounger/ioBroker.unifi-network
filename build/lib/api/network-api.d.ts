@@ -3,7 +3,7 @@ import { EventEmitter } from 'node:events';
 import { NetworkLogging } from './network-logging.js';
 import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
 import { NetworkClient } from './network-types-client.js';
-import { NetworkWlanConfig } from './network-types-wlan-config.js';
+import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -95,6 +95,12 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getWlanConfig(wlan_id?: any): Promise<NetworkWlanConfig[] | undefined>;
+    /**
+     * API V2 - List all WLan configurations
+     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
+     * @returns
+     */
+    getWlanConfig_V2(wlan_id?: any): Promise<NetworkWlanConfig_V2[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;
