@@ -1,5 +1,6 @@
 import { Fingerprint, NetworkClient } from "./api/network-types-client";
 import { NetworkDevice } from "./api/network-types-device";
+import { NetworkDeviceModels } from './api/network-types-device-models';
 import { NetworkWlanConfig } from "./api/network-types-wlan-config";
 export interface myCommonState {
     id?: string;
@@ -79,6 +80,7 @@ export interface myCache {
     devices: {
         [key: string]: NetworkDevice;
     };
+    deviceModels: NetworkDeviceModels[];
     clients: {
         [key: string]: NetworkClient;
     };

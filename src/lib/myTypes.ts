@@ -1,5 +1,6 @@
 import { Fingerprint, NetworkClient } from "./api/network-types-client";
 import { NetworkDevice } from "./api/network-types-device";
+import { NetworkDeviceModels } from './api/network-types-device-models'
 import { NetworkWlanConfig } from "./api/network-types-wlan-config";
 
 export interface myCommonState {
@@ -130,6 +131,7 @@ export const WebSocketEvent = {
 
 export interface myCache {
     devices: { [key: string]: NetworkDevice; },
+    deviceModels: NetworkDeviceModels[],
     clients: { [key: string]: NetworkClient; },
     vpn: { [key: string]: NetworkClient; }
     wlan: { [key: string]: NetworkWlanConfig; }

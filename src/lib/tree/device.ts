@@ -37,20 +37,12 @@ export namespace device {
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'model',
-                async readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): Promise<ioBroker.StateValue> {
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
                     if (val && adapter.config.deviceImageDownload) {
-                        if (await adapter.objectExists('devices.publicData')) {
-                            const publicData = await adapter.getStateAsync('devices.publicData');
+                        const find = _.find(cache.deviceModels, (x) => x.model_name.includes(val));
 
-                            if (publicData && publicData.val) {
-                                const data: any = JSON.parse(publicData.val as string);
-
-                                const find = _.find(data.devices, (x) => x.shortnames.includes(val));
-
-                                if (find) {
-                                    return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.images.default}.png&w=256?q=100`
-                                }
-                            }
+                        if (find) {
+                            return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.default_image_id}.png&w=256?q=100`
                         }
                     }
                     return null;

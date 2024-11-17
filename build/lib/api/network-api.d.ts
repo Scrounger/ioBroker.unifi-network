@@ -2,6 +2,7 @@ import { RequestOptions, Response } from '@adobe/fetch';
 import { EventEmitter } from 'node:events';
 import { NetworkLogging } from './network-logging.js';
 import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
+import { NetworkDeviceModels } from './network-types-device-models.js';
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 export declare class NetworkApi extends EventEmitter {
@@ -78,7 +79,7 @@ export declare class NetworkApi extends EventEmitter {
      *  V2 API - List of all active (connected) clients
      * @returns
      */
-    getClientsActive_V2(includeTrafficUsage?: boolean, includeUnifiDevices?: boolean): Promise<NetworkClient[] | undefined>;
+    getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean): Promise<NetworkClient[] | NetworkClient | undefined>;
     /**
      * List of all configured / known clients on the site
      * @returns
@@ -101,6 +102,11 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getWlanConfig_V2(wlan_id?: any): Promise<NetworkWlanConfig_V2[] | undefined>;
+    /**
+      * API V2 - List model information for devices
+      * @returns
+      */
+    getDeviceModels_V2(model?: string): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;
@@ -117,5 +123,6 @@ export declare enum ApiEndpoints_V2 {
     devices = "devices",
     clientsActive = "clientsActive",
     clientsHistory = "clientsHistory",
-    wlanConfig = "wlanConfig"
+    wlanConfig = "wlanConfig",
+    models = "models"
 }

@@ -8,6 +8,7 @@ import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-sett
 import { NetworkLogging } from './network-logging.js';
 import { NetworkEvent } from './network-types.js'
 import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
+import { NetworkDeviceModels } from './network-types-device-models.js'
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 
@@ -486,11 +487,11 @@ export class NetworkApi extends EventEmitter {
      *  V2 API - List of all active (connected) clients
      * @returns 
      */
-    public async getClientsActive_V2(includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
+    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | NetworkClient | undefined> {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`
 
         try {
-            const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`
+            const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}${mac ? `/${mac}` : ''}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`
             const res = await this.retrievData(url);
 
             if (res) {
@@ -586,6 +587,26 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    /**
+      * API V2 - List model information for devices
+      * @returns 
+      */
+    public async getDeviceModels_V2(model: string = undefined): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined> {
+        const logPrefix = `[${this.logPrefix}.getWlanConfig]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.models)}${model ? `/${model}` : ''}`);
+
+            if (res && res.model_list) {
+                return res.model_list;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
@@ -654,6 +675,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints_V2.wlanConfig:
                 endpointSuffix = `/v2/api/site/${this.site}/wlan/enriched-configuration`;
+                break;
+
+            case ApiEndpoints_V2.models:
+                endpointSuffix = `/v2/api/site/${this.site}/models`;
                 break;
 
             default:
@@ -768,5 +793,6 @@ export enum ApiEndpoints_V2 {
     devices = 'devices',
     clientsActive = "clientsActive",
     clientsHistory = "clientsHistory",
-    wlanConfig = 'wlanConfig'
+    wlanConfig = 'wlanConfig',
+    models = 'models'
 }

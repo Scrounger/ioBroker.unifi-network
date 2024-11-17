@@ -32,17 +32,11 @@ export var device;
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'model',
-                async readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient) {
                     if (val && adapter.config.deviceImageDownload) {
-                        if (await adapter.objectExists('devices.publicData')) {
-                            const publicData = await adapter.getStateAsync('devices.publicData');
-                            if (publicData && publicData.val) {
-                                const data = JSON.parse(publicData.val);
-                                const find = _.find(data.devices, (x) => x.shortnames.includes(val));
-                                if (find) {
-                                    return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.images.default}.png&w=256?q=100`;
-                                }
-                            }
+                        const find = _.find(cache.deviceModels, (x) => x.model_name.includes(val));
+                        if (find) {
+                            return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.default_image_id}.png&w=256?q=100`;
                         }
                     }
                     return null;
@@ -507,7 +501,6 @@ export var device;
                 arrayChannelNameFromProperty(objValues, adapter) {
                     return `${objValues.essid} - ${myHelper.radio_nameToFrequency(objValues.radio_name, adapter)}`;
                 },
-                arrayChannelIdZeroPad: 2,
                 array: {
                     avg_client_signal: {
                         iobType: 'number',

@@ -355,10 +355,10 @@ export class NetworkApi extends EventEmitter {
      *  V2 API - List of all active (connected) clients
      * @returns
      */
-    async getClientsActive_V2(includeTrafficUsage = false, includeUnifiDevices = true) {
+    async getClientsActive_V2(mac = undefined, includeTrafficUsage = false, includeUnifiDevices = true) {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`;
         try {
-            const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`;
+            const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}${mac ? `/${mac}` : ''}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`;
             const res = await this.retrievData(url);
             if (res) {
                 return res;
@@ -440,6 +440,23 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    /**
+      * API V2 - List model information for devices
+      * @returns
+      */
+    async getDeviceModels_V2(model = undefined) {
+        const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.models)}${model ? `/${model}` : ''}`);
+            if (res && res.model_list) {
+                return res.model_list;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
     getApiEndpoint(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api
         let endpointSuffix;
@@ -491,6 +508,9 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints_V2.wlanConfig:
                 endpointSuffix = `/v2/api/site/${this.site}/wlan/enriched-configuration`;
+                break;
+            case ApiEndpoints_V2.models:
+                endpointSuffix = `/v2/api/site/${this.site}/models`;
                 break;
             default:
                 break;
@@ -578,4 +598,5 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["clientsActive"] = "clientsActive";
     ApiEndpoints_V2["clientsHistory"] = "clientsHistory";
     ApiEndpoints_V2["wlanConfig"] = "wlanConfig";
+    ApiEndpoints_V2["models"] = "models";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));

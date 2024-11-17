@@ -27,9 +27,10 @@ class UnifiNetwork extends utils.Adapter {
     connectionRetries = 0;
     cache = {
         devices: {},
+        deviceModels: [],
         clients: {},
         vpn: {},
-        wlan: {}
+        wlan: {},
     };
     subscribedList = [];
     eventListener = (event) => this.onNetworkMessage(event);
@@ -338,6 +339,7 @@ class UnifiNetwork extends utils.Adapter {
     async updateRealTimeApiData() {
         const logPrefix = '[updateRealTimeApiData]:';
         try {
+            this.cache.deviceModels = await this.ufn.getDeviceModels_V2();
             await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
             await this.updateClients(null, true);
             await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
@@ -365,9 +367,9 @@ class UnifiNetwork extends utils.Adapter {
                 if (this.config.devicesEnabled) {
                     if (isAdapterStart) {
                         await this.createOrUpdateChannel(idChannel, 'unifi devices', undefined, true);
-                        await this.updateDevicesImages();
+                        // await this.updateDevicesImages();
                     }
-                    if (data) {
+                    if (data && data !== null) {
                         if (isAdapterStart)
                             this.log.info(`${logPrefix} Discovered ${data.length} devices`);
                         for (let device of data) {
@@ -381,6 +383,8 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             if (!this.cache.devices[device.mac]) {
                                 this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                                // id is not include in V2 API, first in ws data. id is needed to create the channel
+                                delete device.vap_table;
                             }
                             let dataToProcess = device;
                             if (this.cache.devices[device.mac]) {
@@ -393,7 +397,7 @@ class UnifiNetwork extends utils.Adapter {
                                 dataToProcess.mac = device.mac;
                                 if (!isAdapterStart)
                                     this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
+                                await this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
                                 await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), dataToProcess, 'devices', device, device, isAdapterStart);
                             }
                         }
@@ -430,7 +434,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-                    if (data) {
+                    if (data && data !== null) {
                         let countClients = 0;
                         let countGuests = 0;
                         let countVpn = 0;
@@ -465,7 +469,7 @@ class UnifiNetwork extends utils.Adapter {
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
                                             this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                        this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                        await this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
                                         await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'clients', client, client, isAdapterStart);
                                     }
                                 }
@@ -499,7 +503,7 @@ class UnifiNetwork extends utils.Adapter {
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
                                             this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                        this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+                                        await this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
                                         await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'guests', client, client, isAdapterStart);
                                     }
                                 }
@@ -537,7 +541,7 @@ class UnifiNetwork extends utils.Adapter {
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
                                             this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                        this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+                                        await this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
                                         await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, 'vpn', client, client, isAdapterStart);
                                     }
                                 }
@@ -635,7 +639,7 @@ class UnifiNetwork extends utils.Adapter {
                         await this.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
                         data = (await this.ufn.getWlanConfig_V2());
                     }
-                    if (data) {
+                    if (data && data !== null) {
                         if (isAdapterStart)
                             this.log.info(`${logPrefix} Discovered ${data.length} wlan's`);
                         for (let wlan of data) {
@@ -770,7 +774,7 @@ class UnifiNetwork extends utils.Adapter {
                         await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
                     }
                     if (await this.objectExists(`${idChannel}`)) {
-                        this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true);
+                        this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
                     }
                 }
             }
@@ -798,7 +802,7 @@ class UnifiNetwork extends utils.Adapter {
      * @param icon
      * @param isAdapterStart
      */
-    async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, isAdapterStart = false) {
+    async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, isAdapterStart = false, logChanges = true) {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
             const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
@@ -826,7 +830,7 @@ class UnifiNetwork extends utils.Adapter {
                     if (obj && obj.common) {
                         if (!myHelper.isDeviceCommonEqual(obj.common, common)) {
                             await this.extendObject(id, { common: common });
-                            this.log.debug(`${logPrefix} device updated '${id}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common, this))})`);
+                            this.log.debug(`${logPrefix} device updated '${id}' ${logChanges ? `(updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(common, obj.common, this))})` : ''}`);
                         }
                     }
                 }
