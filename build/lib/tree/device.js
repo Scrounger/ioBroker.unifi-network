@@ -123,12 +123,12 @@ export var device;
             port_table: {
                 idChannel: 'ports',
                 channelName: 'port table',
-                arrayChannelIdPrefix: 'Port_',
-                arrayChannelIdZeroPad: 2,
+                arrayChannelIdFromProperty(objValues, i, adapter) {
+                    return `port_${myHelper.zeroPad(objValues.port_idx, 2)}`;
+                },
                 arrayChannelNameFromProperty(objValues, adapter) {
                     return objValues['name'];
                 },
-                arrayStartNumber: 1,
                 array: {
                     name: {
                         iobType: 'string',
@@ -497,7 +497,12 @@ export var device;
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
                 arrayChannelIdFromProperty(objValues, i, adapter) {
-                    return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
+                    if (objValues.id) {
+                        return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
+                    }
+                    else {
+                        return undefined;
+                    }
                 },
                 arrayChannelNameFromProperty(objValues, adapter) {
                     return `${objValues.essid} - ${myHelper.radio_nameToFrequency(objValues.radio_name, adapter)}`;

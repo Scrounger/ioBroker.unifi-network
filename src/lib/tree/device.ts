@@ -131,12 +131,12 @@ export namespace device {
             port_table: {
                 idChannel: 'ports',
                 channelName: 'port table',
-                arrayChannelIdPrefix: 'Port_',
-                arrayChannelIdZeroPad: 2,
+                arrayChannelIdFromProperty(objValues: PortTable, i: number, adapter: ioBroker.Adapter): string {
+                    return `port_${myHelper.zeroPad(objValues.port_idx, 2)}`
+                },
                 arrayChannelNameFromProperty(objValues: any, adapter: ioBroker.Adapter): string {
                     return objValues['name']
                 },
-                arrayStartNumber: 1,
                 array: {
                     name: {
                         iobType: 'string',
@@ -505,13 +505,16 @@ export namespace device {
             vap_table: {
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
-                arrayChannelIdFromProperty(objValues: VapTable, i: number, adapter: ioBroker.Adapter): string {
-                    return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`
+                arrayChannelIdFromProperty(objValues: VapTable, i: number, adapter: ioBroker.Adapter): string | undefined {
+                    if (objValues.id) {
+                        return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`
+                    } else {
+                        return undefined
+                    }
                 },
                 arrayChannelNameFromProperty(objValues: VapTable, adapter: ioBroker.Adapter): string {
                     return `${objValues.essid} - ${myHelper.radio_nameToFrequency(objValues.radio_name, adapter)}`
                 },
-                arrayChannelIdZeroPad: 2,
                 array: {
                     avg_client_signal: {
                         iobType: 'number',
