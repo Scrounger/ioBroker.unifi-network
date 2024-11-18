@@ -337,7 +337,7 @@ export var device;
             storage: {
                 channelName: 'storage',
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return objValues['name'];
+                    return objValues.name;
                 },
                 array: {
                     'mount_point': {

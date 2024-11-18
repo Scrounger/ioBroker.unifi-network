@@ -30,7 +30,7 @@ export interface NetworkClient {
     disconnect_timestamp?: number;
     display_name?: string;
     essid?: string;
-    fingerprint?: Fingerprint;
+    fingerprint?: NetworkClientFingerprint;
     fingerprint_engine_version?: string;
     fingerprint_override?: boolean;
     fingerprint_source?: number;
@@ -85,7 +85,7 @@ export interface NetworkClient {
     rx_packets: number;
     rx_rate: number;
     satisfaction?: number;
-    satisfaction_avg?: SatisfactionAvg;
+    satisfaction_avg?: NetworkClientSatisfactionAvg;
     satisfaction_now?: number;
     satisfaction_real?: number;
     satisfaction_reason?: number;
@@ -106,8 +106,8 @@ export interface NetworkClient {
     tx_retry_burst_count?: number;
     type?: string;
     unifi_device?: boolean;
-    unifi_device_info?: UnifiDeviceInfo;
-    unifi_device_info_from_ucore?: UnifiDeviceUcore;
+    unifi_device_info?: NetworkClientUnifiDeviceInfo;
+    unifi_device_info_from_ucore?: NetworkClientUnifiDeviceUcore;
     uplink_mac?: string;
     uptime: number;
     usage_bytes?: number;
@@ -135,11 +135,11 @@ export interface NetworkClient {
     wlanconf_id?: string;
     iobTimestamp: number;
 }
-export interface SatisfactionAvg {
+export interface NetworkClientSatisfactionAvg {
     count: number;
     total: number;
 }
-export interface Fingerprint {
+export interface NetworkClientFingerprint {
     computed_dev_id: number;
     computed_engine: number;
     dev_cat: number;
@@ -149,19 +149,19 @@ export interface Fingerprint {
     dev_vendor: number;
     has_override: boolean;
 }
-export interface UnifiDeviceInfo {
+export interface NetworkClientUnifiDeviceInfo {
     icon_filename: string;
     icon_resolutions: number[][];
     view_in_application: boolean;
 }
-export interface UnifiDeviceUcore {
+export interface NetworkClientUnifiDeviceUcore {
     computed_model: string;
     device_state: string;
     fw_status: string;
     fw_version: string;
     icon_filename: string;
     icon_resolutions: number[][];
-    icons: UnifiDeviceUcoreIcon[];
+    icons: NetworkClientUnifiDeviceUcoreIcon[];
     managed: boolean;
     name: string;
     product_line: string;
@@ -169,7 +169,7 @@ export interface UnifiDeviceUcore {
     product_shortname: string;
     view_in_application: boolean;
 }
-export interface UnifiDeviceUcoreIcon {
+export interface NetworkClientUnifiDeviceUcoreIcon {
     height: number;
     url: string;
     width: number;

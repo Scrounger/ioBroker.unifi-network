@@ -1,4 +1,4 @@
-import { Fingerprint, NetworkClient } from "./api/network-types-client";
+import { NetworkClientFingerprint, NetworkClient } from "./api/network-types-client";
 import { NetworkDevice } from "./api/network-types-device";
 import { NetworkDeviceModels } from './api/network-types-device-models';
 import { NetworkWlanConfig } from "./api/network-types-wlan-config";
@@ -22,7 +22,7 @@ export interface myCommonState {
     icon?: string;
     def?: ioBroker.StateValue;
     desc?: string;
-    readVal?(val: ioBroker.StateValue | Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>;
+    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>;
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>;
     valFromProperty?: string;
     statesFromProperty?: string;

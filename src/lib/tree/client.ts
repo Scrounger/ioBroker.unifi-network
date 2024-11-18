@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
-import { Fingerprint, NetworkClient } from '../api/network-types-client.js';
+import { NetworkClientFingerprint, NetworkClient } from '../api/network-types-client.js';
 import { NetworkDevice } from '../api/network-types-device.js';
 import * as myHelper from '../helper.js';
 
@@ -51,7 +51,7 @@ export namespace client {
                     // only wired and wireless clients
                     return objValues.type === undefined || objValues.type !== "VPN";
                 },
-                readVal(val: Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkClient): ioBroker.StateValue {
+                readVal(val: NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkClient): ioBroker.StateValue {
                     if (deviceOrClient.fingerprint && adapter.config.clientImageDownload) {
                         if (deviceOrClient.unifi_device_info && deviceOrClient.unifi_device_info.icon_filename) {
                             return `https://static.ui.com/fingerprint/ui/icons/${deviceOrClient.unifi_device_info.icon_filename}_257x257.png?q=100`

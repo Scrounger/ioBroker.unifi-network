@@ -5,7 +5,7 @@ export interface NetworkDevice_V2 {
 export interface NetworkDevice {
     _id: string
     _uptime: number
-    active_geo_info?: ActiveGeoInfo
+    active_geo_info?: NetworkDeviceActiveGeoInfo
     adopt_ip?: string
     adopt_url?: string
     adoptable_when_upgraded: boolean
@@ -15,7 +15,7 @@ export interface NetworkDevice {
     adoption_completed: boolean
     anomalies?: number
     anon_id: string
-    antenna_table?: AntennaTable[]
+    antenna_table?: NetworkDeviceAntennaTable[]
     architecture: string
     atf_enabled?: boolean
     bandsteering_mode?: string
@@ -25,8 +25,8 @@ export interface NetworkDevice {
     "bytes-d"?: number
     "bytes-r"?: number
     cfgversion: string
-    config_network: ConfigNetwork
-    config_network_lan?: ConfigNetworkLan
+    config_network: NetworkDeviceConfigNetwork
+    config_network_lan?: NetworkDeviceConfigNetworkLan
     connect_request_ip: string
     connect_request_port: string
     connected_at: number
@@ -36,9 +36,9 @@ export interface NetworkDevice {
     country_code?: number
     countrycode_table?: any[]
     credential_caps?: number
-    detailed_states?: DetailedStates
+    detailed_states?: NetworkDeviceDetailedStates
     device_id: string
-    dhcp_excluded_ip_list?: DhcpExcludedIpList
+    dhcp_excluded_ip_list?: NetworkDeviceDhcpExcludedIpList
     dhcp_server_table?: any[]
     disconnected_at: number
     disconnection_reason?: string
@@ -48,15 +48,15 @@ export interface NetworkDevice {
     dot1x_fallback_networkconf_id?: string
     dot1x_portctrl_enabled: boolean
     downlink_lldp_macs: string[]
-    downlink_table: DownlinkTable[]
-    ethernet_overrides?: EthernetOverride[]
-    ethernet_table: EthernetTable[]
+    downlink_table: NetworkDeviceDownlinkTable[]
+    ethernet_overrides?: NetworkDeviceEthernetOverride[]
+    ethernet_table: NetworkDeviceEthernetTable[]
     fan_level?: number
     fixed_ap_available?: boolean
     flowctrl_enabled?: boolean
     fw2_caps: number
     fw_caps: number
-    geo_info?: GeoInfo
+    geo_info?: NetworkDeviceGeoInfo
     gateway_mac?: string
     general_temperature?: number
     "guest-lan-num_sta"?: number
@@ -73,12 +73,12 @@ export interface NetworkDevice {
     hide_ch_width?: string
     hw_caps: number
     ids_ips_last_known_signature?: string
-    ids_ips_signature?: IdsIpsSignature
+    ids_ips_signature?: NetworkDeviceIdsIpsSignature
     inform_ip: string
     inform_url: string
     internet?: boolean
     ip: string
-    ipv4_active_leases?: Ipv4ActiveLeases
+    ipv4_active_leases?: NetworkDeviceIpv4ActiveLeases
     ipv6: string[]
     is_access_point: boolean
     isolated?: boolean
@@ -91,7 +91,7 @@ export interface NetworkDevice {
     last_connection_network_id: string
     last_connection_network_name: string
     last_seen: number
-    last_uplink: LastUplink
+    last_uplink: NetworkDeviceLastUplink
     last_wan_ip?: string
     lcm_brightness?: number
     lcm_brightness_override?: boolean
@@ -105,9 +105,9 @@ export interface NetworkDevice {
     led_override?: string
     led_override_color?: string
     led_override_color_brightness?: number
-    led_state?: LedState
+    led_state?: NetworkDeviceLedState
     license_state: string
-    lldp_table: LldpTable[]
+    lldp_table: NetworkDeviceLldpTable[]
     locating: boolean
     mac: string
     manufacturer_id: number
@@ -120,7 +120,7 @@ export interface NetworkDevice {
     model_in_lts: boolean
     model_incompatible: boolean
     name: string
-    network_table?: NetworkTable[]
+    network_table?: NetworkDeviceNetworkTable[]
     next_interval: number
     num_desktop?: number
     num_handheld?: number
@@ -128,20 +128,19 @@ export interface NetworkDevice {
     num_sta: number
     outdoor_mode_override: string
     overheating?: boolean
-    port_overrides?: PortOverride[]
-    port_table?: PortTable[]
+    port_overrides?: NetworkDevicePortOverride[]
+    port_table?: NetworkDevicePortTable[]
     power_source_ctrl_enabled?: boolean
     prev_non_busy_state: number
     provisioned_at: number
-    radio_table?: RadioTable[]
-    radio_table_stats?: RadioTableStat[]
+    radio_table?: NetworkDeviceRadioTable[]
+    radio_table_stats?: NetworkDeviceRadioTableStat[]
     radiusprofile_id?: string
     reboot_duration: number
-    reported_networks?: ReportedNetwork[]
+    reported_networks?: NetworkDeviceReportedNetwork[]
     required_version: string
     rollupgrade: boolean
-    ruleset_interfaces?: RulesetInterfaces
-    rps?: Rps
+    rps?: NetworkDeviceRps
     rx_bytes: number
     "rx_bytes-d"?: number
     safe_for_autoupgrade: boolean
@@ -158,25 +157,25 @@ export interface NetworkDevice {
     snmp_contact: string
     snmp_location: string
     spectrum_scanning?: boolean
-    "speedtest-status"?: SpeedtestStatus
+    "speedtest-status"?: NetworkDeviceSpeedtestStatus
     ssh_session_table: any[]
     start_connected_millis: number
     start_disconnected_millis: number
     startup_timestamp: number
     state: number
-    storage?: Storage[]
+    storage?: NetworkDeviceStorage[]
     stp_priority?: string
     stp_version?: string
     support_wifi6e?: boolean
     supports_fingerprint_ml?: boolean
-    switch_caps: SwitchCaps
+    switch_caps: NetworkDeviceSwitchCaps
     sys_error_caps: number
-    sys_stats: SysStats
+    sys_stats: NetworkDeviceSysStats
     sysid: number
     syslog_key: string
-    "system-stats": SystemStats
+    "system-stats": NetworkDeviceSystemStats
     teleport_version?: string
-    temperatures?: Temperature[]
+    temperatures?: NetworkDeviceTemperature[]
     total_max_power?: number
     total_used_power?: number
     two_phase_adopt: boolean
@@ -184,24 +183,24 @@ export interface NetworkDevice {
     "tx_bytes-d"?: number
     type: string
     udapi_caps?: number
-    udapi_version?: UdapiVersion
+    udapi_version?: NetworkDeviceUdapiVersion
     unsupported: boolean
     unsupported_reason: number
     upgradable: boolean
     upgrade_duration: number
-    uplink?: Uplink
+    uplink?: NetworkDeviceUplink
     uplink_depth: number
     uptime: number
-    uptime_stats?: UptimeStats
+    uptime_stats?: NetworkDeviceUptimeStats
     "user-lan-num_sta"?: number
     "user-num_sta": number
     "user-wlan-num_sta"?: number
     usg2_caps?: number
     usg_caps?: number
-    vap_table?: VapTable[]
+    vap_table?: NetworkDeviceVapTable[]
     version: string
-    wan1?: WanStats
-    wan2?: WanStats
+    wan1?: NetworkDeviceWanStats
+    wan2?: NetworkDeviceWanStats
     vwireEnabled?: boolean
     vwire_table?: any[]
     vwire_vap_table?: any[]
@@ -217,12 +216,12 @@ export interface NetworkDevice {
     iobTimestamp: number;
 }
 
-interface ActiveGeoInfo {
-    WAN: Wan
-    WAN2: Wan
+interface NetworkDeviceActiveGeoInfo {
+    WAN: NetworkDeviceWan
+    WAN2: NetworkDeviceWan
 }
 
-interface AntennaTable {
+interface NetworkDeviceAntennaTable {
     default: boolean
     id: number
     name: string
@@ -230,7 +229,7 @@ interface AntennaTable {
     wifi1_gain: number
 }
 
-interface ConfigNetwork {
+interface NetworkDeviceConfigNetwork {
     bonding_enabled: boolean
     dns1: string
     dns2: string
@@ -241,7 +240,7 @@ interface ConfigNetwork {
     type: string
 }
 
-interface ConfigNetworkLan {
+interface NetworkDeviceConfigNetworkLan {
     cidr: string
     dhcp_enabled: boolean
     dhcp_range_start: string
@@ -249,24 +248,24 @@ interface ConfigNetworkLan {
     vlan: number
 }
 
-interface DetailedStates {
+interface NetworkDeviceDetailedStates {
     device_near_power_limit: boolean
 }
 
-interface DownlinkTable {
+interface NetworkDeviceDownlinkTable {
     full_duplex: boolean
     mac: string
     port_idx: number
     speed: number
 }
 
-interface EthernetTable {
+interface NetworkDeviceEthernetTable {
     mac: string
     name: string
     num_port?: number
 }
 
-interface LastUplink {
+interface NetworkDeviceLastUplink {
     port_idx: number
     type: string
     uplink_device_name: string
@@ -274,7 +273,7 @@ interface LastUplink {
     uplink_remote_port: number
 }
 
-interface LldpTable {
+interface NetworkDeviceLldpTable {
     chassis_id: string
     is_wired: boolean
     local_port_idx: number
@@ -282,7 +281,7 @@ interface LldpTable {
     port_id: string
 }
 
-interface RadioTable {
+interface NetworkDeviceRadioTable {
     antenna_gain: number
     antenna_id: number
     builtin_ant_gain: number
@@ -308,7 +307,7 @@ interface RadioTable {
     has_ht160?: boolean
 }
 
-export interface RadioTableStat {
+export interface NetworkDeviceRadioTableStat {
     ast_be_xmit: any
     ast_cst: any
     ast_txto: any
@@ -331,7 +330,7 @@ export interface RadioTableStat {
     "user-num_sta": number
 }
 
-interface PortOverride {
+interface NetworkDevicePortOverride {
     name: string
     poe_mode?: string
     port_idx: number
@@ -361,7 +360,7 @@ interface PortOverride {
     excluded_networkconf_ids?: string[]
 }
 
-export interface PortTable {
+export interface NetworkDevicePortTable {
     aggregated_by: boolean
     anomalies: number
     autoneg: boolean
@@ -442,18 +441,18 @@ export interface PortTable {
     sfp_vendor?: string
 }
 
-interface Rps {
+interface NetworkDeviceRps {
     power_management_mode: string
-    rps_port_table: RpsPortTable[]
+    rps_port_table: NetworkDeviceRpsPortTable[]
 }
 
-interface RpsPortTable {
+interface NetworkDeviceRpsPortTable {
     name: string
     port_idx: number
     port_mode: string
 }
 
-interface SwitchCaps {
+interface NetworkDeviceSwitchCaps {
     etherlight_caps: number
     feature_caps: number
     max_aggregate_sessions: number
@@ -470,7 +469,7 @@ interface SwitchCaps {
     vlan_caps: number
 }
 
-interface SysStats {
+interface NetworkDeviceSysStats {
     loadavg_1: string
     loadavg_15: string
     loadavg_5: string
@@ -479,13 +478,13 @@ interface SysStats {
     mem_used: number
 }
 
-interface SystemStats {
+interface NetworkDeviceSystemStats {
     cpu: string
     mem: string
     uptime: string
 }
 
-interface Uplink {
+interface NetworkDeviceUplink {
     full_duplex: boolean
     ip: string
     mac: string
@@ -515,9 +514,9 @@ interface Uplink {
     uplink_source: string
 }
 
-export interface VapTable {
-    anomalies_bar_chart: AnomaliesBarChart
-    anomalies_bar_chart_now: AnomaliesBarChartNow
+export interface NetworkDeviceVapTable {
+    anomalies_bar_chart: NetworkDeviceAnomaliesBarChart
+    anomalies_bar_chart_now: NetworkDeviceAnomaliesBarChart
     ap_mac: string
     avg_client_signal: number
     bssid: string
@@ -538,8 +537,8 @@ export interface VapTable {
     num_sta: number
     radio: string
     radio_name: string
-    reasons_bar_chart: ReasonsBarChart
-    reasons_bar_chart_now: ReasonsBarChartNow
+    reasons_bar_chart: NetworkDeviceReasonsBarChart
+    reasons_bar_chart_now: NetworkDeviceReasonsBarChart
     rx_bytes: number
     rx_crypts: number
     rx_dropped: number
@@ -547,7 +546,7 @@ export interface VapTable {
     rx_frags: number
     rx_nwids: number
     rx_packets: number
-    rx_tcp_stats: RxTcpStats
+    rx_tcp_stats: NetworkDeviceRxTcpStats
     satisfaction: number
     site_id: string
     state: string
@@ -562,17 +561,17 @@ export interface VapTable {
     tx_retries: number
     tx_rts_retries: number
     tx_success: number
-    tx_tcp_stats: TxTcpStats
+    tx_tcp_stats: NetworkDeviceTxTcpStats
     tx_total: number
     up: boolean
     usage: string
     wifi_tx_attempts: number
     wifi_tx_dropped: number
-    wifi_tx_latency_mov?: WifiTxLatencyMov
+    wifi_tx_latency_mov?: NetworkDeviceWifiTxLatencyMov
     wlanconf_id: string
 }
 
-interface Wan {
+interface NetworkDeviceWan {
     accuracy: number
     address: string
     asn: number
@@ -587,7 +586,7 @@ interface Wan {
     timezone: string
 }
 
-interface AnomaliesBarChart {
+interface NetworkDeviceAnomaliesBarChart {
     high_disconnect_count: number
     high_dns_latency: number
     high_icmp_rtt: number
@@ -606,26 +605,7 @@ interface AnomaliesBarChart {
     weak_signal: number
 }
 
-interface AnomaliesBarChartNow {
-    high_disconnect_count: number
-    high_dns_latency: number
-    high_icmp_rtt: number
-    high_tcp_latency: number
-    high_tcp_packet_loss: number
-    high_wifi_drops: number
-    high_wifi_latency: number
-    high_wifi_retries: number
-    low_phy_rate: number
-    no_dhcp_response: number
-    poor_stream_eff: number
-    sleepy_client: number
-    sta_arp_timeout: number
-    sta_dns_timeout: number
-    sta_ip_timeout: number
-    weak_signal: number
-}
-
-interface ReasonsBarChart {
+interface NetworkDeviceReasonsBarChart {
     no_dhcp_response: number
     phy_rate: number
     signal: number
@@ -644,26 +624,7 @@ interface ReasonsBarChart {
     wifi_retries: number
 }
 
-interface ReasonsBarChartNow {
-    no_dhcp_response: number
-    phy_rate: number
-    signal: number
-    sleepy_client: number
-    sta_arp_timeout: number
-    sta_disconnects: number
-    sta_dns_latency: number
-    sta_dns_timeout: number
-    sta_icmp_rtt: number
-    sta_ip_timeout: number
-    stream_eff: number
-    tcp_latency: number
-    tcp_packet_loss: number
-    wifi_drops: number
-    wifi_latency: number
-    wifi_retries: number
-}
-
-interface RxTcpStats {
+interface NetworkDeviceRxTcpStats {
     goodbytes: number
     lat_avg: number
     lat_max: number
@@ -674,7 +635,7 @@ interface RxTcpStats {
     stalls: number
 }
 
-interface TxTcpStats {
+interface NetworkDeviceTxTcpStats {
     goodbytes: number
     lat_avg: number
     lat_max: number
@@ -685,7 +646,7 @@ interface TxTcpStats {
     stalls: number
 }
 
-interface WifiTxLatencyMov {
+interface NetworkDeviceWifiTxLatencyMov {
     avg: number
     max: number
     min: number
@@ -693,39 +654,39 @@ interface WifiTxLatencyMov {
     total_count: number
 }
 
-interface DhcpExcludedIpList {
-    excluded_ip_list: ExcludedIpList[]
+interface NetworkDeviceDhcpExcludedIpList {
+    excluded_ip_list: NetworkDeviceExcludedIpList[]
     time: number
 }
 
-interface ExcludedIpList {
+interface NetworkDeviceExcludedIpList {
     address: string
     mac: string
 }
 
-interface EthernetOverride {
+interface NetworkDeviceEthernetOverride {
     ifname: string
     networkgroup: string
 }
 
-interface GeoInfo {
-    WAN: Wan
-    WAN2: Wan
+interface NetworkDeviceGeoInfo {
+    WAN: NetworkDeviceWan
+    WAN2: NetworkDeviceWan
 }
 
-interface LedState {
+interface NetworkDeviceLedState {
     pattern: string
     tempo: number
 }
 
-interface NetworkTable {
+interface NetworkDeviceNetworkTable {
     _id: string
     dhcpd_dns_1: string
     dhcpd_dns_2?: string
     dhcpd_dns_enabled: boolean
     dhcpd_start: string
     dhcpd_stop: string
-    dpistats_table: DpistatsTable
+    dpistats_table: NetworkDeviceDpistatsTable
     enabled: boolean
     gateway_interface_name: string
     ip: string
@@ -802,16 +763,16 @@ interface NetworkTable {
     dhcpd_gateway?: string
 }
 
-interface DpistatsTable {
-    by_app: ByApp[]
-    by_cat: ByCat[]
+interface NetworkDeviceDpistatsTable {
+    by_app: NetworkDeviceByApp[]
+    by_cat: NetworkDeviceByCat[]
     last_updated: number
 }
 
-interface ByApp {
+interface NetworkDeviceByApp {
     app: number
     cat: number
-    clients: Client[]
+    clients: NetworkDeviceClient[]
     known_clients: number
     rx_bytes: number
     rx_packets: number
@@ -819,7 +780,7 @@ interface ByApp {
     tx_packets: number
 }
 
-interface Client {
+interface NetworkDeviceClient {
     mac: string
     rx_bytes: number
     rx_packets: number
@@ -827,7 +788,7 @@ interface Client {
     tx_packets: number
 }
 
-interface ByCat {
+interface NetworkDeviceByCat {
     apps: number[]
     cat: number
     rx_bytes: number
@@ -836,75 +797,69 @@ interface ByCat {
     tx_packets: number
 }
 
-interface IdsIpsSignature {
+interface NetworkDeviceIdsIpsSignature {
     rule_count: number
     sha_256: string
     signature_type: string
     update_time: number
 }
 
-interface Ipv4ActiveLeases {
-    active_leases: ActiveLease[]
+interface NetworkDeviceIpv4ActiveLeases {
+    active_leases: NetworkDeviceActiveLease[]
     time: number
 }
 
-interface ActiveLease {
+interface NetworkDeviceActiveLease {
     leaseExpiry: number
     mac: string
 }
 
-interface ReportedNetwork {
+interface NetworkDeviceReportedNetwork {
     address: string
     name: string
 }
 
-interface RulesetInterfaces {
-    br0: string
-    eth7: string
-    eth8: string
-}
-
-export interface Temperature {
+export interface NetworkDeviceTemperature {
     name: string
     type: string
     value: number
 }
 
-interface UdapiVersion {
+interface NetworkDeviceUdapiVersion {
     path: string
     version: number
     versionFormat: string
 }
 
-interface UptimeStats {
-    WAN: WanUptimeStats
-    WAN2: WanUptimeStats
+interface NetworkDeviceUptimeStats {
+    WAN: NetworkDeviceWanUptimeStats
+    WAN2: NetworkDeviceWanUptimeStats
 }
 
-interface WanUptimeStats {
-    alerting_monitors: AlertingMonitor[]
+interface NetworkDeviceWanUptimeStats {
+    alerting_monitors: NetworkDeviceAlertingMonitor[]
     availability: number
     latency_average: number
-    monitors: Monitor[]
+    monitors: NetworkDeviceMonitor[]
     time_period: number
     uptime: number
 }
 
-interface AlertingMonitor {
+interface NetworkDeviceAlertingMonitor {
     availability: number
     latency_average: number
     target: string
     type: string
 }
 
-interface Monitor {
+interface NetworkDeviceMonitor {
     availability: number
     latency_average: number
     target: string
     type: string
 }
 
-interface WanStats {
+interface NetworkDeviceWanStats {
     autoneg: boolean
     availability: number
     "bytes-r": number
@@ -920,7 +875,7 @@ interface WanStats {
     is_uplink: boolean
     latency: number
     mac: string
-    mac_table: MacTable[]
+    mac_table: NetworkDeviceMacTable[]
     max_speed: number
     media: string
     name: string
@@ -955,7 +910,7 @@ interface WanStats {
     uplink_ifname: string
 }
 
-interface MacTable {
+interface NetworkDeviceMacTable {
     age: number
     authorized: boolean
     hostname: string
@@ -964,11 +919,11 @@ interface MacTable {
     mac: string
 }
 
-export interface SpeedtestStatus {
+export interface NetworkDeviceSpeedtestStatus {
     latency: number
     rundate: number
     runtime: number
-    server: Server
+    server: NetworkDeviceServer
     source_interface: string
     status_download: number
     status_ping: number
@@ -978,7 +933,7 @@ export interface SpeedtestStatus {
     xput_upload: number
 }
 
-export interface Server {
+export interface NetworkDeviceServer {
     cc: string
     city: string
     country: string
@@ -986,4 +941,12 @@ export interface Server {
     lon: number
     provider: string
     provider_url: string
+}
+
+export interface NetworkDeviceStorage {
+    mount_point: string
+    name: string
+    size: number
+    type: string
+    used: number
 }

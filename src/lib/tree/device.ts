@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { NetworkClient } from '../api/network-types-client.js';
-import { NetworkDevice, PortTable, RadioTableStat, Temperature, VapTable } from '../api/network-types-device.js';
+import { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable } from '../api/network-types-device.js';
 import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
 import * as myHelper from '../helper.js';
 
@@ -123,7 +123,7 @@ export namespace device {
             port_table: {
                 idChannel: 'ports',
                 channelName: 'port table',
-                arrayChannelIdFromProperty(objValues: PortTable, i: number, adapter: ioBroker.Adapter): string {
+                arrayChannelIdFromProperty(objValues: NetworkDevicePortTable, i: number, adapter: ioBroker.Adapter): string {
                     return `port_${myHelper.zeroPad(objValues.port_idx, 2)}`
                 },
                 arrayChannelNameFromProperty(objValues: any, adapter: ioBroker.Adapter): string {
@@ -146,7 +146,7 @@ export namespace device {
                         id: 'poe_enable',
                         iobType: 'boolean',
                         name: 'POE enabled',
-                        conditionToCreateState(objValues: PortTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDevicePortTable, adapter: ioBroker.Adapter): boolean {
                             // only create state if it's a poe port
                             return objValues.port_poe === true;
                         },
@@ -164,7 +164,7 @@ export namespace device {
                         read: false,
                         write: true,
                         role: 'button',
-                        conditionToCreateState(objValues: PortTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDevicePortTable, adapter: ioBroker.Adapter): boolean {
                             // only create state if it's a poe port
                             return objValues.port_poe === true;
                         },
@@ -173,7 +173,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'POE power consumption',
                         unit: 'W',
-                        conditionToCreateState(objValues: PortTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDevicePortTable, adapter: ioBroker.Adapter): boolean {
                             // only create state if it's a poe port
                             return objValues.port_poe === true;
                         },
@@ -185,7 +185,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'POE voltage',
                         unit: 'V',
-                        conditionToCreateState(objValues: PortTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDevicePortTable, adapter: ioBroker.Adapter): boolean {
                             // only create state if it's a poe port
                             return objValues.port_poe === true;
                         },
@@ -208,7 +208,7 @@ export namespace device {
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objValues: PortTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDevicePortTable, adapter: ioBroker.Adapter): boolean {
                             // only create state if it's a poe port
                             return objValues.satisfaction >= 0 ? true : false;
                         },
@@ -267,7 +267,7 @@ export namespace device {
             radio_table_stats: {
                 idChannel: 'radio',
                 channelName: 'WiFi Radio',
-                arrayChannelNameFromProperty(objValues: RadioTableStat, adapter: ioBroker.Adapter): string {
+                arrayChannelNameFromProperty(objValues: NetworkDeviceRadioTableStat, adapter: ioBroker.Adapter): string {
                     return myHelper.radio_nameToFrequency(objValues.name, adapter);
                 },
                 array: {
@@ -286,7 +286,7 @@ export namespace device {
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objValues: RadioTableStat, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDeviceRadioTableStat, adapter: ioBroker.Adapter): boolean {
                             // only create state if it's a poe port
                             return objValues.satisfaction >= 0 ? true : false;
                         },
@@ -342,8 +342,8 @@ export namespace device {
             },
             storage: {
                 channelName: 'storage',
-                arrayChannelNameFromProperty(objValues: any, adapter: ioBroker.Adapter) {
-                    return objValues['name']
+                arrayChannelNameFromProperty(objValues: NetworkDeviceStorage, adapter: ioBroker.Adapter) {
+                    return objValues.name
                 },
                 array: {
                     'mount_point': {
@@ -399,10 +399,10 @@ export namespace device {
             },
             temperatures: {
                 channelName: 'temperature',
-                arrayChannelIdFromProperty(objValues: Temperature, i: number, adapter: ioBroker.Adapter): string {
+                arrayChannelIdFromProperty(objValues: NetworkDeviceTemperature, i: number, adapter: ioBroker.Adapter): string {
                     return objValues.name
                 },
-                arrayChannelNameFromProperty(objValues: Temperature, adapter: ioBroker.Adapter): string {
+                arrayChannelNameFromProperty(objValues: NetworkDeviceTemperature, adapter: ioBroker.Adapter): string {
                     return objValues.name
                 },
                 array: {
@@ -497,14 +497,14 @@ export namespace device {
             vap_table: {
                 idChannel: 'wifi',
                 channelName: 'WiFi Network Statistics',
-                arrayChannelIdFromProperty(objValues: VapTable, i: number, adapter: ioBroker.Adapter): string | undefined {
+                arrayChannelIdFromProperty(objValues: NetworkDeviceVapTable, i: number, adapter: ioBroker.Adapter): string | undefined {
                     if (objValues.id) {
                         return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`
                     } else {
                         return undefined
                     }
                 },
-                arrayChannelNameFromProperty(objValues: VapTable, adapter: ioBroker.Adapter): string {
+                arrayChannelNameFromProperty(objValues: NetworkDeviceVapTable, adapter: ioBroker.Adapter): string {
                     return `${objValues.essid} - ${myHelper.radio_nameToFrequency(objValues.radio_name, adapter)}`
                 },
                 array: {
@@ -530,7 +530,7 @@ export namespace device {
                         id: 'connected_clients',
                         iobType: 'number',
                         name: 'connected clients',
-                        conditionToCreateState(objValues: VapTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDeviceVapTable, adapter: ioBroker.Adapter): boolean {
                             return !objValues.is_guest
                         },
                         valFromProperty: 'num_sta',
@@ -539,7 +539,7 @@ export namespace device {
                         id: 'connected_guests',
                         iobType: 'number',
                         name: 'connected guests',
-                        conditionToCreateState(objValues: VapTable, adapter: ioBroker.Adapter): boolean {
+                        conditionToCreateState(objValues: NetworkDeviceVapTable, adapter: ioBroker.Adapter): boolean {
                             return objValues.is_guest
                         },
                         valFromProperty: 'num_sta',
