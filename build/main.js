@@ -383,7 +383,7 @@ class UnifiNetwork extends utils.Adapter {
                             if (!this.cache.devices[device.mac]) {
                                 this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
                                 // id is not include in V2 API, first in ws data. id is needed to create the channel
-                                delete device.vap_table;
+                                // delete device.vap_table;
                             }
                             let dataToProcess = device;
                             if (this.cache.devices[device.mac]) {

@@ -460,10 +460,11 @@ export namespace device {
             uplink: {
                 channelName: 'uplink device',
                 object: {
-                    ip: {
-                        iobType: 'string',
-                        name: 'uplink device ip address'
-                    },
+                    // Ip is same as from device, it's not the ip of the uplink device
+                    // ip: {
+                    //     iobType: 'string',
+                    //     name: 'uplink device ip address'
+                    // },
                     name: {
                         id: 'name',
                         iobType: 'string',
