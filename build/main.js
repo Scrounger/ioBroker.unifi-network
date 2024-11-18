@@ -453,7 +453,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (isAdapterStart)
                                         countClients++;
                                     if (!this.cache.clients[client.mac]) {
-                                        this.log.debug(`${logPrefix} Discovered client '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                        this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
                                     }
                                     let dataToProcess = client;
                                     if (this.cache.clients[client.mac]) {
@@ -487,7 +487,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (isAdapterStart)
                                         countGuests++;
                                     if (!this.cache.clients[client.mac]) {
-                                        this.log.debug(`${logPrefix} Discovered guest '${client.name}' (IP: ${client.ip}, mac: ${client.mac})`);
+                                        this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
                                     }
                                     let dataToProcess = client;
                                     if (this.cache.clients[client.mac]) {
@@ -521,7 +521,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (isAdapterStart)
                                         countVpn++;
                                     if (!this.cache.vpn[client.ip]) {
-                                        this.log.debug(`${logPrefix} Discovered vpn client '${client.name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
+                                        this.log.debug(`${logPrefix} Discovered vpn client '${name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
                                     }
                                     const idChannel = client.network_id;
                                     this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);

@@ -139,7 +139,6 @@ export interface NetworkDevice {
     reported_networks?: NetworkDeviceReportedNetwork[];
     required_version: string;
     rollupgrade: boolean;
-    ruleset_interfaces?: NetworkDeviceRulesetInterfaces;
     rps?: NetworkDeviceRps;
     rx_bytes: number;
     "rx_bytes-d"?: number;
@@ -776,11 +775,6 @@ interface NetworkDeviceActiveLease {
 interface NetworkDeviceReportedNetwork {
     address: string;
     name: string;
-}
-interface NetworkDeviceRulesetInterfaces {
-    br0: string;
-    eth7: string;
-    eth8: string;
 }
 export interface NetworkDeviceTemperature {
     name: string;
