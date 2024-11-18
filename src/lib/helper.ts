@@ -149,7 +149,7 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
     // Hilfsfunktion für rekursive Durchsuchung des Objekts
     function recurse(currentObj, prefix = '') {
         _.forOwn(currentObj, (value, key) => {
-            const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '.');
+            const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '');
 
             // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
             if (_.isObject(value) && typeof value !== 'function') {
@@ -161,7 +161,7 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
                     recurse(value, fullKey);
                 }
             } else {
-                if (key === 'valFromProperty' || key === 'conditionProperty' || key === 'arrayChannelIdFromProperty') {
+                if (key === 'valFromProperty') {
                     const prefixCleared = getIdWithoutLastPart(prefix);
                     keys.push(`${prefixCleared ? `${prefixCleared}.` : ''}${value}`);
                 }
