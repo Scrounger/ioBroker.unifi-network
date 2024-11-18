@@ -382,8 +382,6 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             if (!this.cache.devices[device.mac]) {
                                 this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-                                // id is not include in V2 API, first in ws data. id is needed to create the channel
-                                // delete device.vap_table;
                             }
                             let dataToProcess = device;
                             if (this.cache.devices[device.mac]) {
@@ -524,7 +522,7 @@ class UnifiNetwork extends utils.Adapter {
                                         this.log.debug(`${logPrefix} Discovered vpn client '${name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
                                     }
                                     const idChannel = client.network_id;
-                                    this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
+                                    await this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
                                     let dataToProcess = client;
                                     if (this.cache.vpn[client.ip]) {
                                         // filter out unchanged properties
@@ -658,7 +656,7 @@ class UnifiNetwork extends utils.Adapter {
                             this.cache.wlan[wlan._id] = wlan;
                             if (!_.isEmpty(dataToProcess)) {
                                 dataToProcess._id = wlan._id;
-                                this.createOrUpdateDevice(`${idChannel}.${wlan._id}`, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
+                                await this.createOrUpdateDevice(`${idChannel}.${wlan._id}`, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
                                 await this.createGenericState(`${idChannel}.${wlan._id}`, tree.wlan.get(), dataToProcess, 'wlan', wlan, wlan, isAdapterStart);
                             }
                         }
@@ -780,7 +778,7 @@ class UnifiNetwork extends utils.Adapter {
                     await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
                 }
                 if (await this.objectExists(`${idChannel}`)) {
-                    this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+                    await this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
                 }
             }
         }

@@ -606,7 +606,7 @@ class UnifiNetwork extends utils.Adapter {
 									}
 
 									const idChannel = client.network_id;
-									this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
+									await this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
 
 									let dataToProcess = client;
 									if (this.cache.vpn[client.ip]) {
@@ -772,7 +772,7 @@ class UnifiNetwork extends utils.Adapter {
 							if (!_.isEmpty(dataToProcess)) {
 								dataToProcess._id = wlan._id;
 
-								this.createOrUpdateDevice(`${idChannel}.${wlan._id}`, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
+								await this.createOrUpdateDevice(`${idChannel}.${wlan._id}`, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
 								await this.createGenericState(`${idChannel}.${wlan._id}`, tree.wlan.get(), dataToProcess, 'wlan', wlan, wlan, isAdapterStart);
 							}
 						}
@@ -914,7 +914,7 @@ class UnifiNetwork extends utils.Adapter {
 				}
 
 				if (await this.objectExists(`${idChannel}`)) {
-					this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+					await this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
 				}
 			}
 

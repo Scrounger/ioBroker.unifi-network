@@ -51,6 +51,21 @@ export var wlan;
         };
     }
     wlan.get = get;
+    function getGlobal() {
+        return {
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+            },
+        };
+    }
+    wlan.getGlobal = getGlobal;
     function getKeys() {
         if (keys === undefined) {
             keys = myHelper.getAllKeysOfTreeDefinition(get());
