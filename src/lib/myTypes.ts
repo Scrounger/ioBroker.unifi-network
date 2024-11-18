@@ -23,7 +23,7 @@ export interface myCommonState {
     readVal?(val: ioBroker.StateValue | Fingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
-    valFromProperty?: string                                        // Take value from other property in the corresponding tree
+    valFromProperty?: string                                        // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be regoniczed
     statesFromProperty?: string                                     // ToDo: perhaps can be removed
 
     conditionToCreateState?(objValues: any, adapter: ioBroker.Adapter): boolean     // condition to create state

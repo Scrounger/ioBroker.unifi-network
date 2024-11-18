@@ -150,7 +150,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (state) {
-				if (myHelper.getIdLastPart(id) === 'imageUrl' && state.val !== null) {
+				if (myHelper.getIdLastPart(id) === 'imageUrl') {
 					// internal changes
 					if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
 						await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
@@ -865,7 +865,7 @@ class UnifiNetwork extends utils.Adapter {
 			for (const id in clients) {
 				const url = clients[id];
 
-				if (url && url.val && url.val !== null) {
+				if (url && url.val) {
 					if (imgCache[url.val as string]) {
 						imgCache[url.val as string].push(myHelper.getIdWithoutLastPart(id))
 					} else {
@@ -887,31 +887,38 @@ class UnifiNetwork extends utils.Adapter {
 	 * @param url 
 	 * @param idChannelList 
 	 */
-	async downloadImage(url: string, idChannelList: string[]) {
+	async downloadImage(url: string | null, idChannelList: string[]) {
 		const logPrefix = '[downloadImage]:';
 
 		try {
-			const response = await this.fetch(url, { follow: 0 });
+			let base64ImgString = 'null';		// ToDo: nicht sauber gelöst!
 
-			if (response.status === 200) {
-				const imageBuffer = Buffer.from(await response.arrayBuffer());
-				const imageBase64 = imageBuffer.toString('base64');
-				const base64ImgString = `data:image/png;base64,` + imageBase64;
+			if (url !== null) {
 
-				this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
+				const response = await this.fetch(url, { follow: 0 });
 
-				for (const idChannel of idChannelList) {
+				if (response.status === 200) {
+					const imageBuffer = Buffer.from(await response.arrayBuffer());
+					const imageBase64 = imageBuffer.toString('base64');
+					base64ImgString = `data:image/png;base64,` + imageBase64;
 
-					if (await this.objectExists(`${idChannel}.image`)) {
-						await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
-					}
+					this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
 
-					if (await this.objectExists(`${idChannel}`)) {
-						this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
-					}
+
+				} else {
+					this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
 				}
-			} else {
-				this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+			}
+
+			for (const idChannel of idChannelList) {
+
+				if (await this.objectExists(`${idChannel}.image`)) {
+					await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+				}
+
+				if (await this.objectExists(`${idChannel}`)) {
+					this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+				}
 			}
 
 		} catch (error) {
@@ -937,7 +944,7 @@ class UnifiNetwork extends utils.Adapter {
 	 * @param icon 
 	 * @param isAdapterStart
 	 */
-	private async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string = undefined, isAdapterStart: boolean = false, logChanges: boolean = true): Promise<void> {
+	private async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string | undefined = undefined, isAdapterStart: boolean = false, logChanges: boolean = true): Promise<void> {
 		const logPrefix = '[createOrUpdateDevice]:';
 
 		try {

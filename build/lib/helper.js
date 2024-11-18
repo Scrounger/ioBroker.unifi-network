@@ -77,9 +77,9 @@ export function getIdLastPart(id) {
 export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
     const logPrefix = '[deepDiffBetweenObjects]:';
     try {
-        const changes = (object, base) => {
+        const changes = (object, base, prefixInner = '') => {
             return _.transform(object, (result, value, key) => {
-                const fullKey = prefix ? `${prefix}.${key}` : key;
+                const fullKey = prefixInner ? `${prefixInner}.${key}` : key;
                 try {
                     if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
                         if (_.isArray(value)) {
@@ -101,7 +101,7 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
                             }
                         }
                         else if (_.isObject(value) && _.isObject(base[key])) {
-                            const res = changes(value, base[key]);
+                            const res = changes(value, base[key] ? base[key] : {}, fullKey);
                             if (!_.isEmpty(res) || res === 0 || res === false) {
                                 result[key] = res;
                             }
@@ -116,7 +116,7 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
                 }
             });
         };
-        return changes(object, base);
+        return changes(object, base, prefix);
     }
     catch (error) {
         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
@@ -153,6 +153,8 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
     }
     // Start der Rekursion
     recurse(treefDefintion);
+    // manual add keys here:
+    keys.push(...['fingerprint.computed_engine', 'fingerprint.dev_id_override', 'fingerprint.dev_id', 'fingerprint.has_override']);
     return _.uniq(keys);
 }
 export function radioToFrequency(radioVal, adapter) {

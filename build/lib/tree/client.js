@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as myHelper from '../helper.js';
 export var client;
-(function (client_1) {
+(function (client) {
     let keys = undefined;
     function get() {
         return {
@@ -47,17 +47,16 @@ export var client;
                     return objValues.type === undefined || objValues.type !== "VPN";
                 },
                 readVal(val, adapter, cache, deviceOrClient) {
-                    if (val && adapter.config.clientImageDownload) {
-                        const client = deviceOrClient;
-                        if (client.unifi_device_info && client.unifi_device_info.icon_filename) {
-                            return `https://static.ui.com/fingerprint/ui/icons/${client.unifi_device_info.icon_filename}_257x257.png?q=100`;
+                    if (deviceOrClient.fingerprint && adapter.config.clientImageDownload) {
+                        if (deviceOrClient.unifi_device_info && deviceOrClient.unifi_device_info.icon_filename) {
+                            return `https://static.ui.com/fingerprint/ui/icons/${deviceOrClient.unifi_device_info.icon_filename}_257x257.png?q=100`;
                         }
-                        else if (Object.prototype.hasOwnProperty.call(val, 'computed_engine')) {
-                            if (Object.prototype.hasOwnProperty.call(val, 'dev_id_override')) {
-                                return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id_override}_257x257.png?q=100`;
+                        else if (Object.prototype.hasOwnProperty.call(deviceOrClient.fingerprint, 'computed_engine')) {
+                            if (Object.prototype.hasOwnProperty.call(deviceOrClient.fingerprint, 'dev_id_override')) {
+                                return `https://static.ui.com/fingerprint/${deviceOrClient.fingerprint.computed_engine}/${deviceOrClient.fingerprint.dev_id_override}_257x257.png?q=100`;
                             }
-                            else if (Object.prototype.hasOwnProperty.call(val, 'dev_id')) {
-                                return `https://static.ui.com/fingerprint/${val.computed_engine}/${val.dev_id}_257x257.png?q=100`;
+                            else if (Object.prototype.hasOwnProperty.call(deviceOrClient.fingerprint, 'dev_id')) {
+                                return `https://static.ui.com/fingerprint/${deviceOrClient.fingerprint.computed_engine}/${deviceOrClient.fingerprint.dev_id}_257x257.png?q=100`;
                             }
                         }
                     }
@@ -297,12 +296,12 @@ export var client;
             },
         };
     }
-    client_1.get = get;
+    client.get = get;
     function getKeys() {
         if (keys === undefined) {
             keys = myHelper.getAllKeysOfTreeDefinition(get());
         }
         return keys;
     }
-    client_1.getKeys = getKeys;
+    client.getKeys = getKeys;
 })(client || (client = {}));

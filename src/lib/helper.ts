@@ -90,9 +90,9 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
     const logPrefix = '[deepDiffBetweenObjects]:';
 
     try {
-        const changes = (object, base) => {
+        const changes = (object, base, prefixInner = '') => {
             return _.transform(object, (result, value, key) => {
-                const fullKey: string = prefix ? `${prefix}.${key as string}` : (key as string);
+                const fullKey: string = prefixInner ? `${prefixInner}.${key as string}` : (key as string);
 
                 try {
                     if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
@@ -115,7 +115,7 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
                                 result[key] = tmp;
                             }
                         } else if (_.isObject(value) && _.isObject(base[key])) {
-                            const res = changes(value, base[key])
+                            const res = changes(value, base[key] ? base[key] : {}, fullKey)
                             if (!_.isEmpty(res) || res === 0 || res === false) {
                                 result[key] = res;
                             }
@@ -129,7 +129,7 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
             })
         }
 
-        return changes(object, base);
+        return changes(object, base, prefix);
 
     } catch (error) {
         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
@@ -171,6 +171,10 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
 
     // Start der Rekursion
     recurse(treefDefintion);
+
+    // manual add keys here:
+    keys.push(...['fingerprint.computed_engine', 'fingerprint.dev_id_override', 'fingerprint.dev_id', 'fingerprint.has_override']);
+
     return _.uniq(keys);
 }
 

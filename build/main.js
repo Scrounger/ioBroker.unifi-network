@@ -114,7 +114,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onStateChange]:';
         try {
             if (state) {
-                if (myHelper.getIdLastPart(id) === 'imageUrl' && state.val !== null) {
+                if (myHelper.getIdLastPart(id) === 'imageUrl') {
                     // internal changes
                     if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
                         await this.downloadImage(state.val, [myHelper.getIdWithoutLastPart(id)]);
@@ -367,7 +367,6 @@ class UnifiNetwork extends utils.Adapter {
                 if (this.config.devicesEnabled) {
                     if (isAdapterStart) {
                         await this.createOrUpdateChannel(idChannel, 'unifi devices', undefined, true);
-                        // await this.updateDevicesImages();
                     }
                     if (data && data !== null) {
                         if (isAdapterStart)
@@ -678,7 +677,7 @@ class UnifiNetwork extends utils.Adapter {
         }
     }
     /**
-     * Download public data from ui with image url infos.
+     * @deprecated Download public data from ui with image url infos.
      */
     async updateDevicesImages() {
         const logPrefix = '[updateDevicesImages]:';
@@ -738,7 +737,7 @@ class UnifiNetwork extends utils.Adapter {
             let imgCache = {};
             for (const id in clients) {
                 const url = clients[id];
-                if (url && url.val && url.val !== null) {
+                if (url && url.val) {
                     if (imgCache[url.val]) {
                         imgCache[url.val].push(myHelper.getIdWithoutLastPart(id));
                     }
@@ -763,23 +762,26 @@ class UnifiNetwork extends utils.Adapter {
     async downloadImage(url, idChannelList) {
         const logPrefix = '[downloadImage]:';
         try {
-            const response = await this.fetch(url, { follow: 0 });
-            if (response.status === 200) {
-                const imageBuffer = Buffer.from(await response.arrayBuffer());
-                const imageBase64 = imageBuffer.toString('base64');
-                const base64ImgString = `data:image/png;base64,` + imageBase64;
-                this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
-                for (const idChannel of idChannelList) {
-                    if (await this.objectExists(`${idChannel}.image`)) {
-                        await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
-                    }
-                    if (await this.objectExists(`${idChannel}`)) {
-                        this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
-                    }
+            let base64ImgString = 'null'; // ToDo: nicht sauber gelöst!
+            if (url !== null) {
+                const response = await this.fetch(url, { follow: 0 });
+                if (response.status === 200) {
+                    const imageBuffer = Buffer.from(await response.arrayBuffer());
+                    const imageBase64 = imageBuffer.toString('base64');
+                    base64ImgString = `data:image/png;base64,` + imageBase64;
+                    this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
+                }
+                else {
+                    this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
                 }
             }
-            else {
-                this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+            for (const idChannel of idChannelList) {
+                if (await this.objectExists(`${idChannel}.image`)) {
+                    await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+                }
+                if (await this.objectExists(`${idChannel}`)) {
+                    this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+                }
             }
         }
         catch (error) {
