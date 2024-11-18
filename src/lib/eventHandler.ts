@@ -1,7 +1,6 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
-import { WebSocketEvent, myCache } from "./myTypes.js";
+import { WebSocketEvent, myCache, myNetworkClient } from "./myTypes.js";
 import * as myHelper from './helper.js';
-import { NetworkClient } from "./api/network-types-client.js";
 
 export const eventHandler = {
     device: {
@@ -162,7 +161,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
         },
-        async vpnDisconnect(meta: NetworkEventMeta, data: NetworkClient, adapter: ioBroker.Adapter, cache: myCache) {
+        async vpnDisconnect(meta: NetworkEventMeta, data: myNetworkClient, adapter: ioBroker.Adapter, cache: myCache) {
             const logPrefix = '[eventHandler.client.vpnDisconnect]:'
 
             try {

@@ -15,12 +15,11 @@ import { apiCommands } from './lib/api/network-command.js';
 import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 import { NetworkDeviceModels } from './lib/api/network-types-device-models.js';
-import { NetworkClient } from './lib/api/network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
-import { WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache } from './lib/myTypes.js';
+import { WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache, myNetworkClient } from './lib/myTypes.js';
 
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
@@ -399,7 +398,7 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
 
 			await this.updateClients(null, true);
-			await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
+			await this.updateClients(await this.ufn.getClientsHistory_V2() as myNetworkClient[], true, true);
 			// await this.updatClientsOffline(await this.ufn.getClients(), true);
 
 			await this.updateWlanConfig(null, true);
@@ -484,7 +483,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateClients(data: NetworkClient[] | null = null, isAdapterStart: boolean = false, isOfflineClients: boolean = false) {
+	async updateClients(data: myNetworkClient[] | null = null, isAdapterStart: boolean = false, isOfflineClients: boolean = false) {
 		const logPrefix = '[updateClients]:';
 
 		try {
@@ -499,7 +498,7 @@ class UnifiNetwork extends utils.Adapter {
 					if (this.config.vpnEnabled) await this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
 
 					if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-						data = await this.ufn.getClientsActive_V2() as NetworkClient[];
+						data = await this.ufn.getClientsActive_V2() as myNetworkClient[];
 					}
 				}
 
@@ -514,7 +513,7 @@ class UnifiNetwork extends utils.Adapter {
 							if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
 								// debounce real time data
 								const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
-								const iobTimestamp = this.cache.clients[client.mac].iobTimestamp || this.cache.clients[client.ip].iobTimestamp;
+								const iobTimestamp = this.cache.clients[client.mac].timestamp || this.cache.clients[client.ip].timestamp;
 
 								if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
 									continue
@@ -535,13 +534,13 @@ class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.clients[client.mac]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 									}
 
 									if (Object.keys(dataToProcess).length > 0) {
 										this.cache.clients[client.mac] = client;
 										this.cache.clients[client.mac].name = name;
-										this.cache.clients[client.mac].iobTimestamp = moment().unix();
+										this.cache.clients[client.mac].timestamp = moment().unix();
 
 										dataToProcess.mac = client.mac;
 										dataToProcess.name = name
@@ -571,13 +570,13 @@ class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.clients[client.mac]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 									}
 
 									if (Object.keys(dataToProcess).length > 0) {
 										this.cache.clients[client.mac] = client;
 										this.cache.clients[client.mac].name = name;
-										this.cache.clients[client.mac].iobTimestamp = moment().unix();
+										this.cache.clients[client.mac].timestamp = moment().unix();
 
 										dataToProcess.mac = client.mac;
 										dataToProcess.name = name
@@ -611,7 +610,7 @@ class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.vpn[client.ip]) {
 										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as NetworkClient;
+										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
 									}
 
 									const preparedIp = client.ip.replaceAll('.', '_');
@@ -619,7 +618,7 @@ class UnifiNetwork extends utils.Adapter {
 									if (Object.keys(dataToProcess).length > 0) {
 										this.cache.vpn[client.ip] = client;
 										this.cache.vpn[client.ip].name = name;
-										this.cache.vpn[client.ip].iobTimestamp = moment().unix();
+										this.cache.vpn[client.ip].timestamp = moment().unix();
 
 										this.log.warn(JSON.stringify(this.cache.vpn[client.ip]));
 
@@ -661,12 +660,12 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updatClientsOffline(data: NetworkClient[], isAdapterStart: boolean = false) {
+	async updatClientsOffline(data: myNetworkClient[], isAdapterStart: boolean = false) {
 		const logPrefix = '[updatClientsOffline]:';
 
 		try {
 			if (data) {
-				let result: NetworkClient[] = [];
+				let result: myNetworkClient[] = [];
 				for (let client of data) {
 					if (!this.cache.clients[client.mac] && !this.cache.clients[client.ip]) {
 						result.push(client);
@@ -1027,7 +1026,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | NetworkClient | NetworkWlanConfig, filterComparisonId: string, objOrg: NetworkDevice | NetworkClient | NetworkWlanConfig, objOrgValues, isAdapterStart: boolean = false) {
+	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig, filterComparisonId: string, objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig, objOrgValues, isAdapterStart: boolean = false) {
 		const logPrefix = '[createGenericState]:';
 
 		try {
@@ -1255,7 +1254,7 @@ class UnifiNetwork extends utils.Adapter {
 				await this.updateDevices(event.data as NetworkDevice[]);
 			} else if (event.meta.message.startsWith(WebSocketEventMessages.client)) {
 				if (event.meta.message.endsWith(':sync')) {
-					await this.updateClients(event.data as NetworkClient[]);
+					await this.updateClients(event.data as myNetworkClient[]);
 				} else {
 					await this.onNetworkClientEvent(event as NetworkEventClient);
 				}
@@ -1343,7 +1342,7 @@ class UnifiNetwork extends utils.Adapter {
 						// VPN disconnect
 						this.log.debug(`${logPrefix} event 'vpn disconnected' (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
 
-						eventHandler.client.vpnDisconnect(events.meta, event, this, this.cache);
+						eventHandler.client.vpnDisconnect(events.meta, event as myNetworkClient, this, this.cache);
 					} else {
 						this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
 					}

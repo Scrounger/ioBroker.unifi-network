@@ -1,4 +1,4 @@
-import { NetworkClientFingerprint, NetworkClient } from "./api/network-types-client";
+import { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client";
 import { NetworkDevice } from "./api/network-types-device";
 import { NetworkDeviceModels } from './api/network-types-device-models'
 import { NetworkWlanConfig } from "./api/network-types-wlan-config";
@@ -20,7 +20,7 @@ export interface myCommonState {
     def?: ioBroker.StateValue,
     desc?: string,
 
-    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>,
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
 
     valFromProperty?: string                                        // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be regoniczed
@@ -49,6 +49,11 @@ export interface myCommonChannelArray {
     arrayChannelNameFromProperty?(objValues: any, adapter: ioBroker.Adapter): string,               // Array item common.name is taken from a property in the corresponding tree
     arrayStartNumber?: number,                                                                      // Array custom start number of array
     array: { [key: string]: myCommonState; },
+}
+
+export interface myNetworkClient extends NetworkClient {
+    isOnline: boolean;
+    timestamp: number;
 }
 
 export enum WebSocketEventMessages {
@@ -132,8 +137,8 @@ export const WebSocketEvent = {
 export interface myCache {
     devices: { [key: string]: NetworkDevice; },
     deviceModels: NetworkDeviceModels[],
-    clients: { [key: string]: NetworkClient; },
-    vpn: { [key: string]: NetworkClient; }
+    clients: { [key: string]: myNetworkClient; },
+    vpn: { [key: string]: myNetworkClient; }
     wlan: { [key: string]: NetworkWlanConfig; }
 }
 

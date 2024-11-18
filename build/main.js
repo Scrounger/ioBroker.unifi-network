@@ -439,7 +439,7 @@ class UnifiNetwork extends utils.Adapter {
                             if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
                                 // debounce real time data
                                 const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
-                                const iobTimestamp = this.cache.clients[client.mac].iobTimestamp || this.cache.clients[client.ip].iobTimestamp;
+                                const iobTimestamp = this.cache.clients[client.mac].timestamp || this.cache.clients[client.ip].timestamp;
                                 if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
                                     continue;
                                 }
@@ -461,7 +461,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (Object.keys(dataToProcess).length > 0) {
                                         this.cache.clients[client.mac] = client;
                                         this.cache.clients[client.mac].name = name;
-                                        this.cache.clients[client.mac].iobTimestamp = moment().unix();
+                                        this.cache.clients[client.mac].timestamp = moment().unix();
                                         dataToProcess.mac = client.mac;
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
@@ -495,7 +495,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (Object.keys(dataToProcess).length > 0) {
                                         this.cache.clients[client.mac] = client;
                                         this.cache.clients[client.mac].name = name;
-                                        this.cache.clients[client.mac].iobTimestamp = moment().unix();
+                                        this.cache.clients[client.mac].timestamp = moment().unix();
                                         dataToProcess.mac = client.mac;
                                         dataToProcess.name = name;
                                         if (!isAdapterStart)
@@ -532,7 +532,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (Object.keys(dataToProcess).length > 0) {
                                         this.cache.vpn[client.ip] = client;
                                         this.cache.vpn[client.ip].name = name;
-                                        this.cache.vpn[client.ip].iobTimestamp = moment().unix();
+                                        this.cache.vpn[client.ip].timestamp = moment().unix();
                                         this.log.warn(JSON.stringify(this.cache.vpn[client.ip]));
                                         dataToProcess.ip = client.ip;
                                         dataToProcess.name = name;

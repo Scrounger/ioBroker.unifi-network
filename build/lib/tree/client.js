@@ -89,12 +89,14 @@ export var client;
                 iobType: 'boolean',
                 name: 'Is client online',
                 valFromProperty: 'last_seen',
+                subscribeMe: true,
                 readVal(val, adapter, cache, deviceOrClient) {
+                    const diff = moment().diff(val * 1000, 'seconds');
                     if (deviceOrClient.mac) {
-                        return moment().diff(val * 1000, 'seconds') <= adapter.config.clientOfflineTimeout;
+                        return diff <= adapter.config.clientOfflineTimeout;
                     }
                     else {
-                        return moment().diff(val * 1000, 'seconds') <= adapter.config.vpnOfflineTimeout;
+                        return diff <= adapter.config.vpnOfflineTimeout;
                     }
                 }
             },

@@ -56,6 +56,21 @@ export namespace wlan {
         }
     }
 
+    export function getGlobal(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
+        return {
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+            },
+        }
+    }
+
     export function getKeys(): string[] {
         if (keys === undefined) {
             keys = myHelper.getAllKeysOfTreeDefinition(get());
