@@ -2,6 +2,7 @@ import { NetworkClient, NetworkClientFingerprint } from "./api/network-types-cli
 import { NetworkDevice } from "./api/network-types-device";
 import { NetworkDeviceModels } from './api/network-types-device-models'
 import { NetworkWlanConfig } from "./api/network-types-wlan-config";
+import { NetworkLanConfig } from "./api/network-types-lan-config";
 
 export interface myCommonState {
     id?: string,
@@ -139,7 +140,8 @@ export interface myCache {
     deviceModels: NetworkDeviceModels[],
     clients: { [key: string]: myNetworkClient; },
     vpn: { [key: string]: myNetworkClient; }
-    wlan: { [key: string]: NetworkWlanConfig; }
+    wlan: { [key: string]: NetworkWlanConfig; },
+    lan: { [key: string]: NetworkLanConfig; }
     isOnline: { [key: string]: myIsOnline; }
 }
 

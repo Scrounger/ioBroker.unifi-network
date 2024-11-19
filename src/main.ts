@@ -45,6 +45,7 @@ class UnifiNetwork extends utils.Adapter {
 		clients: {},
 		vpn: {},
 		wlan: {},
+		lan: {},
 		isOnline: {}
 	}
 

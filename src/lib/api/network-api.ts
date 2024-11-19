@@ -11,6 +11,7 @@ import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
 import { NetworkDeviceModels } from './network-types-device-models.js'
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
+import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -568,14 +569,54 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * API V2 - List all WLan configurations
-     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns 
      */
-    public async getWlanConfig_V2(wlan_id = undefined): Promise<NetworkWlanConfig_V2[] | undefined> {
+    public async getWlanConfig_V2(): Promise<NetworkWlanConfig_V2[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`
 
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.wlanConfig)}`);
+
+            if (res) {
+                return res;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
+     * List all LAN configurations
+     * @param network_id optional: network id to receive only the configuration for this wlan
+     * @returns 
+     */
+    public async getLanConfig(network_id = undefined): Promise<NetworkWlanConfig[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getLanConfig]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.lanConfig)}${network_id ? `/${network_id.trim()}` : ''}`);
+
+            if (res && res.data) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
+     * API V2 - List all Lan configurations
+     * @returns 
+     */
+    public async getLanConfig_V2(): Promise<NetworkLanConfig_V2[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getLanConfig_V2]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.lanConfig)}`);
 
             if (res) {
                 return res;
@@ -640,6 +681,10 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
                 break;
 
+            case ApiEndpoints.lanConfig:
+                endpointSuffix = `/api/s/${this.site}/rest/lanConfig`;
+                break;
+
             default:
                 break;
         }
@@ -675,6 +720,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints_V2.wlanConfig:
                 endpointSuffix = `/v2/api/site/${this.site}/wlan/enriched-configuration`;
+                break;
+
+            case ApiEndpoints_V2.lanConfig:
+                endpointSuffix = `/v2/api/site/${this.site}/lan/enriched-configuration`;
                 break;
 
             case ApiEndpoints_V2.models:
@@ -787,6 +836,7 @@ export enum ApiEndpoints {
     clients = 'clients',
     clientsActive = "clientsActive",
     wlanConfig = 'wlanConfig',
+    lanConfig = 'lanConfig',
 }
 
 export enum ApiEndpoints_V2 {
@@ -794,5 +844,6 @@ export enum ApiEndpoints_V2 {
     clientsActive = "clientsActive",
     clientsHistory = "clientsHistory",
     wlanConfig = 'wlanConfig',
+    lanConfig = 'lanConfig',
     models = 'models'
 }
