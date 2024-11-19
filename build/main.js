@@ -137,6 +137,7 @@ class UnifiNetwork extends utils.Adapter {
                                 network_id: this.cache.clients[macOrIp]?.network_id || this.cache.vpn[macOrIp]?.network_id,
                             };
                             this.log.warn(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
+                            await this.updateWlanConnectedClients();
                         }
                     }
                 }
@@ -364,6 +365,7 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
             // await this.updatClientsOffline(await this.ufn.getClients(), true);
             await this.updateWlanConfig(null, true);
+            await this.updateWlanConnectedClients(true);
             // this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {
@@ -697,6 +699,44 @@ class UnifiNetwork extends utils.Adapter {
                         await this.delObjectAsync(idChannel, { recursive: true });
                         this.log.debug(`${logPrefix} '${idChannel}' deleted`);
                     }
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateWlanConnectedClients(isAdapterStart = false) {
+        const logPrefix = '[updateWlanConnectedClients]:';
+        try {
+            if (this.config.wlanConfigEnabled) {
+                if (isAdapterStart) {
+                    const obj = { connected_clients: 0, connected_guests: 0 };
+                    this.createGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, obj, obj, true);
+                }
+                let sumClients = 0;
+                let sumGuests = 0;
+                for (let wlan_id in this.cache.wlan) {
+                    const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.wlan_id === wlan_id);
+                    this.log.debug(`${logPrefix} WiFi '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
+                    if (!this.cache.wlan[wlan_id].is_guest) {
+                        sumClients = sumClients + connectedClients.length;
+                    }
+                    else {
+                        sumGuests = sumGuests + connectedClients.length;
+                    }
+                    const id = `wlan.${wlan_id}.connected_${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}`;
+                    if (await this.objectExists(id)) {
+                        this.setStateChanged(id, connectedClients.length, true);
+                    }
+                }
+                const idSumClients = 'wlan.connected_clients';
+                if (await this.objectExists(idSumClients)) {
+                    this.setStateChanged(idSumClients, sumClients, true);
+                }
+                const idSumGuests = 'wlan.connected_guests';
+                if (await this.objectExists(idSumGuests)) {
+                    this.setStateChanged(idSumGuests, sumGuests, true);
                 }
             }
         }
