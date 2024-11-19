@@ -92,7 +92,7 @@ export var client;
                 subscribeMe: true,
                 readVal(val, adapter, cache, deviceOrClient) {
                     const diff = moment().diff(val * 1000, 'seconds');
-                    if (deviceOrClient.mac) {
+                    if (deviceOrClient.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
                     }
                     else {

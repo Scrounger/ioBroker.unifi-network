@@ -95,7 +95,7 @@ export namespace client {
                 subscribeMe: true,
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
                     const diff = moment().diff(val * 1000, 'seconds');
-                    if (deviceOrClient.mac) {
+                    if (deviceOrClient.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
                     } else {
                         return diff <= adapter.config.vpnOfflineTimeout;

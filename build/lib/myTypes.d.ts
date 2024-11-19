@@ -94,7 +94,15 @@ export interface myCache {
     wlan: {
         [key: string]: NetworkWlanConfig;
     };
+    isOnline: {
+        [key: string]: myIsOnline;
+    };
 }
 export interface myImgCache {
     [key: string]: string[];
+}
+export interface myIsOnline {
+    val: boolean;
+    wlan_id?: string | undefined;
+    network_id?: string | undefined;
 }

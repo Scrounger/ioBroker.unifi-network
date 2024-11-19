@@ -45,6 +45,7 @@ class UnifiNetwork extends utils.Adapter {
 		clients: {},
 		vpn: {},
 		wlan: {},
+		isOnline: {}
 	}
 
 	subscribedList: string[] = [];
@@ -150,16 +151,28 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (state) {
-				if (myHelper.getIdLastPart(id) === 'imageUrl') {
+				if (state.from.includes(this.namespace)) {
 					// internal changes
-					if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
-						await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
-						this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
-					} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.devices.`)) {
-						await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
-						this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
-					}
+					if (myHelper.getIdLastPart(id) === 'imageUrl') {
+						if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
+							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
+							this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
+						} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.devices.`)) {
+							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
+							this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
+						}
+					} else if (myHelper.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`) || id.startsWith(`${this.namespace}.vpn.`))) {
+						const macOrIp = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replaceAll('_', '.');
 
+						if (state.val !== this.cache.isOnline[macOrIp].val) {
+							this.cache.isOnline[macOrIp] = {
+								val: state.val as boolean,
+								wlan_id: this.cache.clients[macOrIp]?.wlanconf_id || this.cache.vpn[macOrIp]?.wlanconf_id,
+								network_id: this.cache.clients[macOrIp]?.network_id || this.cache.vpn[macOrIp]?.network_id,
+							}
+							this.log.warn(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
+						}
+					}
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
 					// state changed from outside of the adapter
 					const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
@@ -229,7 +242,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				} else {
 					// The state was changed
-					this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+					// this.log.debug(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 				}
 			} else {
 				// The state was deleted
@@ -406,7 +419,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			await this.updateWlanConfig(null, true);
 
-			this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
+			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -533,6 +546,7 @@ class UnifiNetwork extends utils.Adapter {
 
 									if (!this.cache.clients[client.mac]) {
 										this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+										this.cache.isOnline[client.mac] = { val: !isOfflineClients }
 									}
 
 									let dataToProcess = client;
@@ -545,6 +559,9 @@ class UnifiNetwork extends utils.Adapter {
 										this.cache.clients[client.mac] = client;
 										this.cache.clients[client.mac].name = name;
 										this.cache.clients[client.mac].timestamp = moment().unix();
+
+										this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+										this.cache.isOnline[client.mac].network_id = client.network_id;
 
 										dataToProcess.mac = client.mac;
 										dataToProcess.name = name
@@ -570,6 +587,7 @@ class UnifiNetwork extends utils.Adapter {
 
 									if (!this.cache.clients[client.mac]) {
 										this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+										this.cache.isOnline[client.mac] = { val: !isOfflineClients }
 									}
 
 									let dataToProcess = client;
@@ -582,6 +600,9 @@ class UnifiNetwork extends utils.Adapter {
 										this.cache.clients[client.mac] = client;
 										this.cache.clients[client.mac].name = name;
 										this.cache.clients[client.mac].timestamp = moment().unix();
+
+										this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+										this.cache.isOnline[client.mac].network_id = client.network_id;
 
 										dataToProcess.mac = client.mac;
 										dataToProcess.name = name
@@ -608,6 +629,7 @@ class UnifiNetwork extends utils.Adapter {
 
 									if (!this.cache.vpn[client.ip]) {
 										this.log.debug(`${logPrefix} Discovered vpn client '${name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
+										this.cache.isOnline[client.ip] = { val: !isOfflineClients }
 									}
 
 									const idChannel = client.network_id;
@@ -625,6 +647,9 @@ class UnifiNetwork extends utils.Adapter {
 										this.cache.vpn[client.ip] = client;
 										this.cache.vpn[client.ip].name = name;
 										this.cache.vpn[client.ip].timestamp = moment().unix();
+
+										this.cache.isOnline[client.ip].wlan_id = client.wlanconf_id;
+										this.cache.isOnline[client.ip].network_id = client.network_id;
 
 										dataToProcess.ip = client.ip;
 										dataToProcess.name = name
@@ -726,7 +751,7 @@ class UnifiNetwork extends utils.Adapter {
 
 					//ToDo: Debug log message inkl. name, mac, ip
 					if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
-						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen not updated since ${diff}s`);
+						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${before.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
 					}
 				}
 			}
