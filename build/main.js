@@ -64,6 +64,7 @@ class UnifiNetwork extends utils.Adapter {
                 this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this.log);
                 await this.establishConnection();
                 this.ufn.on('message', this.eventListener);
+                this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
             }
             else {
                 this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -128,14 +129,18 @@ class UnifiNetwork extends utils.Adapter {
                 else if (!state.from.includes(this.namespace) && state.ack === false) {
                     // state changed from outside of the adapter
                     const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
-                    if (id.startsWith(`${this.namespace}.clients.`)) {
+                    if (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`)) {
                         // Client state changed
                         if (myHelper.getIdLastPart(id) === 'blocked') {
                             if (state.val) {
-                                await apiCommands.clients.block(this.ufn, mac);
+                                const res = await apiCommands.clients.block(this.ufn, mac);
+                                if (res)
+                                    this.log.info(`${logPrefix} command sent: block - '${this.cache.clients[mac].name}' (mac: ${mac})`);
                             }
                             else {
-                                await apiCommands.clients.unblock(this.ufn, mac);
+                                const res = await apiCommands.clients.unblock(this.ufn, mac);
+                                if (res)
+                                    this.log.info(`${logPrefix} command sent: unblock - '${this.cache.clients[mac].name}' (mac: ${mac})`);
                             }
                         }
                         else if (myHelper.getIdLastPart(id) === 'reconnect') {

@@ -140,7 +140,11 @@ export namespace client {
             model_name: {
                 id: 'model',
                 iobType: 'string',
-                name: 'model name'
+                name: 'model name',
+                conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wired and wireless clients
+                    return objValues.type === undefined || objValues.type !== "VPN";
+                },
             },
             name: {
                 iobType: 'string',
@@ -255,7 +259,11 @@ export namespace client {
             vlan: {
                 id: 'network_vlan',
                 iobType: 'number',
-                name: 'VLAN number'
+                name: 'VLAN number',
+                conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
+                    // only wired and wireless clients
+                    return objValues.type === undefined || objValues.type !== "VPN";
+                },
             },
             wired_rate_mbps: {
                 id: 'speed',

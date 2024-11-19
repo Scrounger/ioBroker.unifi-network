@@ -90,6 +90,7 @@ class UnifiNetwork extends utils.Adapter {
 				await this.establishConnection();
 
 				this.ufn.on('message', this.eventListener);
+				this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
 
 			} else {
 				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -163,13 +164,15 @@ class UnifiNetwork extends utils.Adapter {
 					// state changed from outside of the adapter
 					const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
 
-					if (id.startsWith(`${this.namespace}.clients.`)) {
+					if (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`)) {
 						// Client state changed
 						if (myHelper.getIdLastPart(id) === 'blocked') {
 							if (state.val) {
-								await apiCommands.clients.block(this.ufn, mac);
+								const res = await apiCommands.clients.block(this.ufn, mac);
+								if (res) this.log.info(`${logPrefix} command sent: block - '${this.cache.clients[mac].name}' (mac: ${mac})`);
 							} else {
-								await apiCommands.clients.unblock(this.ufn, mac);
+								const res = await apiCommands.clients.unblock(this.ufn, mac);
+								if (res) this.log.info(`${logPrefix} command sent: unblock - '${this.cache.clients[mac].name}' (mac: ${mac})`);
 							}
 
 						} else if (myHelper.getIdLastPart(id) === 'reconnect') {
@@ -524,6 +527,7 @@ class UnifiNetwork extends utils.Adapter {
 							const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
 
 							if (this.config.clientsEnabled && client.mac && !client.is_guest) {
+								// Clients
 								if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
 									if (isAdapterStart) countClients++
 
@@ -560,6 +564,7 @@ class UnifiNetwork extends utils.Adapter {
 									}
 								}
 							} else if (this.config.guestsEnabled && client.mac && client.is_guest) {
+								// Guests
 								if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
 									if (isAdapterStart) countGuests++
 
@@ -598,6 +603,7 @@ class UnifiNetwork extends utils.Adapter {
 								}
 							} else {
 								if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
+									// VPN Clients
 									if (isAdapterStart) countVpn++
 
 									if (!this.cache.vpn[client.ip]) {
@@ -619,8 +625,6 @@ class UnifiNetwork extends utils.Adapter {
 										this.cache.vpn[client.ip] = client;
 										this.cache.vpn[client.ip].name = name;
 										this.cache.vpn[client.ip].timestamp = moment().unix();
-
-										this.log.warn(JSON.stringify(this.cache.vpn[client.ip]));
 
 										dataToProcess.ip = client.ip;
 										dataToProcess.name = name

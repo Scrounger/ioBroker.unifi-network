@@ -1,8 +1,7 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache } from "../myTypes";
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes";
 import * as myHelper from '../helper.js';
 import { NetworkWlanConfig } from "../api/network-types-wlan-config";
 import { NetworkDevice } from "../api/network-types-device";
-import { NetworkClient } from "../api/network-types-client";
 
 export namespace wlan {
     let keys: string[] = undefined;
@@ -49,7 +48,7 @@ export namespace wlan {
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | NetworkClient): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
                     return val >= 0 ? val : 0
                 },
             },
