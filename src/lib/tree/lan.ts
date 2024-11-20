@@ -1,12 +1,31 @@
 import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes";
 import * as myHelper from '../helper.js';
 import { NetworkDevice } from "../api/network-types-device";
+import { NetworkLanConfig } from "../api/network-types-lan-config";
 
 export namespace lan {
     let keys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+                conditionToCreateState(objValues: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
+                    return objValues.purpose !== 'guest'
+                },
+                valFromProperty: 'dhcp_active_leases',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+                conditionToCreateState(objValues: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
+                    return objValues.purpose === 'guest'
+                },
+                valFromProperty: 'dhcp_active_leases',
+            },
             enabled: {
                 iobType: 'boolean',
                 name: 'WLAN enabled',

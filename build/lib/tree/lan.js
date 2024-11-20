@@ -4,6 +4,24 @@ export var lan;
     let keys = undefined;
     function get() {
         return {
+            connected_clients: {
+                id: 'connected_clients',
+                iobType: 'number',
+                name: 'connected clients',
+                conditionToCreateState(objValues, adapter) {
+                    return objValues.purpose !== 'guest';
+                },
+                valFromProperty: 'dhcp_active_leases',
+            },
+            connected_guests: {
+                id: 'connected_guests',
+                iobType: 'number',
+                name: 'connected guests',
+                conditionToCreateState(objValues, adapter) {
+                    return objValues.purpose === 'guest';
+                },
+                valFromProperty: 'dhcp_active_leases',
+            },
             enabled: {
                 iobType: 'boolean',
                 name: 'WLAN enabled',

@@ -167,14 +167,20 @@ class UnifiNetwork extends utils.Adapter {
 						const macOrIp = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replaceAll('_', '.');
 
 						if (state.val !== this.cache.isOnline[macOrIp].val) {
+							const old = {
+								wlan_id: this.cache.isOnline[macOrIp].wlan_id,
+								network_id: this.cache.isOnline[macOrIp].network_id,
+							}
 							this.cache.isOnline[macOrIp] = {
 								val: state.val as boolean,
-								wlan_id: this.cache.clients[macOrIp]?.wlanconf_id || this.cache.vpn[macOrIp]?.wlanconf_id,
-								network_id: this.cache.clients[macOrIp]?.network_id || this.cache.vpn[macOrIp]?.network_id,
+								wlan_id: this.cache.clients[macOrIp]?.wlanconf_id || this.cache.vpn[macOrIp]?.wlanconf_id || old.wlan_id,
+								network_id: this.cache.clients[macOrIp]?.network_id || this.cache.vpn[macOrIp]?.network_id || old.network_id,
 							}
+
 							this.log.warn(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
 
 							await this.updateWlanConnectedClients();
+							await this.updateLanConnectedClients();
 						}
 					}
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
@@ -425,6 +431,7 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateWlanConnectedClients(true);
 
 			await this.updateLanConfig(null, true);
+			await this.updateLanConnectedClients(true);
 
 			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
@@ -920,6 +927,50 @@ class UnifiNetwork extends utils.Adapter {
 						await this.delObjectAsync(idChannel, { recursive: true });
 						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
 					}
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async updateLanConnectedClients(isAdapterStart: boolean = false): Promise<void> {
+		const logPrefix = '[updateLanConnectedClients]:';
+
+		try {
+			if (this.config.lanConfigEnabled) {
+				if (isAdapterStart) {
+					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'lan' };
+					await this.createGenericState('lan', tree.lan.getGlobal(), obj, undefined, obj, obj, true);
+				}
+
+				let sumClients = 0;
+				let sumGuests = 0;
+
+				for (let lan_id in this.cache.lan) {
+					const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.network_id === lan_id);
+					this.log.debug(`${logPrefix} LAN '${this.cache.lan[lan_id].name}' (id: ${lan_id}) connected ${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}: ${connectedClients.length}`);
+
+					if (this.cache.lan[lan_id].purpose !== 'guest') {
+						sumClients = sumClients + connectedClients.length;
+					} else {
+						sumGuests = sumGuests + connectedClients.length;
+					}
+
+					const id = `lan.${lan_id}.connected_${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}`
+					if (await this.objectExists(id)) {
+						this.setStateChanged(id, connectedClients.length, true);
+					}
+				}
+
+				const idSumClients = 'lan.connected_clients';
+				if (await this.objectExists(idSumClients)) {
+					this.setStateChanged(idSumClients, sumClients, true);
+				}
+
+				const idSumGuests = 'lan.connected_guests';
+				if (await this.objectExists(idSumGuests)) {
+					this.setStateChanged(idSumGuests, sumGuests, true);
 				}
 			}
 		} catch (error) {
