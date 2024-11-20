@@ -1588,31 +1588,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.debug(`${logPrefix} wlan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
 
 				if (event.meta.message.endsWith(':delete')) {
-					if (event.data && this.config.keepIobSynchron) {
-						for (let wlan of event.data) {
-							const idChannel = `wlan.${wlan._id}`
-
-							if (await this.objectExists(idChannel)) {
-								await this.delObjectAsync(idChannel, { recursive: true });
-								this.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
-							}
-
-							if (this.config.devicesEnabled) {
-								const devices = await this.getStatesAsync(`devices.*.wifi.*.id`);
-
-								for (const id in devices) {
-									if (devices[id].val === wlan._id) {
-										const idChannel = myHelper.getIdWithoutLastPart(id);
-
-										if (await this.objectExists(idChannel)) {
-											await this.delObjectAsync(idChannel, { recursive: true });
-											this.log.debug(`${logPrefix} '${idChannel}' deleted`);
-										}
-									}
-								}
-							}
-						}
-					}
+					eventHandler.wlanConf.deleted(event.meta, event.data, this, this.cache);
 				} else {
 					await this.updateWlanConfig(event.data as NetworkWlanConfig[]);
 				}
@@ -1630,16 +1606,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.debug(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
 
 				if (event.meta.message.endsWith(':delete')) {
-					if (event.data && this.config.keepIobSynchron) {
-						for (let lan of event.data) {
-							const idChannel = `lan.${lan._id}`
-
-							if (await this.objectExists(idChannel)) {
-								await this.delObjectAsync(idChannel, { recursive: true });
-								this.log.debug(`${logPrefix} lan '${lan.name}' (channel: ${idChannel}) deleted`);
-							}
-						}
-					}
+					eventHandler.lanConf.deleted(event.meta, event.data, this, this.cache);
 				} else {
 					await this.updateLanConfig(event.data as NetworkLanConfig[]);
 				}

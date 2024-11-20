@@ -1,5 +1,7 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
 import { myCache, myNetworkClient } from "./myTypes.js";
+import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import { NetworkLanConfig } from "./api/network-types-lan-config.js";
 export declare const eventHandler: {
     device: {
         restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
@@ -16,5 +18,11 @@ export declare const eventHandler: {
         clientRemoved(meta: NetworkEventMeta, data: {
             [key: string]: boolean | number | object | string;
         } | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+    };
+    wlanConf: {
+        deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+    };
+    lanConf: {
+        deleted(meta: NetworkEventMeta, data: NetworkLanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };
 };

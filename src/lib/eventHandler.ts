@@ -1,6 +1,8 @@
 import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
 import { WebSocketEvent, myCache, myNetworkClient } from "./myTypes.js";
 import * as myHelper from './helper.js';
+import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import { NetworkLanConfig } from "./api/network-types-lan-config.js";
 
 export const eventHandler = {
     device: {
@@ -207,5 +209,60 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
         },
+    },
+    wlanConf: {
+        async deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.wlanConf.deleted]:'
+
+            try {
+                if (data && adapter.config.keepIobSynchron) {
+                    for (let wlan of data) {
+                        const idChannel = `wlan.${wlan._id}`
+
+                        if (await adapter.objectExists(idChannel)) {
+                            await adapter.delObjectAsync(idChannel, { recursive: true });
+                            adapter.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
+                        }
+
+                        if (adapter.config.devicesEnabled) {
+                            const devices = await adapter.getStatesAsync(`devices.*.wifi.*.id`);
+
+                            for (const id in devices) {
+                                if (devices[id].val === wlan._id) {
+                                    const idChannel = myHelper.getIdWithoutLastPart(id);
+
+                                    if (await adapter.objectExists(idChannel)) {
+                                        await adapter.delObjectAsync(idChannel, { recursive: true });
+                                        adapter.log.debug(`${logPrefix} wlan '${wlan.name}' deleted from device (channel: ${idChannel})`);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        }
+    },
+    lanConf: {
+        async deleted(meta: NetworkEventMeta, data: NetworkLanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.lanConf.deleted]:'
+
+            try {
+                if (data && adapter.config.keepIobSynchron) {
+                    for (let lan of data) {
+                        const idChannel = `lan.${lan._id}`
+
+                        if (await adapter.objectExists(idChannel)) {
+                            await adapter.delObjectAsync(idChannel, { recursive: true });
+                            adapter.log.debug(`${logPrefix} lan '${lan.name}' (channel: ${idChannel}) deleted`);
+                        }
+                    }
+                }
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        }
     }
 }
