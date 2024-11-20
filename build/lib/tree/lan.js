@@ -33,11 +33,12 @@ export var lan;
                 name: 'IP subnet'
             },
             internet_access_enabled: {
-                id: 'internet_access',
+                id: 'internet_enabled',
                 iobType: 'boolean',
                 name: 'internet access enabled',
                 read: true,
-                write: true
+                write: true,
+                valFromProperty: 'internet_access_enabled'
             },
             name: {
                 iobType: 'string',

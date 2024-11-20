@@ -218,7 +218,21 @@ class UnifiNetwork extends utils.Adapter {
                             const wlan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
                             const res = await apiCommands.wlanConf.enable(this.ufn, wlan_id, state.val);
                             if (res)
-                                this.log.info(`${logPrefix} command sent:  wlan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.wlan[wlan_id].name}' (mac: ${wlan_id})`);
+                                this.log.info(`${logPrefix} command sent: wlan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id})`);
+                        }
+                    }
+                    else if (id.startsWith(`${this.namespace}.lan.`)) {
+                        if (myHelper.getIdLastPart(id) === 'enabled') {
+                            const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+                            const res = await apiCommands.lanConf.enable(this.ufn, lan_id, state.val);
+                            if (res)
+                                this.log.info(`${logPrefix} command sent: lan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.lan[lan_id].name}' (id: ${lan_id})`);
+                        }
+                        else if (myHelper.getIdLastPart(id) === 'internet_enabled') {
+                            const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+                            const res = await apiCommands.lanConf.internet_access_enabled(this.ufn, lan_id, state.val);
+                            if (res)
+                                this.log.info(`${logPrefix} command sent: internet access of lan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.lan[lan_id].name}' (id: ${lan_id})`);
                         }
                     }
                 }
@@ -1336,11 +1350,13 @@ class UnifiNetwork extends utils.Adapter {
     async onNetworkUserEvent(events) {
         const logPrefix = '[onNetworkUserEvent]:';
         try {
-            if (events && events.data) {
-                for (const event of events.data) {
-                    // user removed client from unifi-controller
-                    this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
-                    eventHandler.user.clientRemoved(events.meta, event, this, this.cache);
+            if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
+                if (events && events.data) {
+                    for (const event of events.data) {
+                        // user removed client from unifi-controller
+                        this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+                        eventHandler.user.clientRemoved(events.meta, event, this, this.cache);
+                    }
                 }
             }
         }
@@ -1351,32 +1367,34 @@ class UnifiNetwork extends utils.Adapter {
     async onNetworkWlanConfEvent(event) {
         const logPrefix = '[onNetworkWlanConfEvent]:';
         try {
-            this.log.debug(`${logPrefix} wlan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
-            if (event.meta.message.endsWith(':delete')) {
-                if (event.data && this.config.keepIobSynchron) {
-                    for (let wlan of event.data) {
-                        const idChannel = `wlan.${wlan._id}`;
-                        if (await this.objectExists(idChannel)) {
-                            await this.delObjectAsync(idChannel, { recursive: true });
-                            this.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
-                        }
-                        if (this.config.devicesEnabled) {
-                            const devices = await this.getStatesAsync(`devices.*.wifi.*.id`);
-                            for (const id in devices) {
-                                if (devices[id].val === wlan._id) {
-                                    const idChannel = myHelper.getIdWithoutLastPart(id);
-                                    if (await this.objectExists(idChannel)) {
-                                        await this.delObjectAsync(idChannel, { recursive: true });
-                                        this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+            if (this.config.wlanConfigEnabled) {
+                this.log.debug(`${logPrefix} wlan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+                if (event.meta.message.endsWith(':delete')) {
+                    if (event.data && this.config.keepIobSynchron) {
+                        for (let wlan of event.data) {
+                            const idChannel = `wlan.${wlan._id}`;
+                            if (await this.objectExists(idChannel)) {
+                                await this.delObjectAsync(idChannel, { recursive: true });
+                                this.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
+                            }
+                            if (this.config.devicesEnabled) {
+                                const devices = await this.getStatesAsync(`devices.*.wifi.*.id`);
+                                for (const id in devices) {
+                                    if (devices[id].val === wlan._id) {
+                                        const idChannel = myHelper.getIdWithoutLastPart(id);
+                                        if (await this.objectExists(idChannel)) {
+                                            await this.delObjectAsync(idChannel, { recursive: true });
+                                            this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-            else {
-                await this.updateWlanConfig(event.data);
+                else {
+                    await this.updateWlanConfig(event.data);
+                }
             }
         }
         catch (error) {
@@ -1386,20 +1404,22 @@ class UnifiNetwork extends utils.Adapter {
     async onNetworkLanConfEvent(event) {
         const logPrefix = '[onNetworkWlanConfEvent]:';
         try {
-            this.log.debug(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
-            if (event.meta.message.endsWith(':delete')) {
-                if (event.data && this.config.keepIobSynchron) {
-                    for (let lan of event.data) {
-                        const idChannel = `lan.${lan._id}`;
-                        if (await this.objectExists(idChannel)) {
-                            await this.delObjectAsync(idChannel, { recursive: true });
-                            this.log.debug(`${logPrefix} lan '${lan.name}' (channel: ${idChannel}) deleted`);
+            if (this.config.lanConfigEnabled) {
+                this.log.debug(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+                if (event.meta.message.endsWith(':delete')) {
+                    if (event.data && this.config.keepIobSynchron) {
+                        for (let lan of event.data) {
+                            const idChannel = `lan.${lan._id}`;
+                            if (await this.objectExists(idChannel)) {
+                                await this.delObjectAsync(idChannel, { recursive: true });
+                                this.log.debug(`${logPrefix} lan '${lan.name}' (channel: ${idChannel}) deleted`);
+                            }
                         }
                     }
                 }
-            }
-            else {
-                await this.updateLanConfig(event.data);
+                else {
+                    await this.updateLanConfig(event.data);
+                }
             }
         }
         catch (error) {

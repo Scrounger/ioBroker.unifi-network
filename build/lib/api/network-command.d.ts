@@ -17,4 +17,8 @@ export declare const apiCommands: {
     wlanConf: {
         enable(ufn: NetworkApi, wlan_id: string, enabled: boolean): Promise<boolean>;
     };
+    lanConf: {
+        enable(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean>;
+        internet_access_enabled(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean>;
+    };
 };

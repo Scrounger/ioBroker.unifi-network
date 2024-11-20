@@ -98,5 +98,15 @@ export const apiCommands = {
             const result = await ufn.sendData(`/api/s/${ufn.site}/rest/wlanconf/${wlan_id.trim()}`, { enabled: enabled }, 'PUT');
             return result === null ? false : true;
         }
+    },
+    lanConf: {
+        async enable(ufn, lan_id, enabled) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { enabled: enabled }, 'PUT');
+            return result === null ? false : true;
+        },
+        async internet_access_enabled(ufn, lan_id, enabled) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { internet_access_enabled: enabled }, 'PUT');
+            return result === null ? false : true;
+        }
     }
 };

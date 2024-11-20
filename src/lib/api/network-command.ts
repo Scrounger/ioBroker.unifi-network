@@ -121,5 +121,17 @@ export const apiCommands = {
 
             return result === null ? false : true;
         }
+    },
+    lanConf: {
+        async enable(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { enabled: enabled }, 'PUT');
+
+            return result === null ? false : true;
+        },
+        async internet_access_enabled(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { internet_access_enabled: enabled }, 'PUT');
+
+            return result === null ? false : true;
+        }
     }
 }
