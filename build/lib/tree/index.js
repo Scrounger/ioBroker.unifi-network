@@ -1,4 +1,5 @@
 import { client } from './client.js';
 import { device } from './device.js';
 import { wlan } from './wlan.js';
-export { client, device, wlan };
+import { lan } from './lan.js';
+export { client, device, wlan, lan };

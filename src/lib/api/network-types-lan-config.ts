@@ -5,60 +5,61 @@ export interface NetworkLanConfig_V2 {
 }
 
 export interface NetworkLanConfig {
-    setting_preference?: string
-    dhcpdv6_dns_auto?: boolean
-    ipv6_pd_stop?: string
-    dhcpd_gateway_enabled?: boolean
+    _id?: string
+    attr_hidden_id?: string
+    attr_no_delete?: boolean
+    auto_scale_enabled?: boolean
+    dhcp_relay_enabled?: boolean
+    dhcpd_boot_enabled?: boolean
+    dhcpd_conflict_checking?: boolean
     dhcpd_dns_1?: string
-    ipv6_client_address_assignment?: string
-    dhcpd_start?: string
-    dhcpd_unifi_controller?: string
-    ipv6_ra_enabled?: boolean
-    domain_name?: string
-    ip_subnet?: string
-    ipv6_interface_type?: string
     dhcpd_dns_2?: string
     dhcpd_dns_3?: string
-    dhcpdv6_stop?: string
-    is_nat?: boolean
     dhcpd_dns_enabled?: boolean
-    internet_access_enabled?: boolean
-    nat_outbound_ip_addresses?: string[]
-    dhcp_relay_enabled?: boolean
-    dhcpd_conflict_checking?: boolean
-    ipv6_pd_auto_prefixid_enabled?: boolean
-    name?: string
-    site_id?: string
-    dhcpdv6_leasetime?: number
-    ipv6_enabled?: boolean
-    _id?: string
-    lte_lan_enabled?: boolean
-    purpose?: string
-    dhcpd_leasetime?: number
-    igmp_snooping?: boolean
-    dhcpd_time_offset_enabled?: boolean
-    dhcpguard_enabled?: boolean
-    dhcpdv6_allow_slaac?: boolean
-    ipv6_ra_preferred_lifetime?: number
-    dhcpd_stop?: string
-    enabled?: boolean
     dhcpd_enabled?: boolean
-    dhcpd_wpad_url?: string
-    networkgroup?: string
-    dhcpdv6_start?: string
-    vlan_enabled?: boolean
-    ipv6_setting_preference?: string
-    gateway_type?: string
-    ipv6_ra_priority?: string
-    dhcpd_boot_enabled?: boolean
-    ipv6_pd_start?: string
-    upnp_lan_enabled?: boolean
+    dhcpd_gateway_enabled?: boolean
+    dhcpd_leasetime?: number
     dhcpd_ntp_enabled?: boolean
-    mdns_enabled?: boolean
-    attr_no_delete?: boolean
-    attr_hidden_id?: string
+    dhcpd_start?: string
+    dhcpd_stop?: string
     dhcpd_tftp_server?: string
-    auto_scale_enabled?: boolean
+    dhcpd_time_offset_enabled?: boolean
+    dhcpd_unifi_controller?: string
+    dhcpd_wpad_url?: string
+    dhcpdv6_allow_slaac?: boolean
+    dhcpdv6_dns_auto?: boolean
+    dhcpdv6_leasetime?: number
+    dhcpdv6_start?: string
+    dhcpdv6_stop?: string
+    dhcpguard_enabled?: boolean
+    domain_name?: string
+    enabled?: boolean
+    gateway_type?: string
+    igmp_snooping?: boolean
+    internet_access_enabled?: boolean
+    ip_subnet?: string
+    ipv6_client_address_assignment?: string
+    ipv6_enabled?: boolean
+    ipv6_interface_type?: string
+    ipv6_pd_auto_prefixid_enabled?: boolean
+    ipv6_pd_start?: string
+    ipv6_pd_stop?: string
+    ipv6_ra_enabled?: boolean
+    ipv6_ra_preferred_lifetime?: number
+    ipv6_ra_priority?: string
+    ipv6_setting_preference?: string
+    is_nat?: boolean
+    lte_lan_enabled?: boolean
+    mdns_enabled?: boolean
+    name?: string
+    nat_outbound_ip_addresses?: any[]
+    networkgroup?: string
+    purpose?: string
+    setting_preference?: string
+    site_id?: string
+    upnp_lan_enabled?: boolean
+    vlan?: string
+    vlan_enabled?: boolean
 }
 
 interface NetworkLanConfigDetails {

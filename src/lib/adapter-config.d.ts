@@ -23,6 +23,7 @@ declare global {
 			guestsEnabled: boolean;
 			vpnEnabled: boolean;
 			wlanConfigEnabled: boolean;
+			lanConfigEnabled: boolean;
 		}
 	}
 }

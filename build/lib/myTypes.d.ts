@@ -56,6 +56,11 @@ export interface myNetworkClient extends NetworkClient {
     isOnline: boolean;
     timestamp: number;
 }
+export interface ConnectedClients {
+    connected_clients: number;
+    connected_guests: number;
+    name: string;
+}
 export declare enum WebSocketEventMessages {
     client = "client",
     device = "device:sync",

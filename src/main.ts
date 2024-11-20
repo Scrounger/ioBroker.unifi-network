@@ -19,11 +19,12 @@ import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
-import { WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache, myNetworkClient } from './lib/myTypes.js';
+import { ConnectedClients, WebSocketEvent, WebSocketEventMessages, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myImgCache, myNetworkClient } from './lib/myTypes.js';
 
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
+import { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -421,8 +422,9 @@ class UnifiNetwork extends utils.Adapter {
 			// await this.updatClientsOffline(await this.ufn.getClients(), true);
 
 			await this.updateWlanConfig(null, true);
-
 			await this.updateWlanConnectedClients(true);
+
+			await this.updateLanConfig(null, true);
 
 			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
@@ -785,7 +787,7 @@ class UnifiNetwork extends utils.Adapter {
 
 							// Convert API V2 to V1, because event is from type V1
 							if ((wlan as NetworkWlanConfig_V2) && (wlan as NetworkWlanConfig_V2).configuration) {
-								wlan = { ...(wlan as NetworkWlanConfig_V2).configuration, ...(wlan as NetworkWlanConfig_V2).statistics }
+								wlan = { ...(wlan as NetworkWlanConfig_V2).configuration, ...(wlan as NetworkWlanConfig_V2).details, ...(wlan as NetworkWlanConfig_V2).statistics }
 							}
 
 							wlan = (wlan as NetworkWlanConfig);
@@ -829,8 +831,8 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (this.config.wlanConfigEnabled) {
 				if (isAdapterStart) {
-					const obj = { connected_clients: 0, connected_guests: 0 };
-					this.createGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, obj, obj, true);
+					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'wlan' };
+					await this.createGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, obj, obj, true);
 				}
 
 				let sumClients = 0;
@@ -867,6 +869,63 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
+	async updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
+		const logPrefix = '[updateLanConfig]:';
+
+		try {
+
+			if (this.connected && this.isConnected) {
+				const idChannel = 'lan';
+
+				if (this.config.lanConfigEnabled) {
+					if (isAdapterStart) {
+						await this.createOrUpdateChannel(idChannel, 'lan', undefined, true);
+						data = (await this.ufn.getLanConfig_V2()) as NetworkLanConfig_V2[];
+					}
+
+					if (data && data !== null) {
+						if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} LAN's`);
+
+						for (let lan of data) {
+
+							// Convert API V2 to V1, because event is from type V1
+							if ((lan as NetworkLanConfig_V2) && (lan as NetworkLanConfig_V2).configuration) {
+								lan = { ...(lan as NetworkLanConfig_V2).configuration, ...(lan as NetworkLanConfig_V2).details, ...(lan as NetworkLanConfig_V2).statistics }
+							}
+
+							lan = (lan as NetworkLanConfig);
+
+							if (!this.cache.lan[lan._id]) {
+								this.log.debug(`${logPrefix} Discovered LAN '${lan.name}'`);
+							}
+
+							let dataToProcess = lan;
+							if (this.cache.lan[lan._id]) {
+								// filter out unchanged properties
+								dataToProcess = myHelper.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys()) as NetworkLanConfig;
+							}
+
+							this.cache.lan[lan._id] = lan;
+
+							if (!_.isEmpty(dataToProcess)) {
+								dataToProcess._id = lan._id;
+
+								await this.createOrUpdateDevice(`${idChannel}.${lan._id}`, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
+								await this.createGenericState(`${idChannel}.${lan._id}`, tree.lan.get(), dataToProcess, 'lan', lan, lan, isAdapterStart);
+							}
+						}
+					}
+				} else {
+					if (await this.objectExists(idChannel)) {
+						await this.delObjectAsync(idChannel, { recursive: true });
+						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+					}
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
 
 	/**
 	 * @deprecated Download public data from ui with image url infos.
@@ -1104,7 +1163,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | { connected_clients: number, connected_guests: number }, filterComparisonId: string, objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig | { connected_clients: number, connected_guests: number }, objOrgValues, isAdapterStart: boolean = false) {
+	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, filterComparisonId: string, objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objOrgValues, isAdapterStart: boolean = false) {
 		const logPrefix = '[createGenericState]:';
 
 		try {

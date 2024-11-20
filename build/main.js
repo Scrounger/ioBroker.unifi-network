@@ -367,6 +367,7 @@ class UnifiNetwork extends utils.Adapter {
             // await this.updatClientsOffline(await this.ufn.getClients(), true);
             await this.updateWlanConfig(null, true);
             await this.updateWlanConnectedClients(true);
+            await this.updateLanConfig(null, true);
             // this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {
@@ -675,7 +676,7 @@ class UnifiNetwork extends utils.Adapter {
                         for (let wlan of data) {
                             // Convert API V2 to V1, because event is from type V1
                             if (wlan && wlan.configuration) {
-                                wlan = { ...wlan.configuration, ...wlan.statistics };
+                                wlan = { ...wlan.configuration, ...wlan.details, ...wlan.statistics };
                             }
                             wlan = wlan;
                             if (!this.cache.wlan[wlan._id]) {
@@ -712,8 +713,8 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (this.config.wlanConfigEnabled) {
                 if (isAdapterStart) {
-                    const obj = { connected_clients: 0, connected_guests: 0 };
-                    this.createGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, obj, obj, true);
+                    const obj = { connected_clients: 0, connected_guests: 0, name: 'wlan' };
+                    await this.createGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, obj, obj, true);
                 }
                 let sumClients = 0;
                 let sumGuests = 0;
@@ -738,6 +739,54 @@ class UnifiNetwork extends utils.Adapter {
                 const idSumGuests = 'wlan.connected_guests';
                 if (await this.objectExists(idSumGuests)) {
                     this.setStateChanged(idSumGuests, sumGuests, true);
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateLanConfig(data, isAdapterStart = false) {
+        const logPrefix = '[updateLanConfig]:';
+        try {
+            if (this.connected && this.isConnected) {
+                const idChannel = 'lan';
+                if (this.config.lanConfigEnabled) {
+                    if (isAdapterStart) {
+                        await this.createOrUpdateChannel(idChannel, 'lan', undefined, true);
+                        data = (await this.ufn.getLanConfig_V2());
+                    }
+                    if (data && data !== null) {
+                        if (isAdapterStart)
+                            this.log.info(`${logPrefix} Discovered ${data.length} LAN's`);
+                        for (let lan of data) {
+                            // Convert API V2 to V1, because event is from type V1
+                            if (lan && lan.configuration) {
+                                lan = { ...lan.configuration, ...lan.details, ...lan.statistics };
+                            }
+                            lan = lan;
+                            if (!this.cache.lan[lan._id]) {
+                                this.log.debug(`${logPrefix} Discovered LAN '${lan.name}'`);
+                            }
+                            let dataToProcess = lan;
+                            if (this.cache.lan[lan._id]) {
+                                // filter out unchanged properties
+                                dataToProcess = myHelper.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys());
+                            }
+                            this.cache.lan[lan._id] = lan;
+                            if (!_.isEmpty(dataToProcess)) {
+                                dataToProcess._id = lan._id;
+                                await this.createOrUpdateDevice(`${idChannel}.${lan._id}`, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
+                                await this.createGenericState(`${idChannel}.${lan._id}`, tree.lan.get(), dataToProcess, 'lan', lan, lan, isAdapterStart);
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (await this.objectExists(idChannel)) {
+                        await this.delObjectAsync(idChannel, { recursive: true });
+                        this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+                    }
                 }
             }
         }
