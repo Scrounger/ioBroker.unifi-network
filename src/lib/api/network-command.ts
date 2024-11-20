@@ -8,10 +8,31 @@ export const apiCommands = {
 
             return result === null ? false : true;
         },
-        async cyclePoePortPower(ufn: NetworkApi, mac: string, port_idx: number) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
+        async cyclePoePortPower(ufn: NetworkApi, mac: string, port_idx: number, device: NetworkDevice) {
+            const logPrefix = '[apiCommands.cyclePoePortPower]'
 
-            return result === null ? false : true;
+            try {
+                const port_table = device.port_table;
+
+                if (port_table && port_table.length > 0) {
+                    const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
+
+                    if (indexOfPort !== -1) {
+                        if (!port_table[indexOfPort].poe_enable) {
+                            ufn.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: cycle poe power not possible, because poe is not enabled for this port!`);
+                            return false;
+                        }
+                    }
+                }
+
+                const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
+                return result === null ? false : true;
+
+            } catch (error) {
+                ufn.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+
+            return false;
         },
         async switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean> {
             const logPrefix = '[apiCommands.switchPoePort]'

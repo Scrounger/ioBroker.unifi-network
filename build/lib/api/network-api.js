@@ -424,13 +424,47 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * API V2 - List all WLan configurations
-     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns
      */
-    async getWlanConfig_V2(wlan_id = undefined) {
+    async getWlanConfig_V2() {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.wlanConfig)}`);
+            if (res) {
+                return res;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    /**
+     * List all LAN configurations
+     * @param network_id optional: network id to receive only the configuration for this wlan
+     * @returns
+     */
+    async getLanConfig(network_id = undefined) {
+        const logPrefix = `[${this.logPrefix}.getLanConfig]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.lanConfig)}${network_id ? `/${network_id.trim()}` : ''}`);
+            if (res && res.data) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    /**
+     * API V2 - List all Lan configurations
+     * @returns
+     */
+    async getLanConfig_V2() {
+        const logPrefix = `[${this.logPrefix}.getLanConfig_V2]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.lanConfig)}`);
             if (res) {
                 return res;
             }
@@ -482,6 +516,9 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.wlanConfig:
                 endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
                 break;
+            case ApiEndpoints.lanConfig:
+                endpointSuffix = `/api/s/${this.site}/rest/lanConfig`;
+                break;
             default:
                 break;
         }
@@ -508,6 +545,9 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints_V2.wlanConfig:
                 endpointSuffix = `/v2/api/site/${this.site}/wlan/enriched-configuration`;
+                break;
+            case ApiEndpoints_V2.lanConfig:
+                endpointSuffix = `/v2/api/site/${this.site}/lan/enriched-configuration`;
                 break;
             case ApiEndpoints_V2.models:
                 endpointSuffix = `/v2/api/site/${this.site}/models`;
@@ -591,6 +631,7 @@ export var ApiEndpoints;
     ApiEndpoints["clients"] = "clients";
     ApiEndpoints["clientsActive"] = "clientsActive";
     ApiEndpoints["wlanConfig"] = "wlanConfig";
+    ApiEndpoints["lanConfig"] = "lanConfig";
 })(ApiEndpoints || (ApiEndpoints = {}));
 export var ApiEndpoints_V2;
 (function (ApiEndpoints_V2) {
@@ -598,5 +639,6 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["clientsActive"] = "clientsActive";
     ApiEndpoints_V2["clientsHistory"] = "clientsHistory";
     ApiEndpoints_V2["wlanConfig"] = "wlanConfig";
+    ApiEndpoints_V2["lanConfig"] = "lanConfig";
     ApiEndpoints_V2["models"] = "models";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));

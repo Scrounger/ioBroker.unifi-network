@@ -206,14 +206,14 @@ class UnifiNetwork extends utils.Adapter {
 
 						} else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
 							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
 
-							const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
+							const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx, this.cache.devices[mac]);
 
 							if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 						} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
 							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
 
 							const res = await apiCommands.devices.switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
 

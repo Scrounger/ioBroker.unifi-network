@@ -5,6 +5,7 @@ import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
 import { NetworkDeviceModels } from './network-types-device-models.js';
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
+import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -98,10 +99,20 @@ export declare class NetworkApi extends EventEmitter {
     getWlanConfig(wlan_id?: any): Promise<NetworkWlanConfig[] | undefined>;
     /**
      * API V2 - List all WLan configurations
-     * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns
      */
-    getWlanConfig_V2(wlan_id?: any): Promise<NetworkWlanConfig_V2[] | undefined>;
+    getWlanConfig_V2(): Promise<NetworkWlanConfig_V2[] | undefined>;
+    /**
+     * List all LAN configurations
+     * @param network_id optional: network id to receive only the configuration for this wlan
+     * @returns
+     */
+    getLanConfig(network_id?: any): Promise<NetworkWlanConfig[] | undefined>;
+    /**
+     * API V2 - List all Lan configurations
+     * @returns
+     */
+    getLanConfig_V2(): Promise<NetworkLanConfig_V2[] | undefined>;
     /**
       * API V2 - List model information for devices
       * @returns
@@ -117,12 +128,14 @@ export declare enum ApiEndpoints {
     devices = "devices",
     clients = "clients",
     clientsActive = "clientsActive",
-    wlanConfig = "wlanConfig"
+    wlanConfig = "wlanConfig",
+    lanConfig = "lanConfig"
 }
 export declare enum ApiEndpoints_V2 {
     devices = "devices",
     clientsActive = "clientsActive",
     clientsHistory = "clientsHistory",
     wlanConfig = "wlanConfig",
+    lanConfig = "lanConfig",
     models = "models"
 }

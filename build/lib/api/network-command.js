@@ -4,9 +4,26 @@ export const apiCommands = {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'restart', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
-        async cyclePoePortPower(ufn, mac, port_idx) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
-            return result === null ? false : true;
+        async cyclePoePortPower(ufn, mac, port_idx, device) {
+            const logPrefix = '[apiCommands.cyclePoePortPower]';
+            try {
+                const port_table = device.port_table;
+                if (port_table && port_table.length > 0) {
+                    const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
+                    if (indexOfPort !== -1) {
+                        if (!port_table[indexOfPort].poe_enable) {
+                            ufn.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: cycle poe power not possible, because poe is not enabled for this port!`);
+                            return false;
+                        }
+                    }
+                }
+                const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
+                return result === null ? false : true;
+            }
+            catch (error) {
+                ufn.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+            return false;
         },
         async switchPoePort(val, port_idx, ufn, device) {
             const logPrefix = '[apiCommands.switchPoePort]';

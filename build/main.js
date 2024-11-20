@@ -31,6 +31,7 @@ class UnifiNetwork extends utils.Adapter {
         clients: {},
         vpn: {},
         wlan: {},
+        lan: {},
         isOnline: {}
     };
     subscribedList = [];
@@ -175,14 +176,14 @@ class UnifiNetwork extends utils.Adapter {
                         }
                         else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
                             const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-                            const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
-                            const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx);
+                            const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+                            const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx, this.cache.devices[mac]);
                             if (res)
                                 this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
                         }
                         else if (myHelper.getIdLastPart(id) === 'poe_enable') {
                             const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-                            const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('Port_', ''));
+                            const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
                             const res = await apiCommands.devices.switchPoePort(state.val, port_idx, this.ufn, this.cache.devices[mac]);
                             if (res)
                                 this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
