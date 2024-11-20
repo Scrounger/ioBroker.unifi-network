@@ -1,5 +1,6 @@
 import { NetworkClient } from "./network-types-client.js";
 import { NetworkDevice } from "./network-types-device.js";
+import { NetworkLanConfig } from "./network-types-lan-config.js";
 import { NetworkWlanConfig } from "./network-types-wlan-config.js";
 export interface NetworkEventDevice {
     meta: NetworkEventMeta;
@@ -16,6 +17,10 @@ export interface NetworkEvent {
 export interface NetworkEventWlanConfig {
     meta: NetworkEventMeta;
     data: NetworkWlanConfig[];
+}
+export interface NetworkEventLanConfig {
+    meta: NetworkEventMeta;
+    data: NetworkLanConfig[];
 }
 export interface NetworkEventMeta {
     message: string;

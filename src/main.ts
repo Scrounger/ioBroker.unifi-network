@@ -12,7 +12,7 @@ import _ from 'lodash';
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
 import { apiCommands } from './lib/api/network-command.js';
-import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventWlanConfig } from './lib/api/network-types.js';
+import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventLanConfig, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 import { NetworkDeviceModels } from './lib/api/network-types-device-models.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
@@ -1452,6 +1452,8 @@ class UnifiNetwork extends utils.Adapter {
 				await this.onNetworkUserEvent(event as NetworkEvent);
 			} else if (event.meta.message.startsWith(WebSocketEventMessages.wlanConf)) {
 				await this.onNetworkWlanConfEvent(event as NetworkEventWlanConfig);
+			} else if (event.meta.message.startsWith(WebSocketEventMessages.lanConf)) {
+				await this.onNetworkLanConfEvent(event as NetworkEventLanConfig);
 			} else {
 				if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
 					this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
@@ -1569,16 +1571,16 @@ class UnifiNetwork extends utils.Adapter {
 			this.log.debug(`${logPrefix} wlan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
 
 			if (event.meta.message.endsWith(':delete')) {
-				if (event.data) {
+				if (event.data && this.config.keepIobSynchron) {
 					for (let wlan of event.data) {
 						const idChannel = `wlan.${wlan._id}`
 
 						if (await this.objectExists(idChannel)) {
 							await this.delObjectAsync(idChannel, { recursive: true });
-							this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+							this.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
 						}
 
-						if (this.config.devicesEnabled && this.config.keepIobSynchron) {
+						if (this.config.devicesEnabled) {
 							const devices = await this.getStatesAsync(`devices.*.wifi.*.id`);
 
 							for (const id in devices) {
@@ -1596,6 +1598,31 @@ class UnifiNetwork extends utils.Adapter {
 				}
 			} else {
 				await this.updateWlanConfig(event.data as NetworkWlanConfig[]);
+			}
+
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	async onNetworkLanConfEvent(event: NetworkEventLanConfig) {
+		const logPrefix = '[onNetworkWlanConfEvent]:';
+
+		try {
+			this.log.debug(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+			if (event.meta.message.endsWith(':delete')) {
+				if (event.data && this.config.keepIobSynchron) {
+					for (let lan of event.data) {
+						const idChannel = `lan.${lan._id}`
+
+						if (await this.objectExists(idChannel)) {
+							await this.delObjectAsync(idChannel, { recursive: true });
+							this.log.debug(`${logPrefix} lan '${lan.name}' (channel: ${idChannel}) deleted`);
+						}
+					}
+				}
+			} else {
+				await this.updateLanConfig(event.data as NetworkLanConfig[]);
 			}
 
 		} catch (error) {

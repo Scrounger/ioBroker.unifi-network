@@ -6,6 +6,7 @@ export var WebSocketEventMessages;
     WebSocketEventMessages["events"] = "events";
     WebSocketEventMessages["speedTest"] = "speed-test:update";
     WebSocketEventMessages["wlanConf"] = "wlanconf:";
+    WebSocketEventMessages["lanConf"] = "networkconf";
 })(WebSocketEventMessages || (WebSocketEventMessages = {}));
 export const WebSocketEvent_Connected = ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'];
 export const WebSocketEvent_Disconnected = ['EVT_WU_Disconnected', 'EVT_WG_Disconnected', 'EVT_LU_Disconnected', 'EVT_LG_Disconnected'];

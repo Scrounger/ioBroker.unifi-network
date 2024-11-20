@@ -67,7 +67,8 @@ export declare enum WebSocketEventMessages {
     user = "user:",
     events = "events",
     speedTest = "speed-test:update",
-    wlanConf = "wlanconf:"
+    wlanConf = "wlanconf:",
+    lanConf = "networkconf"
 }
 export declare const WebSocketEvent_Connected: string[];
 export declare const WebSocketEvent_Disconnected: string[];

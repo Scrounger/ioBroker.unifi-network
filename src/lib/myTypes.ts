@@ -69,7 +69,8 @@ export enum WebSocketEventMessages {
     user = 'user:',
     events = 'events',
     speedTest = 'speed-test:update',
-    wlanConf = 'wlanconf:'
+    wlanConf = 'wlanconf:',
+    lanConf = 'networkconf'
 }
 
 export const WebSocketEvent_Connected = ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'];
