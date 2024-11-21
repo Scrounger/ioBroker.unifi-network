@@ -172,15 +172,9 @@
 							"attr": "mac",
 							"filter": true,
 							"sort": true,
-							"jsonData": "${instanceObj}",
-							"command": "deviceList",
-							"width": "60%"
-						},
-						{
-							"type": "checkbox",
-							"title": "Ignor in notifications",
-							"attr": "blacklisted",
-							"width": "15%"
+							"noMultiEdit": true,
+							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"command": "deviceList"
 						}
 					]
 				}

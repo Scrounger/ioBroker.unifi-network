@@ -95,5 +95,7 @@
     "realtime api": "API реального времени",
     "api poll interval": "интервал опроса API",
     "unifi devices (realtime api)": "устройства unifi (API реального времени)",
-    "clients / guests / vpn (realtime api)": "клиенты/гости/vpn (API в реальном времени)"
+    "clients / guests / vpn (realtime api)": "клиенты/гости/vpn (API в реальном времени)",
+    "Choose which device should be excluded": "Выберите, какое устройство следует исключить",
+    "This selection is only possible with a running instance!": "Этот выбор возможен только при работающем экземпляре!"
 }

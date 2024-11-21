@@ -95,5 +95,7 @@
     "realtime api": "实时API",
     "api poll interval": "API 轮询间隔",
     "unifi devices (realtime api)": "unifi 设备（实时 API）",
-    "clients / guests / vpn (realtime api)": "客户/客人/VPN（实时API）"
+    "clients / guests / vpn (realtime api)": "客户/客人/VPN（实时API）",
+    "Choose which device should be excluded": "选择应排除的设备",
+    "This selection is only possible with a running instance!": "此选择仅适用于正在运行的实例！"
 }

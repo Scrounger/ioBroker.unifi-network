@@ -259,14 +259,11 @@ class UnifiNetwork extends utils.Adapter {
     async onMessage(obj) {
         const logPrefix = '[onMessage]:';
         try {
-            this.log.info(`${logPrefix} ${JSON.stringify(obj)}`);
-            if (typeof obj === 'object' && obj.message) {
+            // this.log.info(`${logPrefix} ${JSON.stringify(obj)}`);
+            if (typeof obj === 'object') {
                 if (obj.command === 'deviceList') {
-                    // e.g. send email or pushover or whatever
-                    messageHandler.device.deviceList(obj.message, this);
-                    // Send response in callback if required
-                    if (obj.callback)
-                        this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+                    // ToDo check instance, but not possible at the moment because of bug in jsonConfig def, see https://github.com/ioBroker/ioBroker.admin/issues/2824
+                    messageHandler.device.deviceList(obj, this, this.ufn);
                 }
             }
         }
@@ -424,30 +421,40 @@ class UnifiNetwork extends utils.Adapter {
                         if (isAdapterStart)
                             this.log.info(`${logPrefix} Discovered ${data.length} devices`);
                         for (let device of data) {
-                            if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
-                                // debounce real time data
-                                const lastSeen = this.cache.devices[device.mac].last_seen;
-                                const iobTimestamp = this.cache.devices[device.mac].iobTimestamp;
-                                if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
-                                    continue;
+                            if (!_.some(this.config.deviceBlackList, { mac: device.mac })) {
+                                if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
+                                    // debounce real time data
+                                    const lastSeen = this.cache.devices[device.mac].last_seen;
+                                    const iobTimestamp = this.cache.devices[device.mac].iobTimestamp;
+                                    if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
+                                        continue;
+                                    }
+                                }
+                                if (!this.cache.devices[device.mac]) {
+                                    this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                                }
+                                let dataToProcess = device;
+                                if (this.cache.devices[device.mac]) {
+                                    // filter out unchanged properties
+                                    dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys());
+                                }
+                                if (!_.isEmpty(dataToProcess)) {
+                                    this.cache.devices[device.mac] = device;
+                                    this.cache.devices[device.mac].iobTimestamp = moment().unix();
+                                    dataToProcess.mac = device.mac;
+                                    if (!isAdapterStart)
+                                        this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                    await this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
+                                    await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), dataToProcess, 'devices', device, device, isAdapterStart);
                                 }
                             }
-                            if (!this.cache.devices[device.mac]) {
-                                this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
-                            }
-                            let dataToProcess = device;
-                            if (this.cache.devices[device.mac]) {
-                                // filter out unchanged properties
-                                dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys());
-                            }
-                            if (!_.isEmpty(dataToProcess)) {
-                                this.cache.devices[device.mac] = device;
-                                this.cache.devices[device.mac].iobTimestamp = moment().unix();
-                                dataToProcess.mac = device.mac;
-                                if (!isAdapterStart)
-                                    this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                await this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
-                                await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), dataToProcess, 'devices', device, device, isAdapterStart);
+                            else {
+                                if (isAdapterStart) {
+                                    if (await this.objectExists(`${idChannel}.${device.mac}`)) {
+                                        await this.delObjectAsync(`${idChannel}.${device.mac}`, { recursive: true });
+                                        this.log.debug(`${logPrefix} device '${device.name}' (mac: ${device.mac}) delete, it's on the black list`);
+                                    }
+                                }
                             }
                         }
                     }
