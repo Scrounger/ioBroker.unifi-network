@@ -42,6 +42,11 @@ class UnifiNetwork extends utils.Adapter {
         rejectUnauthorized: false,
         userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
     }).fetch;
+    eventsToIngnore = [
+        'device:update',
+        'unifi-device:sync',
+        'session-metadata:sync'
+    ];
     constructor(options = {}) {
         super({
             ...options,
@@ -394,6 +399,7 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateWlanConnectedClients(true);
             await this.updateLanConfig(null, true);
             await this.updateLanConnectedClients(true);
+            this.log.warn(JSON.stringify(tree.device.getKeys()));
             // this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {
@@ -1286,9 +1292,11 @@ class UnifiNetwork extends utils.Adapter {
                 await this.onNetworkLanConfEvent(event);
             }
             else {
-                if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+                if (!this.eventsToIngnore.includes(event.meta.message)) {
                     this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
                 }
+                // if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+                // }
             }
         }
         catch (error) {

@@ -306,6 +306,8 @@ export namespace client {
     export function getKeys(): string[] {
         if (keys === undefined) {
             keys = myHelper.getAllKeysOfTreeDefinition(get());
+            // manual add keys here:
+            keys.push(...['fingerprint.computed_engine', 'fingerprint.dev_id_override', 'fingerprint.dev_id', 'fingerprint.has_override']);
         }
 
         return keys

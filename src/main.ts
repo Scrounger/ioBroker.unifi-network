@@ -63,6 +63,12 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	).fetch;
 
+	eventsToIngnore = [
+		'device:update',
+		'unifi-device:sync',
+		'session-metadata:sync'
+	]
+
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
 			...options,
@@ -452,6 +458,8 @@ class UnifiNetwork extends utils.Adapter {
 
 			await this.updateLanConfig(null, true);
 			await this.updateLanConnectedClients(true);
+
+			this.log.warn(JSON.stringify(tree.device.getKeys()));
 
 			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
@@ -1483,9 +1491,13 @@ class UnifiNetwork extends utils.Adapter {
 			} else if (event.meta.message.startsWith(WebSocketEventMessages.lanConf)) {
 				await this.onNetworkLanConfEvent(event as NetworkEventLanConfig);
 			} else {
-				if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+				if (!this.eventsToIngnore.includes(event.meta.message)) {
 					this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
 				}
+
+				// if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
+
+				// }
 			}
 
 		} catch (error) {

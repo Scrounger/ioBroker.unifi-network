@@ -111,7 +111,8 @@
         "vpnEnabled": true,
         "wlanConfigEnabled": false,
         "lanConfigEnabled": false,
-        "deviceBlackList": []
+        "deviceBlackList": [],
+        "deviceStatesBlackList": []
     },
     "objects": [],
     "instanceObjects": [

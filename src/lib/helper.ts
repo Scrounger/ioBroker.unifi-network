@@ -152,7 +152,7 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
             const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '');
 
             // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
-            if (_.isObject(value) && typeof value !== 'function') {
+            if (_.isObject(value) && typeof value !== 'function' && key !== 'states') {
                 keys.push(fullKey);
 
                 // Wenn es ein Array oder Object ist, dann rekursiv weitergehen
@@ -171,9 +171,6 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
 
     // Start der Rekursion
     recurse(treefDefintion);
-
-    // manual add keys here:
-    keys.push(...['fingerprint.computed_engine', 'fingerprint.dev_id_override', 'fingerprint.dev_id', 'fingerprint.has_override']);
 
     return _.uniq(keys);
 }

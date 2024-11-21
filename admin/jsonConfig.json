@@ -154,8 +154,11 @@
 				"deviceBlackList": {
 					"newLine": true,
 					"type": "table",
-					"sm": 12,
+					"xl": 6,
+					"lg": 6,
 					"md": 6,
+					"sm": 12,
+					"xs": 12,
 					"disabled": "!data.devicesEnabled",
 					"confirm": {
 						"condition": "!_alive",
@@ -175,6 +178,35 @@
 							"noMultiEdit": true,
 							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
 							"command": "deviceList"
+						}
+					]
+				},
+				"deviceStatesBlackList": {
+					"type": "table",
+					"xl": 6,
+					"lg": 6,
+					"md": 6,
+					"sm": 12,
+					"xs": 12,
+					"disabled": "!data.devicesEnabled",
+					"confirm": {
+						"condition": "!_alive",
+						"title": "Attention!",
+						"text": "This selection is only possible with a running instance!",
+						"ok": "Got it!",
+						"cancel": "cancel",
+						"type": "warning"
+					},
+					"items": [
+						{
+							"type": "autocompleteSendTo",
+							"title": "Choose which device state should be excluded",
+							"attr": "mac",
+							"filter": true,
+							"sort": true,
+							"noMultiEdit": true,
+							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"command": "deviceStateList"
 						}
 					]
 				}
