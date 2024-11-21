@@ -69,6 +69,7 @@
         "compact": false,
         "connectionType": "local",
         "dataSource": "push",
+        "messagebox": true,
         "adminUI": {
             "config": "json"
         },
@@ -109,7 +110,8 @@
         "guestsEnabled": true,
         "vpnEnabled": true,
         "wlanConfigEnabled": false,
-        "lanConfigEnabled": false
+        "lanConfigEnabled": false,
+        "deviceBlackList": []
     },
     "objects": [],
     "instanceObjects": [

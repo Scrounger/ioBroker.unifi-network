@@ -24,6 +24,7 @@ declare global {
 			vpnEnabled: boolean;
 			wlanConfigEnabled: boolean;
 			lanConfigEnabled: boolean;
+			deviceBlackList: []
 		}
 	}
 }

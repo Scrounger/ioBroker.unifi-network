@@ -25,6 +25,7 @@ import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
 import { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
+import { messageHandler } from './lib/messageHandler.js';
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -71,7 +72,7 @@ class UnifiNetwork extends utils.Adapter {
 		this.on('ready', this.onReady.bind(this));
 		this.on('stateChange', this.onStateChange.bind(this));
 		// this.on('objectChange', this.onObjectChange.bind(this));
-		// this.on('message', this.onMessage.bind(this));
+		this.on('message', this.onMessage.bind(this));
 		this.on('unload', this.onUnload.bind(this));
 	}
 
@@ -283,17 +284,26 @@ class UnifiNetwork extends utils.Adapter {
 	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
 	//  * Using this method requires "common.messagebox" property to be set to true in io-package.json
 	//  */
-	// private onMessage(obj: ioBroker.Message): void {
-	// 	if (typeof obj === 'object' && obj.message) {
-	// 		if (obj.command === 'send') {
-	// 			// e.g. send email or pushover or whatever
-	// 			this.log.info('send command');
+	private async onMessage(obj: ioBroker.Message): Promise<void> {
+		const logPrefix = '[onMessage]:';
 
-	// 			// Send response in callback if required
-	// 			if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-	// 		}
-	// 	}
-	// }
+		try {
+			this.log.info(`${logPrefix} ${JSON.stringify(obj)}`);
+
+			if (typeof obj === 'object' && obj.message) {
+				if (obj.command === 'deviceList') {
+					// e.g. send email or pushover or whatever
+
+					messageHandler.device.deviceList(obj.message, this);
+
+					// Send response in callback if required
+					if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
 
 	//#endregion
 

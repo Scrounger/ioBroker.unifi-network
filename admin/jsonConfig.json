@@ -150,6 +150,39 @@
 					"disabled": "!data.devicesEnabled",
 					"sm": 12,
 					"md": 2
+				},
+				"deviceBlackList": {
+					"newLine": true,
+					"type": "table",
+					"sm": 12,
+					"md": 6,
+					"disabled": "!data.devicesEnabled",
+					"confirm": {
+						"condition": "!_alive",
+						"title": "Attention!",
+						"text": "This selection is only possible with a running instance!",
+						"ok": "Got it!",
+						"cancel": "cancel",
+						"type": "warning"
+					},
+					"items": [
+						{
+							"type": "autocompleteSendTo",
+							"title": "Choose which device should be excluded",
+							"attr": "mac",
+							"filter": true,
+							"sort": true,
+							"jsonData": "${instanceObj}",
+							"command": "deviceList",
+							"width": "60%"
+						},
+						{
+							"type": "checkbox",
+							"title": "Ignor in notifications",
+							"attr": "blacklisted",
+							"width": "15%"
+						}
+					]
 				}
 			}
 		},
