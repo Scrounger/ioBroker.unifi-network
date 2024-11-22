@@ -99,5 +99,6 @@
     "Choose which device should be excluded": "选择应排除的设备",
     "This selection is only possible with a running instance!": "此选择仅适用于正在运行的实例！",
     "Choose which client / guest should be excluded": "选择应排除哪些客户/客人",
-    "Choose which device state should be excluded": "选择应排除的设备状态"
+    "Choose which device state should be excluded": "选择应排除的设备状态",
+    "Choose which client / guest state should be excluded": "选择应排除的客户端/来宾状态"
 }

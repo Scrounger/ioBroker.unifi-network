@@ -99,5 +99,6 @@
     "Choose which device should be excluded": "Виберіть, який пристрій слід виключити",
     "This selection is only possible with a running instance!": "Цей вибір можливий лише з запущеним екземпляром!",
     "Choose which client / guest should be excluded": "Виберіть, якого клієнта / гостя слід виключити",
-    "Choose which device state should be excluded": "Виберіть стан пристрою, який слід виключити"
+    "Choose which device state should be excluded": "Виберіть стан пристрою, який слід виключити",
+    "Choose which client / guest state should be excluded": "Виберіть, який стан клієнта / гостя потрібно виключити"
 }

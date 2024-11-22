@@ -99,5 +99,6 @@
     "Choose which device should be excluded": "Kies welk apparaat moet worden uitgesloten",
     "This selection is only possible with a running instance!": "Deze selectie is alleen mogelijk met een actieve instance!",
     "Choose which client / guest should be excluded": "Kies welke klant/gast moet worden uitgesloten",
-    "Choose which device state should be excluded": "Kies welke apparaatstatus moet worden uitgesloten"
+    "Choose which device state should be excluded": "Kies welke apparaatstatus moet worden uitgesloten",
+    "Choose which client / guest state should be excluded": "Kies welke klant-/gaststatus moet worden uitgesloten"
 }

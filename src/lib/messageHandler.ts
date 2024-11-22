@@ -8,6 +8,7 @@ let deviceList: JsonConfigAutocompleteSendTo[] = undefined;
 let deviceStateList: JsonConfigAutocompleteSendTo[] = undefined;
 
 let clientList: JsonConfigAutocompleteSendTo[] = undefined;
+let clientStateList: JsonConfigAutocompleteSendTo[] = undefined;
 
 export const messageHandler = {
     device: {
@@ -82,6 +83,34 @@ export const messageHandler = {
             }
 
             if (message.callback) adapter.sendTo(message.from, message.command, clientList, message.callback);
+        },
+        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+            if (clientStateList === undefined) {
+                const states = tree.client.getStateIDs();
+
+                clientStateList = [];
+
+                if (states) {
+                    for (let i = 0; i <= states.length - 1; i++) {
+
+                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                            clientStateList.push({
+                                label: `[Channel]\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        } else {
+                            clientStateList.push({
+                                label: `[State]\t\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                    }
+                }
+
+                clientStateList = _.orderBy(clientStateList, ['value'], ['asc']);
+            }
+
+            if (message.callback) adapter.sendTo(message.from, message.command, clientStateList, message.callback);
         }
     }
 }

@@ -99,5 +99,6 @@
     "Choose which device should be excluded": "Choisissez quel appareil doit être exclu",
     "This selection is only possible with a running instance!": "Cette sélection n'est possible qu'avec une instance en cours d'exécution !",
     "Choose which client / guest should be excluded": "Choisissez quel client/invité doit être exclu",
-    "Choose which device state should be excluded": "Choisissez quel état de l'appareil doit être exclu"
+    "Choose which device state should be excluded": "Choisissez quel état de l'appareil doit être exclu",
+    "Choose which client / guest state should be excluded": "Choisissez quel état client/invité doit être exclu"
 }

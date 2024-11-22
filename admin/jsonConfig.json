@@ -348,6 +348,38 @@
 						}
 					]
 				},
+				"clientStatesBlackList": {
+					"type": "table",
+					"xl": 6,
+					"lg": 6,
+					"md": 6,
+					"sm": 12,
+					"xs": 12,
+					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+					"uniqueColumns": [
+						"id"
+					],
+					"confirm": {
+						"condition": "!_alive",
+						"title": "Attention!",
+						"text": "This selection is only possible with a running instance!",
+						"ok": "Got it!",
+						"cancel": "cancel",
+						"type": "warning"
+					},
+					"items": [
+						{
+							"type": "autocompleteSendTo",
+							"title": "Choose which client / guest state should be excluded",
+							"attr": "id",
+							"filter": true,
+							"sort": true,
+							"noMultiEdit": true,
+							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"command": "clientStateList"
+						}
+					]
+				}
 			}
 		}
 	}

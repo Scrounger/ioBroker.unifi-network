@@ -113,7 +113,8 @@
         "lanConfigEnabled": false,
         "deviceBlackList": [],
         "deviceStatesBlackList": [],
-        "clientBlackList": []
+        "clientBlackList": [],
+        "clientStatesBlackList": []
     },
     "objects": [],
     "instanceObjects": [

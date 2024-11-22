@@ -4,6 +4,7 @@ import * as myHelper from './helper.js';
 let deviceList = undefined;
 let deviceStateList = undefined;
 let clientList = undefined;
+let clientStateList = undefined;
 export const messageHandler = {
     device: {
         async list(message, adapter, ufn) {
@@ -67,6 +68,31 @@ export const messageHandler = {
             }
             if (message.callback)
                 adapter.sendTo(message.from, message.command, clientList, message.callback);
+        },
+        async stateList(message, adapter, ufn) {
+            if (clientStateList === undefined) {
+                const states = tree.client.getStateIDs();
+                clientStateList = [];
+                if (states) {
+                    for (let i = 0; i <= states.length - 1; i++) {
+                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                            clientStateList.push({
+                                label: `[Channel]\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                        else {
+                            clientStateList.push({
+                                label: `[State]\t\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                    }
+                }
+                clientStateList = _.orderBy(clientStateList, ['value'], ['asc']);
+            }
+            if (message.callback)
+                adapter.sendTo(message.from, message.command, clientStateList, message.callback);
         }
     }
 };

@@ -276,6 +276,9 @@ class UnifiNetwork extends utils.Adapter {
                 else if (obj.command === 'clientList') {
                     messageHandler.client.list(obj, this, this.ufn);
                 }
+                else if (obj.command === 'clientStateList') {
+                    messageHandler.client.stateList(obj, this, this.ufn);
+                }
             }
         }
         catch (error) {
@@ -550,7 +553,7 @@ class UnifiNetwork extends utils.Adapter {
                                             if (!isAdapterStart)
                                                 this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                             await this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                            await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'clients', client, client, isAdapterStart);
+                                            await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, client, client, isAdapterStart);
                                         }
                                     }
                                     else {
@@ -588,7 +591,7 @@ class UnifiNetwork extends utils.Adapter {
                                             if (!isAdapterStart)
                                                 this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                             await this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                            await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'guests', client, client, isAdapterStart);
+                                            await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, client, client, isAdapterStart);
                                         }
                                     }
                                     else {

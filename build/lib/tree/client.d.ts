@@ -4,4 +4,5 @@ export declare namespace client {
         [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
     };
     function getKeys(): string[];
+    function getStateIDs(): string[];
 }

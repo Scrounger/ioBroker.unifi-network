@@ -7,6 +7,7 @@ import * as myHelper from '../helper.js';
 
 export namespace client {
     let keys: string[] = undefined;
+    let stateKeys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -261,6 +262,11 @@ export namespace client {
                     "VPN": 'VPN'
                 }
             },
+            uptime: {
+                iobType: 'number',
+                name: 'uptime',
+                unit: 's',
+            },
             vlan: {
                 id: 'network_vlan',
                 iobType: 'number',
@@ -300,11 +306,6 @@ export namespace client {
                     return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
                 },
             },
-            uptime: {
-                iobType: 'number',
-                name: 'uptime',
-                unit: 's',
-            },
         }
     }
 
@@ -316,5 +317,13 @@ export namespace client {
         }
 
         return keys
+    }
+
+    export function getStateIDs(): string[] {
+        if (stateKeys === undefined) {
+            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
+        }
+
+        return stateKeys
     }
 }

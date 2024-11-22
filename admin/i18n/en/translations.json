@@ -87,5 +87,6 @@
 	"Choose which device should be excluded": "Choose which device should be excluded",
 	"This selection is only possible with a running instance!": "This selection is only possible with a running instance!",
 	"Choose which client / guest should be excluded": "Choose which client / guest should be excluded",
-	"Choose which device state should be excluded": "Choose which device state should be excluded"
+	"Choose which device state should be excluded": "Choose which device state should be excluded",
+	"Choose which client / guest state should be excluded": "Choose which client / guest state should be excluded"
 }

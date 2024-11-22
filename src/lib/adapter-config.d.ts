@@ -26,7 +26,8 @@ declare global {
 			lanConfigEnabled: boolean;
 			deviceBlackList: [],
 			deviceStatesBlackList: [],
-			clientBlackList: []
+			clientBlackList: [],
+			clientStatesBlackList: []
 		}
 	}
 }

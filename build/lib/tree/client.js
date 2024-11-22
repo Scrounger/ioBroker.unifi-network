@@ -3,6 +3,7 @@ import * as myHelper from '../helper.js';
 export var client;
 (function (client) {
     let keys = undefined;
+    let stateKeys = undefined;
     function get() {
         return {
             blocked: {
@@ -265,6 +266,11 @@ export var client;
                     "VPN": 'VPN'
                 }
             },
+            uptime: {
+                iobType: 'number',
+                name: 'uptime',
+                unit: 's',
+            },
             vlan: {
                 id: 'network_vlan',
                 iobType: 'number',
@@ -304,11 +310,6 @@ export var client;
                     return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
                 },
             },
-            uptime: {
-                iobType: 'number',
-                name: 'uptime',
-                unit: 's',
-            },
         };
     }
     client.get = get;
@@ -321,4 +322,11 @@ export var client;
         return keys;
     }
     client.getKeys = getKeys;
+    function getStateIDs() {
+        if (stateKeys === undefined) {
+            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
+        }
+        return stateKeys;
+    }
+    client.getStateIDs = getStateIDs;
 })(client || (client = {}));
