@@ -92,7 +92,7 @@ export const eventHandler = {
 
                         const idApName = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_name`;
                         if (await adapter.objectExists(idApName)) {
-                            await adapter.setState(idApName, cache.devices[data.ap_to].name ? cache.devices[data.ap_to].name : null, true);
+                            await adapter.setState(idApName, cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null, true);
                         }
 
                         const idApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
@@ -116,7 +116,7 @@ export const eventHandler = {
 
                 if (mac && data.channel_from && data.channel_to && data.ap) {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
-                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache?.devices[data.ap]?.name}' (mac: ${cache?.devices[data.ap]?.mac})`);
+                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache?.devices[data.ap]?.name || data.ap_displayName || data.ap_name}' (mac: ${cache?.devices[data.ap]?.mac || data.ap})`);
 
                         const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
                         const valChannel = parseInt(data.channel_to);

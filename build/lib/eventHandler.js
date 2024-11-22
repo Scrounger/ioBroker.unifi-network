@@ -80,10 +80,10 @@ export const eventHandler = {
                 const isGuest = data.guest ? true : false;
                 if (mac && data.ap_from && data.ap_to) {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
-                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}, ip: ${cache?.clients[mac]?.ip}) roamed from '${cache?.devices[data.ap_from]?.name}' (mac: ${data.ap_from}) to '${cache?.devices[data.ap_to]?.name}' (mac: ${data.ap_to})`);
+                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}, ip: ${cache?.clients[mac]?.ip}) roamed from '${cache?.devices[data.ap_from]?.name}' (mac: ${data.ap_from}) to '${cache?.devices[data.ap_to]?.name || data.ap_displayName || data.ap_name}' (mac: ${data.ap_to})`);
                         const idApName = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_name`;
                         if (await adapter.objectExists(idApName)) {
-                            await adapter.setState(idApName, cache.devices[data.ap_to].name ? cache.devices[data.ap_to].name : null, true);
+                            await adapter.setState(idApName, cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null, true);
                         }
                         const idApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
                         if (await adapter.objectExists(idApMac)) {
@@ -106,7 +106,7 @@ export const eventHandler = {
                 const isGuest = data.guest ? true : false;
                 if (mac && data.channel_from && data.channel_to && data.ap) {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
-                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache?.devices[data.ap]?.name}' (mac: ${cache?.devices[data.ap]?.mac})`);
+                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache?.devices[data.ap]?.name || data.ap_displayName || data.ap_name}' (mac: ${cache?.devices[data.ap]?.mac || data.ap})`);
                         const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
                         const valChannel = parseInt(data.channel_to);
                         if (await adapter.objectExists(idChannel)) {
