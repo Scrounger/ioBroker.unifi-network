@@ -159,7 +159,7 @@
 					"md": 6,
 					"sm": 12,
 					"xs": 12,
-					"disabled": "!data.devicesEnabled",
+					"hidden": "!data.devicesEnabled",
 					"uniqueColumns": [
 						"mac"
 					],
@@ -191,7 +191,7 @@
 					"md": 6,
 					"sm": 12,
 					"xs": 12,
-					"disabled": "!data.devicesEnabled",
+					"hidden": "!data.devicesEnabled",
 					"uniqueColumns": [
 						"id"
 					],
@@ -314,7 +314,40 @@
 					"disabled": "!data.clientsEnabled && !data.guestsEnabled && !data.vpnEnabled",
 					"sm": 12,
 					"md": 2
-				}
+				},
+				"clientBlackList": {
+					"newLine": true,
+					"type": "table",
+					"xl": 6,
+					"lg": 6,
+					"md": 6,
+					"sm": 12,
+					"xs": 12,
+					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+					"uniqueColumns": [
+						"mac"
+					],
+					"confirm": {
+						"condition": "!_alive",
+						"title": "Attention!",
+						"text": "This selection is only possible with a running instance!",
+						"ok": "Got it!",
+						"cancel": "cancel",
+						"type": "warning"
+					},
+					"items": [
+						{
+							"type": "autocompleteSendTo",
+							"title": "Choose which client / guest should be excluded",
+							"attr": "mac",
+							"filter": true,
+							"sort": true,
+							"noMultiEdit": true,
+							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"command": "clientList"
+						}
+					]
+				},
 			}
 		}
 	}

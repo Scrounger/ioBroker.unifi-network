@@ -1,25 +1,29 @@
 import _ from "lodash";
 import * as tree from './tree/index.js';
 import * as myHelper from './helper.js';
+let deviceList = undefined;
 let deviceStateList = undefined;
+let clientList = undefined;
 export const messageHandler = {
     device: {
-        async deviceList(message, adapter, ufn) {
-            const data = (await ufn.getDevices_V2())?.network_devices;
-            let deviceList = [];
-            if (data && data !== null) {
-                for (let device of data) {
-                    deviceList.push({
-                        label: `${device.name} (${device.mac})`,
-                        value: device.mac,
-                    });
+        async list(message, adapter, ufn) {
+            if (deviceList === undefined) {
+                const data = (await ufn.getDevices_V2())?.network_devices;
+                deviceList = [];
+                if (data && data !== null) {
+                    for (let device of data) {
+                        deviceList.push({
+                            label: `${device.name} (${device.mac})`,
+                            value: device.mac,
+                        });
+                    }
                 }
+                deviceList = _.orderBy(deviceList, ['label'], ['asc']);
             }
-            deviceList = _.orderBy(deviceList, ['label'], ['asc']);
             if (message.callback)
                 adapter.sendTo(message.from, message.command, deviceList, message.callback);
         },
-        async deviceStateList(message, adapter, ufn) {
+        async stateList(message, adapter, ufn) {
             if (deviceStateList === undefined) {
                 const states = tree.device.getStateIDs();
                 deviceStateList = [];
@@ -43,6 +47,26 @@ export const messageHandler = {
             }
             if (message.callback)
                 adapter.sendTo(message.from, message.command, deviceStateList, message.callback);
+        }
+    },
+    client: {
+        async list(message, adapter, ufn) {
+            if (clientList === undefined) {
+                const data = await ufn.getClients();
+                clientList = [];
+                if (data && data !== null) {
+                    for (let client of data) {
+                        const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
+                        clientList.push({
+                            label: `${name} (${client.mac})`,
+                            value: client.mac,
+                        });
+                    }
+                }
+                clientList = _.orderBy(clientList, ['label'], ['asc']);
+            }
+            if (message.callback)
+                adapter.sendTo(message.from, message.command, clientList, message.callback);
         }
     }
 };

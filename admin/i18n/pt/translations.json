@@ -97,5 +97,7 @@
     "unifi devices (realtime api)": "dispositivos unifi (API em tempo real)",
     "clients / guests / vpn (realtime api)": "clientes/convidados/vpn (API em tempo real)",
     "Choose which device should be excluded": "Escolha qual dispositivo deve ser excluído",
-    "This selection is only possible with a running instance!": "Esta seleção só é possível com uma instância em execução!"
+    "This selection is only possible with a running instance!": "Esta seleção só é possível com uma instância em execução!",
+    "Choose which client / guest should be excluded": "Escolha qual cliente/convidado deve ser excluído",
+    "Choose which device state should be excluded": "Escolha qual estado do dispositivo deve ser excluído"
 }

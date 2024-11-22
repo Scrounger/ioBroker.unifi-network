@@ -299,9 +299,11 @@ class UnifiNetwork extends utils.Adapter {
 			if (typeof obj === 'object') {
 				if (obj.command === 'deviceList') {
 					// ToDo check instance, but not possible at the moment because of bug in jsonConfig def, see https://github.com/ioBroker/ioBroker.admin/issues/2824
-					messageHandler.device.deviceList(obj, this, this.ufn);
+					messageHandler.device.list(obj, this, this.ufn);
 				} else if (obj.command === 'deviceStateList') {
-					messageHandler.device.deviceStateList(obj, this, this.ufn);
+					messageHandler.device.stateList(obj, this, this.ufn);
+				} else if (obj.command === 'clientList') {
+					messageHandler.client.list(obj, this, this.ufn);
 				}
 			}
 		} catch (error) {
@@ -493,10 +495,15 @@ class UnifiNetwork extends utils.Adapter {
 					}
 
 					if (data && data !== null) {
-						if (isAdapterStart) this.log.info(`${logPrefix} Discovered ${data.length} devices`);
+						let countDevices = 0;
+						let countBlacklisted = 0;
 
 						for (let device of data) {
+							const idDevice = `${idChannel}.${device.mac}`;
+
 							if (!_.some(this.config.deviceBlackList, { mac: device.mac })) {
+								if (isAdapterStart) countDevices++
+
 								if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
 									// debounce real time data
 									const lastSeen = this.cache.devices[device.mac].last_seen;
@@ -524,17 +531,23 @@ class UnifiNetwork extends utils.Adapter {
 
 									if (!isAdapterStart) this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 
-									await this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
-									await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), dataToProcess, this.config.deviceStatesBlackList, device, device, isAdapterStart);
+									await this.createOrUpdateDevice(idDevice, device.name, `${this.namespace}.${idDevice}.isOnline`, `${this.namespace}.${idDevice}.hasError`, undefined, isAdapterStart);
+									await this.createGenericState(idDevice, tree.device.get(), dataToProcess, this.config.deviceStatesBlackList, device, device, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
-									if (await this.objectExists(`${idChannel}.${device.mac}`)) {
-										await this.delObjectAsync(`${idChannel}.${device.mac}`, { recursive: true });
+									countBlacklisted++
+
+									if (await this.objectExists(idDevice)) {
+										await this.delObjectAsync(idDevice, { recursive: true });
 										this.log.info(`${logPrefix} device '${device.name}' (mac: ${device.mac}) delete, it's on the black list`);
 									}
 								}
 							}
+						}
+
+						if (isAdapterStart) {
+							this.log.info(`${logPrefix} Discovered ${data.length} devices (devices: ${countDevices}, blacklisted: ${countBlacklisted})`);
 						}
 					}
 				} else {
@@ -573,148 +586,161 @@ class UnifiNetwork extends utils.Adapter {
 						let countClients = 0;
 						let countGuests = 0;
 						let countVpn = 0;
+						let countBlacklisted = 0;
 
 						for (let client of data) {
-
-							if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
-								// debounce real time data
-								const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
-								const iobTimestamp = this.cache.clients[client.mac].timestamp || this.cache.clients[client.ip].timestamp;
-
-								if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
-									continue
-								}
-							}
-
 							const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
-							const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
 
-							if (this.config.clientsEnabled && client.mac && !client.is_guest) {
-								// Clients
-								if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
-									if (isAdapterStart) countClients++
+							if (!_.some(this.config.clientBlackList, { mac: client.mac })) {
+								if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
+									// debounce real time data
+									const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
+									const iobTimestamp = this.cache.clients[client.mac].timestamp || this.cache.clients[client.ip].timestamp;
 
-									if (!this.cache.clients[client.mac]) {
-										this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
-										this.cache.isOnline[client.mac] = { val: !isOfflineClients }
-									}
-
-									let dataToProcess = client;
-									if (this.cache.clients[client.mac]) {
-										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
-									}
-
-									if (Object.keys(dataToProcess).length > 0) {
-										this.cache.clients[client.mac] = client;
-										this.cache.clients[client.mac].name = name;
-										this.cache.clients[client.mac].timestamp = moment().unix();
-
-										this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
-										this.cache.isOnline[client.mac].network_id = client.network_id;
-
-										dataToProcess.mac = client.mac;
-										dataToProcess.name = name
-
-										if (!isAdapterStart) this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-
-										await this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-										await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'clients', client, client, isAdapterStart);
-									}
-								} else {
-
-									if (await this.objectExists(`${idChannel}.${client.mac}`)) {
-										await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
-										this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
-									} else {
-										this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
+									if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
+										continue
 									}
 								}
-							} else if (this.config.guestsEnabled && client.mac && client.is_guest) {
-								// Guests
-								if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
-									if (isAdapterStart) countGuests++
 
-									if (!this.cache.clients[client.mac]) {
-										this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
-										this.cache.isOnline[client.mac] = { val: !isOfflineClients }
-									}
+								const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
 
-									let dataToProcess = client;
-									if (this.cache.clients[client.mac]) {
-										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
-									}
+								if (this.config.clientsEnabled && client.mac && !client.is_guest) {
+									// Clients
+									if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
+										if (isAdapterStart) countClients++
 
-									if (Object.keys(dataToProcess).length > 0) {
-										this.cache.clients[client.mac] = client;
-										this.cache.clients[client.mac].name = name;
-										this.cache.clients[client.mac].timestamp = moment().unix();
+										if (!this.cache.clients[client.mac]) {
+											this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+											this.cache.isOnline[client.mac] = { val: !isOfflineClients }
+										}
 
-										this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
-										this.cache.isOnline[client.mac].network_id = client.network_id;
+										let dataToProcess = client;
+										if (this.cache.clients[client.mac]) {
+											// filter out unchanged properties
+											dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+										}
 
-										dataToProcess.mac = client.mac;
-										dataToProcess.name = name
+										if (Object.keys(dataToProcess).length > 0) {
+											this.cache.clients[client.mac] = client;
+											this.cache.clients[client.mac].name = name;
+											this.cache.clients[client.mac].timestamp = moment().unix();
 
-										if (!isAdapterStart) this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+											this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+											this.cache.isOnline[client.mac].network_id = client.network_id;
 
-										await this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-										await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'guests', client, client, isAdapterStart);
-									}
+											dataToProcess.mac = client.mac;
+											dataToProcess.name = name
 
-								} else {
+											if (!isAdapterStart) this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 
-									if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
-										await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
-										this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+											await this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+											await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'clients', client, client, isAdapterStart);
+										}
 									} else {
-										this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+
+										if (await this.objectExists(`${idChannel}.${client.mac}`)) {
+											await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
+											this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
+										} else {
+											this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
+										}
+									}
+								} else if (this.config.guestsEnabled && client.mac && client.is_guest) {
+									// Guests
+									if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
+										if (isAdapterStart) countGuests++
+
+										if (!this.cache.clients[client.mac]) {
+											this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+											this.cache.isOnline[client.mac] = { val: !isOfflineClients }
+										}
+
+										let dataToProcess = client;
+										if (this.cache.clients[client.mac]) {
+											// filter out unchanged properties
+											dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+										}
+
+										if (Object.keys(dataToProcess).length > 0) {
+											this.cache.clients[client.mac] = client;
+											this.cache.clients[client.mac].name = name;
+											this.cache.clients[client.mac].timestamp = moment().unix();
+
+											this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+											this.cache.isOnline[client.mac].network_id = client.network_id;
+
+											dataToProcess.mac = client.mac;
+											dataToProcess.name = name
+
+											if (!isAdapterStart) this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+
+											await this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
+											await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, 'guests', client, client, isAdapterStart);
+										}
+
+									} else {
+
+										if (await this.objectExists(`${idGuestChannel}.${client.mac}`)) {
+											await this.delObjectAsync(`${idGuestChannel}.${client.mac}`, { recursive: true });
+											this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+										} else {
+											this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+										}
+									}
+								} else {
+									if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
+										// VPN Clients
+										if (isAdapterStart) countVpn++
+
+										if (!this.cache.vpn[client.ip]) {
+											this.log.debug(`${logPrefix} Discovered vpn client '${name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
+											this.cache.isOnline[client.ip] = { val: !isOfflineClients }
+										}
+
+										const idChannel = client.network_id;
+										await this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
+
+										let dataToProcess = client;
+										if (this.cache.vpn[client.ip]) {
+											// filter out unchanged properties
+											dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
+										}
+
+										const preparedIp = client.ip.replaceAll('.', '_');
+
+										if (Object.keys(dataToProcess).length > 0) {
+											this.cache.vpn[client.ip] = client;
+											this.cache.vpn[client.ip].name = name;
+											this.cache.vpn[client.ip].timestamp = moment().unix();
+
+											this.cache.isOnline[client.ip].wlan_id = client.wlanconf_id;
+											this.cache.isOnline[client.ip].network_id = client.network_id;
+
+											dataToProcess.ip = client.ip;
+											dataToProcess.name = name
+
+											if (!isAdapterStart) this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+
+											await this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
+											await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, 'vpn', client, client, isAdapterStart);
+										}
 									}
 								}
 							} else {
-								if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
-									// VPN Clients
-									if (isAdapterStart) countVpn++
+								if (isAdapterStart) {
+									countBlacklisted++;
 
-									if (!this.cache.vpn[client.ip]) {
-										this.log.debug(`${logPrefix} Discovered vpn client '${name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
-										this.cache.isOnline[client.ip] = { val: !isOfflineClients }
-									}
-
-									const idChannel = client.network_id;
-									await this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
-
-									let dataToProcess = client;
-									if (this.cache.vpn[client.ip]) {
-										// filter out unchanged properties
-										dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
-									}
-
-									const preparedIp = client.ip.replaceAll('.', '_');
-
-									if (Object.keys(dataToProcess).length > 0) {
-										this.cache.vpn[client.ip] = client;
-										this.cache.vpn[client.ip].name = name;
-										this.cache.vpn[client.ip].timestamp = moment().unix();
-
-										this.cache.isOnline[client.ip].wlan_id = client.wlanconf_id;
-										this.cache.isOnline[client.ip].network_id = client.network_id;
-
-										dataToProcess.ip = client.ip;
-										dataToProcess.name = name
-
-										if (!isAdapterStart) this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-
-										await this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-										await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, 'vpn', client, client, isAdapterStart);
+									const id = `${!client.is_guest ? 'clients' : 'guests'}.${client.mac}`
+									if (await this.objectExists(id)) {
+										await this.delObjectAsync(id, { recursive: true });
+										this.log.info(`${logPrefix} device '${name}' (mac: ${client.mac}) delete, it's on the black list`);
 									}
 								}
 							}
 						}
 
 						if (isAdapterStart) {
-							this.log.info(`${logPrefix} Discovered ${data.length} ${!isOfflineClients ? 'connected' : 'disconnected'} clients (clients: ${countClients}, guests: ${countGuests}, vpn: ${countVpn})`);
+							this.log.info(`${logPrefix} Discovered ${data.length} ${!isOfflineClients ? 'connected' : 'disconnected'} clients (clients: ${countClients}, guests: ${countGuests}, vpn: ${countVpn}, blacklisted: ${countBlacklisted})`);
 						}
 					}
 				}
