@@ -465,6 +465,16 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateLanConfig(null, true);
 			await this.updateLanConnectedClients(true);
 
+
+			// const tmp = tree.device.getStateIDs();
+			// let list = []
+
+			// for (let id of tmp) {
+			// 	list.push({ id: id });
+			// }
+
+			// this.log.warn(JSON.stringify(list));
+
 			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
 		} catch (error) {

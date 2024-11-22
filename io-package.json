@@ -112,9 +112,170 @@
         "wlanConfigEnabled": false,
         "lanConfigEnabled": false,
         "deviceBlackList": [],
-        "deviceStatesBlackList": [],
+        "deviceStatesBlackList": [
+            {
+                "id": "connected_clients"
+            },
+            {
+                "id": "connected_guests"
+            },
+            {
+                "id": "image"
+            },
+            {
+                "id": "ip"
+            },
+            {
+                "id": "led_override"
+            },
+            {
+                "id": "name"
+            },
+            {
+                "id": "restart"
+            },
+            {
+                "id": "rx_bytes"
+            },
+            {
+                "id": "state"
+            },
+            {
+                "id": "ports"
+            },
+            {
+                "id": "radio"
+            },
+            {
+                "id": "satisfaction"
+            },
+            {
+                "id": "storage"
+            },
+            {
+                "id": "system"
+            },
+            {
+                "id": "temperature"
+            },
+            {
+                "id": "temperatures"
+            },
+            {
+                "id": "tx_bytes"
+            },
+            {
+                "id": "power"
+            },
+            {
+                "id": "upgradable"
+            },
+            {
+                "id": "upgrade"
+            },
+            {
+                "id": "uplink"
+            },
+            {
+                "id": "uptime"
+            },
+            {
+                "id": "wifi"
+            }
+        ],
         "clientBlackList": [],
-        "clientStatesBlackList": []
+        "clientStatesBlackList": [
+            {
+                "id": "blocked"
+            },
+            {
+                "id": "channel"
+            },
+            {
+                "id": "channel_frequency"
+            },
+            {
+                "id": "essid"
+            },
+            {
+                "id": "first_seen"
+            },
+            {
+                "id": "hostname"
+            },
+            {
+                "id": "image"
+            },
+            {
+                "id": "is_wired"
+            },
+            {
+                "id": "uplink_mac"
+            },
+            {
+                "id": "uplink_name"
+            },
+            {
+                "id": "uplink_port"
+            },
+            {
+                "id": "model"
+            },
+            {
+                "id": "name"
+            },
+            {
+                "id": "network_id"
+            },
+            {
+                "id": "network_name"
+            },
+            {
+                "id": "radio"
+            },
+            {
+                "id": "radio_name"
+            },
+            {
+                "id": "reconnect"
+            },
+            {
+                "id": "remote_ip"
+            },
+            {
+                "id": "rx_bytes"
+            },
+            {
+                "id": "rx_rate"
+            },
+            {
+                "id": "signal"
+            },
+            {
+                "id": "tx_bytes"
+            },
+            {
+                "id": "tx_rate"
+            },
+            {
+                "id": "type"
+            },
+            {
+                "id": "uptime"
+            },
+            {
+                "id": "network_vlan"
+            },
+            {
+                "id": "speed"
+            },
+            {
+                "id": "wifi_experience"
+            },
+            {
+                "id": "wifi_tx_retries"
+            }
+        ]
     },
     "objects": [],
     "instanceObjects": [
