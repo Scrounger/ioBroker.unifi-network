@@ -160,6 +160,9 @@
 					"sm": 12,
 					"xs": 12,
 					"disabled": "!data.devicesEnabled",
+					"uniqueColumns": [
+						"mac"
+					],
 					"confirm": {
 						"condition": "!_alive",
 						"title": "Attention!",
@@ -189,6 +192,9 @@
 					"sm": 12,
 					"xs": 12,
 					"disabled": "!data.devicesEnabled",
+					"uniqueColumns": [
+						"id"
+					],
 					"confirm": {
 						"condition": "!_alive",
 						"title": "Attention!",
@@ -201,7 +207,7 @@
 						{
 							"type": "autocompleteSendTo",
 							"title": "Choose which device state should be excluded",
-							"attr": "mac",
+							"attr": "id",
 							"filter": true,
 							"sort": true,
 							"noMultiEdit": true,

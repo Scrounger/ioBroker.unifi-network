@@ -3,6 +3,7 @@ import * as myHelper from '../helper.js';
 export var device;
 (function (device) {
     let keys = undefined;
+    let stateKeys = undefined;
     function get() {
         return {
             connected_clients: {
@@ -22,6 +23,7 @@ export var device;
                 iobType: 'boolean',
                 name: 'device reported errors',
                 valFromProperty: 'state',
+                required: true,
                 readVal(val, adapter, cache, deviceOrClient) {
                     return val === 6 || val === 9;
                 },
@@ -32,6 +34,7 @@ export var device;
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'model',
+                required: true,
                 readVal(val, adapter, cache, deviceOrClient) {
                     if (val && adapter.config.deviceImageDownload) {
                         const find = _.find(cache.deviceModels, (x) => x.model_name.includes(val));
@@ -56,6 +59,7 @@ export var device;
                 iobType: 'boolean',
                 name: 'is device online',
                 valFromProperty: 'state',
+                required: true,
                 readVal(val, adapter, cache, deviceOrClient) {
                     return val !== 0 && val !== 6 && val !== 9;
                 },
@@ -72,11 +76,13 @@ export var device;
             },
             last_seen: {
                 iobType: 'number',
-                name: 'last seen'
+                name: 'last seen',
+                required: true
             },
             mac: {
                 iobType: 'string',
-                name: 'mac address'
+                name: 'mac address',
+                required: true
             },
             name: {
                 iobType: 'string',
@@ -550,7 +556,8 @@ export var device;
                     id: {
                         iobType: 'string',
                         name: 'Wifi internal id',
-                        expert: true
+                        expert: true,
+                        required: true,
                     },
                     is_guest: {
                         iobType: 'boolean',
@@ -592,4 +599,11 @@ export var device;
         return keys;
     }
     device.getKeys = getKeys;
+    function getStateIDs() {
+        if (stateKeys === undefined) {
+            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
+        }
+        return stateKeys;
+    }
+    device.getStateIDs = getStateIDs;
 })(device || (device = {}));

@@ -29,6 +29,7 @@ export interface myCommonState {
     statesFromProperty?: string;
     conditionToCreateState?(objValues: any, adapter: ioBroker.Adapter): boolean;
     subscribeMe?: true;
+    required?: true;
 }
 export interface myCommoneChannelObject {
     idChannel?: string;
@@ -115,4 +116,8 @@ export interface myIsOnline {
     val: boolean;
     wlan_id?: string | undefined;
     network_id?: string | undefined;
+}
+export interface JsonConfigAutocompleteSendTo {
+    value: string;
+    label: string;
 }

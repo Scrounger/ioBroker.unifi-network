@@ -42,6 +42,7 @@ export var client;
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'fingerprint',
+                required: true,
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
                     return objValues.type === undefined || objValues.type !== "VPN";
@@ -82,7 +83,8 @@ export var client;
             },
             ip: {
                 iobType: 'string',
-                name: 'ip address'
+                name: 'ip address',
+                required: true
             },
             isOnline: {
                 id: 'isOnline',
@@ -90,6 +92,7 @@ export var client;
                 name: 'Is client online',
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
+                required: true,
                 readVal(val, adapter, cache, deviceOrClient) {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (deviceOrClient.type !== 'VPN') {
@@ -102,7 +105,8 @@ export var client;
             },
             last_seen: {
                 iobType: 'number',
-                name: 'last seen'
+                name: 'last seen',
+                required: true
             },
             last_uplink_mac: {
                 id: 'uplink_mac',
@@ -133,7 +137,8 @@ export var client;
             },
             mac: {
                 iobType: 'string',
-                name: 'mac address'
+                name: 'mac address',
+                required: true
             },
             model_name: {
                 id: 'model',

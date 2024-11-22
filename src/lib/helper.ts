@@ -175,6 +175,43 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
     return _.uniq(keys);
 }
 
+export function getAllIdsOfTreeDefinition(treefDefintion) {
+    let keys = [];
+
+    // Hilfsfunktion für rekursive Durchsuchung des Objekts
+    function recurse(currentObj, prefix = '') {
+        _.forOwn(currentObj, (value, key) => {
+            let fullKey = (prefix ? `${prefix}.${key}` : key);
+
+            if (Object.hasOwn(value, 'idChannel') && !_.isObject(value.idChannel)) {
+                fullKey = (prefix ? `${prefix}.${value.idChannel}` : value.idChannel)
+            } else if (Object.hasOwn(value, 'id') && !_.isObject(value.id)) {
+                fullKey = (prefix ? `${prefix}.${value.id}` : value.id)
+            }
+
+            fullKey = fullKey.replace('.array', '').replace('.object', '')
+
+            // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
+            if (_.isObject(value) && typeof value !== 'function' && key !== 'states') {
+                if (!_.has(value, 'required')) {
+                    keys.push(fullKey);
+                }
+
+                // Wenn es ein Array oder Object ist, dann rekursiv weitergehen
+                if (_.isArray(value) || _.isObject(value)) {
+                    // Nur unter "array" oder "object" rekursiv weiter
+                    recurse(value, fullKey);
+                }
+            }
+        });
+    }
+
+    // Start der Rekursion
+    recurse(treefDefintion);
+
+    return _.uniq(keys);
+}
+
 export function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string {
     if (radioVal === 'ng') {
         return '2.4 GHz'

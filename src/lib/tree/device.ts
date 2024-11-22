@@ -6,6 +6,7 @@ import * as myHelper from '../helper.js';
 
 export namespace device {
     let keys: string[] = undefined;
+    let stateKeys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -26,6 +27,7 @@ export namespace device {
                 iobType: 'boolean',
                 name: 'device reported errors',
                 valFromProperty: 'state',
+                required: true,
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
                     return val === 6 || val === 9
                 },
@@ -36,6 +38,7 @@ export namespace device {
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'model',
+                required: true,
                 readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
                     if (val && adapter.config.deviceImageDownload) {
                         const find = _.find(cache.deviceModels, (x) => x.model_name.includes(val));
@@ -61,6 +64,7 @@ export namespace device {
                 iobType: 'boolean',
                 name: 'is device online',
                 valFromProperty: 'state',
+                required: true,
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
                     return val !== 0 && val !== 6 && val !== 9
                 },
@@ -77,11 +81,13 @@ export namespace device {
             },
             last_seen: {
                 iobType: 'number',
-                name: 'last seen'
+                name: 'last seen',
+                required: true
             },
             mac: {
                 iobType: 'string',
-                name: 'mac address'
+                name: 'mac address',
+                required: true
             },
             name: {
                 iobType: 'string',
@@ -555,7 +561,8 @@ export namespace device {
                     id: {
                         iobType: 'string',
                         name: 'Wifi internal id',
-                        expert: true
+                        expert: true,
+                        required: true,
                     },
                     is_guest: {
                         iobType: 'boolean',
@@ -596,5 +603,13 @@ export namespace device {
         }
 
         return keys
+    }
+
+    export function getStateIDs(): string[] {
+        if (stateKeys === undefined) {
+            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
+        }
+
+        return stateKeys
     }
 }

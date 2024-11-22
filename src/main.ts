@@ -300,6 +300,8 @@ class UnifiNetwork extends utils.Adapter {
 				if (obj.command === 'deviceList') {
 					// ToDo check instance, but not possible at the moment because of bug in jsonConfig def, see https://github.com/ioBroker/ioBroker.admin/issues/2824
 					messageHandler.device.deviceList(obj, this, this.ufn);
+				} else if (obj.command === 'deviceStateList') {
+					messageHandler.device.deviceStateList(obj, this, this.ufn);
 				}
 			}
 		} catch (error) {
@@ -459,8 +461,6 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateLanConfig(null, true);
 			await this.updateLanConnectedClients(true);
 
-			this.log.warn(JSON.stringify(tree.device.getKeys()));
-
 			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
 		} catch (error) {
@@ -531,7 +531,7 @@ class UnifiNetwork extends utils.Adapter {
 								if (isAdapterStart) {
 									if (await this.objectExists(`${idChannel}.${device.mac}`)) {
 										await this.delObjectAsync(`${idChannel}.${device.mac}`, { recursive: true });
-										this.log.debug(`${logPrefix} device '${device.name}' (mac: ${device.mac}) delete, it's on the black list`);
+										this.log.info(`${logPrefix} device '${device.name}' (mac: ${device.mac}) delete, it's on the black list`);
 									}
 								}
 							}

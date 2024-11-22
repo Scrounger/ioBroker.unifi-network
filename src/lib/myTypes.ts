@@ -30,6 +30,7 @@ export interface myCommonState {
     conditionToCreateState?(objValues: any, adapter: ioBroker.Adapter): boolean     // condition to create state
 
     subscribeMe?: true                                              // subscribe
+    required?: true                                                 // required, can not be blacklisted
 }
 
 export interface myCommoneChannelObject {
@@ -160,4 +161,9 @@ export interface myIsOnline {
     val: boolean;
     wlan_id?: string | undefined;
     network_id?: string | undefined;
+}
+
+export interface JsonConfigAutocompleteSendTo {
+    value: string,
+    label: string
 }

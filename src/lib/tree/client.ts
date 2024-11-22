@@ -47,6 +47,7 @@ export namespace client {
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'fingerprint',
+                required: true,
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
                     return objValues.type === undefined || objValues.type !== "VPN";
@@ -85,7 +86,8 @@ export namespace client {
             },
             ip: {
                 iobType: 'string',
-                name: 'ip address'
+                name: 'ip address',
+                required: true
             },
             isOnline: {
                 id: 'isOnline',
@@ -93,6 +95,7 @@ export namespace client {
                 name: 'Is client online',
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
+                required: true,
                 readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (deviceOrClient.type !== 'VPN') {
@@ -104,7 +107,8 @@ export namespace client {
             },
             last_seen: {
                 iobType: 'number',
-                name: 'last seen'
+                name: 'last seen',
+                required: true
             },
             last_uplink_mac: {
                 id: 'uplink_mac',
@@ -135,7 +139,8 @@ export namespace client {
             },
             mac: {
                 iobType: 'string',
-                name: 'mac address'
+                name: 'mac address',
+                required: true
             },
             model_name: {
                 id: 'model',
