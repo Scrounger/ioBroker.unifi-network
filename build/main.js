@@ -453,7 +453,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (!isAdapterStart)
                                         this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                     await this.createOrUpdateDevice(`${idChannel}.${device.mac}`, device.name, `${this.namespace}.${idChannel}.${device.mac}.isOnline`, `${this.namespace}.${idChannel}.${device.mac}.hasError`, undefined, isAdapterStart);
-                                    await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), dataToProcess, 'devices', device, device, isAdapterStart);
+                                    await this.createGenericState(`${idChannel}.${device.mac}`, tree.device.get(), dataToProcess, this.config.deviceStatesBlackList, device, device, isAdapterStart);
                                 }
                             }
                             else {
@@ -1082,7 +1082,8 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async createGenericState(channel, treeDefinition, objValues, filterComparisonId, objOrg, objOrgValues, isAdapterStart = false) {
+    async createGenericState(channel, treeDefinition, objValues, blacklistFilter, objOrg, objOrgValues, isAdapterStart = false, filterId = '') {
+        // ToDo: blacklistFilter type any is to remove
         const logPrefix = '[createGenericState]:';
         try {
             if (this.connected && this.isConnected) {
@@ -1108,108 +1109,122 @@ class UnifiNetwork extends utils.Adapter {
                                 stateId = treeDefinition[key].id;
                             }
                             logMsgState = `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
-                            // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
-                            // 	// not on blacklist
-                            if (!await this.objectExists(`${channel}.${stateId}`)) {
-                                // create State
-                                this.log.silly(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
-                                const obj = {
-                                    type: 'state',
-                                    common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
-                                    native: {}
-                                };
-                                // @ts-ignore
-                                await this.setObjectAsync(`${channel}.${stateId}`, obj);
-                            }
-                            else {
-                                // update State if needed (only on adapter start)
-                                if (isAdapterStart) {
-                                    const obj = await this.getObjectAsync(`${channel}.${stateId}`);
-                                    const commonUpdated = await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState);
-                                    if (obj && obj.common) {
-                                        if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
-                                            await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                            this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
+                            if (!_.some(blacklistFilter, { id: `${filterId}${stateId}` })) {
+                                if (!await this.objectExists(`${channel}.${stateId}`)) {
+                                    // create State
+                                    this.log.silly(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
+                                    const obj = {
+                                        type: 'state',
+                                        common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
+                                        native: {}
+                                    };
+                                    // @ts-ignore
+                                    await this.setObjectAsync(`${channel}.${stateId}`, obj);
+                                }
+                                else {
+                                    // update State if needed (only on adapter start)
+                                    if (isAdapterStart) {
+                                        const obj = await this.getObjectAsync(`${channel}.${stateId}`);
+                                        const commonUpdated = await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState);
+                                        if (obj && obj.common) {
+                                            if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
+                                                await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
+                                                this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.hasOwn(treeDefinition[key], 'subscribeMe'))) {
-                                // state is writeable or has subscribeMe Property -> subscribe it
-                                this.log.silly(`${logPrefix} ${objOrg.name} - subscribing state '${logMsgState}'`);
-                                await this.subscribeStatesAsync(`${channel}.${stateId}`);
-                                this.subscribedList.push(`${channel}.${stateId}`);
-                            }
-                            if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
-                                const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
-                                let changedObj = undefined;
-                                if (key === 'last_seen' || key === 'first_seen' || key === 'rundate') {
-                                    // set lc to last_seen value
-                                    changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
+                                if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.hasOwn(treeDefinition[key], 'subscribeMe'))) {
+                                    // state is writeable or has subscribeMe Property -> subscribe it
+                                    this.log.silly(`${logPrefix} ${objOrg.name} - subscribing state '${logMsgState}'`);
+                                    await this.subscribeStatesAsync(`${channel}.${stateId}`);
+                                    this.subscribedList.push(`${channel}.${stateId}`);
+                                }
+                                if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
+                                    const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
+                                    let changedObj = undefined;
+                                    if (key === 'last_seen' || key === 'first_seen' || key === 'rundate') {
+                                        // set lc to last_seen value
+                                        changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
+                                    }
+                                    else {
+                                        changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+                                    }
+                                    if (!isAdapterStart && changedObj && Object.hasOwn(changedObj, 'notChanged') && !changedObj.notChanged) {
+                                        this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
+                                    }
                                 }
                                 else {
-                                    changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
-                                }
-                                if (!isAdapterStart && changedObj && Object.hasOwn(changedObj, 'notChanged') && !changedObj.notChanged) {
-                                    this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
+                                    if (!Object.hasOwn(treeDefinition[key], 'id')) {
+                                        // only report it if it's not a custom defined state
+                                        this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
+                                    }
                                 }
                             }
                             else {
-                                if (!Object.hasOwn(treeDefinition[key], 'id')) {
-                                    // only report it if it's not a custom defined state
-                                    this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
+                                // channel is on blacklist
+                                // delete also at runtime, because some properties are only available on websocket data
+                                if (await this.objectExists(`${channel}.${stateId}`)) {
+                                    await this.delObjectAsync(`${channel}.${stateId}`);
+                                    this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) state '${channel}.${stateId}' delete, it's on the black list`);
                                 }
                             }
-                            // } else {
-                            // 	// is on blacklist
-                            // 	if (await this.objectExists(`${channel}.${stateId}`)) {
-                            // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted state '${logMsgState}'`);
-                            // 		await this.delObjectAsync(`${channel}.${stateId}`);
-                            // 	} else {
-                            // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating state '${logMsgState}', because it is on blacklist`);
-                            // 	}
-                            // }
                         }
                         else {
-                            // if (!this.blacklistedStates.includes(`${filterComparisonId}.${id}`)) {
                             // it's a channel from type object
                             if (Object.hasOwn(treeDefinition[key], 'object') && Object.hasOwn(objValues, key)) {
-                                const idChannel = `${channel}.${Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
-                                await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                                await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key], isAdapterStart);
+                                const idChannelAppendix = Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key;
+                                const idChannel = `${channel}.${idChannelAppendix}`;
+                                if (!_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) {
+                                    await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+                                    await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, objOrg, objOrgValues[key], isAdapterStart, `${filterId}${idChannelAppendix}.`);
+                                }
+                                else {
+                                    // channel is on blacklist
+                                    if (isAdapterStart) {
+                                        if (await this.objectExists(idChannel)) {
+                                            await this.delObjectAsync(idChannel, { recursive: true });
+                                            this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, it's on the black list`);
+                                        }
+                                    }
+                                }
                             }
                             // it's a channel from type array
                             if (Object.hasOwn(treeDefinition[key], 'array') && Object.hasOwn(objValues, key)) {
                                 if (objValues[key] !== null && objValues[key].length > 0) {
-                                    const idChannel = `${channel}.${Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key}`;
-                                    await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                                    const arrayNumberAdd = Object.hasOwn(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0;
-                                    for (let i = 0; i <= objValues[key].length - 1; i++) {
-                                        let nr = i + arrayNumberAdd;
-                                        if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
-                                            let idChannelArray = myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
-                                            if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdFromProperty')) {
-                                                idChannelArray = treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this);
+                                    const idChannelAppendix = Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key;
+                                    const idChannel = `${channel}.${idChannelAppendix}`;
+                                    if (!_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) {
+                                        await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
+                                        const arrayNumberAdd = Object.hasOwn(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0;
+                                        for (let i = 0; i <= objValues[key].length - 1; i++) {
+                                            let nr = i + arrayNumberAdd;
+                                            if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
+                                                let idChannelArray = myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
+                                                if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdFromProperty')) {
+                                                    idChannelArray = treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this);
+                                                }
+                                                else if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdPrefix')) {
+                                                    idChannelArray = treeDefinition[key].arrayChannelIdPrefix + myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
+                                                }
+                                                if (idChannelArray !== undefined) {
+                                                    await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
+                                                    await this.createGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, objOrg, objOrgValues[key][i], true, `${filterId}${idChannelAppendix}.`);
+                                                }
                                             }
-                                            else if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdPrefix')) {
-                                                idChannelArray = treeDefinition[key].arrayChannelIdPrefix + myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
-                                            }
-                                            if (idChannelArray !== undefined) {
-                                                await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
-                                                await this.createGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], `${filterComparisonId}.${key}`, objOrg, objOrgValues[key][i], true);
+                                        }
+                                    }
+                                    else {
+                                        // channel is on blacklist
+                                        if (isAdapterStart) {
+                                            if (await this.objectExists(idChannel)) {
+                                                await this.delObjectAsync(idChannel, { recursive: true });
+                                                this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, it's on the black list`);
                                             }
                                         }
                                     }
                                 }
                             }
-                            // } else {
-                            // 	if (await this.objectExists(`${channel}.${id}`)) {
-                            // 		this.log.info(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - deleting blacklisted channel '${logMsgState}'`);
-                            // 		await this.delObjectAsync(`${channel}.${id}`, { recursive: true });
-                            // 	} else {
-                            // 		this.log.debug(`${logPrefix} ${this.ufp?.getDeviceName(objOrg)} - skip creating channel '${logMsgState}', because it is on blacklist`);
-                            // 	}
-                            // }
                         }
                     }
                     catch (error) {
