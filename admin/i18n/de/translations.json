@@ -117,5 +117,6 @@
     "debounce time [s]": "Entprellzeit [s]",
     "api poll interval [s]": "API-Abfrageintervall [s]",
     "Choose which WLAN should be excluded": "Wählen Sie aus, welches WLAN ausgeschlossen werden soll",
-    "Choose which WLAN states should be excluded": "Wählen Sie aus, welche WLAN-Zustände ausgeschlossen werden sollen"
+    "Choose which WLAN states should be excluded": "Wählen Sie aus, welche WLAN-Zustände ausgeschlossen werden sollen",
+    "Choose which LAN should be excluded": "Wählen Sie aus, welches LAN ausgeschlossen werden soll"
 }

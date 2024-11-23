@@ -496,7 +496,40 @@
 					"newLine": true,
 					"sm": 12,
 					"md": 2
-				}
+				},
+				"lanBlackList": {
+					"newLine": true,
+					"type": "table",
+					"xl": 6,
+					"lg": 6,
+					"md": 6,
+					"sm": 12,
+					"xs": 12,
+					"hidden": "!data.lanConfigEnabled",
+					"uniqueColumns": [
+						"id"
+					],
+					"confirm": {
+						"condition": "!_alive",
+						"title": "Attention!",
+						"text": "This selection is only possible with a running instance!",
+						"ok": "Got it!",
+						"cancel": "cancel",
+						"type": "warning"
+					},
+					"items": [
+						{
+							"type": "autocompleteSendTo",
+							"title": "Choose which LAN should be excluded",
+							"attr": "id",
+							"filter": true,
+							"sort": true,
+							"noMultiEdit": true,
+							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"command": "lanList"
+						}
+					]
+				},
 			}
 		},
 		"tab_expert": {

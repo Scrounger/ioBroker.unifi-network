@@ -118,5 +118,6 @@
     "debounce time [s]": "去抖时间 [s]",
     "api poll interval [s]": "API 轮询间隔 [s]",
     "Choose which WLAN should be excluded": "选择应排除的 WLAN",
-    "Choose which WLAN states should be excluded": "选择应排除哪些 WLAN 状态"
+    "Choose which WLAN states should be excluded": "选择应排除哪些 WLAN 状态",
+    "Choose which LAN should be excluded": "选择应排除的 LAN"
 }

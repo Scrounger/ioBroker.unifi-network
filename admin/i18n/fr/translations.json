@@ -118,5 +118,6 @@
     "debounce time [s]": "temps anti-rebond [s]",
     "api poll interval [s]": "intervalle d'interrogation de l'API [s]",
     "Choose which WLAN should be excluded": "Choisissez quel WLAN doit être exclu",
-    "Choose which WLAN states should be excluded": "Choisissez quels états WLAN doivent être exclus"
+    "Choose which WLAN states should be excluded": "Choisissez quels états WLAN doivent être exclus",
+    "Choose which LAN should be excluded": "Choisissez quel LAN doit être exclu"
 }

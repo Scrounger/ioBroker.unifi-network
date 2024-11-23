@@ -13,6 +13,9 @@ let clientStateList: JsonConfigAutocompleteSendTo[] = undefined;
 let wlanList: JsonConfigAutocompleteSendTo[] = undefined;
 let wlanStateList: JsonConfigAutocompleteSendTo[] = undefined;
 
+let lanList: JsonConfigAutocompleteSendTo[] = undefined;
+let lanStateList: JsonConfigAutocompleteSendTo[] = undefined;
+
 export const messageHandler = {
     device: {
         async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
@@ -165,5 +168,27 @@ export const messageHandler = {
 
             if (message.callback) adapter.sendTo(message.from, message.command, wlanStateList, message.callback);
         }
+    },
+    lan: {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+            if (lanList === undefined) {
+                const data = await ufn.getLanConfig_V2();
+
+                lanList = [];
+
+                if (data && data !== null) {
+                    for (let lan of data) {
+                        lanList.push({
+                            label: `${lan.configuration.name}${lan.configuration.vlan ? ` (VLAN: ${lan.configuration.vlan})` : ''}`,
+                            value: lan.configuration._id
+                        });
+                    }
+                }
+
+                lanList = _.orderBy(lanList, ['label'], ['asc']);
+            }
+
+            if (message.callback) adapter.sendTo(message.from, message.command, lanList, message.callback);
+        },
     }
 }

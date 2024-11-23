@@ -31,7 +31,8 @@ declare global {
 			clientBlackList: [],
 			clientStatesBlackList: [],
 			wlanBlackList: [],
-			wlanStatesBlackList: []
+			wlanStatesBlackList: [],
+			lanBlackList: []
 		}
 	}
 }

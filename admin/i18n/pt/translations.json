@@ -118,5 +118,6 @@
     "debounce time [s]": "tempo de desbloqueio [s]",
     "api poll interval [s]": "intervalo de pesquisa da API [s]",
     "Choose which WLAN should be excluded": "Escolha qual WLAN deve ser excluída",
-    "Choose which WLAN states should be excluded": "Escolha quais estados WLAN devem ser excluídos"
+    "Choose which WLAN states should be excluded": "Escolha quais estados WLAN devem ser excluídos",
+    "Choose which LAN should be excluded": "Escolha qual LAN deve ser excluída"
 }

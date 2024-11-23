@@ -118,5 +118,6 @@
     "debounce time [s]": "debouncetijd [s]",
     "api poll interval [s]": "API poll-interval [s]",
     "Choose which WLAN should be excluded": "Kies welk WLAN moet worden uitgesloten",
-    "Choose which WLAN states should be excluded": "Kies welke WLAN-statussen moeten worden uitgesloten"
+    "Choose which WLAN states should be excluded": "Kies welke WLAN-statussen moeten worden uitgesloten",
+    "Choose which LAN should be excluded": "Kies welk LAN moet worden uitgesloten"
 }

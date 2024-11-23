@@ -284,6 +284,9 @@ class UnifiNetwork extends utils.Adapter {
                 else if (obj.command === 'wlanStateList') {
                     messageHandler.wlan.stateList(obj, this, this.ufn);
                 }
+                else if (obj.command === 'lanList') {
+                    messageHandler.lan.list(obj, this, this.ufn);
+                }
             }
         }
         catch (error) {
@@ -855,28 +858,45 @@ class UnifiNetwork extends utils.Adapter {
                         data = (await this.ufn.getLanConfig_V2());
                     }
                     if (data && data !== null) {
-                        if (isAdapterStart)
-                            this.log.info(`${logPrefix} Discovered ${data.length} LAN's`);
+                        let countLan = 0;
+                        let countBlacklisted = 0;
                         for (let lan of data) {
                             // Convert API V2 to V1, because event is from type V1
                             if (lan && lan.configuration) {
                                 lan = { ...lan.configuration, ...lan.details, ...lan.statistics };
                             }
                             lan = lan;
-                            if (!this.cache.lan[lan._id]) {
-                                this.log.debug(`${logPrefix} Discovered LAN '${lan.name}'`);
+                            const idDevice = `${idChannel}.${lan._id}`;
+                            if (!_.some(this.config.lanBlackList, { id: lan._id })) {
+                                if (isAdapterStart)
+                                    countLan++;
+                                if (!this.cache.lan[lan._id]) {
+                                    this.log.debug(`${logPrefix} Discovered LAN '${lan.name}'`);
+                                }
+                                let dataToProcess = lan;
+                                if (this.cache.lan[lan._id]) {
+                                    // filter out unchanged properties
+                                    dataToProcess = myHelper.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys());
+                                }
+                                this.cache.lan[lan._id] = lan;
+                                if (!_.isEmpty(dataToProcess)) {
+                                    dataToProcess._id = lan._id;
+                                    await this.createOrUpdateDevice(idDevice, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
+                                    await this.createGenericState(idDevice, tree.lan.get(), dataToProcess, 'lan', lan, lan, isAdapterStart);
+                                }
                             }
-                            let dataToProcess = lan;
-                            if (this.cache.lan[lan._id]) {
-                                // filter out unchanged properties
-                                dataToProcess = myHelper.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys());
+                            else {
+                                if (isAdapterStart) {
+                                    countBlacklisted++;
+                                    if (await this.objectExists(idDevice)) {
+                                        await this.delObjectAsync(idDevice, { recursive: true });
+                                        this.log.info(`${logPrefix} wlan '${lan.name}' (id: ${lan._id}) delete, it's on the black list`);
+                                    }
+                                }
                             }
-                            this.cache.lan[lan._id] = lan;
-                            if (!_.isEmpty(dataToProcess)) {
-                                dataToProcess._id = lan._id;
-                                await this.createOrUpdateDevice(`${idChannel}.${lan._id}`, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                await this.createGenericState(`${idChannel}.${lan._id}`, tree.lan.get(), dataToProcess, 'lan', lan, lan, isAdapterStart);
-                            }
+                        }
+                        if (isAdapterStart) {
+                            this.log.info(`${logPrefix} Discovered ${data.length} LAN's (WLAN's: ${countLan}, blacklisted: ${countBlacklisted})`);
                         }
                     }
                 }
