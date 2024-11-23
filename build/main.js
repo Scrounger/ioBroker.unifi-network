@@ -281,6 +281,9 @@ class UnifiNetwork extends utils.Adapter {
                 else if (obj.command === 'wlanList') {
                     messageHandler.wlan.list(obj, this, this.ufn);
                 }
+                else if (obj.command === 'wlanStateList') {
+                    messageHandler.wlan.stateList(obj, this, this.ufn);
+                }
             }
         }
         catch (error) {
@@ -773,7 +776,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = wlan._id;
                                     await this.createOrUpdateDevice(idDevice, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, 'wlan', wlan, wlan, isAdapterStart);
+                                    await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, wlan, wlan, isAdapterStart);
                                 }
                             }
                             else {

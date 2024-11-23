@@ -5,6 +5,7 @@ import { NetworkDevice } from "../api/network-types-device";
 
 export namespace wlan {
     let keys: string[] = undefined;
+    let stateKeys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -76,5 +77,13 @@ export namespace wlan {
         }
 
         return keys
+    }
+
+    export function getStateIDs(): string[] {
+        if (stateKeys === undefined) {
+            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
+        }
+
+        return stateKeys
     }
 }

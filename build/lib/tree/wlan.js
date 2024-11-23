@@ -2,6 +2,7 @@ import * as myHelper from '../helper.js';
 export var wlan;
 (function (wlan) {
     let keys = undefined;
+    let stateKeys = undefined;
     function get() {
         return {
             enabled: {
@@ -73,4 +74,11 @@ export var wlan;
         return keys;
     }
     wlan.getKeys = getKeys;
+    function getStateIDs() {
+        if (stateKeys === undefined) {
+            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
+        }
+        return stateKeys;
+    }
+    wlan.getStateIDs = getStateIDs;
 })(wlan || (wlan = {}));

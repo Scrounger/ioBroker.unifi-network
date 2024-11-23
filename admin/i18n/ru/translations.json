@@ -117,5 +117,6 @@
     "realtime api reconnection interval [s]": "интервал переподключения API в реальном времени [с]",
     "debounce time [s]": "время устранения дребезга [с]",
     "api poll interval [s]": "интервал опроса API [с]",
-    "Choose which WLAN should be excluded": "Выберите, какую сеть WLAN следует исключить"
+    "Choose which WLAN should be excluded": "Выберите, какую сеть WLAN следует исключить",
+    "Choose which WLAN states should be excluded": "Выберите, какие состояния WLAN следует исключить"
 }

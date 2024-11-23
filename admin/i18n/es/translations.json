@@ -117,5 +117,6 @@
     "realtime api reconnection interval [s]": "intervalo de reconexión de API en tiempo real [s]",
     "debounce time [s]": "tiempo de rebote [s]",
     "api poll interval [s]": "intervalo de sondeo de API [s]",
-    "Choose which WLAN should be excluded": "Elija qué WLAN debe excluirse"
+    "Choose which WLAN should be excluded": "Elija qué WLAN debe excluirse",
+    "Choose which WLAN states should be excluded": "Elija qué estados de WLAN deben excluirse"
 }

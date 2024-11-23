@@ -278,7 +278,8 @@
                 "id": "wifi_tx_retries"
             }
         ],
-        "wlanBlackList": []
+        "wlanBlackList": [],
+        "wlanStatesBlackList": []
     },
     "objects": [],
     "instanceObjects": [

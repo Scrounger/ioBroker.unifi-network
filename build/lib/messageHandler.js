@@ -6,6 +6,7 @@ let deviceStateList = undefined;
 let clientList = undefined;
 let clientStateList = undefined;
 let wlanList = undefined;
+let wlanStateList = undefined;
 export const messageHandler = {
     device: {
         async list(message, adapter, ufn) {
@@ -114,5 +115,30 @@ export const messageHandler = {
             if (message.callback)
                 adapter.sendTo(message.from, message.command, wlanList, message.callback);
         },
+        async stateList(message, adapter, ufn) {
+            if (wlanStateList === undefined) {
+                const states = tree.wlan.getStateIDs();
+                wlanStateList = [];
+                if (states) {
+                    for (let i = 0; i <= states.length - 1; i++) {
+                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                            wlanStateList.push({
+                                label: `[Channel]\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                        else {
+                            wlanStateList.push({
+                                label: `[State]\t\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                    }
+                }
+                wlanStateList = _.orderBy(wlanStateList, ['value'], ['asc']);
+            }
+            if (message.callback)
+                adapter.sendTo(message.from, message.command, wlanStateList, message.callback);
+        }
     }
 };
