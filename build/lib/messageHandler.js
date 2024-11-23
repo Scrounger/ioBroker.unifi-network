@@ -5,6 +5,7 @@ let deviceList = undefined;
 let deviceStateList = undefined;
 let clientList = undefined;
 let clientStateList = undefined;
+let wlanList = undefined;
 export const messageHandler = {
     device: {
         async list(message, adapter, ufn) {
@@ -94,5 +95,24 @@ export const messageHandler = {
             if (message.callback)
                 adapter.sendTo(message.from, message.command, clientStateList, message.callback);
         }
+    },
+    wlan: {
+        async list(message, adapter, ufn) {
+            if (wlanList === undefined) {
+                const data = await ufn.getWlanConfig_V2();
+                wlanList = [];
+                if (data && data !== null) {
+                    for (let wlan of data) {
+                        wlanList.push({
+                            label: wlan.configuration.name,
+                            value: wlan.configuration._id
+                        });
+                    }
+                }
+                wlanList = _.orderBy(wlanList, ['label'], ['asc']);
+            }
+            if (message.callback)
+                adapter.sendTo(message.from, message.command, wlanList, message.callback);
+        },
     }
 };

@@ -116,5 +116,6 @@
     "If no data is delivered by the realtime api during this period, the connection is re-established": "Jeżeli w tym czasie interfejs API czasu rzeczywistego nie dostarczy żadnych danych, połączenie zostanie nawiązane ponownie",
     "realtime api reconnection interval [s]": "interwał ponownego połączenia API w czasie rzeczywistym [s]",
     "debounce time [s]": "czas odbicia [s]",
-    "api poll interval [s]": "interwał sondowania API [s]"
+    "api poll interval [s]": "interwał sondowania API [s]",
+    "Choose which WLAN should be excluded": "Wybierz, która sieć WLAN ma zostać wykluczona"
 }

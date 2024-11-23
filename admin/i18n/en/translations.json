@@ -97,5 +97,6 @@
 	"Expert": "Expert",
 	"expert settings": "expert settings",
 	"realtime api reconnection interval [s]": "realtime api reconnection interval [s]",
-	"If no data is delivered by the realtime api during this period, the connection is re-established": "If no data is delivered by the realtime api during this period, the connection is re-established"
+	"If no data is delivered by the realtime api during this period, the connection is re-established": "If no data is delivered by the realtime api during this period, the connection is re-established",
+	"Choose which WLAN should be excluded": "Choose which WLAN should be excluded"
 }

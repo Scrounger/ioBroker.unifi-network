@@ -29,7 +29,8 @@ declare global {
 			deviceBlackList: [],
 			deviceStatesBlackList: [],
 			clientBlackList: [],
-			clientStatesBlackList: []
+			clientStatesBlackList: [],
+			wlanBlackList: [],
 		}
 	}
 }

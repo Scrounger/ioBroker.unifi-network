@@ -116,5 +116,6 @@
     "If no data is delivered by the realtime api during this period, the connection is re-established": "如果这段时间内实时api没有下发数据，则重新建立连接",
     "realtime api reconnection interval [s]": "实时 api 重新连接间隔 [s]",
     "debounce time [s]": "去抖时间 [s]",
-    "api poll interval [s]": "API 轮询间隔 [s]"
+    "api poll interval [s]": "API 轮询间隔 [s]",
+    "Choose which WLAN should be excluded": "选择应排除的 WLAN"
 }
