@@ -9,6 +9,8 @@ declare global {
 			site: string;
 			user: string;
 			password: string;
+			expert: boolean;
+			expertAliveInterval: number;
 			realTimeApiDebounceTime: number;
 			apiUpdateInterval: number;
 			deviceImageDownload: boolean;

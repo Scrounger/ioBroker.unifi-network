@@ -96,6 +96,8 @@
         "site": "default",
         "user": "",
         "password": "",
+        "expert": false,
+        "expertAliveInterval": 30,
         "realTimeApiDebounceTime": 15,
         "apiUpdateInterval": 60,
         "deviceImageDownload": false,

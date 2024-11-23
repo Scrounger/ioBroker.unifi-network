@@ -66,7 +66,7 @@
 				},
 				"realTimeApiDebounceTime": {
 					"type": "number",
-					"label": "debounce time",
+					"label": "debounce time [s]",
 					"help": "increase this value for low performance systems",
 					"validator": "data.realTimeApiDebounceTime < (data.clientOfflineTimeout / 2)",
 					"validatorErrorText": "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!",
@@ -94,27 +94,19 @@
 				},
 				"apiUpdateInterval": {
 					"type": "number",
-					"label": "api poll interval",
+					"label": "api poll interval [s]",
 					"newLine": true,
 					"min": 5,
 					"max": 10000,
 					"sm": 12,
 					"md": 3
 				},
-				"wlanConfigEnabled": {
+				"expert": {
 					"type": "checkbox",
-					"label": "wlan configuration enabled",
-					"newLine": true,
+					"label": "show expert settings",
 					"sm": 12,
-					"md": 2
+					"md": 3
 				},
-				"lanConfigEnabled": {
-					"type": "checkbox",
-					"label": "lan configuration enabled",
-					"newLine": true,
-					"sm": 12,
-					"md": 2
-				}
 			}
 		},
 		"tab_devices": {
@@ -379,6 +371,102 @@
 							"command": "clientStateList"
 						}
 					]
+				}
+			}
+		},
+		"tab_wlans": {
+			"type": "panel",
+			"label": "WLAN",
+			"items": {
+				"donation_link": {
+					"type": "staticLink",
+					"text": "You like the adapter? Then support me.",
+					"sm": 12,
+					"button": true,
+					"newLine": true,
+					"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+					"style": {
+						"justifyContent": "flex-start !important"
+					}
+				},
+				"dividerWlans": {
+					"newLine": true,
+					"type": "header",
+					"text": "WLAN",
+					"size": 2
+				},
+				"wlanConfigEnabled": {
+					"type": "checkbox",
+					"label": "WLAN enabled",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				}
+			}
+		},
+		"tab_lans": {
+			"type": "panel",
+			"label": "LAN",
+			"items": {
+				"donation_link": {
+					"type": "staticLink",
+					"text": "You like the adapter? Then support me.",
+					"sm": 12,
+					"button": true,
+					"newLine": true,
+					"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+					"style": {
+						"justifyContent": "flex-start !important"
+					}
+				},
+				"dividerWlans": {
+					"newLine": true,
+					"type": "header",
+					"text": "LAN",
+					"size": 2
+				},
+				"lanConfigEnabled": {
+					"type": "checkbox",
+					"label": "LAN enabled",
+					"newLine": true,
+					"sm": 12,
+					"md": 2
+				}
+			}
+		},
+		"tab_expert": {
+			"type": "panel",
+			"label": "Expert",
+			"hidden": "!data.expert",
+			"items": {
+				"donation_link": {
+					"type": "staticLink",
+					"text": "You like the adapter? Then support me.",
+					"sm": 12,
+					"button": true,
+					"newLine": true,
+					"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+					"style": {
+						"justifyContent": "flex-start !important"
+					}
+				},
+				"dividerExpert": {
+					"newLine": true,
+					"type": "header",
+					"text": "expert settings",
+					"size": 2
+				},
+				"expertAliveInterval": {
+					"newLine": true,
+					"type": "number",
+					"label": "realtime api reconnection interval [s]",
+					"help": "If no data is delivered by the realtime api during this period, the connection is re-established",
+					"disabled": "!data.expert",
+					"min": 30,
+					"max": 10000,
+					"step": 1,
+					"sm": 12,
+					"md": 3
 				}
 			}
 		}

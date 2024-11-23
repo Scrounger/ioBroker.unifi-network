@@ -99,5 +99,21 @@
     "This selection is only possible with a running instance!": "Diese Auswahl ist nur bei laufender Instanz möglich!",
     "Choose which client / guest should be excluded": "Wählen Sie aus, welcher Kunde/Gast ausgeschlossen werden soll",
     "Choose which device state should be excluded": "Wählen Sie aus, welcher Gerätestatus ausgeschlossen werden soll",
-    "Choose which client / guest state should be excluded": "Wählen Sie aus, welcher Client-/Gaststatus ausgeschlossen werden soll"
+    "Choose which client / guest state should be excluded": "Wählen Sie aus, welcher Client-/Gaststatus ausgeschlossen werden soll",
+    "WLAN's": "WLAN's",
+    "LAN's": "LANs",
+    "WLAN's enabled": "WLAN ist aktiviert",
+    "LAN's enabled": "LAN ist aktiviert",
+    "WLAN": "WLAN",
+    "LAN": "LAN",
+    "WLAN enabled": "WLAN aktiviert",
+    "LAN enabled": "LAN aktiviert",
+    "show expert settings": "Experteneinstellungen anzeigen",
+    "Expert": "Experte",
+    "expert settings": "Experteneinstellungen",
+    "realtime api reconnection interval": "Echtzeit-API-Wiederverbindungsintervall",
+    "If no data is delivered by the realtime api during this period, the connection is re-established": "Sollten in diesem Zeitraum keine Daten von der Echtzeit-API geliefert werden, wird die Verbindung neu aufgebaut",
+    "realtime api reconnection interval [s]": "Echtzeit-API-Wiederverbindungsintervall [s]",
+    "debounce time [s]": "Entprellzeit [s]",
+    "api poll interval [s]": "API-Abfrageintervall [s]"
 }

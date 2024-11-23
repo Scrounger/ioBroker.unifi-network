@@ -20,7 +20,6 @@ import { messageHandler } from './lib/messageHandler.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
-    aliveInterval = 30;
     aliveTimeout = undefined;
     aliveTimestamp = moment().valueOf();
     imageUpdateTimeout;
@@ -306,7 +305,7 @@ class UnifiNetwork extends utils.Adapter {
             }
             this.aliveTimeout = this.setTimeout(() => {
                 this.aliveChecker();
-            }, this.aliveInterval * 1000);
+            }, (this.config.expertAliveInterval || 30) * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -349,7 +348,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (this.ufn) {
                 const diff = Math.round((moment().valueOf() - this.aliveTimestamp) / 1000);
-                if (diff >= this.aliveInterval) {
+                if (diff >= (this.config.expertAliveInterval || 30)) {
                     this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
                     this.ufn.logout();
                     await this.setConnectionStatus(false);
@@ -358,7 +357,7 @@ class UnifiNetwork extends utils.Adapter {
                         await this.establishConnection();
                     }
                     else {
-                        this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * this.aliveInterval}s, stopping the adapter.`);
+                        this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
                         this.stop({ reason: 'too many connection retries' });
                     }
                 }
@@ -373,7 +372,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                     this.aliveTimeout = this.setTimeout(() => {
                         this.aliveChecker();
-                    }, this.aliveInterval * 1000);
+                    }, (this.config.expertAliveInterval || 30) * 1000);
                 }
             }
         }

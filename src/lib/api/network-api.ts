@@ -731,11 +731,11 @@ export class NetworkApi extends EventEmitter {
                 break;
 
             default:
+                endpointSuffix = ''
                 break;
         }
 
         if (!endpointSuffix) {
-
             return '';
         }
 

@@ -553,6 +553,7 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = `/v2/api/site/${this.site}/models`;
                 break;
             default:
+                endpointSuffix = '';
                 break;
         }
         if (!endpointSuffix) {
