@@ -221,14 +221,14 @@ class UnifiNetwork extends utils.Adapter {
 							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
 							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
 
-							const res = await apiCommands.devices.cyclePoePortPower(this.ufn, mac, port_idx, this.cache.devices[mac]);
+							const res = await apiCommands.devices.port_cyclePoePower(this.ufn, mac, port_idx, this.cache.devices[mac]);
 
 							if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 						} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
 							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
 							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
 
-							const res = await apiCommands.devices.switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
+							const res = await apiCommands.devices.port_switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
 
 							if (res) this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
 						} else if (myHelper.getIdLastPart(id) === 'led_override') {
@@ -1519,8 +1519,8 @@ class UnifiNetwork extends utils.Adapter {
 			const common: ioBroker.StateCommon = {
 				name: name,
 				type: treeDefinition[id].iobType,
-				read: treeDefinition[id].read ? treeDefinition[id].read : true,
-				write: treeDefinition[id].write ? treeDefinition[id].write : false,
+				read: (treeDefinition[id].read !== undefined) ? treeDefinition[id].read : true,
+				write: (treeDefinition[id].write !== undefined) ? treeDefinition[id].write : false,
 				role: treeDefinition[id].role ? treeDefinition[id].role : 'state',
 			};
 

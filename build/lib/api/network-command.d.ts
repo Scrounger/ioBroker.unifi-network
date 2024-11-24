@@ -3,8 +3,9 @@ import { NetworkDevice } from "./network-types-device";
 export declare const apiCommands: {
     devices: {
         restart(ufn: NetworkApi, mac: string): Promise<boolean>;
-        cyclePoePortPower(ufn: NetworkApi, mac: string, port_idx: number, device: NetworkDevice): Promise<boolean>;
-        switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
+        port_enable(ufn: NetworkApi, mac: string, port_idx: number, device: NetworkDevice): Promise<void>;
+        port_cyclePoePower(ufn: NetworkApi, mac: string, port_idx: number, device: NetworkDevice): Promise<boolean>;
+        port_switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
         ledOverride(val: string, ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
         upgrade(ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
         runSpeedtest(ufn: NetworkApi): Promise<boolean>;

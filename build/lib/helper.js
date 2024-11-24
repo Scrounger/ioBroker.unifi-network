@@ -34,16 +34,16 @@ export function getAllowedCommonStates(path, obj, separator = '.') {
  */
 export function isStateCommonEqual(objCommon, myCommon) {
     return _.isEqual(objCommon.name, myCommon.name) &&
-        objCommon.type === myCommon.type &&
-        objCommon.read === myCommon.read &&
-        objCommon.write === objCommon.write &&
-        objCommon.role === myCommon.role &&
-        objCommon.def === myCommon.def &&
-        objCommon.unit === myCommon.unit &&
-        objCommon.icon === myCommon.icon &&
-        objCommon.desc == myCommon.desc &&
-        objCommon.max === myCommon.max &&
-        objCommon.min === myCommon.min &&
+        _.isEqual(objCommon.type, myCommon.type) &&
+        _.isEqual(objCommon.read, myCommon.read) &&
+        _.isEqual(objCommon.write, myCommon.write) &&
+        _.isEqual(objCommon.role, myCommon.role) &&
+        _.isEqual(objCommon.def, myCommon.def) &&
+        _.isEqual(objCommon.unit, myCommon.unit) &&
+        _.isEqual(objCommon.icon, myCommon.icon) &&
+        _.isEqual(objCommon.desc, myCommon.desc) &&
+        _.isEqual(objCommon.max, myCommon.max) &&
+        _.isEqual(objCommon.min, myCommon.min) &&
         _.isEqual(objCommon.states, myCommon.states);
 }
 export function zeroPad(source, places) {
