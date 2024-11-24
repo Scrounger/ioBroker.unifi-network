@@ -14,5 +14,6 @@ export declare const messageHandler: {
     };
     lan: {
         list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void>;
+        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void>;
     };
 };

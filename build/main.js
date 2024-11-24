@@ -287,6 +287,9 @@ class UnifiNetwork extends utils.Adapter {
                 else if (obj.command === 'lanList') {
                     messageHandler.lan.list(obj, this, this.ufn);
                 }
+                else if (obj.command === 'lanStateList') {
+                    messageHandler.lan.stateList(obj, this, this.ufn);
+                }
             }
         }
         catch (error) {
@@ -768,7 +771,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (isAdapterStart)
                                     countWlan++;
                                 if (!this.cache.wlan[wlan._id]) {
-                                    this.log.debug(`${logPrefix} Discovered wlan '${wlan.name}'`);
+                                    this.log.debug(`${logPrefix} Discovered WLAN '${wlan.name}'`);
                                 }
                                 let dataToProcess = wlan;
                                 if (this.cache.wlan[wlan._id]) {
@@ -787,7 +790,7 @@ class UnifiNetwork extends utils.Adapter {
                                     countBlacklisted++;
                                     if (await this.objectExists(idDevice)) {
                                         await this.delObjectAsync(idDevice, { recursive: true });
-                                        this.log.info(`${logPrefix} wlan '${wlan.name}' (id: ${wlan._id}) delete, it's on the black list`);
+                                        this.log.info(`${logPrefix} WLAN '${wlan.name}' (id: ${wlan._id}) delete, it's on the black list`);
                                     }
                                 }
                             }
@@ -882,7 +885,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = lan._id;
                                     await this.createOrUpdateDevice(idDevice, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.lan.get(), dataToProcess, 'lan', lan, lan, isAdapterStart);
+                                    await this.createGenericState(idDevice, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, lan, lan, isAdapterStart);
                                 }
                             }
                             else {
@@ -890,7 +893,7 @@ class UnifiNetwork extends utils.Adapter {
                                     countBlacklisted++;
                                     if (await this.objectExists(idDevice)) {
                                         await this.delObjectAsync(idDevice, { recursive: true });
-                                        this.log.info(`${logPrefix} wlan '${lan.name}' (id: ${lan._id}) delete, it's on the black list`);
+                                        this.log.info(`${logPrefix} LAN '${lan.name}' (id: ${lan._id}) delete, it's on the black list`);
                                     }
                                 }
                             }

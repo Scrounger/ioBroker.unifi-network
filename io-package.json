@@ -280,7 +280,8 @@
         ],
         "wlanBlackList": [],
         "wlanStatesBlackList": [],
-        "lanBlackList": []
+        "lanBlackList": [],
+        "lanStatesBlackList": []
     },
     "objects": [],
     "instanceObjects": [

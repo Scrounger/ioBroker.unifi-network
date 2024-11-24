@@ -190,5 +190,33 @@ export const messageHandler = {
 
             if (message.callback) adapter.sendTo(message.from, message.command, lanList, message.callback);
         },
+        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+            if (lanStateList === undefined) {
+                const states = tree.lan.getStateIDs();
+
+                lanStateList = [];
+
+                if (states) {
+                    for (let i = 0; i <= states.length - 1; i++) {
+
+                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                            lanStateList.push({
+                                label: `[Channel]\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        } else {
+                            lanStateList.push({
+                                label: `[State]\t\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                    }
+                }
+
+                lanStateList = _.orderBy(lanStateList, ['value'], ['asc']);
+            }
+
+            if (message.callback) adapter.sendTo(message.from, message.command, lanStateList, message.callback);
+        }
     }
 }
