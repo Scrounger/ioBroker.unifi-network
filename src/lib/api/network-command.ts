@@ -8,7 +8,7 @@ export const apiCommands = {
 
             return result === null ? false : true;
         },
-        async cyclePoePortPower(ufn: NetworkApi, mac: string, port_idx: number, device: NetworkDevice) {
+        async port_cyclePoePower(ufn: NetworkApi, mac: string, port_idx: number, device: NetworkDevice) {
             const logPrefix = '[apiCommands.cyclePoePortPower]'
 
             try {
@@ -34,7 +34,7 @@ export const apiCommands = {
 
             return false;
         },
-        async switchPoePort(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean> {
+        async port_switchPoe(val: boolean, port_idx: number, ufn: NetworkApi, device: NetworkDevice): Promise<boolean> {
             const logPrefix = '[apiCommands.switchPoePort]'
 
             let port_overrides = device.port_overrides;

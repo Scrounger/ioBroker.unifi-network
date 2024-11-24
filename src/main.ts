@@ -217,20 +217,22 @@ class UnifiNetwork extends utils.Adapter {
 
 							if (res) this.log.info(`${logPrefix} command sent: restart - '${this.cache.devices[mac].name}' (mac: ${mac})`);
 
-						} else if (myHelper.getIdLastPart(id) === 'poe_cycle') {
-							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+						} else if (id.includes('.port_')) {
+							if (myHelper.getIdLastPart(id) === 'poe_cycle') {
+								const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+								const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
 
-							const res = await apiCommands.devices.port_cyclePoePower(this.ufn, mac, port_idx, this.cache.devices[mac]);
+								const res = await apiCommands.devices.port_cyclePoePower(this.ufn, mac, port_idx, this.cache.devices[mac]);
 
-							if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac})`);
-						} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
-							const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-							const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+								if (res) this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
+							} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
+								const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+								const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
 
-							const res = await apiCommands.devices.port_switchPoePort(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
+								const res = await apiCommands.devices.port_switchPoe(state.val as boolean, port_idx, this.ufn, this.cache.devices[mac]);
 
-							if (res) this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
+								if (res) this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
+							}
 						} else if (myHelper.getIdLastPart(id) === 'led_override') {
 							const res = await apiCommands.devices.ledOverride(state.val as string, this.ufn, this.cache.devices[mac]);
 

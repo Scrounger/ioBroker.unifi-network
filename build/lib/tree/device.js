@@ -135,9 +135,7 @@ export var device;
                     },
                     enable: {
                         iobType: 'boolean',
-                        name: 'port enabled',
-                        read: true,
-                        write: true
+                        name: 'enabled'
                     },
                     is_uplink: {
                         iobType: 'boolean',

@@ -4,10 +4,8 @@ export const apiCommands = {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'restart', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
-        async port_enable(ufn, mac, port_idx, device) {
-        },
         async port_cyclePoePower(ufn, mac, port_idx, device) {
-            const logPrefix = '[apiCommands.port_cyclePoePower]';
+            const logPrefix = '[apiCommands.cyclePoePortPower]';
             try {
                 const port_table = device.port_table;
                 if (port_table && port_table.length > 0) {
@@ -27,7 +25,7 @@ export const apiCommands = {
             }
             return false;
         },
-        async port_switchPoePort(val, port_idx, ufn, device) {
+        async port_switchPoe(val, port_idx, ufn, device) {
             const logPrefix = '[apiCommands.switchPoePort]';
             let port_overrides = device.port_overrides;
             if (port_overrides && port_overrides.length > 0) {
