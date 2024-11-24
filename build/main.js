@@ -210,11 +210,15 @@ class UnifiNetwork extends utils.Adapter {
                             if (res)
                                 this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
                         }
-                        else if (myHelper.getIdLastPart(id) === 'run') {
-                            const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
-                            const res = await apiCommands.devices.runSpeedtest(this.ufn);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent:  speedtest started - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+                        else if (id.includes('internet.wan')) {
+                            if (myHelper.getIdLastPart(id) === 'run_speedtest') {
+                                const wan_interface = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+                                const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+                                const interface_name = this.cache.devices[mac][wan_interface].ifname;
+                                const res = await apiCommands.devices.runSpeedtest(this.ufn, interface_name);
+                                if (res)
+                                    this.log.info(`${logPrefix} command sent: run speedtest (mac: ${mac}, wan: ${wan_interface}, interface: ${interface_name})`);
+                            }
                         }
                         else {
                             this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
@@ -1386,6 +1390,9 @@ class UnifiNetwork extends utils.Adapter {
             else if (event.meta.message.startsWith(WebSocketEventMessages.lanConf)) {
                 await this.onNetworkLanConfEvent(event);
             }
+            else if (event.meta.message === WebSocketEventMessages.speedTest) {
+                await this.onNetworkSpeedTestEvent(event);
+            }
             else {
                 if (!this.eventsToIngnore.includes(event.meta.message)) {
                     this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
@@ -1511,6 +1518,18 @@ class UnifiNetwork extends utils.Adapter {
                 else {
                     await this.updateLanConfig(event.data);
                 }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkSpeedTestEvent(event) {
+        const logPrefix = '[onNetworkSpeedTestEvent]:';
+        try {
+            if (this.config.devicesEnabled) {
+                this.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+                await eventHandler.device.speedTest(event, this, this.cache);
             }
         }
         catch (error) {

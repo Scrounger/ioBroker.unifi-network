@@ -1,4 +1,4 @@
-import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
+import { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
 import { WebSocketEvent, myCache, myNetworkClient } from "./myTypes.js";
 import * as myHelper from './helper.js';
 import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
@@ -48,6 +48,37 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
         },
+        async speedTest(event: NetworkEventSpeedTest, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.device.speedTest]:'
+
+            try {
+                const mac = event.meta.mac;
+
+                for (let data of event.data) {
+                    if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
+                        const wan = cache.devices[mac].wan1.ifname === data.interface_name ? 'wan1' : cache.devices[mac].wan2.ifname === data.interface_name ? 'wan2' : undefined;
+
+                        if (wan) {
+                            const idChannel = `devices.${mac}.internet.${wan}`;
+
+                            adapter.log.warn('Jaaaa');
+
+                            if (await adapter.objectExists(`${idChannel}.download`)) {
+                                await adapter.setState(`${idChannel}.download`, { val: data.xput_download, lc: data.rundate * 1000 }, true);
+                            }
+                            if (await adapter.objectExists(`${idChannel}.upload`)) {
+                                await adapter.setState(`${idChannel}.upload`, { val: data.xput_upload, lc: data.rundate * 1000 }, true);
+                            }
+                            if (await adapter.objectExists(`${idChannel}.latency`)) {
+                                await adapter.setState(`${idChannel}.latency`, { val: data.latency, lc: data.rundate * 1000 }, true);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
+        }
     },
     client: {
         async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {

@@ -1,4 +1,4 @@
-import { NetworkEventMeta, NetworkEventData } from "./api/network-types.js";
+import { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
 import { myCache, myNetworkClient } from "./myTypes.js";
 import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import { NetworkLanConfig } from "./api/network-types-lan-config.js";
@@ -6,6 +6,7 @@ export declare const eventHandler: {
     device: {
         restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+        speedTest(event: NetworkEventSpeedTest, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };
     client: {
         connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;

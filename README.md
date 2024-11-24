@@ -17,10 +17,9 @@ Unifi Network uses the websocket interface to receive real-time information from
 
 ## Important
 
-**This adapter can be very resource intensive!**<br>
-<br>
-This depends on your environment, i.e. how many unifi-devices and clients are in your network.<br>
-This can be influenced somewhat via the `update interval` parameter in the adapter settings
+1. **This adapter can be very resource intensive!**<br>This depends on your environment, i.e. how many unifi-devices and clients are in your network. This can be influenced somewhat via the `update interval` parameter in the adapter settings. Real-time events are not affected by this setting, only the cyclical update of devices, clients, etc.
+
+2. **Not all states are directly available after the adapter has started**<br>States are only created and updated when the data is sent by the network controller, this can take some time until the data is sent for the first time
 
 ## Developer manual
 

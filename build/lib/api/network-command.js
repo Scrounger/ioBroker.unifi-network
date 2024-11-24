@@ -69,8 +69,12 @@ export const apiCommands = {
             }
             return false;
         },
-        async runSpeedtest(ufn) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'speedtest' });
+        async runSpeedtest(ufn, interface_name = undefined) {
+            let payload = { cmd: 'speedtest' };
+            if (interface_name) {
+                payload.interface_name = interface_name;
+            }
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, payload);
             return result === null ? false : true;
         }
     },

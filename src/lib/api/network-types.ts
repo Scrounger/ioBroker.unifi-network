@@ -29,6 +29,12 @@ export interface NetworkEventLanConfig {
     data: NetworkLanConfig[]
 }
 
+export interface NetworkEventSpeedTest {
+    meta: NetworkEventMeta;
+    data: NetworkEventSpeedTestData[];
+}
+
+
 export interface NetworkEventMeta {
     message: string;
     rc: string;
@@ -61,4 +67,21 @@ export interface NetworkEventData {
     subsystem: string;
     time: number;
     user?: string;
+}
+
+export interface NetworkEventSpeedTestData {
+    latency: number
+    rundate: number
+    runtime: number
+    source_interface: string
+    status_download: number
+    status_ping: number
+    status_summary: number
+    status_upload: number
+    xput_download: number
+    xput_upload: number
+    timestamp: number
+    interface_name: string
+    "upload-progress"?: { id: number, records: any[] }[],
+    "download-progress"?: { id: number, records: any[] }[]
 }

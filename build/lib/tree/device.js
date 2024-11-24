@@ -302,43 +302,6 @@ export var device;
                 },
                 unit: '%'
             },
-            'speedtest-status': {
-                idChannel: 'speedtest',
-                channelName: 'speed test',
-                object: {
-                    latency: {
-                        iobType: 'number',
-                        name: 'latency',
-                        unit: 'ms'
-                    },
-                    rundate: {
-                        iobType: 'number',
-                        name: 'last run',
-                    },
-                    download: {
-                        id: 'download',
-                        iobType: 'number',
-                        name: 'download',
-                        unit: 'Mbps',
-                        valFromProperty: 'xput_download'
-                    },
-                    upload: {
-                        id: 'upload',
-                        iobType: 'number',
-                        name: 'upload',
-                        unit: 'Mbps',
-                        valFromProperty: 'xput_upload'
-                    },
-                    run: {
-                        id: 'run',
-                        iobType: 'boolean',
-                        name: 'run speedtest',
-                        read: false,
-                        write: true,
-                        role: 'button'
-                    },
-                }
-            },
             storage: {
                 channelName: 'storage',
                 arrayChannelNameFromProperty(objValues, adapter) {
@@ -593,7 +556,7 @@ export var device;
                 channelName: 'Internet statistics',
                 object: {
                     WAN: {
-                        idChannel: 'wan_1',
+                        idChannel: 'wan1',
                         channelName: 'WAN 1',
                         object: {
                             address: {
@@ -612,7 +575,7 @@ export var device;
                         }
                     },
                     WAN2: {
-                        idChannel: 'wan_2',
+                        idChannel: 'wan2',
                         channelName: 'WAN 2',
                         object: {
                             address: {
@@ -637,7 +600,7 @@ export var device;
                 channelName: 'Internet statistics',
                 object: {
                     WAN: {
-                        idChannel: 'wan_1',
+                        idChannel: 'wan1',
                         channelName: 'WAN 1',
                         object: {
                             uptime: {
@@ -648,7 +611,7 @@ export var device;
                         }
                     },
                     WAN2: {
-                        idChannel: 'wan_2',
+                        idChannel: 'wan2',
                         channelName: 'WAN 2',
                         object: {
                             uptime: {
@@ -661,7 +624,7 @@ export var device;
                 }
             },
             wan1: {
-                idChannel: 'internet.wan_1',
+                idChannel: 'internet.wan1',
                 channelName: 'WAN 1',
                 object: {
                     availability: {
@@ -702,11 +665,31 @@ export var device;
                         id: 'isOnline',
                         iobType: 'boolean',
                         name: 'is connected to internet service provider'
-                    }
+                    },
+                    download: {
+                        id: 'download',
+                        iobType: 'number',
+                        name: 'speed test download rate',
+                        unit: 'Mbps'
+                    },
+                    upload: {
+                        id: 'upload',
+                        iobType: 'number',
+                        name: 'speed test upload rate',
+                        unit: 'Mbps'
+                    },
+                    run: {
+                        id: 'run_speedtest',
+                        iobType: 'boolean',
+                        name: 'run speedtest',
+                        read: false,
+                        write: true,
+                        role: 'button'
+                    },
                 }
             },
             wan2: {
-                idChannel: 'internet.wan_2',
+                idChannel: 'internet.wan2',
                 channelName: 'WAN 2',
                 object: {
                     availability: {
@@ -747,7 +730,27 @@ export var device;
                         id: 'isOnline',
                         iobType: 'boolean',
                         name: 'is connected to internet service provider'
-                    }
+                    },
+                    download: {
+                        id: 'download',
+                        iobType: 'number',
+                        name: 'speed test download rate',
+                        unit: 'Mbps'
+                    },
+                    upload: {
+                        id: 'upload',
+                        iobType: 'number',
+                        name: 'speed test upload rate',
+                        unit: 'Mbps'
+                    },
+                    run: {
+                        id: 'run_speedtest',
+                        iobType: 'boolean',
+                        name: 'run speedtest',
+                        read: false,
+                        write: true,
+                        role: 'button'
+                    },
                 }
             }
         };

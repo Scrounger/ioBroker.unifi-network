@@ -86,8 +86,14 @@ export const apiCommands = {
 
             return false;
         },
-        async runSpeedtest(ufn: NetworkApi): Promise<boolean> {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'speedtest' });
+        async runSpeedtest(ufn: NetworkApi, interface_name: string | undefined = undefined): Promise<boolean> {
+            let payload: any = { cmd: 'speedtest' }
+
+            if (interface_name) {
+                payload.interface_name = interface_name
+            }
+
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, payload);
 
             return result === null ? false : true;
         }
