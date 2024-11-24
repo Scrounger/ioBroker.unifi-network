@@ -6,7 +6,6 @@ import * as myHelper from '../helper.js';
 
 export namespace device {
     let keys: string[] = undefined;
-    let stateKeys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -606,10 +605,6 @@ export namespace device {
     }
 
     export function getStateIDs(): string[] {
-        if (stateKeys === undefined) {
-            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
-        }
-
-        return stateKeys
+        return myHelper.getAllIdsOfTreeDefinition(get());
     }
 }

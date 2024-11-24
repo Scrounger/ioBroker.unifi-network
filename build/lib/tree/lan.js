@@ -2,7 +2,6 @@ import * as myHelper from '../helper.js';
 export var lan;
 (function (lan) {
     let keys = undefined;
-    let stateKeys = undefined;
     function get() {
         return {
             connected_clients: {
@@ -83,10 +82,7 @@ export var lan;
     }
     lan.getKeys = getKeys;
     function getStateIDs() {
-        if (stateKeys === undefined) {
-            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
-        }
-        return stateKeys;
+        return myHelper.getAllIdsOfTreeDefinition(get());
     }
     lan.getStateIDs = getStateIDs;
 })(lan || (lan = {}));

@@ -5,7 +5,6 @@ import { NetworkLanConfig } from "../api/network-types-lan-config";
 
 export namespace lan {
     let keys: string[] = undefined;
-    let stateKeys: string[] = undefined;
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -88,10 +87,6 @@ export namespace lan {
     }
 
     export function getStateIDs(): string[] {
-        if (stateKeys === undefined) {
-            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
-        }
-
-        return stateKeys
+        return myHelper.getAllIdsOfTreeDefinition(get());
     }
 }

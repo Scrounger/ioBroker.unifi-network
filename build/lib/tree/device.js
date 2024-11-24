@@ -3,7 +3,6 @@ import * as myHelper from '../helper.js';
 export var device;
 (function (device) {
     let keys = undefined;
-    let stateKeys = undefined;
     function get() {
         return {
             connected_clients: {
@@ -600,10 +599,7 @@ export var device;
     }
     device.getKeys = getKeys;
     function getStateIDs() {
-        if (stateKeys === undefined) {
-            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
-        }
-        return stateKeys;
+        return myHelper.getAllIdsOfTreeDefinition(get());
     }
     device.getStateIDs = getStateIDs;
 })(device || (device = {}));

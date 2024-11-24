@@ -741,7 +741,7 @@ class UnifiNetwork extends utils.Adapter {
 											if (!isAdapterStart) this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 
 											await this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-											await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, 'vpn', client, client, isAdapterStart);
+											await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, client, client, isAdapterStart);
 										}
 									}
 								}
@@ -1332,8 +1332,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, blacklistFilter: JsonConfigAutocompleteSendTo[] | any, objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objOrgValues, isAdapterStart: boolean = false, filterId = '') {
-		// ToDo: blacklistFilter type any is to remove
+	async createGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, blacklistFilter: JsonConfigAutocompleteSendTo[], objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objOrgValues, isAdapterStart: boolean = false, filterId = '') {
 		const logPrefix = '[createGenericState]:';
 
 		try {

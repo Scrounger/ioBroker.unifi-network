@@ -3,7 +3,6 @@ import * as myHelper from '../helper.js';
 export var client;
 (function (client) {
     let keys = undefined;
-    let stateKeys = undefined;
     function get() {
         return {
             blocked: {
@@ -323,10 +322,7 @@ export var client;
     }
     client.getKeys = getKeys;
     function getStateIDs() {
-        if (stateKeys === undefined) {
-            stateKeys = myHelper.getAllIdsOfTreeDefinition(get());
-        }
-        return stateKeys;
+        return myHelper.getAllIdsOfTreeDefinition(get());
     }
     client.getStateIDs = getStateIDs;
 })(client || (client = {}));
