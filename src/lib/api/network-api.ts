@@ -836,7 +836,7 @@ export enum ApiEndpoints {
     clients = 'clients',
     clientsActive = "clientsActive",
     wlanConfig = 'wlanConfig',
-    lanConfig = 'lanConfig',
+    lanConfig = 'lanConfig'
 }
 
 export enum ApiEndpoints_V2 {
@@ -845,5 +845,6 @@ export enum ApiEndpoints_V2 {
     clientsHistory = "clientsHistory",
     wlanConfig = 'wlanConfig',
     lanConfig = 'lanConfig',
+    wanConfig = 'wanConfig',
     models = 'models'
 }

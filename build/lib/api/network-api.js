@@ -641,5 +641,6 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["clientsHistory"] = "clientsHistory";
     ApiEndpoints_V2["wlanConfig"] = "wlanConfig";
     ApiEndpoints_V2["lanConfig"] = "lanConfig";
+    ApiEndpoints_V2["wanConfig"] = "wanConfig";
     ApiEndpoints_V2["models"] = "models";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));

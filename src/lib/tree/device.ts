@@ -592,6 +592,168 @@ export namespace device {
                         }
                     },
                 }
+            },
+            active_geo_info: {
+                idChannel: 'internet',
+                channelName: 'Internet statistics',
+                object: {
+                    WAN: {
+                        idChannel: 'wan_1',
+                        channelName: 'WAN 1',
+                        object: {
+                            address: {
+                                id: 'isp_ip',
+                                iobType: 'string',
+                                name: 'internet ip address',
+                            },
+                            isp_name: {
+                                iobType: 'string',
+                                name: 'internet service provider name'
+                            },
+                            isp_organization: {
+                                iobType: 'string',
+                                name: 'internet service provider organization'
+                            }
+                        }
+                    },
+                    WAN2: {
+                        idChannel: 'wan_2',
+                        channelName: 'WAN 2',
+                        object: {
+                            address: {
+                                id: 'isp_ip',
+                                iobType: 'string',
+                                name: 'internet ip address',
+                            },
+                            isp_name: {
+                                iobType: 'string',
+                                name: 'internet service provider name'
+                            },
+                            isp_organization: {
+                                iobType: 'string',
+                                name: 'internet service provider organization'
+                            }
+                        }
+                    },
+                }
+            },
+            uptime_stats: {
+                idChannel: 'internet',
+                channelName: 'Internet statistics',
+                object: {
+                    WAN: {
+                        idChannel: 'wan_1',
+                        channelName: 'WAN 1',
+                        object: {
+                            uptime: {
+                                iobType: 'number',
+                                name: 'uptime',
+                                unit: 's',
+                            },
+                        }
+                    },
+                    WAN2: {
+                        idChannel: 'wan_2',
+                        channelName: 'WAN 2',
+                        object: {
+                            uptime: {
+                                iobType: 'number',
+                                name: 'uptime',
+                                unit: 's',
+                            },
+                        }
+                    }
+                }
+            },
+            wan1: {
+                idChannel: 'internet.wan_1',
+                channelName: 'WAN 1',
+                object: {
+                    availability: {
+                        iobType: 'number',
+                        name: 'availability',
+                        unit: '%'
+                    },
+                    ip: {
+                        iobType: 'string',
+                        name: 'ip address',
+                    },
+                    latency: {
+                        iobType: 'number',
+                        name: 'latency',
+                        unit: 'ms'
+                    },
+                    port_idx: {
+                        iobType: 'number',
+                        name: 'Port'
+                    },
+                    rx_bytes: {
+                        iobType: 'number',
+                        name: 'RX Bytes',
+                        unit: 'GB',
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                        }
+                    },
+                    tx_bytes: {
+                        iobType: 'number',
+                        name: 'TX Bytes',
+                        unit: 'GB',
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                        }
+                    },
+                    up: {
+                        id: 'isOnline',
+                        iobType: 'boolean',
+                        name: 'is connected to internet service provider'
+                    }
+                }
+            },
+            wan2: {
+                idChannel: 'internet.wan_2',
+                channelName: 'WAN 2',
+                object: {
+                    availability: {
+                        iobType: 'number',
+                        name: 'availability',
+                        unit: '%'
+                    },
+                    ip: {
+                        iobType: 'string',
+                        name: 'ip address',
+                    },
+                    latency: {
+                        iobType: 'number',
+                        name: 'latency',
+                        unit: 'ms'
+                    },
+                    port_idx: {
+                        iobType: 'number',
+                        name: 'Port'
+                    },
+                    rx_bytes: {
+                        iobType: 'number',
+                        name: 'RX Bytes',
+                        unit: 'GB',
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                        }
+                    },
+                    tx_bytes: {
+                        iobType: 'number',
+                        name: 'TX Bytes',
+                        unit: 'GB',
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                        }
+                    },
+                    up: {
+                        id: 'isOnline',
+                        iobType: 'boolean',
+                        name: 'is connected to internet service provider'
+                    }
+                }
             }
         }
     }
