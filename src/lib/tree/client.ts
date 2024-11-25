@@ -256,8 +256,8 @@ export namespace client {
                 iobType: 'string',
                 name: 'client type',
                 states: {
-                    "WIRED": 'Wired',
-                    "WIRELESS": 'WiFi',
+                    "WIRED": 'LAN',
+                    "WIRELESS": 'WLAN',
                     "VPN": 'VPN'
                 }
             },

@@ -558,40 +558,12 @@ export var device;
                     WAN: {
                         idChannel: 'wan1',
                         channelName: 'WAN 1',
-                        object: {
-                            address: {
-                                id: 'isp_ip',
-                                iobType: 'string',
-                                name: 'internet ip address',
-                            },
-                            isp_name: {
-                                iobType: 'string',
-                                name: 'internet service provider name'
-                            },
-                            isp_organization: {
-                                iobType: 'string',
-                                name: 'internet service provider organization'
-                            }
-                        }
+                        object: _WAN_GEO_INFO_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
                         channelName: 'WAN 2',
-                        object: {
-                            address: {
-                                id: 'isp_ip',
-                                iobType: 'string',
-                                name: 'internet ip address',
-                            },
-                            isp_name: {
-                                iobType: 'string',
-                                name: 'internet service provider name'
-                            },
-                            isp_organization: {
-                                iobType: 'string',
-                                name: 'internet service provider organization'
-                            }
-                        }
+                        object: _WAN_GEO_INFO_PROPERTIES
                     },
                 }
             },
@@ -602,156 +574,24 @@ export var device;
                     WAN: {
                         idChannel: 'wan1',
                         channelName: 'WAN 1',
-                        object: {
-                            uptime: {
-                                iobType: 'number',
-                                name: 'uptime',
-                                unit: 's',
-                            },
-                        }
+                        object: _WAN_UPTIME_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
                         channelName: 'WAN 2',
-                        object: {
-                            uptime: {
-                                iobType: 'number',
-                                name: 'uptime',
-                                unit: 's',
-                            },
-                        }
+                        object: _WAN_UPTIME_PROPERTIES
                     }
                 }
             },
             wan1: {
                 idChannel: 'internet.wan1',
                 channelName: 'WAN 1',
-                object: {
-                    availability: {
-                        iobType: 'number',
-                        name: 'availability',
-                        unit: '%'
-                    },
-                    ip: {
-                        iobType: 'string',
-                        name: 'ip address',
-                    },
-                    latency: {
-                        iobType: 'number',
-                        name: 'latency',
-                        unit: 'ms'
-                    },
-                    port_idx: {
-                        iobType: 'number',
-                        name: 'Port'
-                    },
-                    rx_bytes: {
-                        iobType: 'number',
-                        name: 'RX Bytes',
-                        unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient) {
-                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-                        }
-                    },
-                    tx_bytes: {
-                        iobType: 'number',
-                        name: 'TX Bytes',
-                        unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient) {
-                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-                        }
-                    },
-                    up: {
-                        id: 'isOnline',
-                        iobType: 'boolean',
-                        name: 'is connected to internet service provider'
-                    },
-                    download: {
-                        id: 'download',
-                        iobType: 'number',
-                        name: 'speed test download rate',
-                        unit: 'Mbps'
-                    },
-                    upload: {
-                        id: 'upload',
-                        iobType: 'number',
-                        name: 'speed test upload rate',
-                        unit: 'Mbps'
-                    },
-                    run: {
-                        id: 'run_speedtest',
-                        iobType: 'boolean',
-                        name: 'run speedtest',
-                        read: false,
-                        write: true,
-                        role: 'button'
-                    },
-                }
+                object: _WAN_PROPERTIES
             },
             wan2: {
                 idChannel: 'internet.wan2',
                 channelName: 'WAN 2',
-                object: {
-                    availability: {
-                        iobType: 'number',
-                        name: 'availability',
-                        unit: '%'
-                    },
-                    ip: {
-                        iobType: 'string',
-                        name: 'ip address',
-                    },
-                    latency: {
-                        iobType: 'number',
-                        name: 'latency',
-                        unit: 'ms'
-                    },
-                    port_idx: {
-                        iobType: 'number',
-                        name: 'Port'
-                    },
-                    rx_bytes: {
-                        iobType: 'number',
-                        name: 'RX Bytes',
-                        unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient) {
-                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-                        }
-                    },
-                    tx_bytes: {
-                        iobType: 'number',
-                        name: 'TX Bytes',
-                        unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient) {
-                            return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-                        }
-                    },
-                    up: {
-                        id: 'isOnline',
-                        iobType: 'boolean',
-                        name: 'is connected to internet service provider'
-                    },
-                    download: {
-                        id: 'download',
-                        iobType: 'number',
-                        name: 'speed test download rate',
-                        unit: 'Mbps'
-                    },
-                    upload: {
-                        id: 'upload',
-                        iobType: 'number',
-                        name: 'speed test upload rate',
-                        unit: 'Mbps'
-                    },
-                    run: {
-                        id: 'run_speedtest',
-                        iobType: 'boolean',
-                        name: 'run speedtest',
-                        read: false,
-                        write: true,
-                        role: 'button'
-                    },
-                }
+                object: _WAN_PROPERTIES
             }
         };
     }
@@ -767,4 +607,105 @@ export var device;
         return myHelper.getAllIdsOfTreeDefinition(get());
     }
     device.getStateIDs = getStateIDs;
+    const _WAN_PROPERTIES = {
+        availability: {
+            iobType: 'number',
+            name: 'availability',
+            unit: '%'
+        },
+        current_download: {
+            iobType: 'number',
+            name: 'current download rate',
+            unit: 'Mbps',
+            valFromProperty: 'rx_rate',
+            readVal(val, adapter, cache, deviceOrClient) {
+                return Math.round(val / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        current_upload: {
+            iobType: 'number',
+            name: 'current upload rate',
+            unit: 'Mbps',
+            valFromProperty: 'tx_rate',
+            readVal(val, adapter, cache, deviceOrClient) {
+                return Math.round(val / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        ip: {
+            iobType: 'string',
+            name: 'ip address',
+        },
+        latency: {
+            iobType: 'number',
+            name: 'latency',
+            unit: 'ms'
+        },
+        port_idx: {
+            iobType: 'number',
+            name: 'Port'
+        },
+        rx_bytes: {
+            iobType: 'number',
+            name: 'RX Bytes',
+            unit: 'GB',
+            readVal(val, adapter, cache, deviceOrClient) {
+                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        tx_bytes: {
+            iobType: 'number',
+            name: 'TX Bytes',
+            unit: 'GB',
+            readVal(val, adapter, cache, deviceOrClient) {
+                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        isOnline: {
+            iobType: 'boolean',
+            name: 'is connected to internet service provider',
+            valFromProperty: 'up'
+        },
+        speedtest_download: {
+            id: 'speedtest_download',
+            iobType: 'number',
+            name: 'speed test download rate',
+            unit: 'Mbps'
+        },
+        speedtest_upload: {
+            id: 'speedtest_upload',
+            iobType: 'number',
+            name: 'speed test upload rate',
+            unit: 'Mbps'
+        },
+        speedtest_run: {
+            id: 'speedtest_run',
+            iobType: 'boolean',
+            name: 'run speedtest',
+            read: false,
+            write: true,
+            role: 'button'
+        },
+    };
+    const _WAN_UPTIME_PROPERTIES = {
+        uptime: {
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+        }
+    };
+    const _WAN_GEO_INFO_PROPERTIES = {
+        address: {
+            id: 'isp_ip',
+            iobType: 'string',
+            name: 'internet ip address',
+        },
+        isp_name: {
+            iobType: 'string',
+            name: 'internet service provider name'
+        },
+        isp_organization: {
+            iobType: 'string',
+            name: 'internet service provider organization'
+        }
+    };
 })(device || (device = {}));

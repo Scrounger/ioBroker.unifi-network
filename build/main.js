@@ -211,7 +211,7 @@ class UnifiNetwork extends utils.Adapter {
                                 this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
                         }
                         else if (id.includes('internet.wan')) {
-                            if (myHelper.getIdLastPart(id) === 'run_speedtest') {
+                            if (myHelper.getIdLastPart(id) === 'speedtest_run') {
                                 const wan_interface = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
                                 const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
                                 const interface_name = this.cache.devices[mac][wan_interface].ifname;
@@ -1533,7 +1533,6 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkSpeedTestEvent]:';
         try {
             if (this.config.devicesEnabled) {
-                this.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
                 await eventHandler.device.speedTest(event, this, this.cache);
             }
         }

@@ -58,16 +58,17 @@ export const eventHandler = {
                     if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
                         const wan = cache.devices[mac].wan1.ifname === data.interface_name ? 'wan1' : cache.devices[mac].wan2.ifname === data.interface_name ? 'wan2' : undefined;
 
+                        adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
+
                         if (wan) {
                             const idChannel = `devices.${mac}.internet.${wan}`;
 
-                            adapter.log.warn('Jaaaa');
 
-                            if (await adapter.objectExists(`${idChannel}.download`)) {
-                                await adapter.setState(`${idChannel}.download`, { val: data.xput_download, lc: data.rundate * 1000 }, true);
+                            if (await adapter.objectExists(`${idChannel}.speedtest_download`)) {
+                                await adapter.setState(`${idChannel}.speedtest_download`, { val: data.xput_download, lc: data.rundate * 1000 }, true);
                             }
-                            if (await adapter.objectExists(`${idChannel}.upload`)) {
-                                await adapter.setState(`${idChannel}.upload`, { val: data.xput_upload, lc: data.rundate * 1000 }, true);
+                            if (await adapter.objectExists(`${idChannel}.speedtest_upload`)) {
+                                await adapter.setState(`${idChannel}.speedtest_upload`, { val: data.xput_upload, lc: data.rundate * 1000 }, true);
                             }
                             if (await adapter.objectExists(`${idChannel}.latency`)) {
                                 await adapter.setState(`${idChannel}.latency`, { val: data.latency, lc: data.rundate * 1000 }, true);
