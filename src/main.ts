@@ -529,7 +529,14 @@ class UnifiNetwork extends utils.Adapter {
 							const idDevice = `${idChannel}.${device.mac}`;
 
 							if (!_.some(this.config.deviceBlackList, { mac: device.mac })) {
-								if (isAdapterStart) countDevices++
+								if (isAdapterStart) {
+									countDevices++
+
+									if (device.vap_table) {
+										// API V2 has no id for wlan, so we remove this and wait for real-time data
+										delete device.vap_table;
+									}
+								}
 
 								if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
 									// debounce real time data

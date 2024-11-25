@@ -417,8 +417,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateRealTimeApiData]:';
         try {
             this.cache.deviceModels = await this.ufn.getDeviceModels_V2();
-            const tmp = _.defaultsDeep(await this.ufn.getDevices(), (await this.ufn.getDevices_V2()).network_devices);
-            await this.updateDevices(tmp, true);
+            await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
             await this.updateClients(null, true);
             await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
             // await this.updatClientsOffline(await this.ufn.getClients(), true);
@@ -461,8 +460,13 @@ class UnifiNetwork extends utils.Adapter {
                         for (let device of data) {
                             const idDevice = `${idChannel}.${device.mac}`;
                             if (!_.some(this.config.deviceBlackList, { mac: device.mac })) {
-                                if (isAdapterStart)
+                                if (isAdapterStart) {
                                     countDevices++;
+                                    if (device.vap_table) {
+                                        // API V2 has no id for wlan, so we remove this and wait for real-time data
+                                        delete device.vap_table;
+                                    }
+                                }
                                 if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
                                     // debounce real time data
                                     const lastSeen = this.cache.devices[device.mac].last_seen;

@@ -232,21 +232,26 @@ export class NetworkApi extends EventEmitter {
             // Bad username and password.
             if (response.status === 401) {
                 this.logout();
-                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password.`);
+                this.log.error(`${logPrefix} code: ${response.status} - Invalid login credentials given. Please check your login and password.`);
                 return null;
             }
             // Insufficient privileges.
             if (response.status === 403) {
-                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`);
+                this.log.error(`${logPrefix} code: ${response.status} - Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`);
+                return null;
+            }
+            // Insufficient privileges.
+            if (response.status === 429) {
+                this.log.error(`${logPrefix} code: ${response.status} - Too many requests. Please check the settings at your unifi network controller or wait a while and restart the connection`);
                 return null;
             }
             if (!response.ok && isServerSideIssue(response.status)) {
-                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is usually temporary and will occur during device reboots. (code: ${response.status})`);
+                this.log.error(`${logPrefix} code: ${response.status} - Unable to connect to the Network controller. This is usually temporary and will occur during device reboots.`);
                 return null;
             }
             // Some other unknown error occurred.
             if (!response.ok) {
-                this.log.error(`${logPrefix} ${response.status} - ${response.statusText}`);
+                this.log.error(`${logPrefix} code: ${response.status} - ${response.statusText}`);
                 return null;
             }
             this.apiLastSuccess = Date.now();
