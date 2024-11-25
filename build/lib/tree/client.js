@@ -5,6 +5,16 @@ export var client;
     let keys = undefined;
     function get() {
         return {
+            authorized: {
+                iobType: 'boolean',
+                name: 'client is authorized',
+                read: true,
+                write: true,
+                conditionToCreateState(objValues, adapter) {
+                    // only wired and wireless clients
+                    return objValues.is_guest;
+                },
+            },
             blocked: {
                 iobType: 'boolean',
                 name: 'client is blocked',

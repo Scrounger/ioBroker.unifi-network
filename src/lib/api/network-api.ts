@@ -692,7 +692,7 @@ export class NetworkApi extends EventEmitter {
                 break;
 
             case ApiEndpoints.lanConfig:
-                endpointSuffix = `/api/s/${this.site}/rest/lanConfig`;
+                endpointSuffix = `/api/s/${this.site}/rest/networkconf`;
                 break;
 
             default:

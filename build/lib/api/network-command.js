@@ -91,6 +91,14 @@ export const apiCommands = {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'kick-sta', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
+        async authorizeGuest(ufn, mac) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'authorize-guest', mac: mac.toLowerCase(), minutes: 2 });
+            return result === null ? false : true;
+        },
+        async unauthorizeGuest(ufn, mac) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unauthorize-guest', mac: mac.toLowerCase() });
+            return result === null ? false : true;
+        }
         // async remove(ufn: NetworkApi, mac: string) {
         //     // controller 5.9.x only
         //     const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'forget-sta', mac: mac.toLowerCase() });

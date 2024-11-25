@@ -146,7 +146,7 @@ class UnifiNetwork extends utils.Adapter {
                                 wlan_id: this.cache.clients[macOrIp]?.wlanconf_id || this.cache.vpn[macOrIp]?.wlanconf_id || old.wlan_id,
                                 network_id: this.cache.clients[macOrIp]?.network_id || this.cache.vpn[macOrIp]?.network_id || old.network_id,
                             };
-                            this.log.warn(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
+                            this.log.debug(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
                             await this.updateWlanConnectedClients();
                             await this.updateLanConnectedClients();
                         }
@@ -173,6 +173,17 @@ class UnifiNetwork extends utils.Adapter {
                             const res = await apiCommands.clients.reconncet(this.ufn, mac);
                             if (res)
                                 this.log.info(`${logPrefix} command sent: reconnect - '${this.cache.clients[mac].name}' (mac: ${mac})`);
+                        }
+                        else if (myHelper.getIdLastPart(id) === 'authorized') {
+                            let res = undefined;
+                            if (state.val === true) {
+                                res = await apiCommands.clients.authorizeGuest(this.ufn, mac);
+                            }
+                            else {
+                                res = await apiCommands.clients.unauthorizeGuest(this.ufn, mac);
+                            }
+                            if (res)
+                                this.log.info(`${logPrefix} command sent: ${state.val ? 'authorize' : 'unauthorize'} guest - '${this.cache.clients[mac].name}' (mac: ${mac})`);
                         }
                         else {
                             this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);

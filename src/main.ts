@@ -183,7 +183,7 @@ class UnifiNetwork extends utils.Adapter {
 								network_id: this.cache.clients[macOrIp]?.network_id || this.cache.vpn[macOrIp]?.network_id || old.network_id,
 							}
 
-							this.log.warn(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
+							this.log.debug(`${logPrefix} '${this.cache.clients[macOrIp]?.name || this.cache.vpn[macOrIp]?.ip}' .isOnline changed to '${state.val}' (${JSON.stringify(this.cache.isOnline[macOrIp])})`);
 
 							await this.updateWlanConnectedClients();
 							await this.updateLanConnectedClients();
@@ -208,6 +208,16 @@ class UnifiNetwork extends utils.Adapter {
 							const res = await apiCommands.clients.reconncet(this.ufn, mac);
 
 							if (res) this.log.info(`${logPrefix} command sent: reconnect - '${this.cache.clients[mac].name}' (mac: ${mac})`);
+							// } else if (myHelper.getIdLastPart(id) === 'authorized') {
+							// 	let res = undefined;
+
+							// 	if (state.val === true) {
+							// 		res = await apiCommands.clients.authorizeGuest(this.ufn, mac);
+							// 	} else {
+							// 		res = await apiCommands.clients.unauthorizeGuest(this.ufn, mac);
+							// 	}
+
+							// 	if (res) this.log.info(`${logPrefix} command sent: ${state.val ? 'authorize' : 'unauthorize'} guest - '${this.cache.clients[mac].name}' (mac: ${mac})`);
 						} else {
 							this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
@@ -961,7 +971,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				for (let wlan_id in this.cache.wlan) {
 					const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.wlan_id === wlan_id);
-					this.log.debug(`${logPrefix} WLAN '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
+					this.log.silly(`${logPrefix} WLAN '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
 
 					if (!this.cache.wlan[wlan_id].is_guest) {
 						sumClients = sumClients + connectedClients.length;
@@ -1082,7 +1092,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				for (let lan_id in this.cache.lan) {
 					const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.network_id === lan_id);
-					this.log.debug(`${logPrefix} LAN '${this.cache.lan[lan_id].name}' (id: ${lan_id}) connected ${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}: ${connectedClients.length}`);
+					this.log.silly(`${logPrefix} LAN '${this.cache.lan[lan_id].name}' (id: ${lan_id}) connected ${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}: ${connectedClients.length}`);
 
 					if (this.cache.lan[lan_id].purpose !== 'guest') {
 						sumClients = sumClients + connectedClients.length;

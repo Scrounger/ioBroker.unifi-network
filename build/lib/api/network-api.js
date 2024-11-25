@@ -524,7 +524,7 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
                 break;
             case ApiEndpoints.lanConfig:
-                endpointSuffix = `/api/s/${this.site}/rest/lanConfig`;
+                endpointSuffix = `/api/s/${this.site}/rest/networkconf`;
                 break;
             default:
                 break;

@@ -114,6 +114,18 @@ export const apiCommands = {
 
             return result === null ? false : true;
         },
+        async authorizeGuest(ufn: NetworkApi, mac: string): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'authorize-guest', mac: mac.toLowerCase() });
+
+            return result === null ? false : true;
+        },
+        async unauthorizeGuest(ufn: NetworkApi, mac: string): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unauthorize-guest', mac: mac.toLowerCase() });
+
+            return result === null ? false : true;
+        }
+
+
         // async remove(ufn: NetworkApi, mac: string) {
         //     // controller 5.9.x only
         //     const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'forget-sta', mac: mac.toLowerCase() });
