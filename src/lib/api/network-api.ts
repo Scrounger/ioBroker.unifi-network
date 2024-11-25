@@ -26,14 +26,15 @@ export class NetworkApi extends EventEmitter {
     public log: NetworkLogging;
 
     private host: string;
-    private port: number;
+    private port: string;
+    isUnifiOs: boolean;
     public site: string;
     private password: string;
     private username: string;
 
     private _eventsWs: WebSocket | null;
 
-    constructor(host: string, port: number, site: string, username: string, password: string, log: NetworkLogging = console) {
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log: NetworkLogging = console) {
         // Initialize our parent.
         super();
 
@@ -47,7 +48,8 @@ export class NetworkApi extends EventEmitter {
         this.headers = new Headers();
 
         this.host = host;
-        this.port = port;
+        this.port = isUnifiOs ? '' : `:${port}`;
+        this.isUnifiOs = isUnifiOs;
         this.site = site;
         this.username = username;
         this.password = password;
@@ -92,7 +94,7 @@ export class NetworkApi extends EventEmitter {
 
                 // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
                 // controller and checking the headers for it.
-                const response = await this.retrieve('https://' + this.host + ':' + this.port, { method: 'GET' });
+                const response = await this.retrieve(`https://${this.host}${this.port}`, { method: 'GET' });
 
                 if (response?.ok) {
 
@@ -134,7 +136,7 @@ export class NetworkApi extends EventEmitter {
                 // Save the CSRF token.
                 this.headers.set('X-CSRF-Token', csrfToken);
 
-                this.log.debug(`${logPrefix} successfully logged into the controller`);
+                this.log.debug(`${logPrefix} successfully logged into the controller (host: ${this.host}${this.port}, isUnifiOs: ${this.isUnifiOs})`);
                 return true;
             }
 
@@ -397,7 +399,7 @@ export class NetworkApi extends EventEmitter {
 
                     case 'ENOTFOUND':
 
-                        this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}:${this.port}. Please ensure the address you configured for this UniFi Network controller is correct.`);
+                        this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}${this.port}. Please ensure the address you configured for this UniFi Network controller is correct.`);
 
 
                         break;
@@ -420,7 +422,7 @@ export class NetworkApi extends EventEmitter {
     }
 
     public async sendData(cmd: string, payload: any, method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH' = 'POST'): Promise<Response> {
-        const url = `https://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}${cmd}`
+        const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}${cmd}`
 
         return await this.retrieve(url, {
             body: JSON.stringify(payload),
@@ -660,7 +662,7 @@ export class NetworkApi extends EventEmitter {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
         let endpointSuffix: string;
-        let endpointPrefix: string = this.port === 443 ? '/proxy/network' : '';
+        let endpointPrefix: string = this.isUnifiOs ? '/proxy/network' : '';
 
         switch (endpoint) {
             case ApiEndpoints.login:
@@ -702,14 +704,14 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
 
-        return 'https://' + this.host + ':' + this.port + endpointPrefix + endpointSuffix;
+        return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`
     }
 
     public getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
         let endpointSuffix: string;
-        let endpointPrefix: string = this.port === 443 ? '/proxy/network' : '';
+        let endpointPrefix: string = this.isUnifiOs ? '/proxy/network' : '';
 
         switch (endpoint) {
             case ApiEndpoints_V2.devices:
@@ -747,7 +749,7 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
 
-        return 'https://' + this.host + ':' + this.port + endpointPrefix + endpointSuffix;
+        return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`
     }
 
     public async launchEventsWs(): Promise<boolean> {
@@ -766,7 +768,7 @@ export class NetworkApi extends EventEmitter {
                 return true;
             }
 
-            const url = `wss://${this.host}:${this.port}${this.port === 443 ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
+            const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
 
             const ws = new WebSocket(url, {
                 headers: {

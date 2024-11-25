@@ -68,7 +68,7 @@ class UnifiNetwork extends utils.Adapter {
             moment.locale(this.language);
             await utils.I18n.init('admin', this);
             if (this.config.host, this.config.user, this.config.password) {
-                this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this.log);
+                this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this.log);
                 await this.establishConnection();
                 this.ufn.on('message', this.eventListener);
                 this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
@@ -338,7 +338,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const loginSuccessful = await this.ufn.login();
                 if (loginSuccessful) {
-                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port})`);
+                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, isUnifiOs: ${this.config.isUnifiOs})`);
                     if (await this.ufn.launchEventsWs()) {
                         this.log.info(`${logPrefix} WebSocket conncection to realtime API successfully established`);
                         await this.setConnectionStatus(true);
@@ -349,7 +349,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 else {
-                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host}:${this.config.port})`);
+                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host}${this.config.isUnifiOs ? '' : `:${this.config.port}`})`);
                 }
             }
         }

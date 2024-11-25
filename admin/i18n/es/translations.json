@@ -119,5 +119,7 @@
     "api poll interval [s]": "intervalo de sondeo de API [s]",
     "Choose which WLAN should be excluded": "Elija qué WLAN debe excluirse",
     "Choose which WLAN states should be excluded": "Elija qué estados de WLAN deben excluirse",
-    "Choose which LAN should be excluded": "Elija qué LAN debe excluirse"
+    "Choose which LAN should be excluded": "Elija qué LAN debe excluirse",
+    "is Unifi OS": "es el sistema operativo unifi",
+    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "habilítelo si tiene un controlador de red basado en Unifi OS (por ejemplo, UDM-Pro)"
 }

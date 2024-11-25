@@ -93,6 +93,7 @@
     "native": {
         "host": "",
         "port": 443,
+        "isUnifiOs": false,
         "site": "default",
         "user": "",
         "password": "",

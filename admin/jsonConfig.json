@@ -33,17 +33,16 @@
 				"port": {
 					"type": "number",
 					"label": "port",
-					"help": "port 443 is used by unifi-os (e.g. UDM-Pro)",
 					"min": 0,
 					"sm": 12,
 					"md": 3
 				},
-				"site": {
-					"type": "text",
-					"label": "controller site",
-					"help": "'default' is used by unifi-os (e.g. UDM-Pro)",
+				"isUnifiOs": {
+					"type": "checkbox",
+					"label": "is Unifi OS",
+					"help": "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)",
 					"sm": 12,
-					"md": 3
+					"md": 6
 				},
 				"user": {
 					"type": "text",
@@ -55,6 +54,13 @@
 				"password": {
 					"type": "password",
 					"label": "Password",
+					"sm": 12,
+					"md": 3
+				},
+				"site": {
+					"type": "text",
+					"label": "controller site",
+					"help": "'default' is used by unifi-os (e.g. UDM-Pro)",
 					"sm": 12,
 					"md": 3
 				},

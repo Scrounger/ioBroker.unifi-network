@@ -9,6 +9,7 @@ declare global {
 			site: string;
 			user: string;
 			password: string;
+			isUnifiOs: boolean;
 			expert: boolean;
 			expertAliveInterval: number;
 			realTimeApiDebounceTime: number;

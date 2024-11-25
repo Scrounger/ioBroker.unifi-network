@@ -119,5 +119,7 @@
     "api poll interval [s]": "API poll-interval [s]",
     "Choose which WLAN should be excluded": "Kies welk WLAN moet worden uitgesloten",
     "Choose which WLAN states should be excluded": "Kies welke WLAN-statussen moeten worden uitgesloten",
-    "Choose which LAN should be excluded": "Kies welk LAN moet worden uitgesloten"
+    "Choose which LAN should be excluded": "Kies welk LAN moet worden uitgesloten",
+    "is Unifi OS": "is Unifi OS",
+    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "schakel dit in als u een op Unifi OS gebaseerde netwerkcontroller heeft (bijv. UDM-Pro)"
 }
