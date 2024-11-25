@@ -3,6 +3,7 @@ import * as myHelper from '../helper.js';
 export var device;
 (function (device) {
     let keys = undefined;
+    device.idChannel = 'devices';
     function get() {
         return {
             connected_clients: {

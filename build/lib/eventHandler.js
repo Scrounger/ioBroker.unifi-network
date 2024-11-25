@@ -1,5 +1,6 @@
 import { WebSocketEvent } from "./myTypes.js";
 import * as myHelper from './helper.js';
+import * as tree from './tree/index.js';
 export const eventHandler = {
     device: {
         async restarted(meta, data, adapter, cache) {
@@ -8,8 +9,8 @@ export const eventHandler = {
                 const mac = data.sw || data.ap || data.gw;
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
-                        if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                            await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, false, true);
+                        if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, false, true);
                         }
                         adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) is going to restart`);
                     }
@@ -30,8 +31,8 @@ export const eventHandler = {
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
                         adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) ${connected ? 'connected' : 'disconnected'}`);
-                        if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                            await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, connected, true);
+                        if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, connected, true);
                         }
                     }
                 }
@@ -52,7 +53,7 @@ export const eventHandler = {
                         const wan = cache.devices[mac].wan1.ifname === data.interface_name ? 'wan1' : cache.devices[mac].wan2.ifname === data.interface_name ? 'wan2' : undefined;
                         adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
                         if (wan) {
-                            const idChannel = `devices.${mac}.internet.${wan}`;
+                            const idChannel = `${tree.device.idChannel}.${mac}.internet.${wan}`;
                             if (await adapter.objectExists(`${idChannel}.speedtest_download`)) {
                                 await adapter.setState(`${idChannel}.speedtest_download`, { val: data.xput_download, lc: data.rundate * 1000 }, true);
                             }
@@ -227,7 +228,7 @@ export const eventHandler = {
                             adapter.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
                         }
                         if (adapter.config.devicesEnabled) {
-                            const devices = await adapter.getStatesAsync(`devices.*.wlan.*.id`);
+                            const devices = await adapter.getStatesAsync(`${tree.device.idChannel}.*.wlan.*.id`);
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {
                                     const idChannel = myHelper.getIdWithoutLastPart(id);

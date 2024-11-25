@@ -7,6 +7,8 @@ import * as myHelper from '../helper.js';
 export namespace device {
     let keys: string[] = undefined;
 
+    export const idChannel = 'devices'
+
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
             connected_clients: {

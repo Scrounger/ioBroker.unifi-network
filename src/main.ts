@@ -165,7 +165,7 @@ class UnifiNetwork extends utils.Adapter {
 						if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
 							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
-						} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.devices.`)) {
+						} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
 							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
 						}
@@ -225,7 +225,7 @@ class UnifiNetwork extends utils.Adapter {
 						} else {
 							this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
-					} else if (id.startsWith(`${this.namespace}.devices.`)) {
+					} else if (id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
 						if (myHelper.getIdLastPart(id) === 'restart') {
 							const res = await apiCommands.devices.restart(this.ufn, mac);
 
@@ -531,12 +531,10 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (this.connected && this.isConnected) {
-				const idChannel = 'devices';
-
 				if (this.config.devicesEnabled) {
 
 					if (isAdapterStart) {
-						await this.createOrUpdateChannel(idChannel, 'unifi devices', undefined, true);
+						await this.createOrUpdateChannel(tree.device.idChannel, 'unifi devices', undefined, true);
 					}
 
 					if (data && data !== null) {
@@ -544,7 +542,7 @@ class UnifiNetwork extends utils.Adapter {
 						let countBlacklisted = 0;
 
 						for (let device of data) {
-							const idDevice = `${idChannel}.${device.mac}`;
+							const idDevice = `${tree.device.idChannel}.${device.mac}`;
 
 							if (!_.some(this.config.deviceBlackList, { mac: device.mac })) {
 								if (isAdapterStart) {
@@ -603,9 +601,9 @@ class UnifiNetwork extends utils.Adapter {
 						}
 					}
 				} else {
-					if (await this.objectExists(idChannel)) {
-						await this.delObjectAsync(idChannel, { recursive: true });
-						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+					if (await this.objectExists(tree.device.idChannel)) {
+						await this.delObjectAsync(tree.device.idChannel, { recursive: true });
+						this.log.debug(`${logPrefix} '${tree.device.idChannel}' deleted`);
 					}
 				}
 			}
@@ -1139,7 +1137,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.deviceImageDownload) {
 
 				//@ts-ignore
-				await this.setObjectNotExistsAsync('devices.publicData', {
+				await this.setObjectNotExistsAsync(`${tree.device.idChannel}.publicData`, {
 					type: 'state',
 					common: {
 						type: 'json',
@@ -1159,7 +1157,7 @@ class UnifiNetwork extends utils.Adapter {
 					const data: any = await response.json();
 
 					if (data && data.devices) {
-						await this.setStateChangedAsync('devices.publicData', JSON.stringify(data), true);
+						await this.setStateChangedAsync(`${tree.device.idChannel}.publicData`, JSON.stringify(data), true);
 					}
 				} else {
 					this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);

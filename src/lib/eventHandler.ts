@@ -3,6 +3,7 @@ import { WebSocketEvent, myCache, myNetworkClient } from "./myTypes.js";
 import * as myHelper from './helper.js';
 import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import { NetworkLanConfig } from "./api/network-types-lan-config.js";
+import * as tree from './tree/index.js'
 
 export const eventHandler = {
     device: {
@@ -14,8 +15,8 @@ export const eventHandler = {
 
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
-                        if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                            await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, false, true);
+                        if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, false, true);
                         }
 
                         adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) is going to restart`);
@@ -37,8 +38,8 @@ export const eventHandler = {
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
                         adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) ${connected ? 'connected' : 'disconnected'}`);
-                        if (await adapter.objectExists(`devices.${mac}.isOnline`)) {
-                            await adapter.setStateChangedAsync(`devices.${mac}.isOnline`, connected, true);
+                        if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, connected, true);
                         }
                     }
                 } else {
@@ -61,7 +62,7 @@ export const eventHandler = {
                         adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
 
                         if (wan) {
-                            const idChannel = `devices.${mac}.internet.${wan}`;
+                            const idChannel = `${tree.device.idChannel}.${mac}.internet.${wan}`;
 
 
                             if (await adapter.objectExists(`${idChannel}.speedtest_download`)) {
@@ -252,7 +253,7 @@ export const eventHandler = {
                         }
 
                         if (adapter.config.devicesEnabled) {
-                            const devices = await adapter.getStatesAsync(`devices.*.wlan.*.id`);
+                            const devices = await adapter.getStatesAsync(`${tree.device.idChannel}.*.wlan.*.id`);
 
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {
