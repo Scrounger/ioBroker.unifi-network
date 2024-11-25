@@ -123,6 +123,9 @@
                 "id": "connected_guests"
             },
             {
+                "id": "disabled"
+            },
+            {
                 "id": "image"
             },
             {

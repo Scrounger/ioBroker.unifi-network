@@ -21,6 +21,18 @@ export namespace device {
                 name: 'connected guests',
                 valFromProperty: 'guest-num_sta',
             },
+            disabled: {
+                id: 'disabled',
+                iobType: 'boolean',
+                name: 'access point is disabled',
+                conditionToCreateState(objValues: NetworkDevice, adapter: ioBroker.Adapter): boolean {
+                    // only wireless clients
+                    return objValues.is_access_point;
+                },
+                read: false,
+                write: true,
+                role: 'button'
+            },
             hasError: {
                 id: 'hasError',
                 iobType: 'boolean',

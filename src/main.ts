@@ -262,6 +262,10 @@ class UnifiNetwork extends utils.Adapter {
 
 								if (res) this.log.info(`${logPrefix} command sent: run speedtest (mac: ${mac}, wan: ${wan_interface}, interface: ${interface_name})`);
 							}
+						} else if (myHelper.getIdLastPart(id) === 'disabled') {
+							const res = await apiCommands.devices.disableAccessPoint(this.ufn, this.cache.devices[mac]._id, state.val as boolean);
+
+							if (res) this.log.info(`${logPrefix} command sent: ${state.val ? 'disable' : 'enable'} access point '${this.cache.devices[mac].name}' (mac: ${mac})`);
 						} else {
 							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}

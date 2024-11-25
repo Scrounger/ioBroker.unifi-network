@@ -96,6 +96,11 @@ export const apiCommands = {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, payload);
 
             return result === null ? false : true;
+        },
+        async disableAccessPoint(ufn: NetworkApi, ap_id: string, disabled: boolean): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${ap_id.trim()}`, { disabled: disabled }, 'PUT');
+
+            return result === null ? false : true;
         }
     },
     clients: {

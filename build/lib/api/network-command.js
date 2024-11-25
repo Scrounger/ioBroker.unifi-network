@@ -76,6 +76,10 @@ export const apiCommands = {
             }
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, payload);
             return result === null ? false : true;
+        },
+        async disableAccessPoint(ufn, ap_id, disabled) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${ap_id.trim()}`, { disabled: disabled }, 'PUT');
+            return result === null ? false : true;
         }
     },
     clients: {
@@ -92,7 +96,7 @@ export const apiCommands = {
             return result === null ? false : true;
         },
         async authorizeGuest(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'authorize-guest', mac: mac.toLowerCase(), minutes: 2 });
+            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'authorize-guest', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async unauthorizeGuest(ufn, mac) {

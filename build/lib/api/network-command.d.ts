@@ -8,6 +8,7 @@ export declare const apiCommands: {
         ledOverride(val: string, ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
         upgrade(ufn: NetworkApi, device: NetworkDevice): Promise<boolean>;
         runSpeedtest(ufn: NetworkApi, interface_name?: string | undefined): Promise<boolean>;
+        disableAccessPoint(ufn: NetworkApi, ap_id: string, disabled: boolean): Promise<boolean>;
     };
     clients: {
         block(ufn: NetworkApi, mac: string): Promise<boolean>;
