@@ -85,10 +85,10 @@
         ]
     },
     "encryptedNative": [
-        "accessToken"
+        "password"
     ],
     "protectedNative": [
-        "accessToken"
+        "password"
     ],
     "native": {
         "host": "",
