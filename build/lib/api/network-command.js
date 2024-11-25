@@ -102,6 +102,10 @@ export const apiCommands = {
         async unauthorizeGuest(ufn, mac) {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unauthorize-guest', mac: mac.toLowerCase() });
             return result === null ? false : true;
+        },
+        async setName(ufn, user_id, name) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/user/${user_id.trim()}`, { _id: user_id, name: name }, 'PUT');
+            return result === null ? false : true;
         }
         // async remove(ufn: NetworkApi, mac: string) {
         //     // controller 5.9.x only

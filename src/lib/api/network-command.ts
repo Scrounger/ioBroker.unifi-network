@@ -128,6 +128,11 @@ export const apiCommands = {
             const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unauthorize-guest', mac: mac.toLowerCase() });
 
             return result === null ? false : true;
+        },
+        async setName(ufn: NetworkApi, user_id: string, name: string): Promise<boolean> {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/user/${user_id.trim()}`, { _id: user_id, name: name }, 'PUT');
+
+            return result === null ? false : true;
         }
 
 

@@ -16,6 +16,7 @@ export declare const apiCommands: {
         reconncet(ufn: NetworkApi, mac: string): Promise<boolean>;
         authorizeGuest(ufn: NetworkApi, mac: string): Promise<boolean>;
         unauthorizeGuest(ufn: NetworkApi, mac: string): Promise<boolean>;
+        setName(ufn: NetworkApi, user_id: string, name: string): Promise<boolean>;
     };
     wlanConf: {
         enable(ufn: NetworkApi, wlan_id: string, enabled: boolean): Promise<boolean>;

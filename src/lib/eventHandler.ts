@@ -222,21 +222,16 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.user.clientRemoved]:'
 
             try {
-                if (meta.message === 'user:delete' && data.mac) {
-                    if (adapter.config.keepIobSynchron && cache && cache.clients && cache.clients[data.mac as string]) {
-                        const mac = data.mac;
-                        const isGuest = cache.clients[mac as string].is_guest;
-                        const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}`
+                if (adapter.config.keepIobSynchron && cache && cache.clients && cache.clients[data.mac as string]) {
+                    const mac = data.mac;
+                    const isGuest = cache.clients[mac as string].is_guest;
+                    const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}`
 
-                        if (await adapter.objectExists(idChannel)) {
-                            await adapter.delObjectAsync(idChannel, { recursive: true });
-                            adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac as string].name}' deleted, because it's removed by the unifi-controller`);
-                        }
+                    if (await adapter.objectExists(idChannel)) {
+                        await adapter.delObjectAsync(idChannel, { recursive: true });
+                        adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac as string].name}' deleted, because it's removed by the unifi-controller`);
                     }
-                } else {
-                    adapter.log.error(`${logPrefix} not implemented user event. ${data.key ? `key: ${data.key},` : ''} meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
                 }
-
             } catch (error) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }

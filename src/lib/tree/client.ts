@@ -163,7 +163,9 @@ export namespace client {
             },
             name: {
                 iobType: 'string',
-                name: 'device name'
+                name: 'device name',
+                read: true,
+                write: true
             },
             network_id: {
                 iobType: 'string',

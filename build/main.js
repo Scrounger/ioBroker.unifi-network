@@ -182,6 +182,11 @@ class UnifiNetwork extends utils.Adapter {
                             // 	}
                             // 	if (res) this.log.info(`${logPrefix} command sent: ${state.val ? 'authorize' : 'unauthorize'} guest - '${this.cache.clients[mac].name}' (mac: ${mac})`);
                         }
+                        else if (myHelper.getIdLastPart(id) === 'name') {
+                            const res = await apiCommands.clients.setName(this.ufn, this.cache.clients[mac].user_id, state.val);
+                            if (res)
+                                this.log.info(`${logPrefix} command sent: set name - '${this.cache.clients[mac].name}' (mac: ${mac}, new name: ${state.val})`);
+                        }
                         else {
                             this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
                         }
@@ -1496,10 +1501,21 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
                 if (events && events.data) {
-                    for (const event of events.data) {
-                        // user removed client from unifi-controller
+                    for (let event of events.data) {
                         this.log.debug(`${logPrefix} client event (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
-                        eventHandler.user.clientRemoved(events.meta, event, this, this.cache);
+                        if (events.meta.message === 'user:delete') {
+                            // client removed client from unifi-controller
+                            eventHandler.user.clientRemoved(events.meta, event, this, this.cache);
+                        }
+                        else if (events.meta.message === 'user:sync') {
+                            // client updated
+                            const name = event.unifi_device_info_from_ucore?.name || event.display_name || event.name || event.hostname;
+                            const idChannel = !event.is_guest ? 'clients' : 'guests';
+                            event.last_seen = event.last_seen >= this.cache.clients[event.mac].last_seen ? event.last_seen : this.cache.clients[event.mac].last_seen;
+                            this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac].name}'`);
+                            await this.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${this.namespace}.${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
+                            await this.createGenericState(`${idChannel}.${event.mac}`, tree.client.get(), event, this.config.clientStatesBlackList, this.cache.clients[event.mac], this.cache.clients[event.mac], true);
+                        }
                     }
                 }
             }
