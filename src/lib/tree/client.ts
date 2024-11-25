@@ -286,7 +286,7 @@ export namespace client {
                 },
             },
             wifi_experience_average: {
-                id: 'wifi_experience',
+                id: 'wlan_experience',
                 iobType: 'number',
                 name: 'experience',
                 unit: '%',
@@ -296,7 +296,7 @@ export namespace client {
                 },
             },
             wifi_tx_retries_percentage: {
-                id: 'wifi_tx_retries',
+                id: 'wlan_tx_retries',
                 iobType: 'number',
                 name: 'TX Retries',
                 unit: '%',

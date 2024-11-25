@@ -185,7 +185,7 @@
                 "id": "uptime"
             },
             {
-                "id": "wifi"
+                "id": "wlan"
             }
         ],
         "clientBlackList": [],
@@ -275,10 +275,10 @@
                 "id": "speed"
             },
             {
-                "id": "wifi_experience"
+                "id": "wlan_experience"
             },
             {
-                "id": "wifi_tx_retries"
+                "id": "wlan_tx_retries"
             }
         ],
         "wlanBlackList": [],

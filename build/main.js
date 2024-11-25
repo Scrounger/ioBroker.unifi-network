@@ -417,7 +417,8 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateRealTimeApiData]:';
         try {
             this.cache.deviceModels = await this.ufn.getDeviceModels_V2();
-            await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
+            const tmp = _.defaultsDeep(await this.ufn.getDevices(), (await this.ufn.getDevices_V2()).network_devices);
+            await this.updateDevices(tmp, true);
             await this.updateClients(null, true);
             await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
             // await this.updatClientsOffline(await this.ufn.getClients(), true);
@@ -830,7 +831,7 @@ class UnifiNetwork extends utils.Adapter {
                 let sumGuests = 0;
                 for (let wlan_id in this.cache.wlan) {
                     const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.wlan_id === wlan_id);
-                    this.log.debug(`${logPrefix} WiFi '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
+                    this.log.debug(`${logPrefix} WLAN '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
                     if (!this.cache.wlan[wlan_id].is_guest) {
                         sumClients = sumClients + connectedClients.length;
                     }

@@ -954,7 +954,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				for (let wlan_id in this.cache.wlan) {
 					const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.wlan_id === wlan_id);
-					this.log.debug(`${logPrefix} WiFi '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
+					this.log.debug(`${logPrefix} WLAN '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
 
 					if (!this.cache.wlan[wlan_id].is_guest) {
 						sumClients = sumClients + connectedClients.length;

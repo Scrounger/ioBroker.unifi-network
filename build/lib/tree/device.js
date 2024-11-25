@@ -230,7 +230,7 @@ export var device;
             },
             radio_table: {
                 idChannel: 'radio',
-                channelName: 'WiFi Radio',
+                channelName: 'WLAN Radio',
                 arrayChannelNameFromProperty(objValues, adapter) {
                     return myHelper.radio_nameToFrequency(objValues['name'], adapter);
                 },
@@ -265,7 +265,7 @@ export var device;
             },
             radio_table_stats: {
                 idChannel: 'radio',
-                channelName: 'WiFi Radio',
+                channelName: 'WLAN Radio',
                 arrayChannelNameFromProperty(objValues, adapter) {
                     return myHelper.radio_nameToFrequency(objValues.name, adapter);
                 },
@@ -461,8 +461,8 @@ export var device;
                 unit: 's',
             },
             vap_table: {
-                idChannel: 'wifi',
-                channelName: 'WiFi Network Statistics',
+                idChannel: 'wlan',
+                channelName: 'WLAN Network Statistics',
                 arrayChannelIdFromProperty(objValues, i, adapter) {
                     if (objValues.id) {
                         return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
@@ -517,13 +517,13 @@ export var device;
                     },
                     id: {
                         iobType: 'string',
-                        name: 'Wifi internal id',
+                        name: 'WLAN internal id',
                         expert: true,
                         required: true,
                     },
                     is_guest: {
                         iobType: 'boolean',
-                        name: 'is guest wifi'
+                        name: 'is guest wlan'
                     },
                     rx_bytes: {
                         iobType: 'number',

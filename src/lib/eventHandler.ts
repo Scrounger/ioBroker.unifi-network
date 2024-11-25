@@ -256,7 +256,7 @@ export const eventHandler = {
                         }
 
                         if (adapter.config.devicesEnabled) {
-                            const devices = await adapter.getStatesAsync(`devices.*.wifi.*.id`);
+                            const devices = await adapter.getStatesAsync(`devices.*.wlan.*.id`);
 
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {

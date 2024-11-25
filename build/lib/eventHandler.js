@@ -232,7 +232,7 @@ export const eventHandler = {
                             adapter.log.debug(`${logPrefix} wlan '${wlan.name}' (channel: ${idChannel}) deleted`);
                         }
                         if (adapter.config.devicesEnabled) {
-                            const devices = await adapter.getStatesAsync(`devices.*.wifi.*.id`);
+                            const devices = await adapter.getStatesAsync(`devices.*.wlan.*.id`);
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {
                                     const idChannel = myHelper.getIdWithoutLastPart(id);
