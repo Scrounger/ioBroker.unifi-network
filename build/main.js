@@ -17,6 +17,7 @@ import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js';
 import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
+import * as myI18n from './lib/i18n.js';
 class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
@@ -66,7 +67,8 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onReady]:';
         try {
             moment.locale(this.language);
-            await utils.I18n.init('admin', this);
+            // ohne worte....
+            await myI18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this.log);
                 await this.establishConnection();
@@ -1113,7 +1115,7 @@ class UnifiNetwork extends utils.Adapter {
     async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, isAdapterStart = false, logChanges = true) {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
-            const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
+            const i18n = name ? myI18n.getTranslatedObject(name) : name;
             let common = {
                 name: name && Object.keys(i18n).length > 1 ? i18n : name,
                 icon: icon,
@@ -1159,7 +1161,7 @@ class UnifiNetwork extends utils.Adapter {
     async createOrUpdateChannel(id, name, icon = undefined, isAdapterStart = false) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
-            const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
+            const i18n = name ? myI18n.getTranslatedObject(name) : name;
             let common = {
                 name: name && Object.keys(i18n).length > 1 ? i18n : name,
                 icon: icon
@@ -1347,7 +1349,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             let name = id;
             if (treeDefinition[id].name) {
-                const i18n = utils.I18n.getTranslatedObject(treeDefinition[id].name);
+                const i18n = myI18n.getTranslatedObject(treeDefinition[id].name);
                 name = Object.keys(i18n).length > 1 ? i18n : treeDefinition[id].name;
             }
             const common = {

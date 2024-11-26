@@ -177,7 +177,7 @@
 							"filter": true,
 							"sort": true,
 							"noMultiEdit": true,
-							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"jsonData": "${instanceObj}",
 							"command": "deviceList"
 						}
 					]
@@ -209,7 +209,7 @@
 							"filter": true,
 							"sort": true,
 							"noMultiEdit": true,
-							"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+							"jsonData": "{\"instanceID\": \"${_instance}\",\"adapter\": \"${globalData}\"}",
 							"command": "deviceStateList"
 						}
 					]

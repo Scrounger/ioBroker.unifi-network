@@ -26,6 +26,7 @@ import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
 import { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
 import { messageHandler } from './lib/messageHandler.js';
+import * as myI18n from './lib/i18n.js';
 
 
 class UnifiNetwork extends utils.Adapter {
@@ -91,7 +92,9 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			moment.locale(this.language);
-			await utils.I18n.init('admin', this);
+
+			// ohne worte....
+			await myI18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
 
 			if (this.config.host, this.config.user, this.config.password) {
 				this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this.log);
@@ -1282,7 +1285,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[createOrUpdateDevice]:';
 
 		try {
-			const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
+			const i18n = name ? myI18n.getTranslatedObject(name) : name;
 
 			let common = {
 				name: name && Object.keys(i18n).length > 1 ? i18n : name,
@@ -1333,7 +1336,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[createOrUpdateChannel]:';
 
 		try {
-			const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
+			const i18n = name ? myI18n.getTranslatedObject(name) : name;
 
 			let common = {
 				name: name && Object.keys(i18n).length > 1 ? i18n : name,
@@ -1543,7 +1546,7 @@ class UnifiNetwork extends utils.Adapter {
 			let name: ioBroker.StringOrTranslated = id;
 
 			if (treeDefinition[id].name) {
-				const i18n = utils.I18n.getTranslatedObject(treeDefinition[id].name);
+				const i18n = myI18n.getTranslatedObject(treeDefinition[id].name);
 
 				name = Object.keys(i18n).length > 1 ? i18n : treeDefinition[id].name;
 			}
