@@ -162,14 +162,14 @@ class UnifiNetwork extends utils.Adapter {
 				if (state.from.includes(this.namespace)) {
 					// internal changes
 					if (myHelper.getIdLastPart(id) === 'imageUrl') {
-						if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`))) {
+						if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`))) {
 							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
 						} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
 							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
 						}
-					} else if (myHelper.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`) || id.startsWith(`${this.namespace}.vpn.`))) {
+					} else if (myHelper.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelVpn}.`))) {
 						const macOrIp = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replaceAll('_', '.');
 
 						if (state.val !== this.cache.isOnline[macOrIp].val) {
@@ -193,7 +193,7 @@ class UnifiNetwork extends utils.Adapter {
 					// state changed from outside of the adapter
 					const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
 
-					if (id.startsWith(`${this.namespace}.clients.`) || id.startsWith(`${this.namespace}.guests.`)) {
+					if (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`)) {
 						// Client state changed
 						if (myHelper.getIdLastPart(id) === 'blocked') {
 							if (state.val) {
@@ -617,16 +617,17 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (this.connected && this.isConnected) {
-				const idChannel = 'clients';
-				const idGuestChannel = 'guests';
-				const idVpnChannel = 'vpn';
+				const idChannel = tree.client.idChannelUsers;
+				const idGuestChannel = tree.client.idChannelGuests;
+				const idVpnChannel = tree.client.idChannelVpn;
 
 				if (isAdapterStart && !isOfflineClients) {
-					if (this.config.clientsEnabled) await this.createOrUpdateChannel('clients', 'clients', undefined, true);
-					if (this.config.guestsEnabled) await this.createOrUpdateChannel('guests', 'guests', undefined, true);
-					if (this.config.vpnEnabled) await this.createOrUpdateChannel('vpn', 'vpn clients', undefined, true);
+					if (this.config.clientsEnabled) await this.createOrUpdateChannel(idChannel, 'users', undefined, true);
+					if (this.config.guestsEnabled) await this.createOrUpdateChannel(idGuestChannel, 'guests', undefined, true);
+					if (this.config.vpnEnabled) await this.createOrUpdateChannel(idVpnChannel, 'vpn users', undefined, true);
 
 					if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
+						await this.createOrUpdateChannel(tree.client.idChannel, 'client devices', undefined, true);
 						data = await this.ufn.getClientsActive_V2() as myNetworkClient[];
 					}
 				}
@@ -780,7 +781,7 @@ class UnifiNetwork extends utils.Adapter {
 								if (isAdapterStart) {
 									countBlacklisted++;
 
-									const id = `${!client.is_guest ? 'clients' : 'guests'}.${client.mac}`
+									const id = `${!client.is_guest ? idChannel : idGuestChannel}.${client.mac}`
 									if (await this.objectExists(id)) {
 										await this.delObjectAsync(id, { recursive: true });
 										this.log.info(`${logPrefix} device '${name}' (mac: ${client.mac}) delete, it's on the black list`);
@@ -839,13 +840,13 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			//ToDo: vpn and perhaps device to include
-			const clients = await this.getStatesAsync('clients.*.last_seen');
+			const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.last_seen`);
 			await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout, 'client', isAdapterStart);
 
-			const guests = await this.getStatesAsync('guests.*.last_seen');
+			const guests = await this.getStatesAsync(`${tree.client.idChannelGuests}.*.last_seen`);
 			await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout, 'guest', isAdapterStart);
 
-			const vpn = await this.getStatesAsync('vpn.*.last_seen');
+			const vpn = await this.getStatesAsync(`${tree.client.idChannelVpn}.*.last_seen`);
 			await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout, 'vpn', isAdapterStart);
 
 		} catch (error) {
@@ -1175,12 +1176,12 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.clientImageDownload) {
 
 				if (this.config.clientsEnabled) {
-					const clients = await this.getStatesAsync('clients.*.imageUrl');
+					const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.imageUrl`);
 					await this._updateClientsImages(clients)
 				}
 
 				if (this.config.guestsEnabled) {
-					const guests = await this.getStatesAsync('guests.*.imageUrl');
+					const guests = await this.getStatesAsync(`${tree.client.idChannelGuests}.*.imageUrl`);
 					await this._updateClientsImages(guests)
 				}
 			}
@@ -1724,7 +1725,7 @@ class UnifiNetwork extends utils.Adapter {
 						} else if (events.meta.message === 'user:sync') {
 							// client updated
 							const name = event.unifi_device_info_from_ucore?.name || event.display_name || event.name || event.hostname;
-							const idChannel = !event.is_guest ? 'clients' : 'guests';
+							const idChannel = !event.is_guest ? tree.client.idChannelUsers : tree.client.idChannelGuests;
 
 							event.last_seen = event.last_seen >= this.cache.clients[event.mac].last_seen ? event.last_seen : this.cache.clients[event.mac].last_seen;
 

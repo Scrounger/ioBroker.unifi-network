@@ -93,7 +93,7 @@ export const eventHandler = {
 
                 if (mac) {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
-                        const id = `${isGuest ? 'guests' : 'clients'}.${mac}.isOnline`;
+                        const id = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.isOnline`;
 
                         if (data.subsystem === 'wlan') {
                             adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`);
@@ -123,12 +123,12 @@ export const eventHandler = {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
                         adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}, ip: ${cache?.clients[mac]?.ip}) roamed from '${cache?.devices[data.ap_from]?.name}' (mac: ${data.ap_from}) to '${cache?.devices[data.ap_to]?.name}' (mac: ${data.ap_to})`);
 
-                        const idApName = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_name`;
+                        const idApName = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.uplink_name`;
                         if (await adapter.objectExists(idApName)) {
                             await adapter.setState(idApName, cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null, true);
                         }
 
-                        const idApMac = `${isGuest ? 'guests' : 'clients'}.${mac}.uplink_mac`;
+                        const idApMac = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.uplink_mac`;
                         if (await adapter.objectExists(idApMac)) {
                             await adapter.setState(idApMac, (data.ap_to) ? (data.ap_to) : null, true);
                         }
@@ -151,13 +151,13 @@ export const eventHandler = {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
                         adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}) roamed radio from channel '${data.channel_from}' to '${data.channel_to}' on '${cache?.devices[data.ap]?.name || data.ap_displayName || data.ap_name}' (mac: ${cache?.devices[data.ap]?.mac || data.ap})`);
 
-                        const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}.channel`;
+                        const idChannel = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.channel`;
                         const valChannel = parseInt(data.channel_to);
                         if (await adapter.objectExists(idChannel)) {
                             await adapter.setState(idChannel, valChannel, true);
                         }
 
-                        const idChannelName = `${isGuest ? 'guests' : 'clients'}.${mac}.channel_frequency`;
+                        const idChannelName = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.channel_frequency`;
                         if (await adapter.objectExists(idChannelName)) {
                             await adapter.setState(idChannelName, myHelper.radioToFrequency(data.radio_to, adapter), true);
                         }
@@ -181,7 +181,7 @@ export const eventHandler = {
                         const isGuest = cache.clients[mac].is_guest;
                         const blocked = data.key.includes('_Blocked');
 
-                        const id = `${isGuest ? 'guests' : 'clients'}.${mac}.blocked`;
+                        const id = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.blocked`;
 
                         adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${blocked ? 'blocked' : 'unblocked'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
 
@@ -226,7 +226,7 @@ export const eventHandler = {
                 if (adapter.config.keepIobSynchron && cache && cache.clients && cache.clients[data.mac as string]) {
                     const mac = data.mac;
                     const isGuest = cache.clients[mac as string].is_guest;
-                    const idChannel = `${isGuest ? 'guests' : 'clients'}.${mac}`
+                    const idChannel = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}`
 
                     if (await adapter.objectExists(idChannel)) {
                         await adapter.delObjectAsync(idChannel, { recursive: true });

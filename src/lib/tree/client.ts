@@ -8,6 +8,12 @@ import * as myHelper from '../helper.js';
 export namespace client {
     let keys: string[] = undefined;
 
+    export const idChannel = 'clients';
+
+    export const idChannelUsers = `${idChannel}.users`;
+    export const idChannelGuests = `${idChannel}.guests`;
+    export const idChannelVpn = `${idChannel}.vpn`;
+
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
             // authorized: {                                --> just kicks the client, use case ???

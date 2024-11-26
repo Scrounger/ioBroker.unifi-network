@@ -3,6 +3,10 @@ import * as myHelper from '../helper.js';
 export var client;
 (function (client) {
     let keys = undefined;
+    client.idChannel = 'clients';
+    client.idChannelUsers = `${client.idChannel}.users`;
+    client.idChannelGuests = `${client.idChannel}.guests`;
+    client.idChannelVpn = `${client.idChannel}.vpn`;
     function get() {
         return {
             // authorized: {                                --> just kicks the client, use case ???
