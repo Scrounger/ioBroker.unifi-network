@@ -286,9 +286,53 @@
             }
         ],
         "wlanBlackList": [],
-        "wlanStatesBlackList": [],
+        "wlanStatesBlackList": [
+            {
+                "id": "access_point_count"
+            },
+            {
+                "id": "enabled"
+            },
+            {
+                "id": "is_guest"
+            },
+            {
+                "id": "connected_clients"
+            },
+            {
+                "id": "connected_clients_peak"
+            },
+            {
+                "id": "connected_guests"
+            },
+            {
+                "id": "satisfaction"
+            }
+        ],
         "lanBlackList": [],
-        "lanStatesBlackList": []
+        "lanStatesBlackList": [
+            {
+                "id": "connected_clients"
+            },
+            {
+                "id": "connected_guests"
+            },
+            {
+                "id": "enabled"
+            },
+            {
+                "id": "ip_subnet"
+            },
+            {
+                "id": "internet_enabled"
+            },
+            {
+                "id": "type"
+            },
+            {
+                "id": "vlan"
+            }
+        ]
     },
     "objects": [],
     "instanceObjects": [

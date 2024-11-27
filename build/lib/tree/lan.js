@@ -42,7 +42,8 @@ export var lan;
             },
             name: {
                 iobType: 'string',
-                name: 'name'
+                name: 'name',
+                required: true
             },
             purpose: {
                 id: 'type',

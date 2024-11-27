@@ -46,7 +46,8 @@ export namespace lan {
             },
             name: {
                 iobType: 'string',
-                name: 'name'
+                name: 'name',
+                required: true
             },
             purpose: {
                 id: 'type',

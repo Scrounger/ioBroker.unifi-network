@@ -134,8 +134,7 @@ export namespace device {
                     6: "unreachable",
                     7: "adopting",
                     9: "adoption error",
-                    11: "isolated",
-                    999: "restarting"
+                    11: "isolated"
                 }
             },
             port_table: {

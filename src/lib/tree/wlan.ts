@@ -8,6 +8,11 @@ export namespace wlan {
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
+            current_access_point_count: {
+                id: 'access_point_count',
+                iobType: 'number',
+                name: 'number of access points',
+            },
             enabled: {
                 iobType: 'boolean',
                 name: 'WLAN enabled',
@@ -20,11 +25,8 @@ export namespace wlan {
             },
             name: {
                 iobType: 'string',
-                name: 'name'
-            },
-            security: {
-                iobType: 'string',
-                name: 'security'
+                name: 'name',
+                required: true
             },
             connected_clients: {
                 id: 'connected_clients',
@@ -34,6 +36,14 @@ export namespace wlan {
                     return !objValues.is_guest
                 },
                 valFromProperty: 'current_client_count',
+            },
+            peak_client_count: {
+                id: 'connected_clients_peak',
+                iobType: 'number',
+                name: 'peak of connected clients',
+                conditionToCreateState(objValues: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                    return !objValues.is_guest
+                },
             },
             connected_guests: {
                 id: 'connected_guests',
@@ -45,6 +55,7 @@ export namespace wlan {
                 valFromProperty: 'current_client_count',
             },
             current_satisfaction: {
+                id: 'satisfaction',
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',

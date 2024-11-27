@@ -502,7 +502,7 @@ class UnifiNetwork extends utils.Adapter {
 			await this.updateLanConnectedClients(true);
 
 
-			// const tmp = tree.device.getStateIDs();
+			// const tmp = tree.lan.getStateIDs();
 			// let list = []
 
 			// for (let id of tmp) {

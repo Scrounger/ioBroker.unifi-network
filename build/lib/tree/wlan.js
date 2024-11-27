@@ -4,6 +4,11 @@ export var wlan;
     let keys = undefined;
     function get() {
         return {
+            current_access_point_count: {
+                id: 'access_point_count',
+                iobType: 'number',
+                name: 'number of access points',
+            },
             enabled: {
                 iobType: 'boolean',
                 name: 'WLAN enabled',
@@ -16,11 +21,8 @@ export var wlan;
             },
             name: {
                 iobType: 'string',
-                name: 'name'
-            },
-            security: {
-                iobType: 'string',
-                name: 'security'
+                name: 'name',
+                required: true
             },
             connected_clients: {
                 id: 'connected_clients',
@@ -30,6 +32,14 @@ export var wlan;
                     return !objValues.is_guest;
                 },
                 valFromProperty: 'current_client_count',
+            },
+            peak_client_count: {
+                id: 'connected_clients_peak',
+                iobType: 'number',
+                name: 'peak of connected clients',
+                conditionToCreateState(objValues, adapter) {
+                    return !objValues.is_guest;
+                },
             },
             connected_guests: {
                 id: 'connected_guests',
@@ -41,6 +51,7 @@ export var wlan;
                 valFromProperty: 'current_client_count',
             },
             current_satisfaction: {
+                id: 'satisfaction',
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',
