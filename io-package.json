@@ -99,6 +99,7 @@
         "password": "",
         "expert": false,
         "expertAliveInterval": 30,
+        "expertConnectionMaxRetries": 200,
         "realTimeApiDebounceTime": 15,
         "apiUpdateInterval": 60,
         "deviceImageDownload": false,

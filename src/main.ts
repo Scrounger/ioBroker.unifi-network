@@ -38,7 +38,6 @@ class UnifiNetwork extends utils.Adapter {
 
 	imageUpdateTimeout: ioBroker.Timeout
 
-	connectionMaxRetries: number = 200;
 	connectionRetries: number = 0;
 
 	cache: myCache = {
@@ -436,12 +435,12 @@ class UnifiNetwork extends utils.Adapter {
 
 						await this.setConnectionStatus(false);
 
-						if (this.connectionRetries < this.connectionMaxRetries) {
+						if (this.connectionRetries < (this.config.expertConnectionMaxRetries || 200)) {
 							this.connectionRetries++;
 
 							await this.establishConnection();
 						} else {
-							this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
+							this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${(this.config.expertConnectionMaxRetries || 200) * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
 							this.stop({ reason: 'too many connection retries' });
 						}
 						return;

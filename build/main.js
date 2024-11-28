@@ -24,7 +24,6 @@ class UnifiNetwork extends utils.Adapter {
     aliveTimeout = undefined;
     aliveTimestamp = moment().valueOf();
     imageUpdateTimeout;
-    connectionMaxRetries = 200;
     connectionRetries = 0;
     cache = {
         devices: {},
@@ -392,12 +391,12 @@ class UnifiNetwork extends utils.Adapter {
                         this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
                         this.ufn.logout();
                         await this.setConnectionStatus(false);
-                        if (this.connectionRetries < this.connectionMaxRetries) {
+                        if (this.connectionRetries < (this.config.expertConnectionMaxRetries || 200)) {
                             this.connectionRetries++;
                             await this.establishConnection();
                         }
                         else {
-                            this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
+                            this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${(this.config.expertConnectionMaxRetries || 200) * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
                             this.stop({ reason: 'too many connection retries' });
                         }
                         return;
@@ -406,7 +405,7 @@ class UnifiNetwork extends utils.Adapter {
                         this.log.warn(`${logPrefix} Connection to the Unifi-Network controller is alive, but websocket has no data send in the interval!`);
                     }
                 }
-                this.log.debug(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
+                this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
                 this.updateIsOnlineState();
                 await this.setConnectionStatus(true);
                 this.connectionRetries = 0;

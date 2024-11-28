@@ -120,5 +120,7 @@
     "Choose which WLAN states should be excluded": "Wählen Sie aus, welche WLAN-Zustände ausgeschlossen werden sollen",
     "Choose which LAN should be excluded": "Wählen Sie aus, welches LAN ausgeschlossen werden soll",
     "is Unifi OS": "ist Unifi OS",
-    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "Aktivieren Sie dies, wenn Sie einen auf Unifi OS basierenden Netzwerkcontroller haben (z. B. UDM-Pro)."
+    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "Aktivieren Sie dies, wenn Sie einen auf Unifi OS basierenden Netzwerkcontroller haben (z. B. UDM-Pro).",
+    "max. retries to reconnect": "max. versucht erneut, die Verbindung wiederherzustellen",
+    "max. retries to restore the connection": "max. versucht erneut, die Verbindung wiederherzustellen"
 }

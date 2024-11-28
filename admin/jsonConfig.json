@@ -603,6 +603,16 @@
 					"step": 1,
 					"sm": 12,
 					"md": 3
+				},
+				"expertConnectionMaxRetries": {
+					"type": "number",
+					"label": "max. retries to restore the connection",
+					"disabled": "!data.expert",
+					"min": 10,
+					"max": 10000,
+					"step": 1,
+					"sm": 12,
+					"md": 3
 				}
 			}
 		}

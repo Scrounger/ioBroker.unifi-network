@@ -12,6 +12,7 @@ declare global {
 			isUnifiOs: boolean;
 			expert: boolean;
 			expertAliveInterval: number;
+			expertConnectionMaxRetries: number;
 			realTimeApiDebounceTime: number;
 			apiUpdateInterval: number;
 			deviceImageDownload: boolean;

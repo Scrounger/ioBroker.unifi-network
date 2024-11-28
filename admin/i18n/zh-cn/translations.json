@@ -121,5 +121,7 @@
     "Choose which WLAN states should be excluded": "选择应排除哪些 WLAN 状态",
     "Choose which LAN should be excluded": "选择应排除的 LAN",
     "is Unifi OS": "是 Unifi 操作系统",
-    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "如果您有基于 Unifi OS 的网络控制器（例如 UDM-Pro），请启用此功能"
+    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "如果您有基于 Unifi OS 的网络控制器（例如 UDM-Pro），请启用此功能",
+    "max. retries to reconnect": "最大限度。重试重新连接",
+    "max. retries to restore the connection": "最大限度。重试恢复连接"
 }

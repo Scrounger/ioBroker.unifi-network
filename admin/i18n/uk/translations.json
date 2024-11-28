@@ -121,5 +121,7 @@
     "Choose which WLAN states should be excluded": "Виберіть, які стани WLAN потрібно виключити",
     "Choose which LAN should be excluded": "Виберіть, яку локальну мережу потрібно виключити",
     "is Unifi OS": "є ОС Unifi",
-    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "увімкніть це, якщо у вас є мережевий контролер на основі ОС Unifi (наприклад, UDM-Pro)"
+    "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "увімкніть це, якщо у вас є мережевий контролер на основі ОС Unifi (наприклад, UDM-Pro)",
+    "max. retries to reconnect": "макс. повторює спробу підключитися",
+    "max. retries to restore the connection": "макс. повторює спробу відновити з’єднання"
 }
