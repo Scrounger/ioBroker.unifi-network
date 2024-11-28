@@ -57,7 +57,7 @@ export const eventHandler = {
 
                 for (let data of event.data) {
                     if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
-                        const wan = cache.devices[mac].wan1.ifname === data.interface_name ? 'wan1' : cache.devices[mac].wan2.ifname === data.interface_name ? 'wan2' : undefined;
+                        const wan = cache.devices[mac].wan1.ifname === data.interface_name ? 'wan1' : cache.devices[mac].wan2.ifname === data.interface_name ? 'wan2' : 'wan1';
 
                         adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
 

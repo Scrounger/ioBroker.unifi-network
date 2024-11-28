@@ -119,6 +119,7 @@ export declare class NetworkApi extends EventEmitter {
       * @returns
       */
     getDeviceModels_V2(model?: string): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined>;
+    testConnection(): Promise<boolean>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;

@@ -658,6 +658,22 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    public async testConnection(): Promise<boolean> {
+        const logPrefix = `[${this.logPrefix}.testConnection]`
+
+        try {
+            const res = await this.retrieve(`${this.getApiEndpoint(ApiEndpoints.self)}`);
+
+            if (res?.ok) {
+                return true;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return false;
+    }
+
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
@@ -667,12 +683,12 @@ export class NetworkApi extends EventEmitter {
         switch (endpoint) {
             case ApiEndpoints.login:
                 endpointPrefix = '/api/';
-                endpointSuffix = 'auth/login';
+                endpointSuffix = this.isUnifiOs ? 'auth/login' : 'login';
                 break;
 
             case ApiEndpoints.self:
                 endpointPrefix = '/api/';
-                endpointSuffix = 'users/self';
+                endpointSuffix = this.isUnifiOs ? 'users/self' : 'self';
                 break;
 
             case ApiEndpoints.devices:

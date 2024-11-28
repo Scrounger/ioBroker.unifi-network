@@ -387,31 +387,36 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const diff = Math.round((moment().valueOf() - this.aliveTimestamp) / 1000);
                 if (diff >= (this.config.expertAliveInterval || 30)) {
-                    this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
-                    this.ufn.logout();
-                    await this.setConnectionStatus(false);
-                    if (this.connectionRetries < this.connectionMaxRetries) {
-                        this.connectionRetries++;
-                        await this.establishConnection();
+                    const testCon = await this.ufn.testConnection();
+                    if (testCon === false) {
+                        this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
+                        this.ufn.logout();
+                        await this.setConnectionStatus(false);
+                        if (this.connectionRetries < this.connectionMaxRetries) {
+                            this.connectionRetries++;
+                            await this.establishConnection();
+                        }
+                        else {
+                            this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
+                            this.stop({ reason: 'too many connection retries' });
+                        }
+                        return;
                     }
                     else {
-                        this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
-                        this.stop({ reason: 'too many connection retries' });
+                        this.log.warn(`${logPrefix} Connection to the Unifi-Network controller is alive, but websocket has no data send in the interval!`);
                     }
                 }
-                else {
-                    this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
-                    this.updateIsOnlineState();
-                    await this.setConnectionStatus(true);
-                    this.connectionRetries = 0;
-                    if (this.aliveTimeout) {
-                        this.clearTimeout(this.aliveTimeout);
-                        this.aliveTimeout = null;
-                    }
-                    this.aliveTimeout = this.setTimeout(() => {
-                        this.aliveChecker();
-                    }, (this.config.expertAliveInterval || 30) * 1000);
+                this.log.debug(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
+                this.updateIsOnlineState();
+                await this.setConnectionStatus(true);
+                this.connectionRetries = 0;
+                if (this.aliveTimeout) {
+                    this.clearTimeout(this.aliveTimeout);
+                    this.aliveTimeout = null;
                 }
+                this.aliveTimeout = this.setTimeout(() => {
+                    this.aliveChecker();
+                }, (this.config.expertAliveInterval || 30) * 1000);
             }
         }
         catch (error) {
@@ -445,12 +450,12 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateWlanConnectedClients(true);
             await this.updateLanConfig(null, true);
             await this.updateLanConnectedClients(true);
-            const tmp = tree.lan.getStateIDs();
-            let list = [];
-            for (let id of tmp) {
-                list.push({ id: id });
-            }
-            this.log.warn(JSON.stringify(list));
+            // const tmp = tree.lan.getStateIDs();
+            // let list = []
+            // for (let id of tmp) {
+            // 	list.push({ id: id });
+            // }
+            // this.log.warn(JSON.stringify(list));
             // this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {

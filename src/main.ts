@@ -428,36 +428,43 @@ class UnifiNetwork extends utils.Adapter {
 				const diff = Math.round((moment().valueOf() - this.aliveTimestamp) / 1000);
 
 				if (diff >= (this.config.expertAliveInterval || 30)) {
-					this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
-					this.ufn.logout();
+					const testCon = await this.ufn.testConnection();
 
-					await this.setConnectionStatus(false);
+					if (testCon === false) {
+						this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
+						this.ufn.logout();
 
-					if (this.connectionRetries < this.connectionMaxRetries) {
-						this.connectionRetries++;
+						await this.setConnectionStatus(false);
 
-						await this.establishConnection();
+						if (this.connectionRetries < this.connectionMaxRetries) {
+							this.connectionRetries++;
+
+							await this.establishConnection();
+						} else {
+							this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
+							this.stop({ reason: 'too many connection retries' });
+						}
+						return;
 					} else {
-						this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${this.connectionMaxRetries * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
-						this.stop({ reason: 'too many connection retries' });
+						this.log.warn(`${logPrefix} Connection to the Unifi-Network controller is alive, but websocket has no data send in the interval!`);
 					}
-				} else {
-					this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
-
-					this.updateIsOnlineState();
-
-					await this.setConnectionStatus(true);
-					this.connectionRetries = 0;
-
-					if (this.aliveTimeout) {
-						this.clearTimeout(this.aliveTimeout);
-						this.aliveTimeout = null;
-					}
-
-					this.aliveTimeout = this.setTimeout(() => {
-						this.aliveChecker();
-					}, (this.config.expertAliveInterval || 30) * 1000);
 				}
+
+				this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
+
+				this.updateIsOnlineState();
+
+				await this.setConnectionStatus(true);
+				this.connectionRetries = 0;
+
+				if (this.aliveTimeout) {
+					this.clearTimeout(this.aliveTimeout);
+					this.aliveTimeout = null;
+				}
+
+				this.aliveTimeout = this.setTimeout(() => {
+					this.aliveChecker();
+				}, (this.config.expertAliveInterval || 30) * 1000);
 			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
