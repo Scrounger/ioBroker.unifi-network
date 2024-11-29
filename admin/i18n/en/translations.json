@@ -103,5 +103,8 @@
 	"Choose which LAN should be excluded": "Choose which LAN should be excluded",
 	"is Unifi OS": "is Unifi OS",
 	"enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)",
-	"max. retries to restore the connection": "max. retries to restore the connection"
+	"max. retries to restore the connection": "max. retries to restore the connection",
+	"Choose which client / guest should be included": "Choose which client / guest should be included",
+	"use as whitelist": "use as whitelist",
+	"use as blacklist": "use as blacklist"
 }

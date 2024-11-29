@@ -123,5 +123,9 @@
     "is Unifi OS": "es el sistema operativo unifi",
     "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "habilítelo si tiene un controlador de red basado en Unifi OS (por ejemplo, UDM-Pro)",
     "max. retries to reconnect": "máx. vuelve a intentar volver a conectarse",
-    "max. retries to restore the connection": "máx. vuelve a intentar restaurar la conexión"
+    "max. retries to restore the connection": "máx. vuelve a intentar restaurar la conexión",
+    "Choose which client / guest should be included": "Elija qué cliente/invitado debe incluirse",
+    "${data.clientIsWhiteList ? 'Choose which client / guest should be included' : 'Choose which client / guest should be excluded'}": "${data.clientIsWhiteList? 'Elija qué cliente/invitado debe incluirse' : 'Elija qué cliente/invitado debe excluirse'}",
+    "use as whitelist": "usar como lista blanca",
+    "use as blacklist": "usar como lista negra"
 }

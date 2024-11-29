@@ -122,5 +122,8 @@
     "is Unifi OS": "ist Unifi OS",
     "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "Aktivieren Sie dies, wenn Sie einen auf Unifi OS basierenden Netzwerkcontroller haben (z. B. UDM-Pro).",
     "max. retries to reconnect": "max. versucht erneut, die Verbindung wiederherzustellen",
-    "max. retries to restore the connection": "max. versucht erneut, die Verbindung wiederherzustellen"
+    "max. retries to restore the connection": "max. versucht erneut, die Verbindung wiederherzustellen",
+    "Choose which client / guest should be included": "Wählen Sie aus, welcher Kunde/Gast einbezogen werden soll",
+    "use as whitelist": "Als Whitelist verwenden",
+    "use as blacklist": "Als Blacklist verwenden"
 }

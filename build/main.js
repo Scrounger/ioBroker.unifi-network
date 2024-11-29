@@ -478,7 +478,7 @@ class UnifiNetwork extends utils.Adapter {
                         let countBlacklisted = 0;
                         for (let device of data) {
                             const idDevice = `${tree.device.idChannel}.${device.mac}`;
-                            if (!_.some(this.config.deviceBlackList, { mac: device.mac })) {
+                            if ((!this.config.deviceIsWhiteList && !_.some(this.config.deviceBlackList, { mac: device.mac })) || (this.config.deviceIsWhiteList && _.some(this.config.deviceBlackList, { mac: device.mac }))) {
                                 if (isAdapterStart) {
                                     countDevices++;
                                     if (device.vap_table) {
@@ -566,7 +566,7 @@ class UnifiNetwork extends utils.Adapter {
                         let countBlacklisted = 0;
                         for (let client of data) {
                             const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
-                            if (!_.some(this.config.clientBlackList, { mac: client.mac })) {
+                            if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: client.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: client.mac }))) {
                                 if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
                                     // debounce real time data
                                     const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;

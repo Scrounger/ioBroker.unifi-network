@@ -123,5 +123,9 @@
     "is Unifi OS": "是 Unifi 操作系统",
     "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)": "如果您有基于 Unifi OS 的网络控制器（例如 UDM-Pro），请启用此功能",
     "max. retries to reconnect": "最大限度。重试重新连接",
-    "max. retries to restore the connection": "最大限度。重试恢复连接"
+    "max. retries to restore the connection": "最大限度。重试恢复连接",
+    "Choose which client / guest should be included": "选择应包括哪些客户/客人",
+    "${data.clientIsWhiteList ? 'Choose which client / guest should be included' : 'Choose which client / guest should be excluded'}": "${data.clientIsWhiteList ？ '选择应包括哪个客户/客人' : '选择应排除哪个客户/客人'}",
+    "use as whitelist": "用作白名单",
+    "use as blacklist": "用作黑名单"
 }

@@ -33,6 +33,7 @@
 				"port": {
 					"type": "number",
 					"label": "port",
+					"disabled": "data.isUnifiOs",
 					"min": 0,
 					"sm": 12,
 					"md": 3
@@ -149,8 +150,25 @@
 					"sm": 12,
 					"md": 2
 				},
-				"deviceBlackList": {
+				"dividerDeviceBlackList": {
 					"newLine": true,
+					"type": "header",
+					"text": "Unifi Devices Blacklist / Whitelist",
+					"hidden": "!data.devicesEnabled",
+					"size": 2
+				},
+				"deviceIsWhiteList": {
+					"newLine": true,
+					"type": "checkbox",
+					"label": "${data.deviceIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+					"hidden": "!data.devicesEnabled",
+					"xl": 2,
+					"lg": 2,
+					"md": 2,
+					"sm": 12,
+					"xs": 12
+				},
+				"deviceBlackList": {
 					"type": "table",
 					"xl": 6,
 					"lg": 6,
@@ -172,7 +190,7 @@
 					"items": [
 						{
 							"type": "autocompleteSendTo",
-							"title": "Choose which device should be excluded",
+							"title": "${data.deviceIsWhiteList ? 'Choose which unifi device should be included' : 'Choose which unifi device should be excluded'}",
 							"attr": "mac",
 							"filter": true,
 							"sort": true,
@@ -181,6 +199,13 @@
 							"command": "deviceList"
 						}
 					]
+				},
+				"dividerDeviceBlackListStates": {
+					"newLine": true,
+					"type": "header",
+					"text": "States Blacklist",
+					"hidden": "!data.devicesEnabled",
+					"size": 2
 				},
 				"deviceStatesBlackList": {
 					"type": "table",
@@ -313,8 +338,25 @@
 					"sm": 12,
 					"md": 2
 				},
-				"clientBlackList": {
+				"dividerClientBlackList": {
 					"newLine": true,
+					"type": "header",
+					"text": "Clients Blacklist / Whitelist",
+					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+					"size": 2
+				},
+				"clientIsWhiteList": {
+					"newLine": true,
+					"type": "checkbox",
+					"label": "${data.clientIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+					"xl": 2,
+					"lg": 2,
+					"md": 2,
+					"sm": 12,
+					"xs": 12
+				},
+				"clientBlackList": {
 					"type": "table",
 					"xl": 6,
 					"lg": 6,
@@ -336,7 +378,7 @@
 					"items": [
 						{
 							"type": "autocompleteSendTo",
-							"title": "Choose which client / guest should be excluded",
+							"title": "${data.clientIsWhiteList ? 'Choose which client / guest should be included' : 'Choose which client / guest should be excluded'}",
 							"attr": "mac",
 							"filter": true,
 							"sort": true,
@@ -345,6 +387,13 @@
 							"command": "clientList"
 						}
 					]
+				},
+				"dividerClientBlackListStates": {
+					"newLine": true,
+					"type": "header",
+					"text": "States Blacklist",
+					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+					"size": 2
 				},
 				"clientStatesBlackList": {
 					"type": "table",

@@ -115,6 +115,7 @@
         "vpnEnabled": true,
         "wlanConfigEnabled": false,
         "lanConfigEnabled": false,
+        "deviceIsWhiteList": false,
         "deviceBlackList": [],
         "deviceStatesBlackList": [
             {
@@ -193,6 +194,7 @@
                 "id": "wlan"
             }
         ],
+        "clientIsWhiteList": false,
         "clientBlackList": [],
         "clientStatesBlackList": [
             {
