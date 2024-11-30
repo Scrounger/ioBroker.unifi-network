@@ -14,13 +14,13 @@
 			"type": "panel",
 			"#include": "panel.clients.jsonConfig.json"
 		},
-		"tab_wlans": {
-			"type": "panel",
-			"#include": "panel.wlan.jsonConfig.json"
-		},
 		"tab_lans": {
 			"type": "panel",
 			"#include": "panel.lan.jsonConfig.json"
+		},
+		"tab_wlans": {
+			"type": "panel",
+			"#include": "panel.wlan.jsonConfig.json"
 		},
 		"tab_expert": {
 			"type": "panel",

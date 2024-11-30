@@ -901,7 +901,7 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             lan = lan;
                             const idDevice = `${idChannel}.${lan._id}`;
-                            if (!_.some(this.config.lanBlackList, { id: lan._id })) {
+                            if ((!this.config.lanIsWhiteList && !_.some(this.config.lanBlackList, { id: lan._id })) || (this.config.lanIsWhiteList && _.some(this.config.lanBlackList, { id: lan._id }))) {
                                 if (isAdapterStart)
                                     countLan++;
                                 if (!this.cache.lan[lan._id]) {
@@ -916,7 +916,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = lan._id;
                                     await this.createOrUpdateDevice(idDevice, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, false, lan, lan, isAdapterStart);
+                                    await this.createGenericState(idDevice, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan, lan, isAdapterStart);
                                 }
                             }
                             else {

@@ -314,7 +314,9 @@
                 "id": "satisfaction"
             }
         ],
+        "lanIsWhiteList": false,
         "lanBlackList": [],
+        "lanStatesIsWhiteList": false,
         "lanStatesBlackList": [
             {
                 "id": "connected_clients"

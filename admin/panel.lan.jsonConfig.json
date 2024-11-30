@@ -12,7 +12,7 @@
                 "justifyContent": "flex-start !important"
             }
         },
-        "dividerWlans": {
+        "dividerLan": {
             "newLine": true,
             "type": "header",
             "text": "LAN",
@@ -25,8 +25,25 @@
             "sm": 12,
             "md": 2
         },
-        "lanBlackList": {
+        "dividerLanBlackList": {
             "newLine": true,
+            "type": "header",
+            "text": "Unifi Devices Blacklist / Whitelist",
+            "hidden": "!data.lanConfigEnabled",
+            "size": 2
+        },
+        "lanIsWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.lanIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.lanConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
+        },
+        "lanBlackList": {
             "type": "table",
             "xl": 6,
             "lg": 6,
@@ -48,7 +65,7 @@
             "items": [
                 {
                     "type": "autocompleteSendTo",
-                    "title": "Choose which LAN should be excluded",
+                    "title": "${data.lanIsWhiteList ? 'Choose which LAN should be included' : 'Choose which LAN should be excluded'}",
                     "attr": "id",
                     "filter": true,
                     "sort": true,
@@ -57,6 +74,24 @@
                     "command": "lanList"
                 }
             ]
+        },
+        "dividerLanBlackListStates": {
+            "newLine": true,
+            "type": "header",
+            "text": "States Blacklist / Whitelist",
+            "hidden": "!data.lanConfigEnabled",
+            "size": 2
+        },
+        "lanStatesIsWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.lanStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.lanConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
         },
         "lanStatesBlackList": {
             "type": "table",
@@ -80,7 +115,7 @@
             "items": [
                 {
                     "type": "autocompleteSendTo",
-                    "title": "Choose which LAN states should be excluded",
+                    "title": "${data.lanStatesIsWhiteList ? 'Choose which LAN state should be included' : 'Choose which LAN state should be excluded'}",
                     "attr": "id",
                     "filter": true,
                     "sort": true,
