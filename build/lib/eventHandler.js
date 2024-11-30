@@ -20,7 +20,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
         async connected(meta, data, adapter, cache) {
@@ -41,7 +41,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
         async speedTest(event, adapter, cache) {
@@ -50,7 +50,7 @@ export const eventHandler = {
                 const mac = event.meta.mac;
                 for (let data of event.data) {
                     if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
-                        const wan = cache.devices[mac].wan1.ifname === data.interface_name ? 'wan1' : cache.devices[mac].wan2.ifname === data.interface_name ? 'wan2' : 'wan1';
+                        const wan = cache.devices[mac]?.wan1?.ifname === data.interface_name ? 'wan1' : cache.devices[mac]?.wan2?.ifname === data.interface_name ? 'wan2' : 'wan1';
                         adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
                         if (wan) {
                             const idChannel = `${tree.device.idChannel}.${mac}.internet.${wan}`;
@@ -68,7 +68,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, event: ${JSON.stringify(event)}`);
             }
         }
     },
@@ -98,7 +98,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
         async roamed(meta, data, adapter, cache) {
@@ -124,7 +124,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
         async roamedRadio(meta, data, adapter, cache) {
@@ -151,7 +151,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
         async block(meta, data, adapter, cache) {
@@ -174,7 +174,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
         async vpnDisconnect(meta, data, adapter, cache) {
@@ -193,7 +193,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
     },
@@ -212,7 +212,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
     },
@@ -243,7 +243,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
     },
@@ -262,7 +262,7 @@ export const eventHandler = {
                 }
             }
             catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
     }

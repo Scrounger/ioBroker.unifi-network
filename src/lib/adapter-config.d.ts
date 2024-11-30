@@ -28,6 +28,7 @@ declare global {
 			vpnEnabled: boolean;
 			wlanConfigEnabled: boolean;
 			lanConfigEnabled: boolean;
+			deviceIsWhiteList: boolean;
 			deviceBlackList: [],
 			deviceStatesBlackList: [],
 			clientIsWhiteList: boolean,
