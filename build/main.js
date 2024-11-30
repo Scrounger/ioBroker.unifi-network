@@ -517,7 +517,7 @@ class UnifiNetwork extends utils.Adapter {
                                     countBlacklisted++;
                                     if (await this.objectExists(idDevice)) {
                                         await this.delObjectAsync(idDevice, { recursive: true });
-                                        this.log.info(`${logPrefix} device '${device.name}' (mac: ${device.mac}) delete, it's on the black list`);
+                                        this.log.info(`${logPrefix} device '${device.name}' (mac: ${device.mac}) delete, ${this.config.deviceIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
                             }
@@ -691,7 +691,7 @@ class UnifiNetwork extends utils.Adapter {
                                     const id = `${!client.is_guest ? idChannel : idGuestChannel}.${client.mac}`;
                                     if (await this.objectExists(id)) {
                                         await this.delObjectAsync(id, { recursive: true });
-                                        this.log.info(`${logPrefix} device '${name}' (mac: ${client.mac}) delete, it's on the black list`);
+                                        this.log.info(`${logPrefix} device '${name}' (mac: ${client.mac}) delete, ${this.config.clientIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
                             }
@@ -821,7 +821,7 @@ class UnifiNetwork extends utils.Adapter {
                                     countBlacklisted++;
                                     if (await this.objectExists(idDevice)) {
                                         await this.delObjectAsync(idDevice, { recursive: true });
-                                        this.log.info(`${logPrefix} WLAN '${wlan.name}' (id: ${wlan._id}) delete, it's on the black list`);
+                                        this.log.info(`${logPrefix} WLAN '${wlan.name}' (id: ${wlan._id}) delete, ${this.config.wlanIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
                             }
@@ -924,7 +924,7 @@ class UnifiNetwork extends utils.Adapter {
                                     countBlacklisted++;
                                     if (await this.objectExists(idDevice)) {
                                         await this.delObjectAsync(idDevice, { recursive: true });
-                                        this.log.info(`${logPrefix} LAN '${lan.name}' (id: ${lan._id}) delete, it's on the black list`);
+                                        this.log.info(`${logPrefix} LAN '${lan.name}' (id: ${lan._id}) delete, ${this.config.lanIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
                             }
@@ -1273,7 +1273,7 @@ class UnifiNetwork extends utils.Adapter {
                                 // delete also at runtime, because some properties are only available on websocket data
                                 if (await this.objectExists(`${channel}.${stateId}`)) {
                                     await this.delObjectAsync(`${channel}.${stateId}`);
-                                    this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) state '${channel}.${stateId}' delete, it's on the black list`);
+                                    this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) state '${channel}.${stateId}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                 }
                             }
                         }
@@ -1291,7 +1291,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (isAdapterStart) {
                                         if (await this.objectExists(idChannel)) {
                                             await this.delObjectAsync(idChannel, { recursive: true });
-                                            this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, it's on the black list`);
+                                            this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                         }
                                     }
                                 }
@@ -1326,7 +1326,7 @@ class UnifiNetwork extends utils.Adapter {
                                         if (isAdapterStart || idChannel.endsWith('.wlan')) {
                                             if (await this.objectExists(idChannel)) {
                                                 await this.delObjectAsync(idChannel, { recursive: true });
-                                                this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, it's on the black list`);
+                                                this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                             }
                                         }
                                     }
