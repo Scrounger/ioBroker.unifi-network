@@ -1,0 +1,198 @@
+{
+	"label": "Clients",
+	"items": {
+		"donation_link": {
+			"type": "staticLink",
+			"text": "You like the adapter? Then support me.",
+			"sm": 12,
+			"button": true,
+			"newLine": true,
+			"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+			"style": {
+				"justifyContent": "flex-start !important"
+			}
+		},
+		"dividerClients": {
+			"newLine": true,
+			"type": "header",
+			"text": "clients / guests / vpn (realtime api)",
+			"size": 2
+		},
+		"clientsEnabled": {
+			"type": "checkbox",
+			"label": "clients enabled",
+			"newLine": true,
+			"sm": 12,
+			"md": 2
+		},
+		"deleteClientsOlderThan": {
+			"type": "number",
+			"label": "delete clients who have not been online for x days (0 = deactivated)",
+			"disabled": "!data.clientsEnabled",
+			"min": 0,
+			"step": 1,
+			"sm": 12,
+			"md": 3
+		},
+		"clientOfflineTimeout": {
+			"type": "number",
+			"label": "time [s] after a device is set to offline",
+			"disabled": "!data.clientsEnabled && !data.guestsEnabled",
+			"help": "Fallback solution if realtime api does not communicate an event",
+			"validator": "(data.clientOfflineTimeout / 2) > data.realTimeApiDebounceTime",
+			"validatorErrorText": "must be two times bigger than 'debounce time' on tab general!",
+			"tooltip": "must be two times bigger than 'debounce time' on tab general!",
+			"validatorNoSaveOnError": true,
+			"min": 92,
+			"max": 10000,
+			"step": 1,
+			"sm": 12,
+			"md": 3
+		},
+		"guestsEnabled": {
+			"type": "checkbox",
+			"label": "guests enabled",
+			"newLine": true,
+			"sm": 12,
+			"md": 2
+		},
+		"deleteGuestsOlderThan": {
+			"type": "number",
+			"label": "delete guests who have not been online for x days (0 = deactivated)",
+			"disabled": "!data.guestsEnabled",
+			"min": 0,
+			"step": 1,
+			"sm": 12,
+			"md": 3
+		},
+		"vpnEnabled": {
+			"type": "checkbox",
+			"label": "vpn clients enabled",
+			"newLine": true,
+			"sm": 12,
+			"md": 2
+		},
+		"vpnOfflineTimeout": {
+			"type": "number",
+			"label": "time [s] after a VPN device is set to offline",
+			"disabled": "!data.vpnEnabled",
+			"validator": "(data.vpnOfflineTimeout / 2) > data.realTimeApiDebounceTime",
+			"validatorErrorText": "must be two times bigger than 'debounce time' on tab general!",
+			"tooltip": "must be two times bigger than 'debounce time' on tab general!",
+			"validatorNoSaveOnError": true,
+			"min": 92,
+			"max": 10000,
+			"step": 1,
+			"sm": 12,
+			"md": 3
+		},
+		"clientImageDownload": {
+			"type": "checkbox",
+			"label": "download images",
+			"newLine": true,
+			"disabled": "!data.clientsEnabled && !data.guestsEnabled && !data.vpnEnabled",
+			"sm": 12,
+			"md": 2
+		},
+		"dividerClientBlackList": {
+			"newLine": true,
+			"type": "header",
+			"text": "Clients Blacklist / Whitelist",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"size": 2
+		},
+		"clientIsWhiteList": {
+			"newLine": true,
+			"type": "checkbox",
+			"label": "${data.clientIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
+			"sm": 12,
+			"xs": 12
+		},
+		"clientBlackList": {
+			"type": "table",
+			"xl": 6,
+			"lg": 6,
+			"md": 6,
+			"sm": 12,
+			"xs": 12,
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"uniqueColumns": [
+				"mac"
+			],
+			"confirm": {
+				"condition": "!_alive",
+				"title": "Attention!",
+				"text": "This selection is only possible with a running instance!",
+				"ok": "Got it!",
+				"cancel": "cancel",
+				"type": "warning"
+			},
+			"items": [
+				{
+					"type": "autocompleteSendTo",
+					"title": "${data.clientIsWhiteList ? 'Choose which client / guest should be included' : 'Choose which client / guest should be excluded'}",
+					"attr": "mac",
+					"filter": true,
+					"sort": true,
+					"noMultiEdit": true,
+					"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+					"command": "clientList"
+				}
+			]
+		},
+		"dividerClientBlackListStates": {
+			"newLine": true,
+			"type": "header",
+			"text": "States Blacklist / Whitelist",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"size": 2
+		},
+		"clientStatesIsWhiteList": {
+			"newLine": true,
+			"type": "checkbox",
+			"label": "${data.clientStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
+			"sm": 12,
+			"xs": 12
+		},
+		"clientStatesBlackList": {
+			"type": "table",
+			"xl": 6,
+			"lg": 6,
+			"md": 6,
+			"sm": 12,
+			"xs": 12,
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"uniqueColumns": [
+				"id"
+			],
+			"confirm": {
+				"condition": "!_alive",
+				"title": "Attention!",
+				"text": "This selection is only possible with a running instance!",
+				"ok": "Got it!",
+				"cancel": "cancel",
+				"type": "warning"
+			},
+			"items": [
+				{
+					"type": "autocompleteSendTo",
+					"title": "${data.clientStatesIsWhiteList ? 'Choose which client / guest / vpn state should be included' : 'Choose which client / guest / vpn state should be excluded'}",
+					"attr": "id",
+					"filter": true,
+					"sort": true,
+					"noMultiEdit": true,
+					"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+					"command": "clientStateList"
+				}
+			]
+		}
+	}
+}

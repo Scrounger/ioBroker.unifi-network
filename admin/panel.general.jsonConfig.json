@@ -1,0 +1,113 @@
+{
+    "label": "General",
+    "items": {
+        "donation_link": {
+            "type": "staticLink",
+            "text": "You like the adapter? Then support me.",
+            "sm": 12,
+            "button": true,
+            "newLine": true,
+            "href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+            "style": {
+                "justifyContent": "flex-start !important"
+            }
+        },
+        "dividerCredentials": {
+            "newLine": true,
+            "type": "header",
+            "text": "login data",
+            "size": 2
+        },
+        "host": {
+            "type": "text",
+            "label": "host",
+            "newLine": true,
+            "sm": 12,
+            "md": 3
+        },
+        "port": {
+            "type": "number",
+            "label": "port",
+            "disabled": "data.isUnifiOs",
+            "min": 0,
+            "sm": 12,
+            "md": 3
+        },
+        "isUnifiOs": {
+            "type": "checkbox",
+            "label": "is Unifi OS",
+            "help": "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)",
+            "sm": 12,
+            "md": 6
+        },
+        "user": {
+            "type": "text",
+            "label": "Username",
+            "newLine": true,
+            "sm": 12,
+            "md": 3
+        },
+        "password": {
+            "type": "password",
+            "label": "Password",
+            "sm": 12,
+            "md": 3
+        },
+        "site": {
+            "type": "text",
+            "label": "controller site",
+            "help": "'default' is used by unifi-os (e.g. UDM-Pro)",
+            "sm": 12,
+            "md": 3
+        },
+        "dividerRealTimeApi": {
+            "newLine": true,
+            "type": "header",
+            "text": "realtime api",
+            "size": 2
+        },
+        "realTimeApiDebounceTime": {
+            "type": "number",
+            "label": "debounce time [s]",
+            "help": "increase this value for low performance systems",
+            "validator": "data.realTimeApiDebounceTime < (data.clientOfflineTimeout / 2)",
+            "validatorErrorText": "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!",
+            "tooltip": "must be two times smaller than the setting 'time [s] after a device is set to offline' on tab clients!",
+            "validatorNoSaveOnError": true,
+            "newLine": true,
+            "min": 0,
+            "max": 10000,
+            "step": 1,
+            "sm": 12,
+            "md": 3
+        },
+        "keepIobSynchron": {
+            "type": "checkbox",
+            "label": "keep unifi-controller and ioBroker synchronized",
+            "help": "states are deleted when they are deleted in the unifi-controller",
+            "sm": 12,
+            "md": 3
+        },
+        "dividerApi": {
+            "newLine": true,
+            "type": "header",
+            "text": "api",
+            "size": 2
+        },
+        "apiUpdateInterval": {
+            "type": "number",
+            "label": "api poll interval [s]",
+            "newLine": true,
+            "min": 5,
+            "max": 10000,
+            "sm": 12,
+            "md": 3
+        },
+        "expert": {
+            "type": "checkbox",
+            "label": "show expert settings",
+            "sm": 12,
+            "md": 3
+        }
+    }
+}

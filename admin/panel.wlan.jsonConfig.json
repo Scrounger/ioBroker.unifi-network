@@ -1,0 +1,94 @@
+{
+    "label": "WLAN",
+    "items": {
+        "donation_link": {
+            "type": "staticLink",
+            "text": "You like the adapter? Then support me.",
+            "sm": 12,
+            "button": true,
+            "newLine": true,
+            "href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+            "style": {
+                "justifyContent": "flex-start !important"
+            }
+        },
+        "dividerWlans": {
+            "newLine": true,
+            "type": "header",
+            "text": "WLAN",
+            "size": 2
+        },
+        "wlanConfigEnabled": {
+            "type": "checkbox",
+            "label": "WLAN enabled",
+            "newLine": true,
+            "sm": 12,
+            "md": 2
+        },
+        "wlanBlackList": {
+            "newLine": true,
+            "type": "table",
+            "xl": 6,
+            "lg": 6,
+            "md": 6,
+            "sm": 12,
+            "xs": 12,
+            "hidden": "!data.wlanConfigEnabled",
+            "uniqueColumns": [
+                "id"
+            ],
+            "confirm": {
+                "condition": "!_alive",
+                "title": "Attention!",
+                "text": "This selection is only possible with a running instance!",
+                "ok": "Got it!",
+                "cancel": "cancel",
+                "type": "warning"
+            },
+            "items": [
+                {
+                    "type": "autocompleteSendTo",
+                    "title": "Choose which WLAN should be excluded",
+                    "attr": "id",
+                    "filter": true,
+                    "sort": true,
+                    "noMultiEdit": true,
+                    "jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+                    "command": "wlanList"
+                }
+            ]
+        },
+        "wlanStatesBlackList": {
+            "type": "table",
+            "xl": 6,
+            "lg": 6,
+            "md": 6,
+            "sm": 12,
+            "xs": 12,
+            "hidden": "!data.wlanConfigEnabled",
+            "uniqueColumns": [
+                "id"
+            ],
+            "confirm": {
+                "condition": "!_alive",
+                "title": "Attention!",
+                "text": "This selection is only possible with a running instance!",
+                "ok": "Got it!",
+                "cancel": "cancel",
+                "type": "warning"
+            },
+            "items": [
+                {
+                    "type": "autocompleteSendTo",
+                    "title": "Choose which WLAN states should be excluded",
+                    "attr": "id",
+                    "filter": true,
+                    "sort": true,
+                    "noMultiEdit": true,
+                    "jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+                    "command": "wlanStateList"
+                }
+            ]
+        }
+    }
+}
