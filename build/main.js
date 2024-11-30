@@ -1196,6 +1196,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.connected && this.isConnected) {
                 for (const key in treeDefinition) {
                     let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
+                    let logDetails = `${objOrg?.mac ? `mac: ${objOrg?.mac}` : objOrg?.ip ? `ip: ${objOrg?.ip}` : objOrg?._id ? `id: ${objOrg?._id}` : ''}`;
                     try {
                         // if we have an own defined state which takes val from other property
                         const valKey = Object.hasOwn(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key;
@@ -1273,7 +1274,7 @@ class UnifiNetwork extends utils.Adapter {
                                 // delete also at runtime, because some properties are only available on websocket data
                                 if (await this.objectExists(`${channel}.${stateId}`)) {
                                     await this.delObjectAsync(`${channel}.${stateId}`);
-                                    this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) state '${channel}.${stateId}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+                                    this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                 }
                             }
                         }
@@ -1291,7 +1292,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (isAdapterStart) {
                                         if (await this.objectExists(idChannel)) {
                                             await this.delObjectAsync(idChannel, { recursive: true });
-                                            this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+                                            this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                         }
                                     }
                                 }
@@ -1326,7 +1327,7 @@ class UnifiNetwork extends utils.Adapter {
                                         if (isAdapterStart || idChannel.endsWith('.wlan')) {
                                             if (await this.objectExists(idChannel)) {
                                                 await this.delObjectAsync(idChannel, { recursive: true });
-                                                this.log.info(`${logPrefix} '${objOrg?.name}' (mac: ${objOrg?.mac || objOrg?.ip}) channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+                                                this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                             }
                                         }
                                     }
@@ -1335,7 +1336,7 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     catch (error) {
-                        this.log.error(`${logPrefix} [id: ${key}, mac: ${objOrg?.mac || objOrg?.ip}, key: ${key}] error: ${error}, stack: ${error.stack}, data: ${JSON.stringify(objValues[key])}`);
+                        this.log.error(`${logPrefix} [id: ${key}, ${logDetails ? `${logDetails}, ` : ''}key: ${key}] error: ${error}, stack: ${error.stack}, data: ${JSON.stringify(objValues[key])}`);
                     }
                 }
             }
