@@ -40,7 +40,9 @@ declare global {
 			lanBlackList: [];
 			lanStatesIsWhiteList: boolean;
 			lanStatesBlackList: [];
+			wlanIsWhiteList: boolean;
 			wlanBlackList: [];
+			wlanStatesIsWhiteList: boolean;
 			wlanStatesBlackList: [];
 		}
 	}

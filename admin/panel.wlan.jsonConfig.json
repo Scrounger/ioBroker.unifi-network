@@ -25,8 +25,25 @@
             "sm": 12,
             "md": 2
         },
-        "wlanBlackList": {
+        "dividerWLanBlackList": {
             "newLine": true,
+            "type": "header",
+            "text": "WLAN Blacklist / Whitelist",
+            "hidden": "!data.lanConfigEnabled",
+            "size": 2
+        },
+        "wlanIsWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.wlanIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.lanConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
+        },
+        "wlanBlackList": {
             "type": "table",
             "xl": 6,
             "lg": 6,
@@ -48,7 +65,7 @@
             "items": [
                 {
                     "type": "autocompleteSendTo",
-                    "title": "Choose which WLAN should be excluded",
+                    "title": "${data.wlanIsWhiteList ? 'Choose which WLAN should be included' : 'Choose which WLAN should be excluded'}",
                     "attr": "id",
                     "filter": true,
                     "sort": true,
@@ -57,6 +74,24 @@
                     "command": "wlanList"
                 }
             ]
+        },
+        "dividerWLanBlackListStates": {
+            "newLine": true,
+            "type": "header",
+            "text": "States Blacklist / Whitelist",
+            "hidden": "!data.lanConfigEnabled",
+            "size": 2
+        },
+        "wlanStatesIsWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.wlanStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.lanConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
         },
         "wlanStatesBlackList": {
             "type": "table",
@@ -80,7 +115,7 @@
             "items": [
                 {
                     "type": "autocompleteSendTo",
-                    "title": "Choose which WLAN states should be excluded",
+                    "title": "${data.wlanStatesIsWhiteList ? 'Choose which WLAN state should be included' : 'Choose which WLAN state should be excluded'}",
                     "attr": "id",
                     "filter": true,
                     "sort": true,

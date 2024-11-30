@@ -290,7 +290,9 @@
                 "id": "wlan_tx_retries"
             }
         ],
+        "wlanIsWhiteList": false,
         "wlanBlackList": [],
+        "wlanStatesIsWhiteList": false,
         "wlanStatesBlackList": [
             {
                 "id": "access_point_count"

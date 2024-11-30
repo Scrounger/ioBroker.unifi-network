@@ -441,10 +441,10 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateClients(null, true);
             await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
             // await this.updatClientsOffline(await this.ufn.getClients(), true);
-            await this.updateWlanConfig(null, true);
-            await this.updateWlanConnectedClients(true);
             await this.updateLanConfig(null, true);
             await this.updateLanConnectedClients(true);
+            await this.updateWlanConfig(null, true);
+            await this.updateWlanConnectedClients(true);
             // const tmp = tree.lan.getStateIDs();
             // let list = []
             // for (let id of tmp) {
@@ -798,7 +798,7 @@ class UnifiNetwork extends utils.Adapter {
                             }
                             wlan = wlan;
                             const idDevice = `${idChannel}.${wlan._id}`;
-                            if (!_.some(this.config.wlanBlackList, { id: wlan._id })) {
+                            if ((!this.config.wlanIsWhiteList && !_.some(this.config.wlanBlackList, { id: wlan._id })) || (this.config.wlanIsWhiteList && _.some(this.config.wlanBlackList, { id: wlan._id }))) {
                                 if (isAdapterStart)
                                     countWlan++;
                                 if (!this.cache.wlan[wlan._id]) {
@@ -813,7 +813,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = wlan._id;
                                     await this.createOrUpdateDevice(idDevice, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, false, wlan, wlan, isAdapterStart);
+                                    await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
                                 }
                             }
                             else {

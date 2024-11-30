@@ -28,7 +28,7 @@
         "dividerLanBlackList": {
             "newLine": true,
             "type": "header",
-            "text": "Unifi Devices Blacklist / Whitelist",
+            "text": "LAN Blacklist / Whitelist",
             "hidden": "!data.lanConfigEnabled",
             "size": 2
         },

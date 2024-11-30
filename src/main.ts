@@ -917,7 +917,7 @@ class UnifiNetwork extends utils.Adapter {
 
 							const idDevice = `${idChannel}.${wlan._id}`;
 
-							if (!_.some(this.config.wlanBlackList, { id: wlan._id })) {
+							if ((!this.config.wlanIsWhiteList && !_.some(this.config.wlanBlackList, { id: wlan._id })) || (this.config.wlanIsWhiteList && _.some(this.config.wlanBlackList, { id: wlan._id }))) {
 								if (isAdapterStart) countWlan++
 
 								if (!this.cache.wlan[wlan._id]) {
@@ -936,7 +936,7 @@ class UnifiNetwork extends utils.Adapter {
 									dataToProcess._id = wlan._id;
 
 									await this.createOrUpdateDevice(idDevice, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
-									await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, false, wlan, wlan, isAdapterStart);
+									await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
