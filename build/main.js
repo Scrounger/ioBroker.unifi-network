@@ -1289,11 +1289,9 @@ class UnifiNetwork extends utils.Adapter {
                                 }
                                 else {
                                     // channel is on blacklist
-                                    if (isAdapterStart) {
-                                        if (await this.objectExists(idChannel)) {
-                                            await this.delObjectAsync(idChannel, { recursive: true });
-                                            this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
-                                        }
+                                    if (await this.objectExists(idChannel)) {
+                                        await this.delObjectAsync(idChannel, { recursive: true });
+                                        this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
                             }
@@ -1324,11 +1322,9 @@ class UnifiNetwork extends utils.Adapter {
                                     }
                                     else {
                                         // channel is on blacklist, wlan is comming from realtime api
-                                        if (isAdapterStart || idChannel.endsWith('.wlan')) {
-                                            if (await this.objectExists(idChannel)) {
-                                                await this.delObjectAsync(idChannel, { recursive: true });
-                                                this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
-                                            }
+                                        if (await this.objectExists(idChannel)) {
+                                            await this.delObjectAsync(idChannel, { recursive: true });
+                                            this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel} delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                         }
                                     }
                                 }
