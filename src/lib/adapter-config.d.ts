@@ -29,15 +29,17 @@ declare global {
 			wlanConfigEnabled: boolean;
 			lanConfigEnabled: boolean;
 			deviceIsWhiteList: boolean;
-			deviceBlackList: [],
-			deviceStatesBlackList: [],
-			clientIsWhiteList: boolean,
-			clientBlackList: [],
-			clientStatesBlackList: [],
-			wlanBlackList: [],
-			wlanStatesBlackList: [],
-			lanBlackList: [],
-			lanStatesBlackList: []
+			deviceBlackList: [];
+			deviceStatesIsWhiteList: boolean;
+			deviceStatesBlackList: [];
+			clientIsWhiteList: boolean;
+			clientBlackList: [];
+			clientStatesIsWhiteList: boolean;
+			clientStatesBlackList: [];
+			wlanBlackList: [];
+			wlanStatesBlackList: [];
+			lanBlackList: [];
+			lanStatesBlackList: [];
 		}
 	}
 }

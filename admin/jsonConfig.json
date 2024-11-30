@@ -203,9 +203,20 @@
 				"dividerDeviceBlackListStates": {
 					"newLine": true,
 					"type": "header",
-					"text": "States Blacklist",
+					"text": "States Blacklist / Whitelist",
 					"hidden": "!data.devicesEnabled",
 					"size": 2
+				},
+				"deviceStatesIsWhiteList": {
+					"newLine": true,
+					"type": "checkbox",
+					"label": "${data.deviceStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+					"hidden": "!data.devicesEnabled",
+					"xl": 2,
+					"lg": 2,
+					"md": 2,
+					"sm": 12,
+					"xs": 12
 				},
 				"deviceStatesBlackList": {
 					"type": "table",
@@ -229,7 +240,7 @@
 					"items": [
 						{
 							"type": "autocompleteSendTo",
-							"title": "Choose which device state should be excluded",
+							"title": "${data.deviceStatesIsWhiteList ? 'Choose which state should be included' : 'Choose which state should be excluded'}",
 							"attr": "id",
 							"filter": true,
 							"sort": true,
@@ -391,9 +402,20 @@
 				"dividerClientBlackListStates": {
 					"newLine": true,
 					"type": "header",
-					"text": "States Blacklist",
+					"text": "States Blacklist / Whitelist",
 					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
 					"size": 2
+				},
+				"clientStatesIsWhiteList": {
+					"newLine": true,
+					"type": "checkbox",
+					"label": "${data.clientStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+					"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+					"xl": 2,
+					"lg": 2,
+					"md": 2,
+					"sm": 12,
+					"xs": 12
 				},
 				"clientStatesBlackList": {
 					"type": "table",
@@ -417,7 +439,7 @@
 					"items": [
 						{
 							"type": "autocompleteSendTo",
-							"title": "Choose which client / guest state should be excluded",
+							"title": "${data.clientStatesIsWhiteList ? 'Choose which client / guest / vpn state should be included' : 'Choose which client / guest / vpn state should be excluded'}",
 							"attr": "id",
 							"filter": true,
 							"sort": true,

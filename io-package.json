@@ -117,6 +117,7 @@
         "lanConfigEnabled": false,
         "deviceIsWhiteList": false,
         "deviceBlackList": [],
+        "deviceStatesIsWhiteList": false,
         "deviceStatesBlackList": [
             {
                 "id": "connected_clients"
@@ -196,6 +197,7 @@
         ],
         "clientIsWhiteList": false,
         "clientBlackList": [],
+        "clientStatesIsWhiteList": false,
         "clientStatesBlackList": [
             {
                 "id": "blocked"
