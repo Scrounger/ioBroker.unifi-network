@@ -9,7 +9,7 @@ export var lan;
                 iobType: 'number',
                 name: 'connected clients',
                 conditionToCreateState(objValues, adapter) {
-                    return objValues.purpose !== 'guest';
+                    return objValues?.purpose !== 'guest';
                 },
                 valFromProperty: 'dhcp_active_leases',
             },
@@ -18,7 +18,7 @@ export var lan;
                 iobType: 'number',
                 name: 'connected guests',
                 conditionToCreateState(objValues, adapter) {
-                    return objValues.purpose === 'guest';
+                    return objValues?.purpose === 'guest';
                 },
                 valFromProperty: 'dhcp_active_leases',
             },

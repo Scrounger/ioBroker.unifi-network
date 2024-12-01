@@ -509,7 +509,7 @@ class UnifiNetwork extends utils.Adapter {
                                     if (!isAdapterStart)
                                         this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                     await this.createOrUpdateDevice(idDevice, device.name, `${this.namespace}.${idDevice}.isOnline`, `${this.namespace}.${idDevice}.hasError`, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.device.get(), dataToProcess, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device, device, isAdapterStart);
+                                    await this.createOrUpdateGenericState(idDevice, tree.device.get(), dataToProcess, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device, device, isAdapterStart);
                                 }
                             }
                             else {
@@ -601,7 +601,7 @@ class UnifiNetwork extends utils.Adapter {
                                             if (!isAdapterStart)
                                                 this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                             await this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                            await this.createGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
+                                            await this.createOrUpdateGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
                                         }
                                     }
                                     else {
@@ -639,7 +639,7 @@ class UnifiNetwork extends utils.Adapter {
                                             if (!isAdapterStart)
                                                 this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                             await this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart);
-                                            await this.createGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
+                                            await this.createOrUpdateGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
                                         }
                                     }
                                     else {
@@ -680,7 +680,7 @@ class UnifiNetwork extends utils.Adapter {
                                             if (!isAdapterStart)
                                                 this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
                                             await this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart);
-                                            await this.createGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
+                                            await this.createOrUpdateGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
                                         }
                                     }
                                 }
@@ -813,7 +813,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = wlan._id;
                                     await this.createOrUpdateDevice(idDevice, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
+                                    await this.createOrUpdateGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
                                 }
                             }
                             else {
@@ -849,7 +849,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.config.wlanConfigEnabled) {
                 if (isAdapterStart) {
                     const obj = { connected_clients: 0, connected_guests: 0, name: 'wlan' };
-                    await this.createGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, false, obj, obj, true);
+                    await this.createOrUpdateGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, false, obj, obj, true);
                 }
                 let sumClients = 0;
                 let sumGuests = 0;
@@ -916,7 +916,7 @@ class UnifiNetwork extends utils.Adapter {
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = lan._id;
                                     await this.createOrUpdateDevice(idDevice, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart);
-                                    await this.createGenericState(idDevice, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan, lan, isAdapterStart);
+                                    await this.createOrUpdateGenericState(idDevice, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan, lan, isAdapterStart);
                                 }
                             }
                             else {
@@ -952,7 +952,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.config.lanConfigEnabled) {
                 if (isAdapterStart) {
                     const obj = { connected_clients: 0, connected_guests: 0, name: 'lan' };
-                    await this.createGenericState('lan', tree.lan.getGlobal(), obj, undefined, false, obj, obj, true);
+                    await this.createOrUpdateGenericState('lan', tree.lan.getGlobal(), obj, undefined, false, obj, obj, true);
                 }
                 let sumClients = 0;
                 let sumGuests = 0;
@@ -1190,8 +1190,8 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async createGenericState(channel, treeDefinition, objValues, blacklistFilter, isWhiteList, objOrg, objOrgValues, isAdapterStart = false, filterId = '') {
-        const logPrefix = '[createGenericState]:';
+    async createOrUpdateGenericState(channel, treeDefinition, objValues, blacklistFilter, isWhiteList, objOrg, objOrgValues, isAdapterStart = false, filterId = '') {
+        const logPrefix = '[createOrUpdateGenericState]:';
         try {
             if (this.connected && this.isConnected) {
                 for (const key in treeDefinition) {
@@ -1220,7 +1220,7 @@ class UnifiNetwork extends utils.Adapter {
                             if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${stateId}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${stateId}` })) || Object.hasOwn(treeDefinition[key], 'required')) {
                                 if (!await this.objectExists(`${channel}.${stateId}`)) {
                                     // create State
-                                    this.log.silly(`${logPrefix} ${objOrg.name} - creating state '${logMsgState}'`);
+                                    this.log.silly(`${logPrefix} ${objOrg?.name} - creating state '${logMsgState}'`);
                                     const obj = {
                                         type: 'state',
                                         common: await this.getCommonGenericState(key, treeDefinition, objOrg, logMsgState),
@@ -1237,14 +1237,14 @@ class UnifiNetwork extends utils.Adapter {
                                         if (obj && obj.common) {
                                             if (!myHelper.isStateCommonEqual(obj.common, commonUpdated)) {
                                                 await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                                this.log.debug(`${logPrefix} ${objOrg.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
+                                                this.log.debug(`${logPrefix} ${objOrg?.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
                                             }
                                         }
                                     }
                                 }
                                 if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.hasOwn(treeDefinition[key], 'subscribeMe'))) {
                                     // state is writeable or has subscribeMe Property -> subscribe it
-                                    this.log.silly(`${logPrefix} ${objOrg.name} - subscribing state '${logMsgState}'`);
+                                    this.log.silly(`${logPrefix} ${objOrg?.name} - subscribing state '${logMsgState}'`);
                                     await this.subscribeStatesAsync(`${channel}.${stateId}`);
                                     this.subscribedList.push(`${channel}.${stateId}`);
                                 }
@@ -1265,7 +1265,7 @@ class UnifiNetwork extends utils.Adapter {
                                 else {
                                     if (!Object.hasOwn(treeDefinition[key], 'id')) {
                                         // only report it if it's not a custom defined state
-                                        this.log.debug(`${logPrefix} ${objOrg.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
+                                        this.log.debug(`${logPrefix} ${objOrg?.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
                                     }
                                 }
                             }
@@ -1285,7 +1285,7 @@ class UnifiNetwork extends utils.Adapter {
                                 const idChannel = `${channel}.${idChannelAppendix}`;
                                 if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || Object.hasOwn(treeDefinition[key], 'required')) {
                                     await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                                    await this.createGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objOrg, objOrgValues[key], isAdapterStart, `${filterId}${idChannelAppendix}.`);
+                                    await this.createOrUpdateGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objOrg, objOrgValues[key], isAdapterStart, `${filterId}${idChannelAppendix}.`);
                                 }
                                 else {
                                     // channel is on blacklist
@@ -1315,7 +1315,7 @@ class UnifiNetwork extends utils.Adapter {
                                                 }
                                                 if (idChannelArray !== undefined) {
                                                     await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
-                                                    await this.createGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objOrg, objOrgValues[key][i], true, `${filterId}${idChannelAppendix}.`);
+                                                    await this.createOrUpdateGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objOrg, objOrgValues[key][i], true, `${filterId}${idChannelAppendix}.`);
                                                 }
                                             }
                                         }
@@ -1372,7 +1372,7 @@ class UnifiNetwork extends utils.Adapter {
             else if (Object.hasOwn(treeDefinition[id], 'statesFromProperty')) {
                 const statesFromProp = myHelper.getAllowedCommonStates(treeDefinition[id].statesFromProperty, objOrg);
                 common.states = statesFromProp;
-                this.log.debug(`${logPrefix} ${objOrg.name} - set allowed common.states for '${logMsgState}' (from: ${treeDefinition[id].statesFromProperty})`);
+                this.log.debug(`${logPrefix} ${objOrg?.name} - set allowed common.states for '${logMsgState}' (from: ${treeDefinition[id].statesFromProperty})`);
             }
             if (treeDefinition[id].desc)
                 common.desc = treeDefinition[id].desc;
@@ -1463,7 +1463,7 @@ class UnifiNetwork extends utils.Adapter {
                         eventHandler.device.connected(event.meta, myEvent, this, this.cache);
                     }
                     else {
-                        this.log.error(`${logPrefix} not implemented event. ${myEvent.key ? `key: ${myEvent.key},` : ''} meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)}`);
+                        this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key},` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }
                 }
             }
@@ -1473,7 +1473,7 @@ class UnifiNetwork extends utils.Adapter {
         }
     }
     async onNetworkClientEvent(events) {
-        const logPrefix = '[onNetworkUserEvent]:';
+        const logPrefix = '[onNetworkClientEvent]:';
         try {
             if (events.meta.message.endsWith(':disconnected')) {
                 for (const event of events.data) {
@@ -1483,12 +1483,12 @@ class UnifiNetwork extends utils.Adapter {
                         eventHandler.client.vpnDisconnect(events.meta, event, this, this.cache);
                     }
                     else {
-                        this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+                        this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
                     }
                 }
             }
             else {
-                this.log.warn(`${logPrefix} client event not implemented (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
+                this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
             }
         }
         catch (error) {
@@ -1510,10 +1510,12 @@ class UnifiNetwork extends utils.Adapter {
                             // client updated
                             const name = event.unifi_device_info_from_ucore?.name || event.display_name || event.name || event.hostname;
                             const idChannel = !event.is_guest ? tree.client.idChannelUsers : tree.client.idChannelGuests;
-                            event.last_seen = event.last_seen >= this.cache.clients[event.mac].last_seen ? event.last_seen : this.cache.clients[event.mac].last_seen;
-                            this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac].name}'`);
-                            await this.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${this.namespace}.${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
-                            await this.createGenericState(`${idChannel}.${event.mac}`, tree.client.get(), event, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, this.cache.clients[event.mac], this.cache.clients[event.mac], true);
+                            event.last_seen = event.last_seen >= this.cache.clients[event.mac]?.last_seen ? event.last_seen : this.cache.clients[event.mac]?.last_seen;
+                            if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: event.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: event.mac }))) {
+                                this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac]?.name}'`);
+                                await this.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${this.namespace}.${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
+                                await this.createOrUpdateGenericState(`${idChannel}.${event.mac}`, tree.client.get(), event, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, this.cache.clients[event.mac], this.cache.clients[event.mac], true);
+                            }
                         }
                     }
                 }
@@ -1541,7 +1543,7 @@ class UnifiNetwork extends utils.Adapter {
         }
     }
     async onNetworkLanConfEvent(event) {
-        const logPrefix = '[onNetworkWlanConfEvent]:';
+        const logPrefix = '[onNetworkLanConfEvent]:';
         try {
             if (this.config.lanConfigEnabled) {
                 this.log.debug(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);

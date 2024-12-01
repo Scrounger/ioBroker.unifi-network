@@ -66,7 +66,7 @@ export namespace client {
                 required: true,
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 },
                 readVal(val: NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: myNetworkClient): ioBroker.StateValue {
                     if (deviceOrClient.fingerprint && adapter.config.clientImageDownload) {
@@ -89,7 +89,7 @@ export namespace client {
                 name: 'base64 image',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 }
             },
             // is_guest: {
@@ -132,7 +132,7 @@ export namespace client {
                 name: 'mac address of the connected access point or switch',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 }
             },
             last_uplink_name: {
@@ -141,7 +141,7 @@ export namespace client {
                 name: 'name of the connected access point or switch',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 }
             },
             sw_port: {
@@ -150,7 +150,7 @@ export namespace client {
                 name: 'port of the connected switch',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired clients
-                    return (objValues.is_wired && objValues.type === undefined) || objValues.type === "WIRED";
+                    return (objValues?.is_wired && objValues?.type === undefined) || objValues?.type === "WIRED";
                 }
             },
             mac: {
@@ -164,7 +164,7 @@ export namespace client {
                 name: 'model name',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 },
             },
             name: {
@@ -211,7 +211,7 @@ export namespace client {
                 name: 'reconnect client',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wireless clients
-                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
+                    return (!objValues?.is_wired && objValues?.type === undefined) || objValues?.type === 'WIRELESS';
                 },
                 read: false,
                 write: true,
@@ -222,7 +222,7 @@ export namespace client {
                 name: 'remote ip',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wireless clients
-                    return objValues.type === 'VPN';
+                    return objValues?.type === 'VPN';
                 },
             },
             // remove: {
@@ -290,7 +290,7 @@ export namespace client {
                 name: 'VLAN number',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 },
             },
             wired_rate_mbps: {
@@ -300,7 +300,7 @@ export namespace client {
                 unit: 'mbps',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wired clients
-                    return (objValues.is_wired && objValues.type === undefined) || objValues.type === "WIRED";
+                    return (objValues?.is_wired && objValues?.type === undefined) || objValues?.type === "WIRED";
                 },
             },
             wifi_experience_average: {
@@ -310,7 +310,7 @@ export namespace client {
                 unit: '%',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wireless clients
-                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS'
+                    return (!objValues?.is_wired && objValues?.type === undefined) || objValues?.type === 'WIRELESS'
                 },
             },
             wifi_tx_retries_percentage: {
@@ -320,7 +320,7 @@ export namespace client {
                 unit: '%',
                 conditionToCreateState(objValues: myNetworkClient, adapter: ioBroker.Adapter): boolean {
                     // only wireless clients
-                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
+                    return (!objValues?.is_wired && objValues?.type === undefined) || objValues?.type === 'WIRELESS';
                 },
             },
         }

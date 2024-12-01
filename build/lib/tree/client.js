@@ -59,7 +59,7 @@ export var client;
                 required: true,
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 },
                 readVal(val, adapter, cache, deviceOrClient) {
                     if (deviceOrClient.fingerprint && adapter.config.clientImageDownload) {
@@ -84,7 +84,7 @@ export var client;
                 name: 'base64 image',
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 }
             },
             // is_guest: {
@@ -128,7 +128,7 @@ export var client;
                 name: 'mac address of the connected access point or switch',
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 }
             },
             last_uplink_name: {
@@ -137,7 +137,7 @@ export var client;
                 name: 'name of the connected access point or switch',
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 }
             },
             sw_port: {
@@ -146,7 +146,7 @@ export var client;
                 name: 'port of the connected switch',
                 conditionToCreateState(objValues, adapter) {
                     // only wired clients
-                    return (objValues.is_wired && objValues.type === undefined) || objValues.type === "WIRED";
+                    return (objValues?.is_wired && objValues?.type === undefined) || objValues?.type === "WIRED";
                 }
             },
             mac: {
@@ -160,7 +160,7 @@ export var client;
                 name: 'model name',
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 },
             },
             name: {
@@ -213,7 +213,7 @@ export var client;
                 name: 'reconnect client',
                 conditionToCreateState(objValues, adapter) {
                     // only wireless clients
-                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
+                    return (!objValues?.is_wired && objValues?.type === undefined) || objValues?.type === 'WIRELESS';
                 },
                 read: false,
                 write: true,
@@ -224,7 +224,7 @@ export var client;
                 name: 'remote ip',
                 conditionToCreateState(objValues, adapter) {
                     // only wireless clients
-                    return objValues.type === 'VPN';
+                    return objValues?.type === 'VPN';
                 },
             },
             // remove: {
@@ -292,7 +292,7 @@ export var client;
                 name: 'VLAN number',
                 conditionToCreateState(objValues, adapter) {
                     // only wired and wireless clients
-                    return objValues.type === undefined || objValues.type !== "VPN";
+                    return objValues?.type === undefined || objValues?.type !== "VPN";
                 },
             },
             wired_rate_mbps: {
@@ -302,7 +302,7 @@ export var client;
                 unit: 'mbps',
                 conditionToCreateState(objValues, adapter) {
                     // only wired clients
-                    return (objValues.is_wired && objValues.type === undefined) || objValues.type === "WIRED";
+                    return (objValues?.is_wired && objValues?.type === undefined) || objValues?.type === "WIRED";
                 },
             },
             wifi_experience_average: {
@@ -312,7 +312,7 @@ export var client;
                 unit: '%',
                 conditionToCreateState(objValues, adapter) {
                     // only wireless clients
-                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
+                    return (!objValues?.is_wired && objValues?.type === undefined) || objValues?.type === 'WIRELESS';
                 },
             },
             wifi_tx_retries_percentage: {
@@ -322,7 +322,7 @@ export var client;
                 unit: '%',
                 conditionToCreateState(objValues, adapter) {
                     // only wireless clients
-                    return (!objValues.is_wired && objValues.type === undefined) || objValues.type === 'WIRELESS';
+                    return (!objValues?.is_wired && objValues?.type === undefined) || objValues?.type === 'WIRELESS';
                 },
             },
         };

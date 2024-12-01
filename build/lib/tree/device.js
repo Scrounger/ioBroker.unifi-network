@@ -24,7 +24,7 @@ export var device;
                 name: 'access point is disabled',
                 conditionToCreateState(objValues, adapter) {
                     // only wireless clients
-                    return objValues.is_access_point;
+                    return objValues?.is_access_point;
                 },
                 read: false,
                 write: true,
@@ -135,7 +135,7 @@ export var device;
                 idChannel: 'ports',
                 channelName: 'port table',
                 arrayChannelIdFromProperty(objValues, i, adapter) {
-                    return `port_${myHelper.zeroPad(objValues.port_idx, 2)}`;
+                    return `port_${myHelper.zeroPad(objValues?.port_idx, 2)}`;
                 },
                 arrayChannelNameFromProperty(objValues, adapter) {
                     return objValues['name'];
@@ -159,7 +159,7 @@ export var device;
                         name: 'POE enabled',
                         conditionToCreateState(objValues, adapter) {
                             // only create state if it's a poe port
-                            return objValues.port_poe === true;
+                            return objValues?.port_poe === true;
                         },
                         valFromProperty: 'poe_mode',
                         read: true,
@@ -177,7 +177,7 @@ export var device;
                         role: 'button',
                         conditionToCreateState(objValues, adapter) {
                             // only create state if it's a poe port
-                            return objValues.port_poe === true;
+                            return objValues?.port_poe === true;
                         },
                     },
                     poe_power: {
@@ -186,7 +186,7 @@ export var device;
                         unit: 'W',
                         conditionToCreateState(objValues, adapter) {
                             // only create state if it's a poe port
-                            return objValues.port_poe === true;
+                            return objValues?.port_poe === true;
                         },
                         readVal(val, adapter, cache, deviceOrClient) {
                             return parseFloat(val);
@@ -198,7 +198,7 @@ export var device;
                         unit: 'V',
                         conditionToCreateState(objValues, adapter) {
                             // only create state if it's a poe port
-                            return objValues.port_poe === true;
+                            return objValues?.port_poe === true;
                         },
                         readVal(val, adapter, cache, deviceOrClient) {
                             return parseFloat(val);
@@ -221,7 +221,7 @@ export var device;
                         name: 'satisfaction',
                         conditionToCreateState(objValues, adapter) {
                             // only create state if it's a poe port
-                            return objValues.satisfaction >= 0 ? true : false;
+                            return objValues?.satisfaction >= 0 ? true : false;
                         },
                         unit: '%'
                     },
@@ -279,7 +279,7 @@ export var device;
                 idChannel: 'radio',
                 channelName: 'WLAN Radio',
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return myHelper.radio_nameToFrequency(objValues.name, adapter);
+                    return myHelper.radio_nameToFrequency(objValues?.name, adapter);
                 },
                 array: {
                     connected_clients: {
@@ -299,7 +299,7 @@ export var device;
                         name: 'satisfaction',
                         conditionToCreateState(objValues, adapter) {
                             // only create state if it's a poe port
-                            return objValues.satisfaction >= 0 ? true : false;
+                            return objValues?.satisfaction >= 0 ? true : false;
                         },
                         unit: '%'
                     },
@@ -310,14 +310,14 @@ export var device;
                 name: 'satisfaction',
                 conditionToCreateState(objValues, adapter) {
                     // only create state if it's a poe port
-                    return objValues.satisfaction >= 0 ? true : false;
+                    return objValues?.satisfaction >= 0 ? true : false;
                 },
                 unit: '%'
             },
             storage: {
                 channelName: 'storage',
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return objValues.name;
+                    return objValues?.name;
                 },
                 array: {
                     'mount_point': {
@@ -373,10 +373,10 @@ export var device;
             temperatures: {
                 channelName: 'temperature',
                 arrayChannelIdFromProperty(objValues, i, adapter) {
-                    return objValues.name;
+                    return objValues?.name;
                 },
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return objValues.name;
+                    return objValues?.name;
                 },
                 array: {
                     type: {
@@ -476,15 +476,15 @@ export var device;
                 idChannel: 'wlan',
                 channelName: 'WLAN Network Statistics',
                 arrayChannelIdFromProperty(objValues, i, adapter) {
-                    if (objValues.id) {
-                        return `${objValues.id}_${objValues.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
+                    if (objValues?.id) {
+                        return `${objValues?.id}_${objValues?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
                     }
                     else {
                         return undefined;
                     }
                 },
                 arrayChannelNameFromProperty(objValues, adapter) {
-                    return `${objValues.essid} - ${myHelper.radio_nameToFrequency(objValues.radio_name, adapter)}`;
+                    return `${objValues?.essid} - ${myHelper.radio_nameToFrequency(objValues?.radio_name, adapter)}`;
                 },
                 array: {
                     avg_client_signal: {
@@ -510,7 +510,7 @@ export var device;
                         iobType: 'number',
                         name: 'connected clients',
                         conditionToCreateState(objValues, adapter) {
-                            return !objValues.is_guest;
+                            return !objValues?.is_guest;
                         },
                         valFromProperty: 'num_sta',
                     },
@@ -519,7 +519,7 @@ export var device;
                         iobType: 'number',
                         name: 'connected guests',
                         conditionToCreateState(objValues, adapter) {
-                            return objValues.is_guest;
+                            return objValues?.is_guest;
                         },
                         valFromProperty: 'num_sta',
                     },
