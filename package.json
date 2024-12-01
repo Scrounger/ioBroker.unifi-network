@@ -23,7 +23,7 @@
     "node": ">= 18"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.1.6",
+    "@iobroker/adapter-core": "^3.2.2",
     "@adobe/fetch": "4.1.9",
     "ws": "8.18.0",
     "moment": "^2.30.1",

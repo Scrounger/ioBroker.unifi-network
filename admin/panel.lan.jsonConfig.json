@@ -78,7 +78,7 @@
         "dividerLanBlackListStates": {
             "newLine": true,
             "type": "header",
-            "text": "States Blacklist / Whitelist",
+            "text": "Datapoints Blacklist / Whitelist",
             "hidden": "!data.lanConfigEnabled",
             "size": 2
         },
@@ -115,7 +115,7 @@
             "items": [
                 {
                     "type": "autocompleteSendTo",
-                    "title": "${data.lanStatesIsWhiteList ? 'Choose which LAN state should be included' : 'Choose which LAN state should be excluded'}",
+                    "title": "${data.lanStatesIsWhiteList ? 'Choose which datapoint should be included' : 'Choose which datapoint should be excluded'}",
                     "attr": "id",
                     "filter": true,
                     "sort": true,

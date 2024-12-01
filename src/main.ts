@@ -325,7 +325,6 @@ class UnifiNetwork extends utils.Adapter {
 
 			if (typeof obj === 'object') {
 				if (obj.command === 'deviceList') {
-					// ToDo check instance, but not possible at the moment because of bug in jsonConfig def, see https://github.com/ioBroker/ioBroker.admin/issues/2824
 					messageHandler.device.list(obj, this, this.ufn);
 				} else if (obj.command === 'deviceStateList') {
 					messageHandler.device.stateList(obj, this, this.ufn);

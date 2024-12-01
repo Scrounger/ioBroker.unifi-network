@@ -84,7 +84,7 @@
 		"dividerDeviceBlackListStates": {
 			"newLine": true,
 			"type": "header",
-			"text": "States Blacklist / Whitelist",
+			"text": "Datapoints Blacklist / Whitelist",
 			"hidden": "!data.devicesEnabled",
 			"size": 2
 		},
@@ -121,7 +121,7 @@
 			"items": [
 				{
 					"type": "autocompleteSendTo",
-					"title": "${data.deviceStatesIsWhiteList ? 'Choose which state should be included' : 'Choose which state should be excluded'}",
+					"title": "${data.deviceStatesIsWhiteList ? 'Choose which datapoint should be included' : 'Choose which datapoint should be excluded'}",
 					"attr": "id",
 					"filter": true,
 					"sort": true,

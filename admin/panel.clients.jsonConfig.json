@@ -147,7 +147,7 @@
 		"dividerClientBlackListStates": {
 			"newLine": true,
 			"type": "header",
-			"text": "States Blacklist / Whitelist",
+			"text": "Datapoints Blacklist / Whitelist",
 			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
 			"size": 2
 		},
@@ -184,7 +184,7 @@
 			"items": [
 				{
 					"type": "autocompleteSendTo",
-					"title": "${data.clientStatesIsWhiteList ? 'Choose which client / guest / vpn state should be included' : 'Choose which client / guest / vpn state should be excluded'}",
+					"title": "${data.clientStatesIsWhiteList ? 'Choose which datapoint should be included' : 'Choose which datapoint should be excluded'}",
 					"attr": "id",
 					"filter": true,
 					"sort": true,
