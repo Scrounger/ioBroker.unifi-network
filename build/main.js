@@ -1190,7 +1190,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async createOrUpdateGenericState(channel, treeDefinition, objValues, blacklistFilter, isWhiteList, objOrg, objOrgValues, isAdapterStart = false, filterId = '') {
+    async createOrUpdateGenericState(channel, treeDefinition, objValues, blacklistFilter, isWhiteList, objOrg, objOrgValues, isAdapterStart = false, filterId = '', isChannelOnWhitelist = false) {
         const logPrefix = '[createOrUpdateGenericState]:';
         try {
             if (this.connected && this.isConnected) {
@@ -1217,7 +1217,7 @@ class UnifiNetwork extends utils.Adapter {
                                 stateId = treeDefinition[key].id;
                             }
                             logMsgState = `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
-                            if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${stateId}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${stateId}` })) || Object.hasOwn(treeDefinition[key], 'required')) {
+                            if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${stateId}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${stateId}` })) || isChannelOnWhitelist || Object.hasOwn(treeDefinition[key], 'required')) {
                                 if (!await this.objectExists(`${channel}.${stateId}`)) {
                                     // create State
                                     this.log.silly(`${logPrefix} ${objOrg?.name} - creating state '${logMsgState}'`);
@@ -1283,9 +1283,11 @@ class UnifiNetwork extends utils.Adapter {
                             if (Object.hasOwn(treeDefinition[key], 'object') && Object.hasOwn(objValues, key)) {
                                 const idChannelAppendix = Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key;
                                 const idChannel = `${channel}.${idChannelAppendix}`;
-                                if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || Object.hasOwn(treeDefinition[key], 'required')) {
+                                if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, (x) => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeDefinition[key], 'required')) {
+                                    // check if the whole channel is on whitelist
+                                    isChannelOnWhitelist = isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` });
                                     await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-                                    await this.createOrUpdateGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objOrg, objOrgValues[key], isAdapterStart, `${filterId}${idChannelAppendix}.`);
+                                    await this.createOrUpdateGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objOrg, objOrgValues[key], isAdapterStart, `${filterId}${idChannelAppendix}.`, isChannelOnWhitelist);
                                 }
                                 else {
                                     // channel is on blacklist
@@ -1300,9 +1302,11 @@ class UnifiNetwork extends utils.Adapter {
                                 if (objValues[key] !== null && objValues[key].length > 0) {
                                     const idChannelAppendix = Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key;
                                     const idChannel = `${channel}.${idChannelAppendix}`;
-                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || Object.hasOwn(treeDefinition[key], 'required')) {
+                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, (x) => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeDefinition[key], 'required')) {
                                         await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
                                         const arrayNumberAdd = Object.hasOwn(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0;
+                                        // check if the whole channel is on whitelist
+                                        isChannelOnWhitelist = isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` });
                                         for (let i = 0; i <= objValues[key].length - 1; i++) {
                                             let nr = i + arrayNumberAdd;
                                             if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
@@ -1315,7 +1319,7 @@ class UnifiNetwork extends utils.Adapter {
                                                 }
                                                 if (idChannelArray !== undefined) {
                                                     await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
-                                                    await this.createOrUpdateGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objOrg, objOrgValues[key][i], true, `${filterId}${idChannelAppendix}.`);
+                                                    await this.createOrUpdateGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objOrg, objOrgValues[key][i], true, `${filterId}${idChannelAppendix}.`, isChannelOnWhitelist);
                                                 }
                                             }
                                         }

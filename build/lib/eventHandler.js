@@ -186,7 +186,7 @@ export const eventHandler = {
                     if (await adapter.objectExists(id)) {
                         await adapter.setState(id, false, true);
                     }
-                    adapter.log.info(`${logPrefix} vpn client '${cache?.vpn[data.ip]?.name}' 'disconnected' (ip: ${cache?.vpn[data.ip].ip}, remote_ip: ${cache?.vpn[data.ip].remote_ip})`);
+                    adapter.log.info(`${logPrefix} vpn client '${cache?.vpn[data.ip]?.name}' 'disconnected' (ip: ${cache?.vpn[data.ip]?.ip}, remote_ip: ${cache?.vpn[data.ip]?.remote_ip})`);
                 }
                 else {
                     adapter.log.warn(`${logPrefix} event 'vpn disconnected' has no ip address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
