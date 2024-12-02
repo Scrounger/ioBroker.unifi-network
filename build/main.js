@@ -7,6 +7,7 @@ import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
 import { FetchError, context } from '@adobe/fetch';
 import _ from 'lodash';
+import url from "node:url";
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
 import { apiCommands } from './lib/api/network-command.js';
@@ -1574,5 +1575,13 @@ class UnifiNetwork extends utils.Adapter {
         }
     }
 }
-// otherwise start the instance directly
-(() => new UnifiNetwork())();
+// replace only needed for dev system
+const modulePath = url.fileURLToPath(import.meta.url).replace('/development/', '/node_modules/');
+if (process.argv[1] === modulePath) {
+    // start the instance directly
+    new UnifiNetwork();
+}
+export default function startAdapter(options) {
+    // compact mode
+    return new UnifiNetwork(options);
+}
