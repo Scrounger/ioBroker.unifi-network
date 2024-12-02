@@ -62,8 +62,8 @@ declare class UnifiNetwork extends utils.Adapter {
      * @deprecated Download public data from ui with image url infos.
      */
     updateDevicesImages(): Promise<void>;
-    updateClientsImages(): Promise<void>;
-    _updateClientsImages(clients: Record<string, ioBroker.State>): Promise<void>;
+    updateImages(): Promise<void>;
+    _updateClientsImages(objs: Record<string, ioBroker.State>): Promise<void>;
     /**
      * Download image from a given url and update Channel icon if needed
      * @param url

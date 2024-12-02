@@ -510,7 +510,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			// this.log.warn(JSON.stringify(list));
 
-			// this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
+			this.imageUpdateTimeout = this.setTimeout(() => { this.updateImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1171,10 +1171,15 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateClientsImages() {
-		const logPrefix = '[updateClientsImages]:';
+	async updateImages() {
+		const logPrefix = '[updateImages]:';
 
 		try {
+			if (this.config.deviceImageDownload) {
+				const clients = await this.getStatesAsync(`${tree.device.idChannel}.*.imageUrl`);
+				await this._updateClientsImages(clients)
+			}
+
 			if (this.config.clientImageDownload) {
 
 				if (this.config.clientsEnabled) {
@@ -1192,14 +1197,14 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async _updateClientsImages(clients: Record<string, ioBroker.State>) {
+	async _updateClientsImages(objs: Record<string, ioBroker.State>) {
 		const logPrefix = '[_updateClientsImages]:';
 
 		try {
 			let imgCache: myImgCache = {}
 
-			for (const id in clients) {
-				const url = clients[id];
+			for (const id in objs) {
+				const url = objs[id];
 
 				if (url && url.val) {
 					if (imgCache[url.val as string]) {
@@ -1239,8 +1244,6 @@ class UnifiNetwork extends utils.Adapter {
 					base64ImgString = `data:image/png;base64,` + imageBase64;
 
 					this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
-
-
 				} else {
 					this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
 				}

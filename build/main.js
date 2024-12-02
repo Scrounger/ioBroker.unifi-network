@@ -451,7 +451,7 @@ class UnifiNetwork extends utils.Adapter {
             // 	list.push({ id: id });
             // }
             // this.log.warn(JSON.stringify(list));
-            // this.imageUpdateTimeout = this.setTimeout(() => { this.updateClientsImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
+            this.imageUpdateTimeout = this.setTimeout(() => { this.updateImages(); }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1021,9 +1021,13 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateClientsImages() {
-        const logPrefix = '[updateClientsImages]:';
+    async updateImages() {
+        const logPrefix = '[updateImages]:';
         try {
+            if (this.config.deviceImageDownload) {
+                const clients = await this.getStatesAsync(`${tree.device.idChannel}.*.imageUrl`);
+                await this._updateClientsImages(clients);
+            }
             if (this.config.clientImageDownload) {
                 if (this.config.clientsEnabled) {
                     const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.imageUrl`);
@@ -1039,12 +1043,12 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async _updateClientsImages(clients) {
+    async _updateClientsImages(objs) {
         const logPrefix = '[_updateClientsImages]:';
         try {
             let imgCache = {};
-            for (const id in clients) {
-                const url = clients[id];
+            for (const id in objs) {
+                const url = objs[id];
                 if (url && url.val) {
                     if (imgCache[url.val]) {
                         imgCache[url.val].push(myHelper.getIdWithoutLastPart(id));
