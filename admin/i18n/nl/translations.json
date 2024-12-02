@@ -109,5 +109,21 @@
     "Choose which LAN should be excluded": "Kies welk LAN moet worden uitgesloten",
     "Choose which WLAN should be included": "Kies welk WLAN moet worden opgenomen",
     "Choose which WLAN should be excluded": "Kies welk WLAN moet worden uitgesloten",
-    "Datapoints Blacklist / Whitelist": "Datapunten zwarte lijst / witte lijst"
+    "Datapoints Blacklist / Whitelist": "Datapunten zwarte lijst / witte lijst",
+    "internet service provider": "internetprovider",
+    "speed test download rate": "snelheidstest downloadsnelheid",
+    "speed test upload rate": "uploadsnelheid van de snelheidstest",
+    "internet ip address": "internet ip-adres",
+    "city": "stad",
+    "country": "land",
+    "provider name": "naam van de aanbieder",
+    "provider organization": "aanbieder organisatie",
+    "availability": "beschikbaarheid",
+    "current download rate": "huidige downloadsnelheid",
+    "current upload rate": "huidige uploadsnelheid",
+    "run speedtest": "snelheidstest uitvoeren",
+    "latency": "latentie",
+    "average client signal": "gemiddeld klantsignaal",
+    "channel frequency": "kanaal frequentie",
+    "is guest wlan": "is gastwlan"
 }

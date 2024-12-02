@@ -109,5 +109,21 @@
     "Choose which LAN should be excluded": "Escolha qual LAN deve ser excluída",
     "Choose which WLAN should be included": "Escolha qual WLAN deve ser incluída",
     "Choose which WLAN should be excluded": "Escolha qual WLAN deve ser excluída",
-    "Datapoints Blacklist / Whitelist": "Lista negra/lista branca de pontos de dados"
+    "Datapoints Blacklist / Whitelist": "Lista negra/lista branca de pontos de dados",
+    "internet service provider": "provedor de internet",
+    "speed test download rate": "taxa de download de teste de velocidade",
+    "speed test upload rate": "taxa de upload de teste de velocidade",
+    "internet ip address": "endereço IP da internet",
+    "city": "cidade",
+    "country": "país",
+    "provider name": "nome do provedor",
+    "provider organization": "organização fornecedora",
+    "availability": "disponibilidade",
+    "current download rate": "taxa de download atual",
+    "current upload rate": "taxa de upload atual",
+    "run speedtest": "executar teste de velocidade",
+    "latency": "latência",
+    "average client signal": "sinal médio do cliente",
+    "channel frequency": "frequência do canal",
+    "is guest wlan": "é o convidado wlan"
 }

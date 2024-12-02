@@ -109,5 +109,21 @@
     "Choose which LAN should be excluded": "Виберіть, яку локальну мережу потрібно виключити",
     "Choose which WLAN should be included": "Виберіть, яку WLAN потрібно включити",
     "Choose which WLAN should be excluded": "Виберіть, яку WLAN потрібно виключити",
-    "Datapoints Blacklist / Whitelist": "Чорний / білий список точок даних"
+    "Datapoints Blacklist / Whitelist": "Чорний / білий список точок даних",
+    "internet service provider": "Інтернет-провайдер",
+    "speed test download rate": "тест швидкості швидкість завантаження",
+    "speed test upload rate": "тест швидкості завантаження",
+    "internet ip address": "ip-адреса Інтернету",
+    "city": "місто",
+    "country": "країна",
+    "provider name": "ім'я провайдера",
+    "provider organization": "організація-провайдер",
+    "availability": "наявність",
+    "current download rate": "поточна швидкість завантаження",
+    "current upload rate": "поточна швидкість завантаження",
+    "run speedtest": "запустити спідтест",
+    "latency": "затримка",
+    "average client signal": "середній сигнал клієнта",
+    "channel frequency": "частота каналу",
+    "is guest wlan": "є гостьовою мережею WLAN"
 }

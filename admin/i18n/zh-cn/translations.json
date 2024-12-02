@@ -109,5 +109,21 @@
     "Choose which LAN should be excluded": "选择应排除的 LAN",
     "Choose which WLAN should be included": "选择应包含哪个 WLAN",
     "Choose which WLAN should be excluded": "选择应排除的 WLAN",
-    "Datapoints Blacklist / Whitelist": "数据点黑名单/白名单"
+    "Datapoints Blacklist / Whitelist": "数据点黑名单/白名单",
+    "internet service provider": "互联网服务提供商",
+    "speed test download rate": "速度测试下载速率",
+    "speed test upload rate": "速度测试上传速率",
+    "internet ip address": "互联网 IP 地址",
+    "city": "城市",
+    "country": "国家",
+    "provider name": "提供商名称",
+    "provider organization": "提供者组织",
+    "availability": "可用性",
+    "current download rate": "当前下载速率",
+    "current upload rate": "当前上传速率",
+    "run speedtest": "运行速度测试",
+    "latency": "延迟",
+    "average client signal": "平均客户信号",
+    "channel frequency": "频道频率",
+    "is guest wlan": "是访客 WLAN"
 }

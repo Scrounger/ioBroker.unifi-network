@@ -109,5 +109,21 @@
     "Choose which LAN should be excluded": "Выберите, какую локальную сеть следует исключить",
     "Choose which WLAN should be included": "Выберите, какой WLAN следует включить",
     "Choose which WLAN should be excluded": "Выберите, какую сеть WLAN следует исключить",
-    "Datapoints Blacklist / Whitelist": "Черный список/белый список точек данных"
+    "Datapoints Blacklist / Whitelist": "Черный список/белый список точек данных",
+    "internet service provider": "интернет-провайдер",
+    "speed test download rate": "скорость загрузки теста скорости",
+    "speed test upload rate": "скорость загрузки теста скорости",
+    "internet ip address": "IP-адрес в Интернете",
+    "city": "город",
+    "country": "страна",
+    "provider name": "имя провайдера",
+    "provider organization": "организация-поставщик",
+    "availability": "доступность",
+    "current download rate": "текущая скорость загрузки",
+    "current upload rate": "текущая скорость загрузки",
+    "run speedtest": "запустить тест скорости",
+    "latency": "задержка",
+    "average client signal": "средний сигнал клиента",
+    "channel frequency": "частота канала",
+    "is guest wlan": "гостевой WLAN"
 }

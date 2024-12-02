@@ -499,7 +499,7 @@ export var device;
                     channel_name: {
                         id: 'channel_frequency',
                         iobType: 'string',
-                        name: 'channel name',
+                        name: 'channel frequency',
                         valFromProperty: 'radio_name',
                         readVal(val, adapter, cache, deviceOrClient) {
                             return myHelper.radio_nameToFrequency(val, adapter);
