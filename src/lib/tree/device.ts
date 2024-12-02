@@ -570,8 +570,8 @@ export namespace device {
                 }
             },
             active_geo_info: {
-                idChannel: 'internet',
-                channelName: 'Internet statistics',
+                idChannel: 'isp',
+                channelName: 'internet service provider',
                 object: {
                     WAN: {
                         idChannel: 'wan1',
@@ -586,8 +586,8 @@ export namespace device {
                 }
             },
             uptime_stats: {
-                idChannel: 'internet',
-                channelName: 'Internet statistics',
+                idChannel: 'isp',
+                channelName: 'internet service provider',
                 object: {
                     WAN: {
                         idChannel: 'wan1',
@@ -602,12 +602,12 @@ export namespace device {
                 }
             },
             wan1: {
-                idChannel: 'internet.wan1',
+                idChannel: 'wan1',
                 channelName: 'WAN 1',
                 object: _WAN_PROPERTIES
             },
             wan2: {
-                idChannel: 'internet.wan2',
+                idChannel: 'wan2',
                 channelName: 'WAN 2',
                 object: _WAN_PROPERTIES
             }
@@ -717,17 +717,28 @@ export namespace device {
 
     const _WAN_GEO_INFO_PROPERTIES: { [key: string]: myCommonState } = {
         address: {
-            id: 'isp_ip',
+            id: 'ip',
             iobType: 'string',
             name: 'internet ip address',
         },
-        isp_name: {
+        city: {
             iobType: 'string',
-            name: 'internet service provider name'
+            name: 'city',
+        },
+        country_name: {
+            id: 'country',
+            iobType: 'string',
+            name: 'country',
+        },
+        isp_name: {
+            id: 'name',
+            iobType: 'string',
+            name: 'provider name'
         },
         isp_organization: {
+            id: 'organization',
             iobType: 'string',
-            name: 'internet service provider organization'
+            name: 'provider organization'
         }
     }
 }

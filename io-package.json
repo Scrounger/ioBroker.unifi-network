@@ -135,7 +135,7 @@
                 "id": "ip"
             },
             {
-                "id": "internet"
+                "id": "isp"
             },
             {
                 "id": "led_override"
@@ -190,6 +190,12 @@
             },
             {
                 "id": "uptime"
+            },
+            {
+                "id": "wan1"
+            },
+            {
+                "id": "wan2"
             },
             {
                 "id": "wlan"

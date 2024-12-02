@@ -62,7 +62,7 @@ export const eventHandler = {
                         adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
 
                         if (wan) {
-                            const idChannel = `${tree.device.idChannel}.${mac}.internet.${wan}`;
+                            const idChannel = `${tree.device.idChannel}.${mac}.${wan}`;
 
 
                             if (await adapter.objectExists(`${idChannel}.speedtest_download`)) {

@@ -225,10 +225,10 @@ class UnifiNetwork extends utils.Adapter {
                             if (res)
                                 this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
                         }
-                        else if (id.includes('internet.wan')) {
+                        else if (id.includes('wan')) {
                             if (myHelper.getIdLastPart(id) === 'speedtest_run') {
                                 const wan_interface = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
-                                const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+                                const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
                                 const interface_name = this.cache.devices[mac][wan_interface].ifname;
                                 const res = await apiCommands.devices.runSpeedtest(this.ufn, interface_name);
                                 if (res)
