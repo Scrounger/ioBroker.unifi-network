@@ -478,6 +478,7 @@ export namespace device {
                 iobType: 'number',
                 name: 'uptime',
                 unit: 's',
+                required: true
             },
             vap_table: {
                 idChannel: 'wlan',

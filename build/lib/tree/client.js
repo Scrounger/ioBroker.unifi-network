@@ -285,6 +285,7 @@ export var client;
                 iobType: 'number',
                 name: 'uptime',
                 unit: 's',
+                required: true,
             },
             vlan: {
                 id: 'network_vlan',
