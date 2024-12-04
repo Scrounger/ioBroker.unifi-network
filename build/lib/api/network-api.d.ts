@@ -123,6 +123,7 @@ export declare class NetworkApi extends EventEmitter {
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;
+    wsSendPing(): void;
 }
 export declare enum ApiEndpoints {
     login = "login",

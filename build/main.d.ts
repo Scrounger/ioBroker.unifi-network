@@ -9,12 +9,14 @@ declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi;
     isConnected: boolean;
     aliveTimeout: ioBroker.Timeout | undefined;
+    pingTimeout: ioBroker.Timeout | undefined;
     aliveTimestamp: number;
     imageUpdateTimeout: ioBroker.Timeout;
     connectionRetries: number;
     cache: myCache;
     subscribedList: string[];
     eventListener: (event: NetworkEvent) => Promise<void>;
+    pongListener: () => Promise<void>;
     fetch: typeof import("@adobe/fetch").fetch;
     eventsToIngnore: string[];
     constructor(options?: Partial<utils.AdapterOptions>);
@@ -47,6 +49,10 @@ declare class UnifiNetwork extends utils.Adapter {
      * @param {boolean} isConnected
      */
     setConnectionStatus(isConnected: boolean): Promise<void>;
+    /**
+     * send websocket ping
+     */
+    sendPing(): Promise<void>;
     updateRealTimeApiData(): Promise<void>;
     updateApiData(): Promise<void>;
     updateDevices(data?: NetworkDevice[] | null, isAdapterStart?: boolean): Promise<void>;
@@ -96,6 +102,10 @@ declare class UnifiNetwork extends utils.Adapter {
     getCommonGenericState(id: string, treeDefinition: {
         [key: string]: myCommonState;
     }, objOrg: any, logMsgState: string): Promise<ioBroker.StateCommon>;
+    /**
+     * Websocket pong received, sets the aliveTimestamp to the current timestamp
+     */
+    onPongMessage(): Promise<void>;
     onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest): Promise<void>;
     onNetworkEvent(event: NetworkEvent): Promise<void>;
     onNetworkClientEvent(events: NetworkEventClient): Promise<void>;

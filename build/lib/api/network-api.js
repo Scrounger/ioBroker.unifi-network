@@ -626,10 +626,25 @@ export class NetworkApi extends EventEmitter {
             // Process messages as they come in.
             ws.on('message', messageHandler = (data) => {
                 try {
+                    if (data.toString().toLowerCase() === 'pong') {
+                        this.log.warn('PONG');
+                    }
+                    if (data.toString() === 'pong') {
+                        this.log.warn('PONG');
+                    }
                     const event = JSON.parse(data.toString());
                     if (event) {
                         this.emit("message", event);
                     }
+                }
+                catch (error) {
+                    this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+                }
+            });
+            ws.on('pong', messageHandler = (data) => {
+                try {
+                    this.emit("pong");
+                    this.log.silly ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
                 }
                 catch (error) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
@@ -642,6 +657,16 @@ export class NetworkApi extends EventEmitter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
         return true;
+    }
+    wsSendPing() {
+        const logPrefix = `[${this.logPrefix}.wsSendPing]`;
+        try {
+            this._eventsWs.ping();
+            this.log.silly ? this.log.silly(`ping sent`) : this.log.debug(`ping sent`);
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
     }
 }
 export var ApiEndpoints;

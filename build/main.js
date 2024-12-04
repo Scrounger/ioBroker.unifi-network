@@ -23,6 +23,7 @@ class UnifiNetwork extends utils.Adapter {
     ufn = undefined;
     isConnected = false;
     aliveTimeout = undefined;
+    pingTimeout = undefined;
     aliveTimestamp = moment().valueOf();
     imageUpdateTimeout;
     connectionRetries = 0;
@@ -37,6 +38,7 @@ class UnifiNetwork extends utils.Adapter {
     };
     subscribedList = [];
     eventListener = (event) => this.onNetworkMessage(event);
+    pongListener = () => this.onPongMessage();
     fetch = context({
         alpnProtocols: ["h2" /* ALPNProtocol.ALPN_HTTP2 */],
         rejectUnauthorized: false,
@@ -73,6 +75,7 @@ class UnifiNetwork extends utils.Adapter {
                 this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this.log);
                 await this.establishConnection();
                 this.ufn.on('message', this.eventListener);
+                this.ufn.on('pong', this.pongListener);
                 this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
             }
             else {
@@ -90,7 +93,9 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onUnload]:';
         try {
             this.removeListener('message', this.eventListener);
+            this.removeListener('pong', this.pongListener);
             this.clearTimeout(this.aliveTimeout);
+            this.clearTimeout(this.pingTimeout);
             this.clearTimeout(this.imageUpdateTimeout);
             if (this.ufn) {
                 this.ufn.logout();
@@ -330,10 +335,17 @@ class UnifiNetwork extends utils.Adapter {
     async establishConnection() {
         const logPrefix = '[establishConnection]:';
         try {
+            if (this.pingTimeout) {
+                this.clearTimeout(this.pingTimeout);
+                this.pingTimeout = null;
+            }
             if (await this.login()) {
                 await this.updateRealTimeApiData();
                 await this.updateIsOnlineState(true);
                 await this.updateApiData();
+                this.pingTimeout = this.setTimeout(() => {
+                    this.sendPing();
+                }, ((this.config.expertAliveInterval || 30) / 2) * 1000);
             }
             // start the alive checker
             if (this.aliveTimeout) {
@@ -386,7 +398,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const diff = Math.round((moment().valueOf() - this.aliveTimestamp) / 1000);
                 if (diff >= (this.config.expertAliveInterval || 30)) {
-                    this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries})`);
+                    this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries}, no data since ${diff}s)`);
                     this.ufn.logout();
                     await this.setConnectionStatus(false);
                     if (this.connectionRetries < (this.config.expertConnectionMaxRetries || 200)) {
@@ -426,6 +438,25 @@ class UnifiNetwork extends utils.Adapter {
         try {
             this.isConnected = isConnected;
             await this.setState('info.connection', isConnected, true);
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    /**
+     * send websocket ping
+     */
+    async sendPing() {
+        const logPrefix = '[sendPing]:';
+        try {
+            this.ufn.wsSendPing();
+            if (this.pingTimeout) {
+                this.clearTimeout(this.pingTimeout);
+                this.pingTimeout = null;
+            }
+            this.pingTimeout = this.setTimeout(() => {
+                this.sendPing();
+            }, ((this.config.expertAliveInterval || 30) / 2) * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -767,7 +798,6 @@ class UnifiNetwork extends utils.Adapter {
                     // isOnline not changed between now an last reported last_seen val
                     const diff = now.diff(before, 'seconds');
                     await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
-                    //ToDo: Debug log message inkl. name, mac, ip
                     if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
                         this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${before.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
                     }
@@ -1389,6 +1419,19 @@ class UnifiNetwork extends utils.Adapter {
     }
     //#endregion
     //#region WS Listener
+    /**
+     * Websocket pong received, sets the aliveTimestamp to the current timestamp
+     */
+    async onPongMessage() {
+        const logPrefix = '[onPongMessage]:';
+        try {
+            this.aliveTimestamp = moment().valueOf();
+            this.log.silly('ping pong');
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
     async onNetworkMessage(event) {
         const logPrefix = '[onNetworkMessage]:';
         try {
