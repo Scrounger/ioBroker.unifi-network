@@ -4,6 +4,7 @@ import { EventEmitter } from 'node:events';
 import WebSocket from 'ws';
 // API imports
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-settings.js';
+import { reportInterval } from './network-types-report-stats.js';
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     // private adapter: ioBroker.Adapter;
@@ -510,6 +511,69 @@ export class NetworkApi extends EventEmitter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
         return false;
+    }
+    /**
+     * get statistics for site, gateway, switches or access points
+     * @param type report type @see reportType
+     * @param interval report interval @see reportInterval
+     * @param attrs filter by attributes @see NetworkReportStats
+     * @param mac filter by mac
+     * @param start repot start timestamp
+     * @param end report end timestamp
+     * @returns
+     */
+    async getReportStats(type, interval, attrs = undefined, mac = undefined, start = undefined, end = undefined) {
+        const logPrefix = `[${this.logPrefix}.getReportStats]`;
+        try {
+            const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/api/s/${this.site}/stat/report/${interval}.${type}`;
+            if (!end) {
+                end = Date.now();
+            }
+            if (!start) {
+                if (interval === reportInterval['5minutes']) {
+                    // 5 minutes: default 1h
+                    start = end - (1 * 3600 * 1000);
+                }
+                else if (interval === reportInterval.hourly) {
+                    // hourly: default 24h
+                    start = end - (7 * 24 * 3600 * 1000);
+                }
+                else if (interval === reportInterval.daily) {
+                    // daily: default 1 week
+                    start = end - (1 * 7 * 24 * 3600 * 1000);
+                }
+                else {
+                    // monthly: default 26 weeks
+                    start = end - (26 * 7 * 24 * 3600 * 1000);
+                }
+            }
+            if (!attrs) {
+                attrs = ['time'];
+            }
+            else if (attrs !== 'ALL') {
+                attrs = ['time', ...attrs];
+            }
+            else {
+                attrs = ['bytes', 'cpu', 'lan-num_sta', 'mem', 'num_sta', 'rx_bytes', 'time', 'tx_bytes', 'wan-rx_bytes', 'wan-tx_bytes', 'wlan-num_sta', 'wlan_bytes'];
+            }
+            const payload = {
+                attrs: attrs,
+                start,
+                end,
+                mac: mac
+            };
+            const res = await this.retrievData(url, {
+                method: 'POST',
+                body: payload
+            });
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
     }
     getApiEndpoint(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api

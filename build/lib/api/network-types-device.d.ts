@@ -161,6 +161,7 @@ export interface NetworkDevice {
     start_connected_millis: number;
     start_disconnected_millis: number;
     startup_timestamp: number;
+    stat?: NetworkDeviceStat;
     state: number;
     storage?: NetworkDeviceStorage[];
     stp_priority?: string;
@@ -896,5 +897,21 @@ export interface NetworkDeviceStorage {
     size: number;
     type: string;
     used: number;
+}
+export interface NetworkDeviceStat {
+    sw?: NetworkDeviceStatSwitch;
+    gw?: NetworkDeviceStatGateway;
+}
+export interface NetworkDeviceStatSwitch {
+    duration: number;
+    rx_bytes: number;
+    tx_bytes: number;
+}
+export interface NetworkDeviceStatGateway {
+    duration: number;
+    "wan-rx_bytes": number;
+    "wan-tx_bytes": number;
+    "wan2-rx_bytes": number;
+    "wan2-tx_bytes": number;
 }
 export {};

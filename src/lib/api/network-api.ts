@@ -12,6 +12,7 @@ import { NetworkDeviceModels } from './network-types-device-models.js'
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
+import { NetworkReportStats, reportInterval, reportType } from './network-types-report-stats.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -672,6 +673,73 @@ export class NetworkApi extends EventEmitter {
         }
 
         return false;
+    }
+
+    /**
+     * get statistics for site, gateway, switches or access points
+     * @param type report type @see reportType
+     * @param interval report interval @see reportInterval
+     * @param attrs filter by attributes @see NetworkReportStats
+     * @param mac filter by mac
+     * @param start repot start timestamp
+     * @param end report end timestamp
+     * @returns 
+     */
+    public async getReportStats(type: reportType, interval: reportInterval, attrs: (keyof NetworkReportStats)[] | 'ALL' = undefined, mac: string = undefined, start: number = undefined, end: number = undefined): Promise<NetworkReportStats[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getReportStats]`
+
+        try {
+            const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/api/s/${this.site}/stat/report/${interval}.${type}`;
+
+            if (!end) {
+                end = Date.now()
+            }
+
+            if (!start) {
+                if (interval === reportInterval['5minutes']) {
+                    // 5 minutes: default 1h
+                    start = end - (1 * 3600 * 1000);
+                } else if (interval === reportInterval.hourly) {
+                    // hourly: default 24h
+                    start = end - (7 * 24 * 3600 * 1000);
+                } else if (interval === reportInterval.daily) {
+                    // daily: default 1 week
+                    start = end - (1 * 7 * 24 * 3600 * 1000);
+                } else {
+                    // monthly: default 26 weeks
+                    start = end - (26 * 7 * 24 * 3600 * 1000);
+                }
+            }
+
+            if (!attrs) {
+                attrs = ['time']
+            } else if (attrs !== 'ALL') {
+                attrs = ['time', ...attrs];
+            } else {
+                attrs = ['bytes', 'cpu', 'lan-num_sta', 'mem', 'num_sta', 'rx_bytes', 'time', 'tx_bytes', 'wan-rx_bytes', 'wan-tx_bytes', 'wlan-num_sta', 'wlan_bytes']
+            }
+
+            const payload = {
+                attrs: attrs,
+                start,
+                end,
+                mac: mac
+            };
+
+            const res = await this.retrievData(url, {
+                method: 'POST',
+                body: payload
+            });
+
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
     }
 
     public getApiEndpoint(endpoint: ApiEndpoints): string {
