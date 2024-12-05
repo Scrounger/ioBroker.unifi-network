@@ -315,7 +315,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getDevices]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.devices)}${mac ? `/${mac.trim()}` : ''}`);
-            if (res && res.data) {
+            if (res && res.data && res.data.length > 0) {
                 return res.data;
             }
         }
@@ -333,7 +333,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getDevices_V2]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.devices)}?separateUnmanaged=${separateUnmanaged}&includeTrafficUsage=${includeTrafficUsage}`);
-            if (res) {
+            if (res && res.length > 0) {
                 return res;
             }
         }
@@ -350,7 +350,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getClientsActive]`;
         try {
             const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.clientsActive));
-            if (res && res.data) {
+            if (res && res.data && res.data.length > 0) {
                 return res.data;
             }
         }
@@ -368,7 +368,7 @@ export class NetworkApi extends EventEmitter {
         try {
             const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}${mac ? `/${mac}` : ''}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`;
             const res = await this.retrievData(url);
-            if (res) {
+            if (res && res.length > 0) {
                 return res;
             }
         }
@@ -385,7 +385,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getClients]`;
         try {
             const res = await this.retrievData(this.getApiEndpoint(ApiEndpoints.clients));
-            if (res && res.data) {
+            if (res && res.data && res.data.length > 0) {
                 return res.data;
             }
         }
@@ -403,7 +403,7 @@ export class NetworkApi extends EventEmitter {
         try {
             const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsHistory)}?includeUnifiDevices=${includeUnifiDevices}&withinHours=${withinHour}`;
             const res = await this.retrievData(url);
-            if (res) {
+            if (res && res.length > 0) {
                 return res;
             }
         }
@@ -421,7 +421,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.wlanConfig)}${wlan_id ? `/${wlan_id.trim()}` : ''}`);
-            if (res && res.data) {
+            if (res && res.data && res.data.length > 0) {
                 return res.data;
             }
         }
@@ -438,7 +438,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.wlanConfig)}`);
-            if (res) {
+            if (res && res.length > 0) {
                 return res;
             }
         }
@@ -456,7 +456,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getLanConfig]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.lanConfig)}${network_id ? `/${network_id.trim()}` : ''}`);
-            if (res && res.data) {
+            if (res && res.data && res.data.length > 0) {
                 return res.data;
             }
         }
@@ -473,7 +473,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getLanConfig_V2]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.lanConfig)}`);
-            if (res) {
+            if (res && res.length > 0) {
                 return res;
             }
         }
@@ -490,7 +490,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.models)}${model ? `/${model}` : ''}`);
-            if (res && res.model_list) {
+            if (res && res.model_list && res.model_list.length > 0) {
                 return res.model_list;
             }
         }
