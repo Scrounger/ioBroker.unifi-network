@@ -70,6 +70,9 @@
         "connectionType": "local",
         "dataSource": "push",
         "messagebox": true,
+        "localLinks": {
+            "_default": "https://%host%:%port%"
+        },
         "adminUI": {
             "config": "json"
         },

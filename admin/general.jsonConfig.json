@@ -29,6 +29,13 @@
             "type": "number",
             "label": "port",
             "disabled": "data.isUnifiOs",
+            "onChange": {
+                "alsoDependsOn": [
+                    "isUnifiOs"
+                ],
+                "calculateFunc": "data.isUnifiOs ? 443 : data.port",
+                "ignoreOwnChanges": true
+            },
             "min": 0,
             "sm": 12,
             "md": 3
