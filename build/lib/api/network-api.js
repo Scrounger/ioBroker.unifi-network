@@ -4,7 +4,8 @@ import { EventEmitter } from 'node:events';
 import WebSocket from 'ws';
 // API imports
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-settings.js';
-import { reportInterval } from './network-types-report-stats.js';
+import { NetworkReportInterval } from './network-types-report-stats.js';
+import { SystemLogType } from './network-types-system-log.js';
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     // private adapter: ioBroker.Adapter;
@@ -530,15 +531,15 @@ export class NetworkApi extends EventEmitter {
                 end = Date.now();
             }
             if (!start) {
-                if (interval === reportInterval['5minutes']) {
+                if (interval === NetworkReportInterval['5minutes']) {
                     // 5 minutes: default 1h
                     start = end - (1 * 3600 * 1000);
                 }
-                else if (interval === reportInterval.hourly) {
+                else if (interval === NetworkReportInterval.hourly) {
                     // hourly: default 24h
                     start = end - (7 * 24 * 3600 * 1000);
                 }
-                else if (interval === reportInterval.daily) {
+                else if (interval === NetworkReportInterval.daily) {
                     // daily: default 1 week
                     start = end - (1 * 7 * 24 * 3600 * 1000);
                 }
@@ -568,6 +569,61 @@ export class NetworkApi extends EventEmitter {
             });
             if (res && res.data && res.data.length > 0) {
                 return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    async getSystemLog(type, page_number = 0, pages_size = 10, start = undefined, end = undefined, macs = undefined) {
+        const logPrefix = `[${this.logPrefix}.getSystemLog]`;
+        try {
+            const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/v2/api/site/${this.site}/system-log/${type}`;
+            this.log.warn(url);
+            if (!end) {
+                end = Date.now();
+            }
+            if (!start) {
+                // default: 1 day
+                start = end - (1 * 24 * 3600 * 1000);
+            }
+            const payload = {
+                timestampFrom: start,
+                timestampTo: end,
+                pageNumber: page_number,
+                pageSize: pages_size
+            };
+            if (type === SystemLogType.critical) {
+                payload['nextAiCategory'] = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
+            }
+            else if (type === SystemLogType.devices) {
+                if (!macs)
+                    payload['macs'] = macs;
+            }
+            else if (type === SystemLogType.admin) {
+                payload['activity_keys'] = ['ACCESSED_NETWORK_WEB', 'ACCESSED_NETWORK_IOS', 'ACCESSED_NETWORK_ANDROID'];
+                payload['change_keys'] = ['CLIENT', 'DEVICE', 'HOTSPOT', 'INTERNET', 'NETWORK', 'PROFILE', 'ROUTING', 'SECURITY', 'SYSTEM', 'VPN', 'WIFI'];
+            }
+            else if (type === SystemLogType.updates) {
+                payload['systemLogDeviceTypes'] = ['GATEWAYS', 'SWITCHES', 'ACCESS_POINT', 'SMART_POWER', 'BUILDING_TO_BUILDING_BRIDGES', 'UNIFI_LTE'];
+            }
+            else if (type === SystemLogType.clients) {
+                payload['clientType'] = ['GUEST', 'TELEPORT', 'VPN', 'WIRELESS', 'RADIUS', 'WIRED'];
+                payload['guestAuthorizationMethod'] = ['FACEBOOK_SOCIAL_GATEWAY', 'FREE_TRIAL', 'GOOGLE_SOCIAL_GATEWAY', 'NONE', 'PASSWORD', 'PAYMENT', 'RADIUS', 'VOUCHER'];
+            }
+            else if (type === SystemLogType.threats) {
+                payload['threatTypes'] = ['HONEYPOT', 'THREAT'];
+            }
+            else if (type === SystemLogType.triggers) {
+                payload['triggerTypes'] = ['TRAFFIC_RULE', 'TRAFFIC_ROUTE', 'FIREWALL_RULE'];
+            }
+            const res = await this.retrievData(url, {
+                method: 'POST',
+                body: payload
+            });
+            if (res) {
+                return res;
             }
         }
         catch (error) {

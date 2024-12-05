@@ -33,7 +33,8 @@ export namespace device {
                 },
                 read: false,
                 write: true,
-                role: 'button'
+                role: 'button',
+                def: false,
             },
             hasError: {
                 id: 'hasError',

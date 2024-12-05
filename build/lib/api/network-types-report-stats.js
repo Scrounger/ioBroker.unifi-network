@@ -1,15 +1,15 @@
-export var reportInterval;
-(function (reportInterval) {
-    reportInterval["5minutes"] = "5minutes";
-    reportInterval["hourly"] = "hourly";
-    reportInterval["daily"] = "daily";
-    reportInterval["monthly"] = "monthly";
-})(reportInterval || (reportInterval = {}));
-export var reportType;
-(function (reportType) {
-    reportType["site"] = "site";
-    reportType["gateway"] = "gw";
-    reportType["switch"] = "sw";
-    reportType["accessPoint"] = "ap";
-    reportType["client"] = "user";
-})(reportType || (reportType = {}));
+export var NetworkReportInterval;
+(function (NetworkReportInterval) {
+    NetworkReportInterval["5minutes"] = "5minutes";
+    NetworkReportInterval["hourly"] = "hourly";
+    NetworkReportInterval["daily"] = "daily";
+    NetworkReportInterval["monthly"] = "monthly";
+})(NetworkReportInterval || (NetworkReportInterval = {}));
+export var NetworkReportType;
+(function (NetworkReportType) {
+    NetworkReportType["site"] = "site";
+    NetworkReportType["gateway"] = "gw";
+    NetworkReportType["switch"] = "sw";
+    NetworkReportType["accessPoint"] = "ap";
+    NetworkReportType["client"] = "user";
+})(NetworkReportType || (NetworkReportType = {}));

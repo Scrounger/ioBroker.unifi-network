@@ -1606,6 +1606,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			if (treeDefinition[id].expert) common.expert = treeDefinition[id].expert;
 
+			if (treeDefinition[id].def || treeDefinition[id].def === 0 || treeDefinition[id].def === false) common.def = treeDefinition[id].def;
 
 			if (treeDefinition[id].states) {
 				common.states = treeDefinition[id].states;

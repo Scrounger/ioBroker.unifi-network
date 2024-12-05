@@ -6,7 +6,8 @@ import { NetworkDeviceModels } from './network-types-device-models.js';
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
-import { NetworkReportStats, reportInterval, reportType } from './network-types-report-stats.js';
+import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
+import { SystemLogType } from './network-types-system-log.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -131,7 +132,8 @@ export declare class NetworkApi extends EventEmitter {
      * @param end report end timestamp
      * @returns
      */
-    getReportStats(type: reportType, interval: reportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
+    getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
+    getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<any>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;
