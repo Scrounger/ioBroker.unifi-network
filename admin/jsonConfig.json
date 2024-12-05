@@ -4,27 +4,27 @@
 	"items": {
 		"tab_general": {
 			"type": "panel",
-			"#include": "panel.general.jsonConfig.json"
+			"#include": "general.jsonConfig.json"
 		},
 		"tab_devices": {
 			"type": "panel",
-			"#include": "panel.devices.jsonConfig.json"
+			"#include": "devices.jsonConfig.json"
 		},
 		"tab_clients": {
 			"type": "panel",
-			"#include": "panel.clients.jsonConfig.json"
+			"#include": "clients.jsonConfig.json"
 		},
 		"tab_lans": {
 			"type": "panel",
-			"#include": "panel.lan.jsonConfig.json"
+			"#include": "lan.jsonConfig.json"
 		},
 		"tab_wlans": {
 			"type": "panel",
-			"#include": "panel.wlan.jsonConfig.json"
+			"#include": "wlan.jsonConfig.json"
 		},
 		"tab_expert": {
 			"type": "panel",
-			"#include": "panel.expert.jsonConfig.json"
+			"#include": "expert.jsonConfig.json"
 		}
 	}
 }
