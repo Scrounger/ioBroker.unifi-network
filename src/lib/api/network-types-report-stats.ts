@@ -1,11 +1,11 @@
-export enum reportInterval {
+export enum NetworkReportInterval {
     '5minutes' = '5minutes',
     hourly = 'hourly',
     daily = 'daily',
     monthly = 'monthly'
 }
 
-export enum reportType {
+export enum NetworkReportType {
     site = 'site',
     gateway = 'gw',
     switch = 'sw',

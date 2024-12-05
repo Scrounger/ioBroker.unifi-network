@@ -12,7 +12,8 @@ import { NetworkDeviceModels } from './network-types-device-models.js'
 import { NetworkClient } from './network-types-client.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
-import { NetworkReportStats, reportInterval, reportType } from './network-types-report-stats.js';
+import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
+import { SystemLogType } from './network-types-system-log.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -685,7 +686,7 @@ export class NetworkApi extends EventEmitter {
      * @param end report end timestamp
      * @returns 
      */
-    public async getReportStats(type: reportType, interval: reportInterval, attrs: (keyof NetworkReportStats)[] | 'ALL' = undefined, mac: string = undefined, start: number = undefined, end: number = undefined): Promise<NetworkReportStats[] | undefined> {
+    public async getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs: (keyof NetworkReportStats)[] | 'ALL' = undefined, mac: string = undefined, start: number = undefined, end: number = undefined): Promise<NetworkReportStats[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getReportStats]`
 
         try {
@@ -696,13 +697,13 @@ export class NetworkApi extends EventEmitter {
             }
 
             if (!start) {
-                if (interval === reportInterval['5minutes']) {
+                if (interval === NetworkReportInterval['5minutes']) {
                     // 5 minutes: default 1h
                     start = end - (1 * 3600 * 1000);
-                } else if (interval === reportInterval.hourly) {
+                } else if (interval === NetworkReportInterval.hourly) {
                     // hourly: default 24h
                     start = end - (7 * 24 * 3600 * 1000);
-                } else if (interval === reportInterval.daily) {
+                } else if (interval === NetworkReportInterval.daily) {
                     // daily: default 1 week
                     start = end - (1 * 7 * 24 * 3600 * 1000);
                 } else {
@@ -733,6 +734,63 @@ export class NetworkApi extends EventEmitter {
 
             if (res && res.data && res.data.length > 0) {
                 return res.data;
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    public async getSystemLog(type: SystemLogType, page_number: number = 0, pages_size: number = 10, start: number = undefined, end: number = undefined, macs: string[] = undefined) {
+        const logPrefix = `[${this.logPrefix}.getSystemLog]`
+
+        try {
+            const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/v2/api/site/${this.site}/system-log/${type}`;
+            this.log.warn(url);
+            if (!end) {
+                end = Date.now()
+            }
+
+            if (!start) {
+                // default: 1 day
+                start = end - (1 * 24 * 3600 * 1000);
+            }
+
+            const payload = {
+                timestampFrom: start,
+                timestampTo: end,
+                pageNumber: page_number,
+                pageSize: pages_size
+            };
+
+            if (type === SystemLogType.critical) {
+                payload['nextAiCategory'] = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
+            } else if (type === SystemLogType.devices) {
+                if (!macs) payload['macs'] = macs;
+            } else if (type === SystemLogType.admin) {
+                payload['activity_keys'] = ['ACCESSED_NETWORK_WEB', 'ACCESSED_NETWORK_IOS', 'ACCESSED_NETWORK_ANDROID'];
+                payload['change_keys'] = ['CLIENT', 'DEVICE', 'HOTSPOT', 'INTERNET', 'NETWORK', 'PROFILE', 'ROUTING', 'SECURITY', 'SYSTEM', 'VPN', 'WIFI'];
+            } else if (type === SystemLogType.updates) {
+                payload['systemLogDeviceTypes'] = ['GATEWAYS', 'SWITCHES', 'ACCESS_POINT', 'SMART_POWER', 'BUILDING_TO_BUILDING_BRIDGES', 'UNIFI_LTE'];
+            } else if (type === SystemLogType.clients) {
+                payload['clientType'] = ['GUEST', 'TELEPORT', 'VPN', 'WIRELESS', 'RADIUS', 'WIRED'];
+                payload['guestAuthorizationMethod'] = ['FACEBOOK_SOCIAL_GATEWAY', 'FREE_TRIAL', 'GOOGLE_SOCIAL_GATEWAY', 'NONE', 'PASSWORD', 'PAYMENT', 'RADIUS', 'VOUCHER'];
+            } else if (type === SystemLogType.threats) {
+                payload['threatTypes'] = ['HONEYPOT', 'THREAT'];
+            } else if (type === SystemLogType.triggers) {
+                payload['triggerTypes'] = ['TRAFFIC_RULE', 'TRAFFIC_ROUTE', 'FIREWALL_RULE'];
+            }
+
+
+            const res = await this.retrievData(url, {
+                method: 'POST',
+                body: payload
+            });
+
+            if (res) {
+                return res;
             }
 
         } catch (error: any) {
