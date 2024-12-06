@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes";
 
 export function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
     return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
@@ -65,7 +66,7 @@ export function zeroPad(source: any, places: number): string {
  * @param id 
  * @returns 
  */
-export function getIdWithoutLastPart(id: string) {
+export function getIdWithoutLastPart(id: string): string {
     const lastIndex = id.lastIndexOf('.');
     return id.substring(0, lastIndex);
 }
@@ -143,7 +144,7 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
  * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
  * @returns 
  */
-export function getAllKeysOfTreeDefinition(treefDefintion) {
+export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; }): string[] {
     let keys = [];
 
     // Hilfsfunktion für rekursive Durchsuchung des Objekts
@@ -175,7 +176,7 @@ export function getAllKeysOfTreeDefinition(treefDefintion) {
     return _.uniq(keys);
 }
 
-export function getAllIdsOfTreeDefinition(treefDefintion) {
+export function getAllIdsOfTreeDefinition(treefDefintion: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; }): string[] {
     let keys = [];
 
     // Hilfsfunktion für rekursive Durchsuchung des Objekts

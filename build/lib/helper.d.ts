@@ -1,3 +1,4 @@
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes";
 export declare function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean;
 export declare function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean;
 export declare function getObjectByString(path: any, obj: any, separator?: string): any;
@@ -33,7 +34,11 @@ export declare const deepDiffBetweenObjects: (object: any, base: any, adapter: a
  * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
  * @returns
  */
-export declare function getAllKeysOfTreeDefinition(treefDefintion: any): any[];
-export declare function getAllIdsOfTreeDefinition(treefDefintion: any): any[];
+export declare function getAllKeysOfTreeDefinition(treefDefintion: {
+    [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
+}): string[];
+export declare function getAllIdsOfTreeDefinition(treefDefintion: {
+    [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
+}): string[];
 export declare function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string;
 export declare function radio_nameToFrequency(radio_nameVal: string, adapter: ioBroker.Adapter): string;

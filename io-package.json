@@ -31,17 +31,17 @@
             "zh-cn": "统一网络"
         },
         "desc": {
-            "en": "Unifi Network uses the websocket interface to receive real-time information from the unifi-network application",
-            "de": "Unifi Network verwendet die Websocket-Schnittstelle, um Echtzeitinformationen von der Unifi-Network-Anwendung zu empfangen",
-            "ru": "Unifi Network использует интерфейс веб-сокета для получения информации в реальном времени из приложения unifi-network.",
-            "pt": "Unifi Network usa a interface websocket para receber informações em tempo real do aplicativo unifi-network",
-            "nl": "Unifi Network gebruikt de websocket-interface om realtime informatie te ontvangen van de unifi-network-applicatie",
-            "fr": "Unifi Network utilise l'interface websocket pour recevoir des informations en temps réel de l'application unifi-network",
-            "it": "Unifi Network utilizza l'interfaccia websocket per ricevere informazioni in tempo reale dall'applicazione unifi-network",
-            "es": "Unifi Network utiliza la interfaz websocket para recibir información en tiempo real desde la aplicación unifi-network",
-            "pl": "Unifi Network wykorzystuje interfejs websocket do otrzymywania informacji w czasie rzeczywistym z aplikacji unifi-network",
-            "uk": "Unifi Network використовує інтерфейс websocket для отримання інформації в реальному часі від програми unifi-network",
-            "zh-cn": "Unifi Network 使用 websocket 接口从 unifi-network 应用程序接收实时信息"
+            "en": "Communication with the Unifi Network application using the websocket interface to receive information in real-time",
+            "de": "Kommunikation mit der Unifi Network Anwendung über die Websocket-Schnittstelle, um Informationen in Echtzeit zu erhalten",
+            "ru": "Связь с приложением Unifi Network, использующим интерфейс websocket для получения информации в режиме реального времени",
+            "pt": "Comunicação com o aplicativo Unifi Network usando a interface websocket para receber informações em tempo real",
+            "nl": "Communicatie met de Unifi Network applicatie met behulp van de websocket interface om informatie in realtime te ontvangen",
+            "fr": "Communication avec l'application Unifi Network utilisant l'interface websocket pour recevoir des informations en temps réel",
+            "it": "Comunicazione con l'applicazione Unifi Network utilizzando l'interfaccia websocket per ricevere informazioni in tempo reale",
+            "es": "Comunicación con la aplicación Unifi Network usando la interfaz websocket para recibir información en tiempo real",
+            "pl": "Komunikacja z aplikacją Unifi Network przy użyciu interfejsu websocket w celu otrzymywania informacji w czasie rzeczywistym",
+            "uk": "Зв'язок з програмою Unifi Network за допомогою інтерфейсу веб-сакету для отримання інформації в режимі реального часу",
+            "zh-cn": "使用websocket接口实时接收信息与Unifi网络应用程序通信"
         },
         "authors": [
             "Scrounger <scrounger@gmx.net>"
