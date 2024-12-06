@@ -588,6 +588,12 @@ class UnifiNetwork extends utils.Adapter {
                         await this.createOrUpdateChannel(tree.client.idChannel, 'client devices', undefined, true);
                         data = await this.ufn.getClientsActive_V2();
                     }
+                    else {
+                        if (await this.objectExists(tree.client.idChannel)) {
+                            await this.delObjectAsync(tree.client.idChannel, { recursive: true });
+                            this.log.info(`${logPrefix} channel clients delete`);
+                        }
+                    }
                 }
                 if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
                     if (data && data !== null) {
