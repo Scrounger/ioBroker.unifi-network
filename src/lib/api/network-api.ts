@@ -465,7 +465,7 @@ export class NetworkApi extends EventEmitter {
         try {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.devices)}?separateUnmanaged=${separateUnmanaged}&includeTrafficUsage=${includeTrafficUsage}`);
 
-            if (res && res.length > 0) {
+            if (res) {
                 return res;
             }
 

@@ -71,7 +71,8 @@ export namespace device {
             },
             ip: {
                 iobType: 'string',
-                name: 'ip address'
+                name: 'ip address',
+                required: true
             },
             isOnline: {
                 id: 'isOnline',

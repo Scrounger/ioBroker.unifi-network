@@ -371,7 +371,7 @@ class UnifiNetwork extends utils.Adapter {
                 if (loginSuccessful) {
                     this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, isUnifiOs: ${this.config.isUnifiOs})`);
                     if (await this.ufn.launchEventsWs()) {
-                        this.log.info(`${logPrefix} WebSocket conncection to realtime API successfully established`);
+                        this.log.info(`${logPrefix} WebSocket connection to realtime API successfully established`);
                         await this.setConnectionStatus(true);
                         return true;
                     }
