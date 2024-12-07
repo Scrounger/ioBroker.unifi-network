@@ -170,14 +170,18 @@ export class NetworkApi extends EventEmitter {
                 return retry ? this.retrievData(url, options, false) : undefined;
             }
             const response = await this.retrieve(url, options);
-            // Something went wrong. Retry the bootstrap attempt once, and then we're done.
-            if (!response?.ok) {
-                this.log.error(`${logPrefix} Unable to retrieve data. code: ${response.status}, text: ${response.statusText}`);
-                return retry ? this.retrievData(url, options, false) : undefined;
-            }
-            const data = await response.json();
-            if (data) {
-                return data;
+            if (response && response !== null) {
+                if (!response.ok) {
+                    // Something went wrong. Retry the bootstrap attempt once, and then we're done.
+                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response?.status}, text: ${response?.statusText}, url: ${url}`);
+                    return retry ? this.retrievData(url, options, false) : undefined;
+                }
+                else {
+                    const data = await response.json();
+                    if (data) {
+                        return data;
+                    }
+                }
             }
         }
         catch (error) {
@@ -252,6 +256,10 @@ export class NetworkApi extends EventEmitter {
             // Insufficient privileges.
             if (response.status === 429) {
                 this.log.error(`${logPrefix} code: ${response.status} - Too many requests. Please check the settings at your unifi network controller or wait a while and restart the connection`);
+                return null;
+            }
+            if (response.status === 503) {
+                this.log.error(`${logPrefix} code: ${response.status} - Network controller service is unavailable. This is usually temporary and will occur during device reboots.`);
                 return null;
             }
             if (!response.ok && isServerSideIssue(response.status)) {
@@ -743,7 +751,12 @@ export class NetworkApi extends EventEmitter {
                 this._eventsWs = null;
                 // If we're closing before fully established it's because we're shutting down the API - ignore it.
                 if (error.message !== 'WebSocket was closed before the connection was established') {
-                    this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+                    if (error.message === 'Unexpected server response: 502' || error.message === 'Unexpected server response: 503') {
+                        this.log.error(`${logPrefix} Network controller - WebSocket service is unavailable. This is usually temporary and will occur during device reboots.`);
+                    }
+                    else {
+                        this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+                    }
                 }
                 ws.removeListener('message', messageHandler);
                 ws.terminate();
