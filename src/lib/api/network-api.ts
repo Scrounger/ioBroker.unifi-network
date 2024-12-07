@@ -243,7 +243,11 @@ export class NetworkApi extends EventEmitter {
                 return data;
             }
         } catch (error: any) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            if (error instanceof FetchError) {
+                this.log.error(`${logPrefix} FetchError error: ${JSON.stringify(error)}`);
+            } else {
+                this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            }
         }
 
         return undefined;
@@ -999,8 +1003,10 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.wsSendPing]`
 
         try {
-            this._eventsWs.ping();
-            this.log.silly ? this.log.silly(`ping sent`) : this.log.debug(`ping sent`);
+            if (this._eventsWs && this._eventsWs !== null) {
+                this._eventsWs.ping();
+                this.log.silly ? this.log.silly(`ping sent`) : this.log.debug(`ping sent`);
+            }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
