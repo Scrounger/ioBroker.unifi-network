@@ -369,7 +369,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const loginSuccessful = await this.ufn.login();
                 if (loginSuccessful) {
-                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, isUnifiOs: ${this.config.isUnifiOs})`);
+                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, isUnifiOs: ${this.config.isUnifiOs})`);
                     if (await this.ufn.launchEventsWs()) {
                         this.log.info(`${logPrefix} WebSocket connection to realtime API successfully established`);
                         await this.setConnectionStatus(true);
@@ -380,7 +380,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 else {
-                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host}${this.config.isUnifiOs ? '' : `:${this.config.port}`})`);
+                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host}${this.config.isUnifiOs ? '' : `:${this.config.port}`}, site: ${this.config.site})`);
                 }
             }
         }

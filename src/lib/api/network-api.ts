@@ -99,7 +99,6 @@ export class NetworkApi extends EventEmitter {
                 const response = await this.retrieve(`https://${this.host}${this.port}`, { method: 'GET' });
 
                 if (response?.ok) {
-
                     const csrfToken = response.headers.get('X-CSRF-Token');
 
                     // Preserve the CSRF token, if found, for future API calls.
@@ -130,15 +129,31 @@ export class NetworkApi extends EventEmitter {
             const cookie = response.headers.get('Set-Cookie');
 
             // Save the refreshed cookie and CSRF token for future API calls and we're done.
-            if (csrfToken && cookie) {
+            if (cookie) {
 
                 // Only preserve the token element of the cookie and not the superfluous information that's been added to it.
                 this.headers.set('Cookie', cookie.split(';')[0]);
 
                 // Save the CSRF token.
-                this.headers.set('X-CSRF-Token', csrfToken);
+                if (csrfToken && csrfToken !== null) {
+                    // unifi OS
+                    this.headers.set('X-CSRF-Token', csrfToken);
+                } else {
+                    // self hosted controller, extract from cookie
+                    if (cookie.includes('csrf_token=')) {
+                        let extractCsrf = cookie.split(';').map(c => c.trim()).find(c => c.includes('csrf_token='));
+                        extractCsrf = extractCsrf.split('csrf_token=').pop();
 
-                this.log.debug(`${logPrefix} successfully logged into the controller (host: ${this.host}${this.port}, isUnifiOs: ${this.isUnifiOs})`);
+                        this.headers.set('X-CSRF-Token', extractCsrf);
+
+                        this.log.debug(`${logPrefix} csrf token extracted from cookie`);
+                    } else {
+                        this.log.warn(`${logPrefix} cookie not have a csrf token! ${JSON.stringify(cookie)}`)
+                        return false;
+                    }
+                }
+
+                this.log.debug(`${logPrefix} successfully logged into the controller (host: ${this.host}${this.port}, site: ${this.site}, isUnifiOs: ${this.isUnifiOs})`);
                 return true;
             }
 
