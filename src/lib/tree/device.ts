@@ -36,6 +36,11 @@ export namespace device {
                 role: 'button',
                 def: false,
             },
+            fan_level: {
+                iobType: 'number',
+                name: 'fan level',
+                unit: '%'
+            },
             hasError: {
                 id: 'hasError',
                 iobType: 'boolean',
@@ -275,12 +280,24 @@ export namespace device {
                         valFromProperty: 'ht',
                         unit: 'MHz'
                     },
-                    transmit_power: {
-                        id: 'transmit_power',
+                    tx_power_mode: {
                         iobType: 'string',
-                        name: 'transmit power',
-                        valFromProperty: 'tx_power_mode'
-                    }
+                        name: 'transmit power'
+                    },
+                    // tx_power_max: {
+                    //     id: 'tx_power_max',
+                    //     iobType: 'number',
+                    //     name: 'max. TX Power ',
+                    //     valFromProperty: 'max_txpower',
+                    //     unit: 'dBm'
+                    // },
+                    // tx_power_min: {
+                    //     id: 'tx_power_min',
+                    //     iobType: 'number',
+                    //     name: 'min. TX Power ',
+                    //     valFromProperty: 'min_txpower',
+                    //     unit: 'dBm'
+                    // }
                 }
             },
             radio_table_stats: {
@@ -290,6 +307,24 @@ export namespace device {
                     return myHelper.radio_nameToFrequency(objValues?.name, adapter);
                 },
                 array: {
+                    channel_utilization: {
+                        iobType: 'number',
+                        name: 'Channel Utilization',
+                        unit: '%',
+                        valFromProperty: 'cu_total'
+                    },
+                    channel_utilization_rx: {
+                        iobType: 'number',
+                        name: 'Channel Utilization RX',
+                        unit: '%',
+                        valFromProperty: 'cu_self_rx'
+                    },
+                    channel_utilization_tx: {
+                        iobType: 'number',
+                        name: 'Channel Utilization TX',
+                        unit: '%',
+                        valFromProperty: 'cu_self_tx'
+                    },
                     connected_clients: {
                         id: 'connected_clients',
                         iobType: 'number',
@@ -311,10 +346,19 @@ export namespace device {
                         },
                         unit: '%'
                     },
-                    'tx_retries': {
+                    tx_packets: {
+                        iobType: 'number',
+                        name: 'TX Packets',
+                    },
+                    tx_power: {
+                        iobType: 'number',
+                        name: 'TX Power',
+                        unit: 'dBm'
+                    },
+                    tx_retries: {
                         iobType: 'number',
                         name: 'TX Retries',
-                    }
+                    },
                 }
             },
             satisfaction: {
