@@ -1517,6 +1517,9 @@ class UnifiNetwork extends utils.Adapter {
                         this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.device.connected(event.meta, myEvent, this, this.cache);
                     }
+                    else if (WebSocketEvent.device.ChannelChanged.includes(myEvent.key)) {
+                        this.log.debug(`${logPrefix} event 'AP channel changed' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+                    }
                     else {
                         this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key},` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }

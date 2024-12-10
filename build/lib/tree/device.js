@@ -305,6 +305,10 @@ export var device;
                         },
                         unit: '%'
                     },
+                    'tx_retries': {
+                        iobType: 'number',
+                        name: 'TX Retries',
+                    }
                 }
             },
             satisfaction: {

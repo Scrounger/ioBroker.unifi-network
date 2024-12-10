@@ -311,6 +311,10 @@ export namespace device {
                         },
                         unit: '%'
                     },
+                    'tx_retries': {
+                        iobType: 'number',
+                        name: 'TX Retries',
+                    }
                 }
             },
             satisfaction: {

@@ -95,7 +95,7 @@
     ],
     "native": {
         "host": "",
-        "port": 443,
+        "port": 8443,
         "isUnifiOs": false,
         "site": "default",
         "user": "",
@@ -106,7 +106,7 @@
         "realTimeApiDebounceTime": 15,
         "apiUpdateInterval": 60,
         "deviceImageDownload": false,
-        "clientOfflineTimeout": 92,
+        "clientOfflineTimeout": 200,
         "vpnOfflineTimeout": 300,
         "clientImageDownload": false,
         "keepIobSynchron": false,
