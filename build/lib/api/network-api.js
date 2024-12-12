@@ -204,6 +204,9 @@ export class NetworkApi extends EventEmitter {
             if (error instanceof FetchError) {
                 this.log.error(`${logPrefix} FetchError error: ${JSON.stringify(error)}`);
             }
+            else if (error === `SyntaxError: Unexpected token '<', "<!doctype "... is not valid JSON`) {
+                this.log.error(`${logPrefix} Network controller service is unavailable. This is usually temporary and will occur during device reboots.`);
+            }
             else {
                 this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
             }
@@ -767,7 +770,7 @@ export class NetworkApi extends EventEmitter {
                 this._eventsWs = null;
                 // If we're closing before fully established it's because we're shutting down the API - ignore it.
                 if (error.message !== 'WebSocket was closed before the connection was established') {
-                    if (error.message === 'Unexpected server response: 502' || error.message === 'Unexpected server response: 503') {
+                    if (error.message === 'Unexpected server response: 502' || error.message === 'Unexpected server response: 503' || error.message === 'Unexpected server response: 200') {
                         this.log.error(`${logPrefix} Network controller - WebSocket service is unavailable. This is usually temporary and will occur during device reboots.`);
                     }
                     else {
