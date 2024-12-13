@@ -125,5 +125,7 @@
     "latency": "延迟",
     "average client signal": "平均客户信号",
     "channel frequency": "频道频率",
-    "is guest wlan": "是访客 WLAN"
+    "is guest wlan": "是访客 WLAN",
+    "debounce time [s] on disconnection": "断开连接时的去抖时间 [s]",
+    "ignores short-term connection interruptions": "忽略短期连接中断"
 }

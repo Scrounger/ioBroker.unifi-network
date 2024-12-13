@@ -125,5 +125,7 @@
 	"latency": "latency",
 	"average client signal": "average client signal",
 	"channel frequency": "channel frequency",
-	"is guest wlan": "is guest wlan"
+	"is guest wlan": "is guest wlan",
+	"debounce time [s] on disconnection": "debounce time [s] on disconnection",
+	"ignores short-term connection interruptions": "ignores short-term connection interruptions"
 }

@@ -34,6 +34,20 @@
 			"sm": 12,
 			"md": 3
 		},
+		"clientRealtimeDisconnectDebounceTime": {
+			"type": "number",
+			"label": "debounce time [s] on disconnection",
+			"disabled": "!data.clientsEnabled && !data.guestsEnabled",
+			"help": "Ignores short-term connection interruptions",
+			"validator": "data.clientRealtimeDisconnectDebounceTime < data.clientOfflineTimeout",
+			"tooltip": "must be two times bigger than 'debounce time' on tab general!",
+			"validatorNoSaveOnError": true,
+			"min": 0,
+			"max": 10000,
+			"step": 1,
+			"sm": 12,
+			"md": 3
+		},
 		"clientOfflineTimeout": {
 			"type": "number",
 			"label": "time [s] after a device is set to offline",

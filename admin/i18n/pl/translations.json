@@ -125,5 +125,7 @@
     "latency": "utajenie",
     "average client signal": "średni sygnał klienta",
     "channel frequency": "częstotliwość kanału",
-    "is guest wlan": "to sieć gościnna"
+    "is guest wlan": "to sieć gościnna",
+    "debounce time [s] on disconnection": "czas odbicia [s] po rozłączeniu",
+    "ignores short-term connection interruptions": "ignoruje krótkotrwałe przerwy w połączeniu"
 }

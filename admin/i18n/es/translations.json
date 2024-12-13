@@ -125,5 +125,7 @@
     "latency": "estado latente",
     "average client signal": "señal promedio del cliente",
     "channel frequency": "frecuencia del canal",
-    "is guest wlan": "es wifi para invitados"
+    "is guest wlan": "es wifi para invitados",
+    "debounce time [s] on disconnection": "tiempo de rebote [s] en la desconexión",
+    "ignores short-term connection interruptions": "ignora las interrupciones de conexión a corto plazo"
 }

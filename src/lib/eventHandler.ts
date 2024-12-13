@@ -4,6 +4,9 @@ import * as myHelper from './helper.js';
 import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
+import moment from "moment";
+
+let disconnectDebounceList = {};
 
 export const eventHandler = {
     device: {
@@ -96,14 +99,43 @@ export const eventHandler = {
                     if ((!isGuest && adapter.config.clientsEnabled) || (isGuest && adapter.config.guestsEnabled)) {
                         const id = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.isOnline`;
 
-                        if (data.subsystem === 'wlan') {
-                            adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`);
-                        } else {
-                            adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
-                        }
+                        if (connected || adapter.config.clientRealtimeDisconnectDebounceTime === 0) {
+                            if (data.subsystem === 'wlan') {
+                                adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`);
+                            } else {
+                                adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
+                            }
 
-                        if (await adapter.objectExists(id)) {
-                            await adapter.setState(id, connected, true);
+                            if (delete disconnectDebounceList[mac]) delete disconnectDebounceList[mac];
+
+                            if (await adapter.objectExists(id)) {
+                                await adapter.setState(id, connected, true);
+                            }
+                        } else {
+                            disconnectDebounceList[mac] = moment().valueOf();
+
+                            let logMsg = `${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`
+                            if (data.subsystem === 'wlan') {
+                                logMsg = `${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`;
+                            }
+
+                            adapter.log.debug(`${logMsg} -> debounce disconnection for ${adapter.config.clientRealtimeDisconnectDebounceTime}s`);
+
+                            // debounce disconnection if it's configured
+                            setTimeout(async () => {
+                                if (disconnectDebounceList[mac]) {
+                                    adapter.log.info(logMsg);
+
+                                    if (await adapter.objectExists(id)) {
+                                        await adapter.setState(id, connected, true);
+                                    }
+                                } else {
+                                    adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' 're-connected' in the debounce time, nothing to do`);
+                                }
+
+                                if (delete disconnectDebounceList[mac]) delete disconnectDebounceList[mac];
+
+                            }, adapter.config.clientRealtimeDisconnectDebounceTime * 1000);
                         }
                     }
                 } else {

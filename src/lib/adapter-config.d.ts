@@ -16,6 +16,7 @@ declare global {
 			realTimeApiDebounceTime: number;
 			apiUpdateInterval: number;
 			deviceImageDownload: boolean;
+			clientRealtimeDisconnectDebounceTime: number;
 			clientOfflineTimeout: number;
 			vpnOfflineTimeout: number;
 			clientImageDownload: boolean;

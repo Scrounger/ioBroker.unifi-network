@@ -922,7 +922,7 @@ class UnifiNetwork extends utils.Adapter {
 					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
 
 					if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
-						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${before.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
+						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${before.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
 					}
 				}
 			}

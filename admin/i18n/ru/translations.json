@@ -125,5 +125,7 @@
     "latency": "задержка",
     "average client signal": "средний сигнал клиента",
     "channel frequency": "частота канала",
-    "is guest wlan": "гостевой WLAN"
+    "is guest wlan": "гостевой WLAN",
+    "debounce time [s] on disconnection": "время устранения дребезга [с] при отключении",
+    "ignores short-term connection interruptions": "игнорирует кратковременные прерывания соединения"
 }

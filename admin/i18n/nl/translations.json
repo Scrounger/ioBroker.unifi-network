@@ -125,5 +125,7 @@
     "latency": "latentie",
     "average client signal": "gemiddeld klantsignaal",
     "channel frequency": "kanaal frequentie",
-    "is guest wlan": "is gastwlan"
+    "is guest wlan": "is gastwlan",
+    "debounce time [s] on disconnection": "debouncetijd [s] bij het verbreken van de verbinding",
+    "ignores short-term connection interruptions": "negeert kortdurende verbindingsonderbrekingen"
 }

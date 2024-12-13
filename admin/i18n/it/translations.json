@@ -125,5 +125,7 @@
     "latency": "latenza",
     "average client signal": "segnale cliente medio",
     "channel frequency": "frequenza del canale",
-    "is guest wlan": "è la WLAN ospite"
+    "is guest wlan": "è la WLAN ospite",
+    "debounce time [s] on disconnection": "tempo di antirimbalzo [s] alla disconnessione",
+    "ignores short-term connection interruptions": "ignora le interruzioni di connessione a breve termine"
 }
