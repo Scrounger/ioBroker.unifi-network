@@ -1517,11 +1517,16 @@ class UnifiNetwork extends utils.Adapter {
                         this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.device.connected(event.meta, myEvent, this, this.cache);
                     }
+                    else if (WebSocketEvent.device.LostContact.includes(myEvent.key)) {
+                        // Device lost contact
+                        this.log.debug(`${logPrefix} event 'lost contact' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+                        eventHandler.device.lostContact(event.meta, myEvent, this, this.cache);
+                    }
                     else if (WebSocketEvent.device.ChannelChanged.includes(myEvent.key)) {
                         this.log.debug(`${logPrefix} event 'AP channel changed' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }
-                    else if (WebSocketEvent.device.LostContact.includes(myEvent.key)) {
-                        this.log.debug(`${logPrefix} event 'Lost Contact' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+                    else if (WebSocketEvent.device.PoeDisconnect.includes(myEvent.key)) {
+                        this.log.debug(`${logPrefix} event 'poe disconnect' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }
                     else {
                         this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key},` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);

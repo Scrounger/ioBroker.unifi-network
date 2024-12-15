@@ -72,6 +72,26 @@ export const eventHandler = {
             catch (error) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, event: ${JSON.stringify(event)}`);
             }
+        },
+        async lostContact(meta, data, adapter, cache) {
+            const logPrefix = '[eventHandler.device.lostContact]:';
+            try {
+                const mac = data.sw || data.ap || data.gw;
+                if (mac) {
+                    if (adapter.config.devicesEnabled) {
+                        adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) 'lost contact'`);
+                        if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.isOnline`)) {
+                            await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, false, true);
+                        }
+                    }
+                }
+                else {
+                    adapter.log.warn(`${logPrefix} event 'lost contact' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+            }
+            catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
+            }
         }
     },
     client: {

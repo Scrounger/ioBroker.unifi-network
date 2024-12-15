@@ -45,6 +45,8 @@ export interface NetworkEventData {
     datetime: string;
     guest?: string;
     gw?: string;
+    gw_name?: string;
+    gw_displayName?: string;
     key: string;
     msg: string;
     port?: number;

@@ -80,6 +80,7 @@ export declare const WebSocketEvent: {
         Restarted: string[];
         ChannelChanged: string[];
         LostContact: string[];
+        PoeDisconnect: string[];
     };
     client: {
         Connected: string[];
