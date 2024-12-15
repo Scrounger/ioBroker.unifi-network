@@ -128,5 +128,6 @@
     "channel frequency": "Kanalfrequenz",
     "is guest wlan": "ist Gast-WLAN",
     "debounce time [s] on disconnection": "Entprellzeit [s] bei Verbindungsabbruch",
-    "ignores short-term connection interruptions": "ignoriert kurzfristige Verbindungsunterbrechungen"
+    "ignores short-term connection interruptions": "ignoriert kurzfristige Verbindungsunterbrechungen",
+    "short-term connection interruptions will be ignored": "Kurzfristige Verbindungsunterbrechungen werden ignoriert"
 }

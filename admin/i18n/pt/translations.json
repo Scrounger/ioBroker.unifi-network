@@ -127,5 +127,6 @@
     "channel frequency": "frequência do canal",
     "is guest wlan": "é o convidado wlan",
     "debounce time [s] on disconnection": "tempo de debounce [s] na desconexão",
-    "ignores short-term connection interruptions": "ignora interrupções de conexão de curto prazo"
+    "ignores short-term connection interruptions": "ignora interrupções de conexão de curto prazo",
+    "short-term connection interruptions will be ignored": "interrupções de conexão de curto prazo serão ignoradas"
 }

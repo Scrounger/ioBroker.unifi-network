@@ -79,6 +79,7 @@ export declare const WebSocketEvent: {
         Disconnected: string[];
         Restarted: string[];
         ChannelChanged: string[];
+        LostContact: string[];
     };
     client: {
         Connected: string[];

@@ -127,5 +127,6 @@
     "channel frequency": "częstotliwość kanału",
     "is guest wlan": "to sieć gościnna",
     "debounce time [s] on disconnection": "czas odbicia [s] po rozłączeniu",
-    "ignores short-term connection interruptions": "ignoruje krótkotrwałe przerwy w połączeniu"
+    "ignores short-term connection interruptions": "ignoruje krótkotrwałe przerwy w połączeniu",
+    "short-term connection interruptions will be ignored": "krótkotrwałe przerwy w połączeniu będą ignorowane"
 }

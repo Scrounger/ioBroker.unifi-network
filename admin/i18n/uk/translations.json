@@ -127,5 +127,6 @@
     "channel frequency": "частота каналу",
     "is guest wlan": "є гостьовою мережею WLAN",
     "debounce time [s] on disconnection": "час усунення дребезгу [с] при відключенні",
-    "ignores short-term connection interruptions": "ігнорує короткочасні переривання з'єднання"
+    "ignores short-term connection interruptions": "ігнорує короткочасні переривання з'єднання",
+    "short-term connection interruptions will be ignored": "короткочасні переривання з’єднання ігноруватимуться"
 }

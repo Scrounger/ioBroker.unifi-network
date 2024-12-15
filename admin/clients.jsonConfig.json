@@ -38,7 +38,7 @@
 			"type": "number",
 			"label": "debounce time [s] on disconnection",
 			"disabled": "!data.clientsEnabled && !data.guestsEnabled",
-			"help": "Ignores short-term connection interruptions",
+			"help": "short-term connection interruptions will be ignored",
 			"validator": "data.clientRealtimeDisconnectDebounceTime < data.clientOfflineTimeout",
 			"tooltip": "must be two times bigger than 'debounce time' on tab general!",
 			"validatorNoSaveOnError": true,

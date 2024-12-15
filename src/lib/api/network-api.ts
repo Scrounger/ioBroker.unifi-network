@@ -261,7 +261,7 @@ export class NetworkApi extends EventEmitter {
         } catch (error: any) {
             if (error instanceof FetchError) {
                 this.log.error(`${logPrefix} FetchError error: ${JSON.stringify(error)}`);
-            } else if (error === `SyntaxError: Unexpected token '<', "<!doctype "... is not valid JSON`) {
+            } else if (error.includes('is not valid JSON')) {
                 this.log.error(`${logPrefix} Network controller service is unavailable. This is usually temporary and will occur during device reboots.`);
             } else {
                 this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

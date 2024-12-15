@@ -114,7 +114,6 @@ export const eventHandler = {
                                 }
                                 else {
                                     adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' 're-connected' in the debounce time, nothing to do`);
-                                    adapter.log.warn('nix machen');
                                 }
                                 if (delete disconnectDebounceList[mac])
                                     delete disconnectDebounceList[mac];
