@@ -27,7 +27,7 @@ export interface myCommonState {
     valFromProperty?: string                                        // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be regoniczed
     statesFromProperty?: string                                     // ToDo: perhaps can be removed
 
-    conditionToCreateState?(objValues: any, adapter: ioBroker.Adapter): boolean     // condition to create state
+    conditionToCreateState?(objDevice: any, adapter: ioBroker.Adapter): boolean     // condition to create state
 
     subscribeMe?: true                                              // subscribe
     required?: true                                                 // required, can not be blacklisted
@@ -46,9 +46,9 @@ export interface myCommonChannelArray {
     icon?: string,
     arrayChannelIdPrefix?: string,                                                                  // Array item id get a prefix e.g. myPrefix_0
     arrayChannelIdZeroPad?: number,                                                                 // Array item id get a padding for the number
-    arrayChannelIdFromProperty?(objValues: any, i: number, adapter: ioBroker.Adapter): string,      // Array item id is taken from a property in the corresponding tree
+    arrayChannelIdFromProperty?(objDevice: any, i: number, adapter: ioBroker.Adapter): string,      // Array item id is taken from a property in the corresponding tree
     arrayChannelNamePrefix?: string,                                                                // Array item common.name get a prefix e.g. myPrefix_0
-    arrayChannelNameFromProperty?(objValues: any, adapter: ioBroker.Adapter): string,               // Array item common.name is taken from a property in the corresponding tree
+    arrayChannelNameFromProperty?(objDevice: any, adapter: ioBroker.Adapter): string,               // Array item common.name is taken from a property in the corresponding tree
     arrayStartNumber?: number,                                                                      // Array custom start number of array
     array: { [key: string]: myCommonState; },
 }

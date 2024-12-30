@@ -1421,7 +1421,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async createOrUpdateGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, blacklistFilter: { id: string }[], isWhiteList: boolean, objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objOrgValues, isAdapterStart: boolean = false, filterId = '', isChannelOnWhitelist: boolean = false) {
+	async createOrUpdateGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, blacklistFilter: { id: string }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objChannel, isAdapterStart: boolean = false, filterId = '', isChannelOnWhitelist: boolean = false) {
 		const logPrefix = '[createOrUpdateGenericState]:';
 
 		try {
@@ -1429,7 +1429,7 @@ class UnifiNetwork extends utils.Adapter {
 				for (const key in treeDefinition) {
 					let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
 
-					let logDetails = `${(objOrg as any)?.mac ? `mac: ${(objOrg as any)?.mac}` : (objOrg as any)?.ip ? `ip: ${(objOrg as any)?.ip}` : (objOrg as any)?._id ? `id: ${(objOrg as any)?._id}` : ''}`
+					let logDetails = `${(objDevices as any)?.mac ? `mac: ${(objDevices as any)?.mac}` : (objDevices as any)?.ip ? `ip: ${(objDevices as any)?.ip}` : (objDevices as any)?._id ? `id: ${(objDevices as any)?._id}` : ''}`
 
 					try {
 						// if we have an own defined state which takes val from other property
@@ -1437,7 +1437,7 @@ class UnifiNetwork extends utils.Adapter {
 
 						const cond1 = (Object.hasOwn(objValues, valKey) && objValues[valKey] !== undefined) || (Object.hasOwn(treeDefinition[key], 'id') && !Object.hasOwn(treeDefinition[key], 'valFromProperty'));
 						const cond2 = Object.hasOwn(treeDefinition[key], 'iobType') && !Object.hasOwn(treeDefinition[key], 'object') && !Object.hasOwn(treeDefinition[key], 'array');
-						const cond3 = (Object.hasOwn(treeDefinition[key], 'conditionToCreateState') && treeDefinition[key].conditionToCreateState(objOrgValues, this) === true) || !Object.hasOwn(treeDefinition[key], 'conditionToCreateState');
+						const cond3 = (Object.hasOwn(treeDefinition[key], 'conditionToCreateState') && treeDefinition[key].conditionToCreateState(objChannel, this) === true) || !Object.hasOwn(treeDefinition[key], 'conditionToCreateState');
 
 						// if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
 						// 	this.log.warn(`cond 1: ${cond1}`);
@@ -1460,10 +1460,10 @@ class UnifiNetwork extends utils.Adapter {
 							if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${stateId}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${stateId}` })) || isChannelOnWhitelist || Object.hasOwn(treeDefinition[key], 'required')) {
 								if (!await this.objectExists(`${channel}.${stateId}`)) {
 									// create State
-									this.log.silly(`${logPrefix} ${objOrg?.name} - creating state '${logMsgState}'`);
+									this.log.silly(`${logPrefix} ${objDevices?.name} - creating state '${logMsgState}'`);
 									const obj = {
 										type: 'state',
-										common: await this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objOrg, logMsgState),
+										common: await this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objDevices, logMsgState),
 										native: {}
 									};
 
@@ -1474,12 +1474,12 @@ class UnifiNetwork extends utils.Adapter {
 									if (isAdapterStart) {
 										const obj: ioBroker.Object = await this.getObjectAsync(`${channel}.${stateId}`);
 
-										const commonUpdated = await this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objOrg, logMsgState);
+										const commonUpdated = await this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objDevices, logMsgState);
 
 										if (obj && obj.common) {
 											if (!myHelper.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
 												await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-												this.log.debug(`${logPrefix} ${objOrg?.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
+												this.log.debug(`${logPrefix} ${objDevices?.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
 											}
 										}
 									}
@@ -1487,14 +1487,14 @@ class UnifiNetwork extends utils.Adapter {
 
 								if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.hasOwn(treeDefinition[key], 'subscribeMe'))) {
 									// state is writeable or has subscribeMe Property -> subscribe it
-									this.log.silly(`${logPrefix} ${objOrg?.name} - subscribing state '${logMsgState}'`);
+									this.log.silly(`${logPrefix} ${objDevices?.name} - subscribing state '${logMsgState}'`);
 									await this.subscribeStatesAsync(`${channel}.${stateId}`);
 
 									this.subscribedList.push(`${channel}.${stateId}`);
 								}
 
 								if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
-									const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objOrg) : objValues[valKey];
+									const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objDevices) : objValues[valKey];
 
 									let changedObj: any = undefined
 
@@ -1511,7 +1511,7 @@ class UnifiNetwork extends utils.Adapter {
 								} else {
 									if (!Object.hasOwn(treeDefinition[key], 'id')) {
 										// only report it if it's not a custom defined state
-										this.log.debug(`${logPrefix} ${objOrg?.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
+										this.log.debug(`${logPrefix} ${objDevices?.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
 									}
 								}
 							} else {
@@ -1520,7 +1520,7 @@ class UnifiNetwork extends utils.Adapter {
 								if (await this.objectExists(`${channel}.${stateId}`)) {
 									await this.delObjectAsync(`${channel}.${stateId}`);
 
-									this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+									this.log.info(`${logPrefix} '${objDevices?.name}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
 								}
 							}
 						} else {
@@ -1531,12 +1531,12 @@ class UnifiNetwork extends utils.Adapter {
 
 								if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, (x) => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeDefinition[key], 'required')) {
 									await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-									await this.createOrUpdateGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objOrg, objOrgValues[key], isAdapterStart, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+									await this.createOrUpdateGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objDevices, objChannel[key], isAdapterStart, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
 								} else {
 									// channel is on blacklist
 									if (await this.objectExists(idChannel)) {
 										await this.delObjectAsync(idChannel, { recursive: true });
-										this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+										this.log.info(`${logPrefix} '${objDevices?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
 									}
 								}
 							}
@@ -1560,14 +1560,14 @@ class UnifiNetwork extends utils.Adapter {
 												let idChannelArray: string | undefined = myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
 
 												if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdFromProperty')) {
-													idChannelArray = treeDefinition[key].arrayChannelIdFromProperty(objOrgValues[key][i], i, this);
+													idChannelArray = treeDefinition[key].arrayChannelIdFromProperty(objChannel[key][i], i, this);
 												} else if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdPrefix')) {
 													idChannelArray = treeDefinition[key].arrayChannelIdPrefix + myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
 												}
 
 												if (idChannelArray !== undefined) {
-													await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objOrgValues[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true)
-													await this.createOrUpdateGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objOrg, objOrgValues[key][i], true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+													await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objChannel[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true)
+													await this.createOrUpdateGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objDevices, objChannel[key][i], true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
 												}
 											}
 										}
@@ -1575,7 +1575,7 @@ class UnifiNetwork extends utils.Adapter {
 										// channel is on blacklist, wlan is comming from realtime api
 										if (await this.objectExists(idChannel)) {
 											await this.delObjectAsync(idChannel, { recursive: true });
-											this.log.info(`${logPrefix} '${objOrg?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+											this.log.info(`${logPrefix} '${objDevices?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
 										}
 									}
 								}
@@ -1591,7 +1591,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async getCommonGenericState(id: string, treeDefinition: { [key: string]: myCommonState }, objOrg, logMsgState: string) {
+	async getCommonGenericState(id: string, treeDefinition: { [key: string]: myCommonState }, objDevices, logMsgState: string) {
 		const logPrefix = '[getCommonGenericState]:';
 
 		try {
@@ -1622,10 +1622,10 @@ class UnifiNetwork extends utils.Adapter {
 			if (treeDefinition[id].states) {
 				common.states = treeDefinition[id].states;
 			} else if (Object.hasOwn(treeDefinition[id], 'statesFromProperty')) {
-				const statesFromProp = myHelper.getAllowedCommonStates(treeDefinition[id].statesFromProperty, objOrg);
+				const statesFromProp = myHelper.getAllowedCommonStates(treeDefinition[id].statesFromProperty, objDevices);
 
 				common.states = statesFromProp;
-				this.log.debug(`${logPrefix} ${objOrg?.name} - set allowed common.states for '${logMsgState}' (from: ${treeDefinition[id].statesFromProperty})`);
+				this.log.debug(`${logPrefix} ${objDevices?.name} - set allowed common.states for '${logMsgState}' (from: ${treeDefinition[id].statesFromProperty})`);
 			}
 
 			if (treeDefinition[id].desc) common.desc = treeDefinition[id].desc;

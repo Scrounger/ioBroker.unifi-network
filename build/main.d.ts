@@ -98,10 +98,10 @@ declare class UnifiNetwork extends utils.Adapter {
         [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
     } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, blacklistFilter: {
         id: string;
-    }[], isWhiteList: boolean, objOrg: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objOrgValues: any, isAdapterStart?: boolean, filterId?: string, isChannelOnWhitelist?: boolean): Promise<void>;
+    }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objChannel: any, isAdapterStart?: boolean, filterId?: string, isChannelOnWhitelist?: boolean): Promise<void>;
     getCommonGenericState(id: string, treeDefinition: {
         [key: string]: myCommonState;
-    }, objOrg: any, logMsgState: string): Promise<ioBroker.StateCommon>;
+    }, objDevices: any, logMsgState: string): Promise<ioBroker.StateCommon>;
     /**
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */

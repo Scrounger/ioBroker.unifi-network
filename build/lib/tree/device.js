@@ -22,9 +22,9 @@ export var device;
                 id: 'disabled',
                 iobType: 'boolean',
                 name: 'access point is disabled',
-                conditionToCreateState(objValues, adapter) {
+                conditionToCreateState(objDevice, adapter) {
                     // only wireless clients
-                    return objValues?.is_access_point;
+                    return objDevice?.is_access_point;
                 },
                 read: false,
                 write: true,
@@ -141,11 +141,11 @@ export var device;
             port_table: {
                 idChannel: 'ports',
                 channelName: 'port table',
-                arrayChannelIdFromProperty(objValues, i, adapter) {
-                    return `port_${myHelper.zeroPad(objValues?.port_idx, 2)}`;
+                arrayChannelIdFromProperty(objDevice, i, adapter) {
+                    return `port_${myHelper.zeroPad(objDevice?.port_idx, 2)}`;
                 },
-                arrayChannelNameFromProperty(objValues, adapter) {
-                    return objValues['name'];
+                arrayChannelNameFromProperty(objDevice, adapter) {
+                    return objDevice['name'];
                 },
                 array: {
                     name: {
@@ -164,9 +164,9 @@ export var device;
                         id: 'poe_enable',
                         iobType: 'boolean',
                         name: 'POE enabled',
-                        conditionToCreateState(objValues, adapter) {
+                        conditionToCreateState(objDevice, adapter) {
                             // only create state if it's a poe port
-                            return objValues?.port_poe === true;
+                            return objDevice?.port_poe === true;
                         },
                         valFromProperty: 'poe_mode',
                         read: true,
@@ -182,18 +182,18 @@ export var device;
                         read: false,
                         write: true,
                         role: 'button',
-                        conditionToCreateState(objValues, adapter) {
+                        conditionToCreateState(objDevice, adapter) {
                             // only create state if it's a poe port
-                            return objValues?.port_poe === true;
+                            return objDevice?.port_poe === true;
                         },
                     },
                     poe_power: {
                         iobType: 'number',
                         name: 'POE power consumption',
                         unit: 'W',
-                        conditionToCreateState(objValues, adapter) {
+                        conditionToCreateState(objDevice, adapter) {
                             // only create state if it's a poe port
-                            return objValues?.port_poe === true;
+                            return objDevice?.port_poe === true;
                         },
                         readVal(val, adapter, cache, deviceOrClient) {
                             return parseFloat(val);
@@ -203,9 +203,9 @@ export var device;
                         iobType: 'number',
                         name: 'POE voltage',
                         unit: 'V',
-                        conditionToCreateState(objValues, adapter) {
+                        conditionToCreateState(objDevice, adapter) {
                             // only create state if it's a poe port
-                            return objValues?.port_poe === true;
+                            return objDevice?.port_poe === true;
                         },
                         readVal(val, adapter, cache, deviceOrClient) {
                             return parseFloat(val);
@@ -226,9 +226,9 @@ export var device;
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objValues, adapter) {
+                        conditionToCreateState(objDevice, adapter) {
                             // only create state if it's a poe port
-                            return objValues?.satisfaction >= 0 ? true : false;
+                            return objDevice?.satisfaction >= 0 ? true : false;
                         },
                         unit: '%'
                     },
@@ -250,8 +250,8 @@ export var device;
             radio_table: {
                 idChannel: 'radio',
                 channelName: 'WLAN Radio',
-                arrayChannelNameFromProperty(objValues, adapter) {
-                    return myHelper.radio_nameToFrequency(objValues['name'], adapter);
+                arrayChannelNameFromProperty(objDevice, adapter) {
+                    return myHelper.radio_nameToFrequency(objDevice['name'], adapter);
                 },
                 array: {
                     channel: {
@@ -297,8 +297,8 @@ export var device;
             radio_table_stats: {
                 idChannel: 'radio',
                 channelName: 'WLAN Radio',
-                arrayChannelNameFromProperty(objValues, adapter) {
-                    return myHelper.radio_nameToFrequency(objValues?.name, adapter);
+                arrayChannelNameFromProperty(objDevice, adapter) {
+                    return myHelper.radio_nameToFrequency(objDevice?.name, adapter);
                 },
                 array: {
                     channel_utilization: {
@@ -334,9 +334,9 @@ export var device;
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objValues, adapter) {
+                        conditionToCreateState(objDevice, adapter) {
                             // only create state if it's a poe port
-                            return objValues?.satisfaction >= 0 ? true : false;
+                            return objDevice?.satisfaction >= 0 ? true : false;
                         },
                         unit: '%'
                     },
@@ -358,16 +358,16 @@ export var device;
             satisfaction: {
                 iobType: 'number',
                 name: 'satisfaction',
-                conditionToCreateState(objValues, adapter) {
+                conditionToCreateState(objDevice, adapter) {
                     // only create state if it's a poe port
-                    return objValues?.satisfaction >= 0 ? true : false;
+                    return objDevice?.satisfaction >= 0 ? true : false;
                 },
                 unit: '%'
             },
             storage: {
                 channelName: 'storage',
-                arrayChannelNameFromProperty(objValues, adapter) {
-                    return objValues?.name;
+                arrayChannelNameFromProperty(objDevice, adapter) {
+                    return objDevice?.name;
                 },
                 array: {
                     'mount_point': {
@@ -422,11 +422,11 @@ export var device;
             },
             temperatures: {
                 channelName: 'temperature',
-                arrayChannelIdFromProperty(objValues, i, adapter) {
-                    return objValues?.name;
+                arrayChannelIdFromProperty(objDevice, i, adapter) {
+                    return objDevice?.name;
                 },
-                arrayChannelNameFromProperty(objValues, adapter) {
-                    return objValues?.name;
+                arrayChannelNameFromProperty(objDevice, adapter) {
+                    return objDevice?.name;
                 },
                 array: {
                     type: {
@@ -526,16 +526,16 @@ export var device;
             vap_table: {
                 idChannel: 'wlan',
                 channelName: 'WLAN Network Statistics',
-                arrayChannelIdFromProperty(objValues, i, adapter) {
-                    if (objValues?.id) {
-                        return `${objValues?.id}_${objValues?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
+                arrayChannelIdFromProperty(objDevice, i, adapter) {
+                    if (objDevice?.id) {
+                        return `${objDevice?.id}_${objDevice?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
                     }
                     else {
                         return undefined;
                     }
                 },
-                arrayChannelNameFromProperty(objValues, adapter) {
-                    return `${objValues?.essid} - ${myHelper.radio_nameToFrequency(objValues?.radio_name, adapter)}`;
+                arrayChannelNameFromProperty(objDevice, adapter) {
+                    return `${objDevice?.essid} - ${myHelper.radio_nameToFrequency(objDevice?.radio_name, adapter)}`;
                 },
                 array: {
                     avg_client_signal: {
@@ -560,8 +560,8 @@ export var device;
                         id: 'connected_clients',
                         iobType: 'number',
                         name: 'connected clients',
-                        conditionToCreateState(objValues, adapter) {
-                            return !objValues?.is_guest;
+                        conditionToCreateState(objDevice, adapter) {
+                            return !objDevice?.is_guest;
                         },
                         valFromProperty: 'num_sta',
                     },
@@ -569,8 +569,8 @@ export var device;
                         id: 'connected_guests',
                         iobType: 'number',
                         name: 'connected guests',
-                        conditionToCreateState(objValues, adapter) {
-                            return objValues?.is_guest;
+                        conditionToCreateState(objDevice, adapter) {
+                            return objDevice?.is_guest;
                         },
                         valFromProperty: 'num_sta',
                     },
@@ -754,6 +754,7 @@ export var device;
     };
     const _WAN_UPTIME_PROPERTIES = {
         uptime: {
+            id: 'uptime',
             iobType: 'number',
             name: 'uptime',
             unit: 's',

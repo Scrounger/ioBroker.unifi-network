@@ -27,7 +27,7 @@ export interface myCommonState {
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>;
     valFromProperty?: string;
     statesFromProperty?: string;
-    conditionToCreateState?(objValues: any, adapter: ioBroker.Adapter): boolean;
+    conditionToCreateState?(objDevice: any, adapter: ioBroker.Adapter): boolean;
     subscribeMe?: true;
     required?: true;
 }
@@ -45,9 +45,9 @@ export interface myCommonChannelArray {
     icon?: string;
     arrayChannelIdPrefix?: string;
     arrayChannelIdZeroPad?: number;
-    arrayChannelIdFromProperty?(objValues: any, i: number, adapter: ioBroker.Adapter): string;
+    arrayChannelIdFromProperty?(objDevice: any, i: number, adapter: ioBroker.Adapter): string;
     arrayChannelNamePrefix?: string;
-    arrayChannelNameFromProperty?(objValues: any, adapter: ioBroker.Adapter): string;
+    arrayChannelNameFromProperty?(objDevice: any, adapter: ioBroker.Adapter): string;
     arrayStartNumber?: number;
     array: {
         [key: string]: myCommonState;

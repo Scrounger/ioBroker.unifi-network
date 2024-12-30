@@ -28,8 +28,8 @@ export var wlan;
                 id: 'connected_clients',
                 iobType: 'number',
                 name: 'connected clients',
-                conditionToCreateState(objValues, adapter) {
-                    return !objValues?.is_guest;
+                conditionToCreateState(objDevice, adapter) {
+                    return !objDevice?.is_guest;
                 },
                 valFromProperty: 'current_client_count',
             },
@@ -37,16 +37,16 @@ export var wlan;
                 id: 'connected_clients_peak',
                 iobType: 'number',
                 name: 'peak of connected clients',
-                conditionToCreateState(objValues, adapter) {
-                    return !objValues?.is_guest;
+                conditionToCreateState(objDevice, adapter) {
+                    return !objDevice?.is_guest;
                 },
             },
             connected_guests: {
                 id: 'connected_guests',
                 iobType: 'number',
                 name: 'connected guests',
-                conditionToCreateState(objValues, adapter) {
-                    return objValues?.is_guest;
+                conditionToCreateState(objDevice, adapter) {
+                    return objDevice?.is_guest;
                 },
                 valFromProperty: 'current_client_count',
             },

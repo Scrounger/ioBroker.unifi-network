@@ -32,8 +32,8 @@ export namespace wlan {
                 id: 'connected_clients',
                 iobType: 'number',
                 name: 'connected clients',
-                conditionToCreateState(objValues: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
-                    return !objValues?.is_guest
+                conditionToCreateState(objDevice: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                    return !objDevice?.is_guest
                 },
                 valFromProperty: 'current_client_count',
             },
@@ -41,16 +41,16 @@ export namespace wlan {
                 id: 'connected_clients_peak',
                 iobType: 'number',
                 name: 'peak of connected clients',
-                conditionToCreateState(objValues: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
-                    return !objValues?.is_guest
+                conditionToCreateState(objDevice: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                    return !objDevice?.is_guest
                 },
             },
             connected_guests: {
                 id: 'connected_guests',
                 iobType: 'number',
                 name: 'connected guests',
-                conditionToCreateState(objValues: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
-                    return objValues?.is_guest
+                conditionToCreateState(objDevice: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                    return objDevice?.is_guest
                 },
                 valFromProperty: 'current_client_count',
             },

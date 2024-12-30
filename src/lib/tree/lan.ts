@@ -12,8 +12,8 @@ export namespace lan {
                 id: 'connected_clients',
                 iobType: 'number',
                 name: 'connected clients',
-                conditionToCreateState(objValues: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
-                    return objValues?.purpose !== 'guest'
+                conditionToCreateState(objDevice: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
+                    return objDevice?.purpose !== 'guest'
                 },
                 valFromProperty: 'dhcp_active_leases',
             },
@@ -21,8 +21,8 @@ export namespace lan {
                 id: 'connected_guests',
                 iobType: 'number',
                 name: 'connected guests',
-                conditionToCreateState(objValues: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
-                    return objValues?.purpose === 'guest'
+                conditionToCreateState(objDevice: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
+                    return objDevice?.purpose === 'guest'
                 },
                 valFromProperty: 'dhcp_active_leases',
             },
