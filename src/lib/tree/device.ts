@@ -711,6 +711,9 @@ export namespace device {
             name: 'latency',
             unit: 'ms'
         },
+        name: {
+            iobType: 'string'
+        },
         port_idx: {
             iobType: 'number',
             name: 'Port'
@@ -734,7 +737,7 @@ export namespace device {
         isOnline: {
             iobType: 'boolean',
             name: 'is connected to internet service provider',
-            valFromProperty: 'up'
+            valFromProperty: 'is_uplink'
         },
         speedtest_download: {
             id: 'speedtest_download',
@@ -760,9 +763,18 @@ export namespace device {
 
     const _WAN_UPTIME_PROPERTIES: { [key: string]: myCommonState } = {
         uptime: {
+            id: 'uptime',
             iobType: 'number',
             name: 'uptime',
             unit: 's',
+            def: 0
+        },
+        downtime: {
+            id: 'downtime',
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+            def: 0
         }
     }
 

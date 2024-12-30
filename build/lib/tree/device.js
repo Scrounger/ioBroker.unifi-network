@@ -703,6 +703,9 @@ export var device;
             name: 'latency',
             unit: 'ms'
         },
+        name: {
+            iobType: 'string'
+        },
         port_idx: {
             iobType: 'number',
             name: 'Port'
@@ -726,7 +729,7 @@ export var device;
         isOnline: {
             iobType: 'boolean',
             name: 'is connected to internet service provider',
-            valFromProperty: 'up'
+            valFromProperty: 'is_uplink'
         },
         speedtest_download: {
             id: 'speedtest_download',
@@ -754,6 +757,14 @@ export var device;
             iobType: 'number',
             name: 'uptime',
             unit: 's',
+            def: 0
+        },
+        downtime: {
+            id: 'downtime',
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+            def: 0
         }
     };
     const _WAN_GEO_INFO_PROPERTIES = {

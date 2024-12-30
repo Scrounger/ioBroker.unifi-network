@@ -83,6 +83,9 @@ export const eventHandler = {
                         if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.isOnline`)) {
                             await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, false, true);
                         }
+                        if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.state`)) {
+                            await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.state`, 0, true);
+                        }
                     }
                 }
                 else {
