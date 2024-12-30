@@ -140,7 +140,9 @@ export var device;
             },
             port_table: {
                 idChannel: 'ports',
-                channelName: 'port table',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'port table';
+                },
                 arrayChannelIdFromProperty(objDevice, i, adapter) {
                     return `port_${myHelper.zeroPad(objDevice?.port_idx, 2)}`;
                 },
@@ -249,7 +251,9 @@ export var device;
             },
             radio_table: {
                 idChannel: 'radio',
-                channelName: 'WLAN Radio',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'WLAN Radio';
+                },
                 arrayChannelNameFromProperty(objDevice, adapter) {
                     return myHelper.radio_nameToFrequency(objDevice['name'], adapter);
                 },
@@ -296,7 +300,9 @@ export var device;
             },
             radio_table_stats: {
                 idChannel: 'radio',
-                channelName: 'WLAN Radio',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'WLAN Radio';
+                },
                 arrayChannelNameFromProperty(objDevice, adapter) {
                     return myHelper.radio_nameToFrequency(objDevice?.name, adapter);
                 },
@@ -365,7 +371,9 @@ export var device;
                 unit: '%'
             },
             storage: {
-                channelName: 'storage',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'storage';
+                },
                 arrayChannelNameFromProperty(objDevice, adapter) {
                     return objDevice?.name;
                 },
@@ -402,7 +410,9 @@ export var device;
             },
             "system-stats": {
                 idChannel: 'system',
-                channelName: 'system statistics',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'system statistics';
+                },
                 object: {
                     cpu: {
                         iobType: 'number',
@@ -421,7 +431,9 @@ export var device;
                 }
             },
             temperatures: {
-                channelName: 'temperature',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'temperature';
+                },
                 arrayChannelIdFromProperty(objDevice, i, adapter) {
                     return objDevice?.name;
                 },
@@ -481,7 +493,9 @@ export var device;
                 role: 'button'
             },
             uplink: {
-                channelName: 'uplink device',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'uplink device';
+                },
                 object: {
                     // Ip is same as from device, it's not the ip of the uplink device
                     // ip: {
@@ -525,7 +539,9 @@ export var device;
             },
             vap_table: {
                 idChannel: 'wlan',
-                channelName: 'WLAN Network Statistics',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'WLAN Network Statistics';
+                },
                 arrayChannelIdFromProperty(objDevice, i, adapter) {
                     if (objDevice?.id) {
                         return `${objDevice?.id}_${objDevice?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
@@ -616,44 +632,60 @@ export var device;
             },
             active_geo_info: {
                 idChannel: 'isp',
-                channelName: 'internet service provider',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'internet service provider';
+                },
                 object: {
                     WAN: {
                         idChannel: 'wan1',
-                        channelName: 'WAN 1',
+                        channelName(objDevice, objChannel, adapter) {
+                            return objChannel.isp_name;
+                        },
                         object: _WAN_GEO_INFO_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
-                        channelName: 'WAN 2',
+                        channelName(objDevice, objChannel, adapter) {
+                            return objChannel.isp_name;
+                        },
                         object: _WAN_GEO_INFO_PROPERTIES
                     },
                 }
             },
             uptime_stats: {
                 idChannel: 'isp',
-                channelName: 'internet service provider',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'internet service provider';
+                },
                 object: {
                     WAN: {
                         idChannel: 'wan1',
-                        channelName: 'WAN 1',
+                        channelName(objDevice, objChannel, adapter) {
+                            return objDevice.active_geo_info.WAN.isp_name;
+                        },
                         object: _WAN_UPTIME_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
-                        channelName: 'WAN 2',
+                        channelName(objDevice, objChannel, adapter) {
+                            return objDevice.active_geo_info.WAN2.isp_name;
+                        },
                         object: _WAN_UPTIME_PROPERTIES
                     }
                 }
             },
             wan1: {
                 idChannel: 'wan1',
-                channelName: 'WAN 1',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'WAN 1';
+                },
                 object: _WAN_PROPERTIES
             },
             wan2: {
                 idChannel: 'wan2',
-                channelName: 'WAN 2',
+                channelName(objDevice, objChannel, adapter) {
+                    return 'WAN 1';
+                },
                 object: _WAN_PROPERTIES
             }
         };
@@ -751,6 +783,9 @@ export var device;
             write: true,
             role: 'button'
         },
+        up: {
+            iobType: 'boolean',
+        }
     };
     const _WAN_UPTIME_PROPERTIES = {
         uptime: {

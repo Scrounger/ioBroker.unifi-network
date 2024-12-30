@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable } from '../api/network-types-device.js';
-import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myNetworkClient } from '../myTypes.js';
+import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
 import * as myHelper from '../helper.js';
 
 
@@ -47,7 +47,7 @@ export namespace device {
                 name: 'device reported errors',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                     return val === 6 || val === 9
                 },
             },
@@ -58,7 +58,7 @@ export namespace device {
                 subscribeMe: true,
                 valFromProperty: 'model',
                 required: true,
-                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                     if (val && adapter.config.deviceImageDownload) {
                         const find = _.find(cache.deviceModels, (x) => x.model_name.includes(val));
 
@@ -85,7 +85,7 @@ export namespace device {
                 name: 'is device online',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                     return val !== 0 && val !== 6 && val !== 9
                 },
             },
@@ -125,7 +125,7 @@ export namespace device {
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -146,7 +146,9 @@ export namespace device {
             },
             port_table: {
                 idChannel: 'ports',
-                channelName: 'port table',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'port table'
+                },
                 arrayChannelIdFromProperty(objDevice: NetworkDevicePortTable, i: number, adapter: ioBroker.Adapter): string {
                     return `port_${myHelper.zeroPad(objDevice?.port_idx, 2)}`
                 },
@@ -177,7 +179,7 @@ export namespace device {
                         valFromProperty: 'poe_mode',
                         read: true,
                         write: true,
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return val === 'auto';
                         }
                     },
@@ -201,7 +203,7 @@ export namespace device {
                             // only create state if it's a poe port
                             return objDevice?.port_poe === true;
                         },
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return parseFloat(val);
                         }
                     },
@@ -213,7 +215,7 @@ export namespace device {
                             // only create state if it's a poe port
                             return objDevice?.port_poe === true;
                         },
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return parseFloat(val);
                         }
                     },
@@ -225,7 +227,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'RX Bytes',
                         unit: 'GB',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -247,7 +249,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'TX Bytes',
                         unit: 'GB',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     }
@@ -255,7 +257,9 @@ export namespace device {
             },
             radio_table: {
                 idChannel: 'radio',
-                channelName: 'WLAN Radio',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'WLAN Radio'
+                },
                 arrayChannelNameFromProperty(objDevice: any, adapter: ioBroker.Adapter): string {
                     return myHelper.radio_nameToFrequency(objDevice['name'], adapter);
                 },
@@ -269,7 +273,7 @@ export namespace device {
                         iobType: 'string',
                         name: 'channel name',
                         valFromProperty: 'name',
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
@@ -302,7 +306,9 @@ export namespace device {
             },
             radio_table_stats: {
                 idChannel: 'radio',
-                channelName: 'WLAN Radio',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'WLAN Radio'
+                },
                 arrayChannelNameFromProperty(objDevice: NetworkDeviceRadioTableStat, adapter: ioBroker.Adapter): string {
                     return myHelper.radio_nameToFrequency(objDevice?.name, adapter);
                 },
@@ -371,7 +377,9 @@ export namespace device {
                 unit: '%'
             },
             storage: {
-                channelName: 'storage',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'storage'
+                },
                 arrayChannelNameFromProperty(objDevice: NetworkDeviceStorage, adapter: ioBroker.Adapter) {
                     return objDevice?.name
                 },
@@ -388,7 +396,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'size',
                         unit: 'GB',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -400,7 +408,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'used',
                         unit: 'GB',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     }
@@ -408,12 +416,14 @@ export namespace device {
             },
             "system-stats": {
                 idChannel: 'system',
-                channelName: 'system statistics',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'system statistics'
+                },
                 object: {
                     cpu: {
                         iobType: 'number',
                         unit: '%',
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return parseFloat(val);
                         },
 
@@ -421,14 +431,16 @@ export namespace device {
                     mem: {
                         iobType: 'number',
                         unit: '%',
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return parseFloat(val);
                         },
                     }
                 }
             },
             temperatures: {
-                channelName: 'temperature',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'temperature'
+                },
                 arrayChannelIdFromProperty(objDevice: NetworkDeviceTemperature, i: number, adapter: ioBroker.Adapter): string {
                     return objDevice?.name
                 },
@@ -444,7 +456,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'value',
                         unit: '°C',
-                        readVal: function (val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal: function (val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val * 10) / 10;
                         },
                     },
@@ -456,7 +468,7 @@ export namespace device {
                 name: 'temperature',
                 unit: '°C',
                 valFromProperty: 'general_temperature',
-                readVal: function (val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal: function (val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                     return Math.round(val * 10) / 10;
                 },
             },
@@ -464,7 +476,7 @@ export namespace device {
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -488,7 +500,9 @@ export namespace device {
                 role: 'button'
             },
             uplink: {
-                channelName: 'uplink device',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'uplink device'
+                },
                 object: {
                     // Ip is same as from device, it's not the ip of the uplink device
                     // ip: {
@@ -532,7 +546,9 @@ export namespace device {
             },
             vap_table: {
                 idChannel: 'wlan',
-                channelName: 'WLAN Network Statistics',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'WLAN Network Statistics'
+                },
                 arrayChannelIdFromProperty(objDevice: NetworkDeviceVapTable, i: number, adapter: ioBroker.Adapter): string | undefined {
                     if (objDevice?.id) {
                         return `${objDevice?.id}_${objDevice?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`
@@ -558,7 +574,7 @@ export namespace device {
                         iobType: 'string',
                         name: 'channel frequency',
                         valFromProperty: 'radio_name',
-                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
@@ -598,7 +614,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'RX Bytes',
                         unit: 'GB',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -606,7 +622,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'satisfaction',
                         unit: '%',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return val >= 0 ? val : 0
                         },
                     },
@@ -614,7 +630,7 @@ export namespace device {
                         iobType: 'number',
                         name: 'TX Bytes',
                         unit: 'GB',
-                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                        readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -622,44 +638,60 @@ export namespace device {
             },
             active_geo_info: {
                 idChannel: 'isp',
-                channelName: 'internet service provider',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'internet service provider'
+                },
                 object: {
                     WAN: {
                         idChannel: 'wan1',
-                        channelName: 'WAN 1',
-                        object: _WAN_GEO_INFO_PROPERTIES
+                        channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                            return objChannel.isp_name
+                        },
+                        object: _ISP_GEO_INFO_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
-                        channelName: 'WAN 2',
-                        object: _WAN_GEO_INFO_PROPERTIES
+                        channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                            return objChannel.isp_name
+                        },
+                        object: _ISP_GEO_INFO_PROPERTIES
                     },
                 }
             },
             uptime_stats: {
                 idChannel: 'isp',
-                channelName: 'internet service provider',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'internet service provider'
+                },
                 object: {
                     WAN: {
                         idChannel: 'wan1',
-                        channelName: 'WAN 1',
-                        object: _WAN_UPTIME_PROPERTIES
+                        channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                            return objDevice.active_geo_info.WAN.isp_name
+                        },
+                        object: _ISP_UPTIME_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
-                        channelName: 'WAN 2',
-                        object: _WAN_UPTIME_PROPERTIES
+                        channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                            return objDevice.active_geo_info.WAN2.isp_name
+                        },
+                        object: _ISP_UPTIME_PROPERTIES
                     }
                 }
             },
             wan1: {
                 idChannel: 'wan1',
-                channelName: 'WAN 1',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'WAN 1'
+                },
                 object: _WAN_PROPERTIES
             },
             wan2: {
                 idChannel: 'wan2',
-                channelName: 'WAN 2',
+                channelName(objDevice: NetworkDevice, objChannel: any, adapter: ioBroker.Adapter): string {
+                    return 'WAN 1'
+                },
                 object: _WAN_PROPERTIES
             }
         }
@@ -689,7 +721,7 @@ export namespace device {
             name: 'current download rate',
             unit: 'Mbps',
             valFromProperty: 'rx_rate',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                 return Math.round(val / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -698,7 +730,7 @@ export namespace device {
             name: 'current upload rate',
             unit: 'Mbps',
             valFromProperty: 'tx_rate',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                 return Math.round(val / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -722,7 +754,7 @@ export namespace device {
             iobType: 'number',
             name: 'RX Bytes',
             unit: 'GB',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                 return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -730,7 +762,7 @@ export namespace device {
             iobType: 'number',
             name: 'TX Bytes',
             unit: 'GB',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice): ioBroker.StateValue {
                 return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -759,9 +791,12 @@ export namespace device {
             write: true,
             role: 'button'
         },
+        up: {
+            iobType: 'boolean',
+        }
     }
 
-    const _WAN_UPTIME_PROPERTIES: { [key: string]: myCommonState } = {
+    const _ISP_UPTIME_PROPERTIES: { [key: string]: myCommonState } = {
         uptime: {
             id: 'uptime',
             iobType: 'number',
@@ -778,7 +813,7 @@ export namespace device {
         }
     }
 
-    const _WAN_GEO_INFO_PROPERTIES: { [key: string]: myCommonState } = {
+    const _ISP_GEO_INFO_PROPERTIES: { [key: string]: myCommonState } = {
         address: {
             id: 'ip',
             iobType: 'string',

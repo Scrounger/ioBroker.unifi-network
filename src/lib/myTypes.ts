@@ -35,14 +35,14 @@ export interface myCommonState {
 
 export interface myCommoneChannelObject {
     idChannel?: string;
-    channelName?: string;
+    channelName?(objDevice: NetworkDevice | myNetworkClient, objChannel: any, adapter: ioBroker.Adapter): string;
     icon?: string;
     object: { [key: string]: myCommonState | myCommoneChannelObject; };
 }
 
 export interface myCommonChannelArray {
     idChannel?: string;
-    channelName?: string,
+    channelName?(objDevice: NetworkDevice | myNetworkClient, objChannel: any, adapter: ioBroker.Adapter): string;
     icon?: string,
     arrayChannelIdPrefix?: string,                                                                  // Array item id get a prefix e.g. myPrefix_0
     arrayChannelIdZeroPad?: number,                                                                 // Array item id get a padding for the number
