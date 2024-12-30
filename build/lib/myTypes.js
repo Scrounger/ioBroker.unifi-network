@@ -17,7 +17,8 @@ export const WebSocketEvent = {
         Restarted: ['EVT_SW_Restarted', 'EVT_AP_Restarted', 'EVT_GW_Restarted'],
         ChannelChanged: ['EVT_AP_ChannelChanged'],
         LostContact: ['EVT_SW_Lost_Contact', 'EVT_DM_Lost_Contact', 'EVT_AP_Lost_Contact'],
-        PoeDisconnect: ['EVT_SW_PoeDisconnect']
+        PoeDisconnect: ['EVT_SW_PoeDisconnect'],
+        WANTransition: ['EVT_GW_WANTransition']
     },
     client: {
         Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],

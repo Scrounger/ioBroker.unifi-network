@@ -57,7 +57,7 @@ export namespace lan {
             vlan: {
                 iobType: 'number',
                 name: 'VLAN Id',
-                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue {
                     return parseInt(val);
                 },
             }

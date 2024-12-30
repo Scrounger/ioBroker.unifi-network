@@ -1494,7 +1494,7 @@ class UnifiNetwork extends utils.Adapter {
 								}
 
 								if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
-									const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objDevices) : objValues[valKey];
+									const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objDevices, `${channel}.${stateId}`) : objValues[valKey];
 
 									let changedObj: any = undefined
 
@@ -1703,54 +1703,58 @@ class UnifiNetwork extends utils.Adapter {
 				for (const myEvent of event.data) {
 					if (WebSocketEvent.client.Connected.includes(myEvent.key) || WebSocketEvent.client.Disconnected.includes(myEvent.key)) {
 						// Client connect or disconnect
-
 						this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.connected(event.meta, myEvent, this, this.cache);
 
 					} else if (WebSocketEvent.client.Roamed.includes(myEvent.key)) {
 						// Client roamed between AP's
-
 						this.log.debug(`${logPrefix} event 'roamed' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.roamed(event.meta, myEvent, this, this.cache);
 
 					} else if (WebSocketEvent.client.RoamedRadio.includes(myEvent.key)) {
 						// Client roamed radio -> change channel
-
 						this.log.debug(`${logPrefix} event 'roamed radio' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.roamedRadio(event.meta, myEvent, this, this.cache);
 
 					} else if (WebSocketEvent.client.Blocked.includes(myEvent.key) || WebSocketEvent.client.Unblocked.includes(myEvent.key)) {
 						// Client blocked or unblocked
-
 						this.log.debug(`${logPrefix} event 'block / unblock' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.client.block(event.meta, myEvent, this, this.cache);
 
 					} else if (WebSocketEvent.device.Restarted.includes(myEvent.key)) {
 						// Device connect or disconnect
-
 						this.log.debug(`${logPrefix} event 'restarted' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.device.restarted(event.meta, myEvent, this, this.cache);
+
 					} else if (WebSocketEvent.device.Connected.includes(myEvent.key) || WebSocketEvent.device.Disconnected.includes(myEvent.key)) {
 						// Device restarted
-
 						this.log.debug(`${logPrefix} event 'connected / disconnected' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.device.connected(event.meta, myEvent, this, this.cache);
+
 					} else if (WebSocketEvent.device.LostContact.includes(myEvent.key)) {
 						// Device lost contact
-
 						this.log.debug(`${logPrefix} event 'lost contact' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						eventHandler.device.lostContact(event.meta, myEvent, this, this.cache);
+
+					} else if (WebSocketEvent.device.WANTransition.includes(myEvent.key)) {
+						// WAN ISP Connection changed
+						this.log.debug(`${logPrefix} event 'wan transition' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+						eventHandler.device.wanTransition(event.meta, myEvent, this, this.cache);
+
 					} else if (WebSocketEvent.device.ChannelChanged.includes(myEvent.key)) {
 						this.log.debug(`${logPrefix} event 'AP channel changed' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
 					} else if (WebSocketEvent.device.PoeDisconnect.includes(myEvent.key)) {
 						this.log.debug(`${logPrefix} event 'poe disconnect' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
 					} else {
 						this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key},` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 					}

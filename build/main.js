@@ -1297,7 +1297,7 @@ class UnifiNetwork extends utils.Adapter {
                                     this.subscribedList.push(`${channel}.${stateId}`);
                                 }
                                 if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
-                                    const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objDevices) : objValues[valKey];
+                                    const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objDevices, `${channel}.${stateId}`) : objValues[valKey];
                                     let changedObj = undefined;
                                     if (key === 'last_seen' || key === 'first_seen' || key === 'rundate') {
                                         // set lc to last_seen value
@@ -1527,6 +1527,11 @@ class UnifiNetwork extends utils.Adapter {
                         // Device lost contact
                         this.log.debug(`${logPrefix} event 'lost contact' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                         eventHandler.device.lostContact(event.meta, myEvent, this, this.cache);
+                    }
+                    else if (WebSocketEvent.device.WANTransition.includes(myEvent.key)) {
+                        // WAN ISP Connection changed
+                        this.log.debug(`${logPrefix} event 'wan transition' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+                        eventHandler.device.wanTransition(event.meta, myEvent, this, this.cache);
                     }
                     else if (WebSocketEvent.device.ChannelChanged.includes(myEvent.key)) {
                         this.log.debug(`${logPrefix} event 'AP channel changed' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);

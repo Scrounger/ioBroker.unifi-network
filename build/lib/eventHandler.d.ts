@@ -8,6 +8,7 @@ export declare const eventHandler: {
         connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         speedTest(event: NetworkEventSpeedTest, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         lostContact(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+        wanTransition(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };
     client: {
         connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;

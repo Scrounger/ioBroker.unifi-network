@@ -111,7 +111,36 @@ export const eventHandler = {
             } catch (error) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
-        }
+        },
+        async wanTransition(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.device.wanTransition]:'
+
+            try {
+                const mac: string = data.gw || data.dm
+                const ifname: string = data.iface
+
+                if (mac) {
+                    if (adapter.config.devicesEnabled) {
+                        const idWanInterface = cache?.devices[mac]?.wan1?.ifname === ifname ? 'wan1' : cache?.devices[mac]?.wan2?.ifname === ifname ? 'wan2' : undefined;
+
+                        if (idWanInterface) {
+                            adapter.log.info(`${logPrefix} '${cache?.devices[mac]?.name}' (mac: ${mac}) '${idWanInterface} transition', state: ${data.state}`);
+
+                            const isOnlineId = `devices.${mac}.isp.${idWanInterface}.isOnline`
+
+                            if (await adapter.objectExists(isOnlineId)) {
+                                await adapter.setStateChangedAsync(isOnlineId, data.state !== 'inactive', true);
+                            }
+                        }
+                    }
+                } else {
+                    adapter.log.warn(`${logPrefix} event 'lost contact' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
+            }
+        },
     },
     client: {
         async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {

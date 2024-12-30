@@ -59,7 +59,7 @@ export namespace wlan {
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue {
                     return val >= 0 ? val : 0
                 },
             },

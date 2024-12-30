@@ -23,7 +23,7 @@ export interface myCommonState {
     icon?: string;
     def?: ioBroker.StateValue;
     desc?: string;
-    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient): ioBroker.StateValue | Promise<ioBroker.StateValue>;
+    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue | Promise<ioBroker.StateValue>;
     writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>;
     valFromProperty?: string;
     statesFromProperty?: string;
@@ -81,6 +81,7 @@ export declare const WebSocketEvent: {
         ChannelChanged: string[];
         LostContact: string[];
         PoeDisconnect: string[];
+        WANTransition: string[];
     };
     client: {
         Connected: string[];

@@ -34,7 +34,7 @@ export var client;
                 iobType: 'string',
                 name: 'channel name',
                 valFromProperty: 'radio_name',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
@@ -61,7 +61,7 @@ export var client;
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 },
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     if (deviceOrClient.fingerprint && adapter.config.clientImageDownload) {
                         if (deviceOrClient.unifi_device_info && deviceOrClient.unifi_device_info.icon_filename) {
                             return `https://static.ui.com/fingerprint/ui/icons/${deviceOrClient.unifi_device_info.icon_filename}_257x257.png?q=100`;
@@ -107,7 +107,7 @@ export var client;
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
                 required: true,
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (deviceOrClient.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
@@ -187,7 +187,7 @@ export var client;
                 iobType: 'string',
                 name: 'radio name',
                 valFromProperty: 'radio_proto',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     if (val) {
                         if (val === 'ax')
                             return 'WiFi 6';
@@ -239,7 +239,7 @@ export var client;
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -247,7 +247,7 @@ export var client;
                 iobType: 'number',
                 name: 'Rx Rate',
                 unit: 'mbps',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return Math.round(val / 1000);
                 }
             },
@@ -260,7 +260,7 @@ export var client;
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -268,7 +268,7 @@ export var client;
                 iobType: 'number',
                 name: 'Tx Rate',
                 unit: 'mbps',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return Math.round(val / 1000);
                 }
             },

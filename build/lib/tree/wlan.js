@@ -55,7 +55,7 @@ export var wlan;
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return val >= 0 ? val : 0;
                 },
             },

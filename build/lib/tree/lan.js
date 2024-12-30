@@ -53,7 +53,7 @@ export var lan;
             vlan: {
                 iobType: 'number',
                 name: 'VLAN Id',
-                readVal(val, adapter, cache, deviceOrClient) {
+                readVal(val, adapter, cache, deviceOrClient, id) {
                     return parseInt(val);
                 },
             }
