@@ -379,6 +379,8 @@ class UnifiNetwork extends utils.Adapter {
 				this.pingTimeout = this.setTimeout(() => {
 					this.sendPing();
 				}, ((this.config.expertAliveInterval || 30) / 2) * 1000);
+			} else {
+				await this.setConnectionStatus(false);
 			}
 
 			// start the alive checker
