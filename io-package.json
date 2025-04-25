@@ -1,374 +1,387 @@
 {
-    "common": {
-        "name": "unifi-network",
-        "version": "0.3.3-alpha",
-        "news": {
-            "0.0.1": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "uk": "Початкова версія",
-                "zh-cn": "首次出版"
-            }
-        },
-        "titleLang": {
-            "en": "Unifi Network",
-            "de": "Unifi-Netzwerk",
-            "ru": "Юнифи Сеть",
-            "pt": "Rede Unifi",
-            "nl": "Unifi-netwerk",
-            "fr": "Réseau Unifi",
-            "it": "Rete Unifi",
-            "es": "Red Unifi",
-            "pl": "Sieć Unifi",
-            "uk": "Мережа Unifi",
-            "zh-cn": "统一网络"
-        },
-        "desc": {
-            "en": "Communication with the Unifi Network application using the websocket interface to receive information in real-time",
-            "de": "Kommunikation mit der Unifi Network Anwendung über die Websocket-Schnittstelle, um Informationen in Echtzeit zu erhalten",
-            "ru": "Связь с приложением Unifi Network, использующим интерфейс websocket для получения информации в режиме реального времени",
-            "pt": "Comunicação com o aplicativo Unifi Network usando a interface websocket para receber informações em tempo real",
-            "nl": "Communicatie met de Unifi Network applicatie met behulp van de websocket interface om informatie in realtime te ontvangen",
-            "fr": "Communication avec l'application Unifi Network utilisant l'interface websocket pour recevoir des informations en temps réel",
-            "it": "Comunicazione con l'applicazione Unifi Network utilizzando l'interfaccia websocket per ricevere informazioni in tempo reale",
-            "es": "Comunicación con la aplicación Unifi Network usando la interfaz websocket para recibir información en tiempo real",
-            "pl": "Komunikacja z aplikacją Unifi Network przy użyciu interfejsu websocket w celu otrzymywania informacji w czasie rzeczywistym",
-            "uk": "Зв'язок з програмою Unifi Network за допомогою інтерфейсу веб-сакету для отримання інформації в режимі реального часу",
-            "zh-cn": "使用websocket接口实时接收信息与Unifi网络应用程序通信"
-        },
-        "authors": [
-            "Scrounger <scrounger@gmx.net>"
-        ],
-        "keywords": [
-            "unifi",
-            "network",
-            "unifi-os",
-            "api",
-            "websocket"
-        ],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "unifi-network.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/Scrounger/ioBroker.unifi-network/main/admin/unifi-network.png",
-        "readme": "https://github.com/Scrounger/ioBroker.unifi-network/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "infrastructure",
-        "compact": true,
-        "connectionType": "local",
-        "dataSource": "push",
-        "messagebox": true,
-        "localLinks": {
-            "_default": "https://%host%:%port%"
-        },
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=3.3.22"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=5.1.13"
-            }
-        ]
+  "common": {
+    "name": "unifi-network",
+    "version": "1.0.0-beta.0",
+    "news": {
+      "1.0.0-beta.0": {
+        "en": "initial release",
+        "de": "erstausstrahlung",
+        "ru": "первоначальное освобождение",
+        "pt": "lançamento inicial",
+        "nl": "eerste release",
+        "fr": "libération initiale",
+        "it": "rilascio iniziale",
+        "es": "liberación inicial",
+        "pl": "początkowe zwolnienie",
+        "uk": "початковий реліз",
+        "zh-cn": "初步释放"
+      },
+      "0.0.1": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
     },
-    "encryptedNative": [
-        "password"
-    ],
-    "protectedNative": [
-        "password"
-    ],
-    "native": {
-        "host": "",
-        "port": 8443,
-        "isUnifiOs": false,
-        "site": "default",
-        "user": "",
-        "password": "",
-        "expert": false,
-        "expertAliveInterval": 30,
-        "expertConnectionMaxRetries": 200,
-        "realTimeApiDebounceTime": 15,
-        "apiUpdateInterval": 60,
-        "deviceImageDownload": false,
-        "clientRealtimeDisconnectDebounceTime": 0,
-        "clientOfflineTimeout": 200,
-        "vpnOfflineTimeout": 300,
-        "clientImageDownload": false,
-        "keepIobSynchron": false,
-        "deleteClientsOlderThan": 60,
-        "deleteGuestsOlderThan": 60,
-        "devicesEnabled": true,
-        "clientsEnabled": true,
-        "guestsEnabled": true,
-        "vpnEnabled": true,
-        "wlanConfigEnabled": false,
-        "lanConfigEnabled": false,
-        "deviceIsWhiteList": false,
-        "deviceBlackList": [],
-        "deviceStatesIsWhiteList": false,
-        "deviceStatesBlackList": [
-            {
-                "id": "connected_clients"
-            },
-            {
-                "id": "connected_guests"
-            },
-            {
-                "id": "disabled"
-            },
-            {
-                "id": "fan_level"
-            },
-            {
-                "id": "image"
-            },
-            {
-                "id": "isp"
-            },
-            {
-                "id": "led_override"
-            },
-            {
-                "id": "name"
-            },
-            {
-                "id": "restart"
-            },
-            {
-                "id": "rx_bytes"
-            },
-            {
-                "id": "state"
-            },
-            {
-                "id": "ports"
-            },
-            {
-                "id": "radio"
-            },
-            {
-                "id": "satisfaction"
-            },
-            {
-                "id": "storage"
-            },
-            {
-                "id": "system"
-            },
-            {
-                "id": "temperature"
-            },
-            {
-                "id": "temperatures"
-            },
-            {
-                "id": "tx_bytes"
-            },
-            {
-                "id": "power"
-            },
-            {
-                "id": "upgradable"
-            },
-            {
-                "id": "upgrade"
-            },
-            {
-                "id": "uplink"
-            },
-            {
-                "id": "wan1"
-            },
-            {
-                "id": "wan2"
-            },
-            {
-                "id": "wlan"
-            }
-        ],
-        "clientIsWhiteList": false,
-        "clientBlackList": [],
-        "clientStatesIsWhiteList": false,
-        "clientStatesBlackList": [
-            {
-                "id": "blocked"
-            },
-            {
-                "id": "channel"
-            },
-            {
-                "id": "channel_frequency"
-            },
-            {
-                "id": "essid"
-            },
-            {
-                "id": "first_seen"
-            },
-            {
-                "id": "hostname"
-            },
-            {
-                "id": "image"
-            },
-            {
-                "id": "is_wired"
-            },
-            {
-                "id": "uplink_mac"
-            },
-            {
-                "id": "uplink_name"
-            },
-            {
-                "id": "uplink_port"
-            },
-            {
-                "id": "model"
-            },
-            {
-                "id": "name"
-            },
-            {
-                "id": "network_id"
-            },
-            {
-                "id": "network_name"
-            },
-            {
-                "id": "radio"
-            },
-            {
-                "id": "radio_name"
-            },
-            {
-                "id": "reconnect"
-            },
-            {
-                "id": "remote_ip"
-            },
-            {
-                "id": "rx_bytes"
-            },
-            {
-                "id": "rx_rate"
-            },
-            {
-                "id": "signal"
-            },
-            {
-                "id": "tx_bytes"
-            },
-            {
-                "id": "tx_rate"
-            },
-            {
-                "id": "type"
-            },
-            {
-                "id": "network_vlan"
-            },
-            {
-                "id": "speed"
-            },
-            {
-                "id": "wlan_experience"
-            },
-            {
-                "id": "wlan_tx_retries"
-            }
-        ],
-        "wlanIsWhiteList": false,
-        "wlanBlackList": [],
-        "wlanStatesIsWhiteList": false,
-        "wlanStatesBlackList": [
-            {
-                "id": "access_point_count"
-            },
-            {
-                "id": "enabled"
-            },
-            {
-                "id": "is_guest"
-            },
-            {
-                "id": "connected_clients"
-            },
-            {
-                "id": "connected_clients_peak"
-            },
-            {
-                "id": "connected_guests"
-            },
-            {
-                "id": "satisfaction"
-            }
-        ],
-        "lanIsWhiteList": false,
-        "lanBlackList": [],
-        "lanStatesIsWhiteList": false,
-        "lanStatesBlackList": [
-            {
-                "id": "connected_clients"
-            },
-            {
-                "id": "connected_guests"
-            },
-            {
-                "id": "enabled"
-            },
-            {
-                "id": "ip_subnet"
-            },
-            {
-                "id": "internet_enabled"
-            },
-            {
-                "id": "type"
-            },
-            {
-                "id": "vlan"
-            }
-        ]
+    "titleLang": {
+      "en": "Unifi Network",
+      "de": "Unifi-Netzwerk",
+      "ru": "Юнифи Сеть",
+      "pt": "Rede Unifi",
+      "nl": "Unifi-netwerk",
+      "fr": "Réseau Unifi",
+      "it": "Rete Unifi",
+      "es": "Red Unifi",
+      "pl": "Sieć Unifi",
+      "uk": "Мережа Unifi",
+      "zh-cn": "统一网络"
     },
-    "objects": [],
-    "instanceObjects": [
-        {
-            "_id": "info",
-            "type": "channel",
-            "common": {
-                "name": "Information"
-            },
-            "native": {}
-        },
-        {
-            "_id": "info.connection",
-            "type": "state",
-            "common": {
-                "role": "indicator.connected",
-                "name": "If master connected",
-                "type": "boolean",
-                "read": true,
-                "write": false,
-                "def": false
-            },
-            "native": {}
-        }
+    "desc": {
+      "en": "Communication with the Unifi Network application using the websocket interface to receive information in real-time",
+      "de": "Kommunikation mit der Unifi Network Anwendung über die Websocket-Schnittstelle, um Informationen in Echtzeit zu erhalten",
+      "ru": "Связь с приложением Unifi Network, использующим интерфейс websocket для получения информации в режиме реального времени",
+      "pt": "Comunicação com o aplicativo Unifi Network usando a interface websocket para receber informações em tempo real",
+      "nl": "Communicatie met de Unifi Network applicatie met behulp van de websocket interface om informatie in realtime te ontvangen",
+      "fr": "Communication avec l'application Unifi Network utilisant l'interface websocket pour recevoir des informations en temps réel",
+      "it": "Comunicazione con l'applicazione Unifi Network utilizzando l'interfaccia websocket per ricevere informazioni in tempo reale",
+      "es": "Comunicación con la aplicación Unifi Network usando la interfaz websocket para recibir información en tiempo real",
+      "pl": "Komunikacja z aplikacją Unifi Network przy użyciu interfejsu websocket w celu otrzymywania informacji w czasie rzeczywistym",
+      "uk": "Зв'язок з програмою Unifi Network за допомогою інтерфейсу веб-сакету для отримання інформації в режимі реального часу",
+      "zh-cn": "使用websocket接口实时接收信息与Unifi网络应用程序通信"
+    },
+    "authors": [
+      "Scrounger <scrounger@gmx.net>"
+    ],
+    "keywords": [
+      "unifi",
+      "network",
+      "unifi-os",
+      "api",
+      "websocket"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "unifi-network.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/Scrounger/ioBroker.unifi-network/main/admin/unifi-network.png",
+    "readme": "https://github.com/Scrounger/ioBroker.unifi-network/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "infrastructure",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "push",
+    "messagebox": true,
+    "localLinks": {
+      "_default": "https://%host%:%port%"
+    },
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=3.3.22"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=5.1.13"
+      }
     ]
+  },
+  "encryptedNative": [
+    "password"
+  ],
+  "protectedNative": [
+    "password"
+  ],
+  "native": {
+    "host": "",
+    "port": 8443,
+    "isUnifiOs": false,
+    "site": "default",
+    "user": "",
+    "password": "",
+    "expert": false,
+    "expertAliveInterval": 30,
+    "expertConnectionMaxRetries": 200,
+    "realTimeApiDebounceTime": 15,
+    "apiUpdateInterval": 60,
+    "deviceImageDownload": false,
+    "clientRealtimeDisconnectDebounceTime": 0,
+    "clientOfflineTimeout": 200,
+    "vpnOfflineTimeout": 300,
+    "clientImageDownload": false,
+    "keepIobSynchron": false,
+    "deleteClientsOlderThan": 60,
+    "deleteGuestsOlderThan": 60,
+    "devicesEnabled": true,
+    "clientsEnabled": true,
+    "guestsEnabled": true,
+    "vpnEnabled": true,
+    "wlanConfigEnabled": false,
+    "lanConfigEnabled": false,
+    "deviceIsWhiteList": false,
+    "deviceBlackList": [],
+    "deviceStatesIsWhiteList": false,
+    "deviceStatesBlackList": [
+      {
+        "id": "connected_clients"
+      },
+      {
+        "id": "connected_guests"
+      },
+      {
+        "id": "disabled"
+      },
+      {
+        "id": "fan_level"
+      },
+      {
+        "id": "image"
+      },
+      {
+        "id": "isp"
+      },
+      {
+        "id": "led_override"
+      },
+      {
+        "id": "name"
+      },
+      {
+        "id": "restart"
+      },
+      {
+        "id": "rx_bytes"
+      },
+      {
+        "id": "state"
+      },
+      {
+        "id": "ports"
+      },
+      {
+        "id": "radio"
+      },
+      {
+        "id": "satisfaction"
+      },
+      {
+        "id": "storage"
+      },
+      {
+        "id": "system"
+      },
+      {
+        "id": "temperature"
+      },
+      {
+        "id": "temperatures"
+      },
+      {
+        "id": "tx_bytes"
+      },
+      {
+        "id": "power"
+      },
+      {
+        "id": "upgradable"
+      },
+      {
+        "id": "upgrade"
+      },
+      {
+        "id": "uplink"
+      },
+      {
+        "id": "wan1"
+      },
+      {
+        "id": "wan2"
+      },
+      {
+        "id": "wlan"
+      }
+    ],
+    "clientIsWhiteList": false,
+    "clientBlackList": [],
+    "clientStatesIsWhiteList": false,
+    "clientStatesBlackList": [
+      {
+        "id": "blocked"
+      },
+      {
+        "id": "channel"
+      },
+      {
+        "id": "channel_frequency"
+      },
+      {
+        "id": "essid"
+      },
+      {
+        "id": "first_seen"
+      },
+      {
+        "id": "hostname"
+      },
+      {
+        "id": "image"
+      },
+      {
+        "id": "is_wired"
+      },
+      {
+        "id": "uplink_mac"
+      },
+      {
+        "id": "uplink_name"
+      },
+      {
+        "id": "uplink_port"
+      },
+      {
+        "id": "model"
+      },
+      {
+        "id": "name"
+      },
+      {
+        "id": "network_id"
+      },
+      {
+        "id": "network_name"
+      },
+      {
+        "id": "radio"
+      },
+      {
+        "id": "radio_name"
+      },
+      {
+        "id": "reconnect"
+      },
+      {
+        "id": "remote_ip"
+      },
+      {
+        "id": "rx_bytes"
+      },
+      {
+        "id": "rx_rate"
+      },
+      {
+        "id": "signal"
+      },
+      {
+        "id": "tx_bytes"
+      },
+      {
+        "id": "tx_rate"
+      },
+      {
+        "id": "type"
+      },
+      {
+        "id": "network_vlan"
+      },
+      {
+        "id": "speed"
+      },
+      {
+        "id": "wlan_experience"
+      },
+      {
+        "id": "wlan_tx_retries"
+      }
+    ],
+    "wlanIsWhiteList": false,
+    "wlanBlackList": [],
+    "wlanStatesIsWhiteList": false,
+    "wlanStatesBlackList": [
+      {
+        "id": "access_point_count"
+      },
+      {
+        "id": "enabled"
+      },
+      {
+        "id": "is_guest"
+      },
+      {
+        "id": "connected_clients"
+      },
+      {
+        "id": "connected_clients_peak"
+      },
+      {
+        "id": "connected_guests"
+      },
+      {
+        "id": "satisfaction"
+      }
+    ],
+    "lanIsWhiteList": false,
+    "lanBlackList": [],
+    "lanStatesIsWhiteList": false,
+    "lanStatesBlackList": [
+      {
+        "id": "connected_clients"
+      },
+      {
+        "id": "connected_guests"
+      },
+      {
+        "id": "enabled"
+      },
+      {
+        "id": "ip_subnet"
+      },
+      {
+        "id": "internet_enabled"
+      },
+      {
+        "id": "type"
+      },
+      {
+        "id": "vlan"
+      }
+    ]
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "If master connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
 }

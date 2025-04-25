@@ -138,8 +138,7 @@ For later updates, the above procedure is not necessary. Just do the following:
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.0.0-beta.0 (2025-04-25)
 
 - (Scrounger) initial release
 
@@ -147,7 +146,7 @@ For later updates, the above procedure is not necessary. Just do the following:
 
 MIT License
 
-Copyright (c) 2024 Scrounger <scrounger@gmx.net>
+Copyright (c) 2025 Scrounger <scrounger@gmx.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
