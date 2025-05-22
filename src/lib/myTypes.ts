@@ -74,9 +74,6 @@ export enum WebSocketEventMessages {
     lanConf = 'networkconf'
 }
 
-export const WebSocketEvent_Connected = ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'];
-export const WebSocketEvent_Disconnected = ['EVT_WU_Disconnected', 'EVT_WG_Disconnected', 'EVT_LU_Disconnected', 'EVT_LG_Disconnected'];
-
 export const WebSocketEvent = {
     device: {
         Connected: ['EVT_SW_Connected', 'EVT_AP_Connected', 'EVT_GW_Connected', 'EVT_DM_Connected'],
@@ -85,7 +82,9 @@ export const WebSocketEvent = {
         ChannelChanged: ['EVT_AP_ChannelChanged'],
         LostContact: ['EVT_SW_Lost_Contact', 'EVT_DM_Lost_Contact', 'EVT_AP_Lost_Contact'],
         PoeDisconnect: ['EVT_SW_PoeDisconnect'],
-        WANTransition: ['EVT_GW_WANTransition']
+        WANTransition: ['EVT_GW_WANTransition'],
+        Upgrade: ['EVT_SW_UpgradeScheduled', 'EVT_SW_Upgraded'],
+        Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted']
     },
     client: {
         Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],
@@ -96,56 +95,6 @@ export const WebSocketEvent = {
         Unblocked: ['EVT_WC_Unblocked', 'EVT_LC_Unblocked'],
     },
 }
-
-// export enum WebSocketEventKeys {
-//     connected = '_Connected',
-//     disconnected = '_Disconnected',
-//     blocked = '_Blocked',
-//     unblocked = '_Unblocked',
-//     roamed = '_Roam',
-//     roamedRadio = '_RoamRadio',
-//     restarted = '_Restarted',
-
-//     // client Wireless
-//     clientWirelessConnected = 'EVT_WU_Connected',
-//     clientWirelessDisconnected = 'EVT_WU_Disconnected',
-//     clientWirelessRoamed = 'EVT_WU_Roam',
-//     clientWirelessRoamedRadio = 'EVT_WU_RoamRadio',
-
-//     // client LAN
-//     clientLanConnected = 'EVT_LU_Connected',
-//     clientLanDisconnected = 'EVT_LU_Disconnected',
-//     clientLanBlocked = 'EVT_LU_Blocked',
-//     clientLanUnblocked = 'EVT_LU_Unblocked',
-
-//     // guest Wireless
-//     guestWirelessConnected = 'EVT_WG_Connected',
-//     guestWirelessDisconnected = 'EVT_WG_Disconnected',
-//     guestWirelessRoamed = 'EVT_WG_Roam',
-//     guestWirelessRoamedRadio = 'EVT_WG_RoamRadio',
-
-//     // guest LAN
-//     guestLanConnected = 'EVT_LG_Connected',
-//     guestLanDisconnected = 'EVT_LG_Disconnected',
-//     guestLanBlocked = 'EVT_LG_Blocked',
-//     guestLanUnblocked = 'EVT_LG_Unblocked',
-
-//     // client or guest Wireless
-//     clientOrGuestWirelessBlocked = 'EVT_WC_Blocked',
-//     clientOrGuestWirelessUnblocked = 'EVT_WC_Unblocked',
-
-//     // Gateway
-//     gatewayRestarted = 'EVT_GW_Restarted',
-
-//     // Switch
-//     switchRestarted = 'EVT_SW_Restarted',
-//     switchAutoReadopted = 'EVT_SW_AutoReadopted',
-//     switchLostContact = 'EVT_SW_Lost_Contact',
-
-
-//     accessPointRestarted = 'EVT_AP_Restarted',
-
-// }
 
 export interface myCache {
     devices: { [key: string]: NetworkDevice; },

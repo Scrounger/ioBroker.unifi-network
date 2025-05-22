@@ -65,7 +65,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	).fetch;
 
-	eventsToIngnore = [
+	eventsToIgnore = [
 		'device:update',
 		'unifi-device:sync',
 		'session-metadata:sync'
@@ -1683,7 +1683,7 @@ class UnifiNetwork extends utils.Adapter {
 			} else if (event.meta.message === WebSocketEventMessages.speedTest) {
 				await this.onNetworkSpeedTestEvent(event as NetworkEventSpeedTest);
 			} else {
-				if (!this.eventsToIngnore.includes(event.meta.message)) {
+				if (!this.eventsToIgnore.includes(event.meta.message)) {
 					this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
 				}
 
@@ -1756,6 +1756,12 @@ class UnifiNetwork extends utils.Adapter {
 
 					} else if (WebSocketEvent.device.PoeDisconnect.includes(myEvent.key)) {
 						this.log.debug(`${logPrefix} event 'poe disconnect' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+					} else if (WebSocketEvent.device.Upgrade.includes(myEvent.key)) {
+						this.log.debug(`${logPrefix} event 'upgrade' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+					} else if (WebSocketEvent.device.Adopt.includes(myEvent.key)) {
+						this.log.debug(`${logPrefix} event 'adopt' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 					} else {
 						this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key},` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);

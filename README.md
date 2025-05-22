@@ -28,6 +28,10 @@ Unifi Network uses the websocket interface to receive real-time information from
 	### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+
+- (Scrounger) more network events handler added
+
 ### 1.0.0-beta.0 (2025-04-25)
 
 - (Scrounger) initial release
