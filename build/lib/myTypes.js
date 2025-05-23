@@ -7,6 +7,7 @@ export var WebSocketEventMessages;
     WebSocketEventMessages["speedTest"] = "speed-test:update";
     WebSocketEventMessages["wlanConf"] = "wlanconf:";
     WebSocketEventMessages["lanConf"] = "networkconf";
+    WebSocketEventMessages["firewallGroup"] = "firewallgroup:";
 })(WebSocketEventMessages || (WebSocketEventMessages = {}));
 export const WebSocketEvent = {
     device: {

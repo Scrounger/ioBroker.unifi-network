@@ -145,10 +145,10 @@
             "hidden": "!data.firewallGroupConfigEnabled",
             "size": 3
         },
-        "firewallGroupWhiteList": {
+        "firewallGroupIsWhiteList": {
             "newLine": true,
             "type": "checkbox",
-            "label": "${data.firewallGroupWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "label": "${data.firewallGroupIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
             "hidden": "!data.firewallGroupConfigEnabled",
             "xl": 2,
             "lg": 2,
@@ -178,7 +178,7 @@
             "items": [
                 {
                     "type": "autocompleteSendTo",
-                    "title": "${data.firewallGroupWhiteList ? 'Choose which LAN should be included' : 'Choose which LAN should be excluded'}",
+                    "title": "${data.firewallGroupIsWhiteList ? 'Choose which LAN should be included' : 'Choose which LAN should be excluded'}",
                     "attr": "id",
                     "filter": true,
                     "sort": true,

@@ -532,6 +532,24 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    /**
+     * List all LAN configurations
+     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
+     * @returns
+     */
+    async getFirewallGroup(firewallGroup_id = undefined) {
+        const logPrefix = `[${this.logPrefix}.getFirewallGroup]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.firewallGroup)}${firewallGroup_id ? `/${firewallGroup_id.trim()}` : ''}`);
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
     async testConnection() {
         const logPrefix = `[${this.logPrefix}.testConnection]`;
         try {
@@ -691,6 +709,9 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.lanConfig:
                 endpointSuffix = `/api/s/${this.site}/rest/networkconf`;
                 break;
+            case ApiEndpoints.firewallGroup:
+                endpointSuffix = `/api/s/${this.site}/rest/firewallgroup`;
+                break;
             default:
                 break;
         }
@@ -837,6 +858,7 @@ export var ApiEndpoints;
     ApiEndpoints["clientsActive"] = "clientsActive";
     ApiEndpoints["wlanConfig"] = "wlanConfig";
     ApiEndpoints["lanConfig"] = "lanConfig";
+    ApiEndpoints["firewallGroup"] = "firewallGroup";
 })(ApiEndpoints || (ApiEndpoints = {}));
 export var ApiEndpoints_V2;
 (function (ApiEndpoints_V2) {

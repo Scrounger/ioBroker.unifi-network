@@ -8,6 +8,7 @@ import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-co
 import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
+import { FirewallGroup } from './network-types-firewall-group.js';
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private apiErrorCount;
@@ -121,6 +122,12 @@ export declare class NetworkApi extends EventEmitter {
       * @returns
       */
     getDeviceModels_V2(model?: string): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined>;
+    /**
+     * List all LAN configurations
+     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
+     * @returns
+     */
+    getFirewallGroup(firewallGroup_id?: any): Promise<FirewallGroup[] | undefined>;
     testConnection(): Promise<boolean>;
     /**
      * get statistics for site, gateway, switches or access points
@@ -146,7 +153,8 @@ export declare enum ApiEndpoints {
     clients = "clients",
     clientsActive = "clientsActive",
     wlanConfig = "wlanConfig",
-    lanConfig = "lanConfig"
+    lanConfig = "lanConfig",
+    firewallGroup = "firewallGroup"
 }
 export declare enum ApiEndpoints_V2 {
     devices = "devices",

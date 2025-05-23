@@ -2,6 +2,7 @@ import * as myHelper from '../helper.js';
 export var wlan;
 (function (wlan) {
     let keys = undefined;
+    wlan.idChannel = 'wlan';
     function get() {
         return {
             current_access_point_count: {

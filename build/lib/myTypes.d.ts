@@ -3,6 +3,7 @@ import { NetworkDevice } from "./api/network-types-device";
 import { NetworkDeviceModels } from './api/network-types-device-models';
 import { NetworkWlanConfig } from "./api/network-types-wlan-config";
 import { NetworkLanConfig } from "./api/network-types-lan-config";
+import { FirewallGroup } from "./api/network-types-firewall-group";
 export interface myCommonState {
     id?: string;
     iobType: ioBroker.CommonType;
@@ -69,7 +70,8 @@ export declare enum WebSocketEventMessages {
     events = "events",
     speedTest = "speed-test:update",
     wlanConf = "wlanconf:",
-    lanConf = "networkconf"
+    lanConf = "networkconf",
+    firewallGroup = "firewallgroup:"
 }
 export declare const WebSocketEvent: {
     device: {
@@ -111,6 +113,9 @@ export interface myCache {
     };
     isOnline: {
         [key: string]: myIsOnline;
+    };
+    firewallGroup: {
+        [key: string]: FirewallGroup;
     };
 }
 export interface myImgCache {

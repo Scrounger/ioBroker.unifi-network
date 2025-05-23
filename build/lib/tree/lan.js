@@ -2,6 +2,7 @@ import * as myHelper from '../helper.js';
 export var lan;
 (function (lan) {
     let keys = undefined;
+    lan.idChannel = 'lan';
     function get() {
         return {
             connected_clients: {

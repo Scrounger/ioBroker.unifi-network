@@ -5,6 +5,7 @@ import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
 import moment from "moment";
+import { FirewallGroup } from "./api/network-types-firewall-group.js";
 
 let disconnectDebounceList = {};
 
@@ -334,7 +335,7 @@ export const eventHandler = {
             try {
                 if (data && adapter.config.keepIobSynchron) {
                     for (let wlan of data) {
-                        const idChannel = `wlan.${wlan._id}`
+                        const idChannel = `${tree.wlan.idChannel}.${wlan._id}`
 
                         if (await adapter.objectExists(idChannel)) {
                             await adapter.delObjectAsync(idChannel, { recursive: true });
@@ -369,11 +370,31 @@ export const eventHandler = {
             try {
                 if (data && adapter.config.keepIobSynchron) {
                     for (let lan of data) {
-                        const idChannel = `lan.${lan._id}`
+                        const idChannel = `${tree.lan.idChannel}.${lan._id}`
 
                         if (await adapter.objectExists(idChannel)) {
                             await adapter.delObjectAsync(idChannel, { recursive: true });
                             adapter.log.debug(`${logPrefix} lan '${lan.name}' (channel: ${idChannel}) deleted`);
+                        }
+                    }
+                }
+            } catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
+            }
+        }
+    },
+    firewallGroup: {
+        async deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache) {
+            const logPrefix = '[eventHandler.firewallGroup.deleted]:'
+
+            try {
+                if (data && adapter.config.keepIobSynchron) {
+                    for (let firewallGroup of data) {
+                        const idChannel = `${tree.firewallGroup.idChannel}.${firewallGroup._id}`
+
+                        if (await adapter.objectExists(idChannel)) {
+                            await adapter.delObjectAsync(idChannel, { recursive: true });
+                            adapter.log.debug(`${logPrefix} firewall group '${firewallGroup.name}' (channel: ${idChannel}) deleted`);
                         }
                     }
                 }

@@ -14,6 +14,7 @@ import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-co
 import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
+import { FirewallGroup } from './network-types-firewall-group.js';
 
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
@@ -688,6 +689,27 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    /**
+     * List all LAN configurations
+     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
+     * @returns 
+     */
+    public async getFirewallGroup(firewallGroup_id = undefined): Promise<FirewallGroup[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getFirewallGroup]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.firewallGroup)}${firewallGroup_id ? `/${firewallGroup_id.trim()}` : ''}`);
+
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
     public async testConnection(): Promise<boolean> {
         const logPrefix = `[${this.logPrefix}.testConnection]`
 
@@ -863,6 +885,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints.lanConfig:
                 endpointSuffix = `/api/s/${this.site}/rest/networkconf`;
+                break;
+
+            case ApiEndpoints.firewallGroup:
+                endpointSuffix = `/api/s/${this.site}/rest/firewallgroup`;
                 break;
 
             default:
@@ -1047,7 +1073,8 @@ export enum ApiEndpoints {
     clients = 'clients',
     clientsActive = "clientsActive",
     wlanConfig = 'wlanConfig',
-    lanConfig = 'lanConfig'
+    lanConfig = 'lanConfig',
+    firewallGroup = 'firewallGroup'
 }
 
 export enum ApiEndpoints_V2 {

@@ -51,7 +51,7 @@ declare global {
 			firewallRuleStatesIsWhiteList: boolean;
 			firewallRuleStatesBlackList: { id: string }[];
 			firewallGroupConfigEnabled: boolean;
-			firewallGroupWhiteList: boolean;
+			firewallGroupIsWhiteList: boolean;
 			firewallGroupBlackList: { id: string }[];
 			firewallGroupStatesIsWhiteList: boolean;
 			firewallGroupStatesBlackList: { id: string }[];

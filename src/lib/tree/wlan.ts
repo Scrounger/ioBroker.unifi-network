@@ -6,6 +6,8 @@ import { NetworkDevice } from "../api/network-types-device";
 export namespace wlan {
     let keys: string[] = undefined;
 
+    export const idChannel = 'wlan';
+
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
             current_access_point_count: {

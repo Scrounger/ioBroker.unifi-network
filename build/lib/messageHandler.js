@@ -9,6 +9,8 @@ let wlanList = undefined;
 let wlanStateList = undefined;
 let lanList = undefined;
 let lanStateList = undefined;
+let firewallGroupList = undefined;
+let firewallGroupStateList = undefined;
 export const messageHandler = {
     device: {
         async list(message, adapter, ufn) {
@@ -185,6 +187,50 @@ export const messageHandler = {
             }
             if (message.callback)
                 adapter.sendTo(message.from, message.command, lanStateList, message.callback);
+        }
+    },
+    firewallGroup: {
+        async list(message, adapter, ufn) {
+            if (firewallGroupList === undefined) {
+                const data = await ufn.getFirewallGroup();
+                firewallGroupList = [];
+                if (data && data !== null) {
+                    for (let firewallGroup of data) {
+                        firewallGroupList.push({
+                            label: `${firewallGroup.name}`,
+                            value: firewallGroup._id
+                        });
+                    }
+                }
+                firewallGroupList = _.orderBy(firewallGroupList, ['label'], ['asc']);
+            }
+            if (message.callback)
+                adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
+        },
+        async stateList(message, adapter, ufn) {
+            if (firewallGroupStateList === undefined) {
+                const states = tree.firewallGroup.getStateIDs();
+                firewallGroupStateList = [];
+                if (states) {
+                    for (let i = 0; i <= states.length - 1; i++) {
+                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                            firewallGroupStateList.push({
+                                label: `[Channel]\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                        else {
+                            firewallGroupStateList.push({
+                                label: `[State]\t\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                    }
+                }
+                firewallGroupStateList = _.orderBy(firewallGroupStateList, ['value'], ['asc']);
+            }
+            if (message.callback)
+                adapter.sendTo(message.from, message.command, firewallGroupStateList, message.callback);
         }
     }
 };

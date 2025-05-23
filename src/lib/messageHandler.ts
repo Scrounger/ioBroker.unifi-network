@@ -16,6 +16,9 @@ let wlanStateList: JsonConfigAutocompleteSendTo[] = undefined;
 let lanList: JsonConfigAutocompleteSendTo[] = undefined;
 let lanStateList: JsonConfigAutocompleteSendTo[] = undefined;
 
+let firewallGroupList: JsonConfigAutocompleteSendTo[] = undefined;
+let firewallGroupStateList: JsonConfigAutocompleteSendTo[] = undefined;
+
 export const messageHandler = {
     device: {
         async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
@@ -217,6 +220,56 @@ export const messageHandler = {
             }
 
             if (message.callback) adapter.sendTo(message.from, message.command, lanStateList, message.callback);
+        }
+    },
+    firewallGroup: {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+            if (firewallGroupList === undefined) {
+                const data = await ufn.getFirewallGroup();
+
+                firewallGroupList = [];
+
+                if (data && data !== null) {
+                    for (let firewallGroup of data) {
+                        firewallGroupList.push({
+                            label: `${firewallGroup.name}`,
+                            value: firewallGroup._id
+                        });
+                    }
+                }
+
+                firewallGroupList = _.orderBy(firewallGroupList, ['label'], ['asc']);
+            }
+
+            if (message.callback) adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
+        },
+        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+            if (firewallGroupStateList === undefined) {
+                const states = tree.firewallGroup.getStateIDs();
+
+                firewallGroupStateList = [];
+
+                if (states) {
+                    for (let i = 0; i <= states.length - 1; i++) {
+
+                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                            firewallGroupStateList.push({
+                                label: `[Channel]\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        } else {
+                            firewallGroupStateList.push({
+                                label: `[State]\t\t ${states[i]}`,
+                                value: states[i],
+                            });
+                        }
+                    }
+                }
+
+                firewallGroupStateList = _.orderBy(firewallGroupStateList, ['value'], ['asc']);
+            }
+
+            if (message.callback) adapter.sendTo(message.from, message.command, firewallGroupStateList, message.callback);
         }
     }
 }

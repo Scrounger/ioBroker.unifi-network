@@ -365,7 +365,7 @@
     "firewallRuleStatesIsWhiteList": false,
     "firewallRuleStatesBlackList": [],
     "firewallGroupConfigEnabled": false,
-    "firewallGroupWhiteList": false,
+    "firewallGroupIsWhiteList": false,
     "firewallGroupBlackList": [],
     "firewallGroupStatesIsWhiteList": false,
     "firewallGroupStatesBlackList": []

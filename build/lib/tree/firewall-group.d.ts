@@ -1,10 +1,7 @@
 import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "../myTypes";
-export declare namespace lan {
-    const idChannel = "lan";
+export declare namespace firewallGroup {
+    const idChannel = "firewall.groups";
     function get(): {
-        [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
-    };
-    function getGlobal(): {
         [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
     };
     function getKeys(): string[];

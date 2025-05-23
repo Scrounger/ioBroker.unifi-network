@@ -1,5 +1,6 @@
 import { NetworkClient } from "./network-types-client.js";
 import { NetworkDevice } from "./network-types-device.js";
+import { FirewallGroup } from "./network-types-firewall-group.js";
 import { NetworkLanConfig } from "./network-types-lan-config.js";
 import { NetworkWlanConfig } from "./network-types-wlan-config.js";
 
@@ -34,6 +35,10 @@ export interface NetworkEventSpeedTest {
     data: NetworkEventSpeedTestData[];
 }
 
+export interface NetworkEventFirewallGroup {
+    meta: NetworkEventMeta;
+    data: FirewallGroup[]
+}
 
 export interface NetworkEventMeta {
     message: string;

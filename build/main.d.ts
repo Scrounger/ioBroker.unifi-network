@@ -1,10 +1,11 @@
 import * as utils from '@iobroker/adapter-core';
 import { NetworkApi } from './lib/api/network-api.js';
-import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
+import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import { NetworkDevice } from './lib/api/network-types-device.js';
 import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
-import { ConnectedClients, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myNetworkClient } from './lib/myTypes.js';
 import { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
+import { FirewallGroup } from './lib/api/network-types-firewall-group.js';
+import { ConnectedClients, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myNetworkClient } from './lib/myTypes.js';
 declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi;
     isConnected: boolean;
@@ -64,6 +65,7 @@ declare class UnifiNetwork extends utils.Adapter {
     updateWlanConnectedClients(isAdapterStart?: boolean): Promise<void>;
     updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[], isAdapterStart?: boolean): Promise<void>;
     updateLanConnectedClients(isAdapterStart?: boolean): Promise<void>;
+    updateFirewallGroup(data: FirewallGroup[], isAdapterStart?: boolean): Promise<void>;
     /**
      * @deprecated Download public data from ui with image url infos.
      */
@@ -96,9 +98,9 @@ declare class UnifiNetwork extends utils.Adapter {
     private createOrUpdateChannel;
     createOrUpdateGenericState(channel: string, treeDefinition: {
         [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
-    } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, blacklistFilter: {
+    } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, blacklistFilter: {
         id: string;
-    }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients, objChannel: any, isAdapterStart?: boolean, filterId?: string, isChannelOnWhitelist?: boolean): Promise<void>;
+    }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, objChannel: any, isAdapterStart?: boolean, filterId?: string, isChannelOnWhitelist?: boolean): Promise<void>;
     getCommonGenericState(id: string, treeDefinition: {
         [key: string]: myCommonState;
     }, objDevices: any, logMsgState: string): Promise<ioBroker.StateCommon>;
@@ -106,12 +108,13 @@ declare class UnifiNetwork extends utils.Adapter {
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */
     onPongMessage(): Promise<void>;
-    onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest): Promise<void>;
+    onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest | NetworkEventFirewallGroup): Promise<void>;
     onNetworkEvent(event: NetworkEvent): Promise<void>;
     onNetworkClientEvent(events: NetworkEventClient): Promise<void>;
     onNetworkUserEvent(events: NetworkEventClient): Promise<void>;
     onNetworkWlanConfEvent(event: NetworkEventWlanConfig): Promise<void>;
     onNetworkLanConfEvent(event: NetworkEventLanConfig): Promise<void>;
+    onNetworkFirewallGroupEvent(event: NetworkEventFirewallGroup): Promise<void>;
     onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void>;
 }
 export default function startAdapter(options: Partial<utils.AdapterOptions> | undefined): UnifiNetwork;

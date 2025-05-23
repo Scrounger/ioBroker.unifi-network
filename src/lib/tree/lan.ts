@@ -6,6 +6,8 @@ import { NetworkLanConfig } from "../api/network-types-lan-config";
 export namespace lan {
     let keys: string[] = undefined;
 
+    export const idChannel = 'lan';
+
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
             connected_clients: {

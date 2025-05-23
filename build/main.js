@@ -34,7 +34,8 @@ class UnifiNetwork extends utils.Adapter {
         vpn: {},
         wlan: {},
         lan: {},
-        isOnline: {}
+        isOnline: {},
+        firewallGroup: {}
     };
     subscribedList = [];
     eventListener = (event) => this.onNetworkMessage(event);
@@ -320,6 +321,12 @@ class UnifiNetwork extends utils.Adapter {
                 else if (obj.command === 'lanStateList') {
                     messageHandler.lan.stateList(obj, this, this.ufn);
                 }
+                else if (obj.command === 'firewallGroupList') {
+                    messageHandler.firewallGroup.list(obj, this, this.ufn);
+                }
+                else if (obj.command === 'firewallGroupStateList') {
+                    messageHandler.firewallGroup.stateList(obj, this, this.ufn);
+                }
             }
         }
         catch (error) {
@@ -479,6 +486,7 @@ class UnifiNetwork extends utils.Adapter {
             await this.updateLanConnectedClients(true);
             await this.updateWlanConfig(null, true);
             await this.updateWlanConnectedClients(true);
+            await this.updateFirewallGroup(null, true);
             // const tmp = tree.lan.getStateIDs();
             // let list = []
             // for (let id of tmp) {
@@ -821,7 +829,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateWlanConfig]:';
         try {
             if (this.connected && this.isConnected) {
-                const idChannel = 'wlan';
+                const idChannel = tree.wlan.idChannel;
                 if (this.config.wlanConfigEnabled) {
                     if (isAdapterStart) {
                         await this.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
@@ -836,7 +844,7 @@ class UnifiNetwork extends utils.Adapter {
                                 wlan = { ...wlan.configuration, ...wlan.details, ...wlan.statistics };
                             }
                             wlan = wlan;
-                            const idDevice = `${idChannel}.${wlan._id}`;
+                            const idWlan = `${idChannel}.${wlan._id}`;
                             if ((!this.config.wlanIsWhiteList && !_.some(this.config.wlanBlackList, { id: wlan._id })) || (this.config.wlanIsWhiteList && _.some(this.config.wlanBlackList, { id: wlan._id }))) {
                                 if (isAdapterStart)
                                     countWlan++;
@@ -851,15 +859,15 @@ class UnifiNetwork extends utils.Adapter {
                                 this.cache.wlan[wlan._id] = wlan;
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = wlan._id;
-                                    await this.createOrUpdateDevice(idDevice, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
-                                    await this.createOrUpdateGenericState(idDevice, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
+                                    await this.createOrUpdateDevice(idWlan, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+                                    await this.createOrUpdateGenericState(idWlan, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
                                 }
                             }
                             else {
                                 if (isAdapterStart) {
                                     countBlacklisted++;
-                                    if (await this.objectExists(idDevice)) {
-                                        await this.delObjectAsync(idDevice, { recursive: true });
+                                    if (await this.objectExists(idWlan)) {
+                                        await this.delObjectAsync(idWlan, { recursive: true });
                                         this.log.info(`${logPrefix} WLAN '${wlan.name}' (id: ${wlan._id}) delete, ${this.config.wlanIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
@@ -924,7 +932,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateLanConfig]:';
         try {
             if (this.connected && this.isConnected) {
-                const idChannel = 'lan';
+                const idChannel = tree.lan.idChannel;
                 if (this.config.lanConfigEnabled) {
                     if (isAdapterStart) {
                         await this.createOrUpdateChannel(idChannel, 'lan', undefined, true);
@@ -939,7 +947,7 @@ class UnifiNetwork extends utils.Adapter {
                                 lan = { ...lan.configuration, ...lan.details, ...lan.statistics };
                             }
                             lan = lan;
-                            const idDevice = `${idChannel}.${lan._id}`;
+                            const idLan = `${idChannel}.${lan._id}`;
                             if ((!this.config.lanIsWhiteList && !_.some(this.config.lanBlackList, { id: lan._id })) || (this.config.lanIsWhiteList && _.some(this.config.lanBlackList, { id: lan._id }))) {
                                 if (isAdapterStart)
                                     countLan++;
@@ -954,22 +962,22 @@ class UnifiNetwork extends utils.Adapter {
                                 this.cache.lan[lan._id] = lan;
                                 if (!_.isEmpty(dataToProcess)) {
                                     dataToProcess._id = lan._id;
-                                    await this.createOrUpdateDevice(idDevice, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart, true);
-                                    await this.createOrUpdateGenericState(idDevice, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan, lan, isAdapterStart);
+                                    await this.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+                                    await this.createOrUpdateGenericState(idLan, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan, lan, isAdapterStart);
                                 }
                             }
                             else {
                                 if (isAdapterStart) {
                                     countBlacklisted++;
-                                    if (await this.objectExists(idDevice)) {
-                                        await this.delObjectAsync(idDevice, { recursive: true });
+                                    if (await this.objectExists(idLan)) {
+                                        await this.delObjectAsync(idLan, { recursive: true });
                                         this.log.info(`${logPrefix} LAN '${lan.name}' (id: ${lan._id}) delete, ${this.config.lanIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
                                     }
                                 }
                             }
                         }
                         if (isAdapterStart) {
-                            this.log.info(`${logPrefix} Discovered ${data.length} LAN's (WLAN's: ${countLan}, blacklisted: ${countBlacklisted})`);
+                            this.log.info(`${logPrefix} Discovered ${data.length} LAN's (LAN's: ${countLan}, blacklisted: ${countBlacklisted})`);
                         }
                     }
                 }
@@ -1016,6 +1024,67 @@ class UnifiNetwork extends utils.Adapter {
                 const idSumGuests = 'lan.connected_guests';
                 if (await this.objectExists(idSumGuests)) {
                     this.setStateChanged(idSumGuests, sumGuests, true);
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateFirewallGroup(data, isAdapterStart = false) {
+        const logPrefix = '[updateFirewallGroup]:';
+        try {
+            if (this.connected && this.isConnected) {
+                const idChannel = tree.firewallGroup.idChannel;
+                if (this.config.firewallGroupConfigEnabled) {
+                    if (isAdapterStart) {
+                        await this.createOrUpdateChannel(idChannel, 'firewall group', undefined, true);
+                        data = (await this.ufn.getFirewallGroup());
+                    }
+                    if (data && data !== null) {
+                        let countFirewallGroup = 0;
+                        let countBlacklisted = 0;
+                        for (let firewallGroup of data) {
+                            firewallGroup = firewallGroup;
+                            const idFirewallGroup = `${idChannel}.${firewallGroup._id}`;
+                            if ((!this.config.firewallGroupIsWhiteList && !_.some(this.config.firewallGroupBlackList, { id: firewallGroup._id })) || (this.config.firewallGroupIsWhiteList && _.some(this.config.firewallGroupBlackList, { id: firewallGroup._id }))) {
+                                if (isAdapterStart)
+                                    countFirewallGroup++;
+                                if (!this.cache.firewallGroup[firewallGroup._id]) {
+                                    this.log.debug(`${logPrefix} Discovered Firewall Group '${firewallGroup.name}'`);
+                                }
+                                let dataToProcess = firewallGroup;
+                                if (this.cache.firewallGroup[firewallGroup._id]) {
+                                    // filter out unchanged properties
+                                    dataToProcess = myHelper.deepDiffBetweenObjects(firewallGroup, this.cache.firewallGroup[firewallGroup._id], this, tree.firewallGroup.getKeys());
+                                }
+                                this.cache.firewallGroup[firewallGroup._id] = firewallGroup;
+                                if (!_.isEmpty(dataToProcess)) {
+                                    dataToProcess._id = firewallGroup._id;
+                                    await this.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${this.namespace}.${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
+                                    await this.createOrUpdateGenericState(idFirewallGroup, tree.firewallGroup.get(), dataToProcess, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup, firewallGroup, isAdapterStart);
+                                }
+                            }
+                            else {
+                                if (isAdapterStart) {
+                                    countBlacklisted++;
+                                    if (await this.objectExists(idFirewallGroup)) {
+                                        await this.delObjectAsync(idFirewallGroup, { recursive: true });
+                                        this.log.info(`${logPrefix} Firewall Group '${firewallGroup.name}' (id: ${firewallGroup._id}) delete, ${this.config.firewallGroupIsWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
+                                    }
+                                }
+                            }
+                        }
+                        if (isAdapterStart) {
+                            this.log.info(`${logPrefix} Discovered ${data.length} Firewall Group's (Firewall Group's: ${countFirewallGroup}, blacklisted: ${countBlacklisted})`);
+                        }
+                    }
+                }
+                else {
+                    if (await this.objectExists(idChannel)) {
+                        await this.delObjectAsync(idChannel, { recursive: true });
+                        this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+                    }
                 }
             }
         }
@@ -1479,6 +1548,9 @@ class UnifiNetwork extends utils.Adapter {
             else if (event.meta.message === WebSocketEventMessages.speedTest) {
                 await this.onNetworkSpeedTestEvent(event);
             }
+            else if (event.meta.message.startsWith(WebSocketEventMessages.firewallGroup)) {
+                await this.onNetworkFirewallGroupEvent(event);
+            }
             else {
                 if (!this.eventsToIgnore.includes(event.meta.message)) {
                     this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
@@ -1638,6 +1710,23 @@ class UnifiNetwork extends utils.Adapter {
                 }
                 else {
                     await this.updateLanConfig(event.data);
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkFirewallGroupEvent(event) {
+        const logPrefix = '[onNetworkFirewallGroupEvent]:';
+        try {
+            if (this.config.firewallGroupConfigEnabled) {
+                this.log.debug(`${logPrefix} firewall group event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+                if (event.meta.message.endsWith(':delete')) {
+                    eventHandler.firewallGroup.deleted(event.meta, event.data, this, this.cache);
+                }
+                else {
+                    await this.updateFirewallGroup(event.data);
                 }
             }
         }
