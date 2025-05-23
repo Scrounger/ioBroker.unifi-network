@@ -25,4 +25,8 @@ export declare const apiCommands: {
         enable(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean>;
         internet_access_enabled(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean>;
     };
+    firewallGroup: {
+        setName(ufn: NetworkApi, firewallGroup_id: string, name: string): Promise<boolean>;
+        setGroupMembers(ufn: NetworkApi, firewallGroup_id: string, members: string): Promise<boolean>;
+    };
 };

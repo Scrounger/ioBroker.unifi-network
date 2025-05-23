@@ -1,6 +1,8 @@
 import { NetworkApi } from "./network-api";
 import { NetworkDevice } from "./network-types-device";
 
+// ToDo: using API Endpoints must be implemented, crash at the moment because of enum
+
 export const apiCommands = {
     devices: {
         async restart(ufn: NetworkApi, mac: string): Promise<boolean> {
@@ -158,6 +160,18 @@ export const apiCommands = {
         },
         async internet_access_enabled(ufn: NetworkApi, lan_id: string, enabled: boolean): Promise<boolean> {
             const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { internet_access_enabled: enabled }, 'PUT');
+
+            return result === null ? false : true;
+        }
+    },
+    firewallGroup: {
+        async setName(ufn: NetworkApi, firewallGroup_id: string, name: string) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/firewallgroup/${firewallGroup_id.trim()}`, { name: name }, 'PUT');
+
+            return result === null ? false : true;
+        },
+        async setGroupMembers(ufn: NetworkApi, firewallGroup_id: string, members: string) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/firewallgroup/${firewallGroup_id.trim()}`, { group_members: JSON.parse(members) }, 'PUT');
 
             return result === null ? false : true;
         }

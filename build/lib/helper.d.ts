@@ -24,13 +24,18 @@ export declare function getIdWithoutLastPart(id: string): string;
 export declare function getIdLastPart(id: string): string;
 /**
  * Compare two objects and return properties that are diffrent
- * @param obj1
- * @param obj2
+ *
+ * @param object
+ * @param base
+ * @param adapter
+ * @param allowedKeys
+ * @param prefix
  * @returns
  */
-export declare const deepDiffBetweenObjects: (object: any, base: any, adapter: any, allowedKeys?: any, prefix?: string) => any;
+export declare const deepDiffBetweenObjects: (object: any, base: any, adapter: ioBroker.Adapter, allowedKeys?: any, prefix?: string) => any;
 /**
  * Collect all properties used in tree defintions
+ *
  * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
  * @returns
  */

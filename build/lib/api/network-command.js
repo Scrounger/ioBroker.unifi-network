@@ -1,3 +1,4 @@
+// ToDo: using API Endpoints must be implemented, crash at the moment because of enum
 export const apiCommands = {
     devices: {
         async restart(ufn, mac) {
@@ -126,6 +127,16 @@ export const apiCommands = {
         },
         async internet_access_enabled(ufn, lan_id, enabled) {
             const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { internet_access_enabled: enabled }, 'PUT');
+            return result === null ? false : true;
+        }
+    },
+    firewallGroup: {
+        async setName(ufn, firewallGroup_id, name) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/firewallgroup/${firewallGroup_id.trim()}`, { name: name }, 'PUT');
+            return result === null ? false : true;
+        },
+        async setGroupMembers(ufn, firewallGroup_id, members) {
+            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/firewallgroup/${firewallGroup_id.trim()}`, { group_members: JSON.parse(members) }, 'PUT');
             return result === null ? false : true;
         }
     }

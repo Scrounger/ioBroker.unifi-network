@@ -281,7 +281,7 @@ class UnifiNetwork extends utils.Adapter {
 						} else {
 							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
-					} else if (id.startsWith(`${this.namespace}.wlan.`)) {
+					} else if (id.startsWith(`${this.namespace}.${tree.wlan.idChannel}.`)) {
 						if (myHelper.getIdLastPart(id) === 'enabled') {
 							const wlan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
 
@@ -289,7 +289,7 @@ class UnifiNetwork extends utils.Adapter {
 
 							if (res) this.log.info(`${logPrefix} command sent: wlan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id})`);
 						}
-					} else if (id.startsWith(`${this.namespace}.lan.`)) {
+					} else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
 						if (myHelper.getIdLastPart(id) === 'enabled') {
 							const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
 
@@ -302,6 +302,18 @@ class UnifiNetwork extends utils.Adapter {
 							const res = await apiCommands.lanConf.internet_access_enabled(this.ufn, lan_id, state.val as boolean);
 
 							if (res) this.log.info(`${logPrefix} command sent: internet access of lan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.lan[lan_id].name}' (id: ${lan_id})`);
+						}
+					} else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
+						const groupId = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+
+						if (myHelper.getIdLastPart(id) === 'name') {
+							const res = await apiCommands.firewallGroup.setName(this.ufn, groupId, state.val as string);
+
+							if (res) this.log.info(`${logPrefix} command sent: firewall group '${this.cache.firewallGroup[groupId].name}' - 'name' set to '${state.val}' (id: ${groupId})`);
+						} else if (myHelper.getIdLastPart(id) === 'group_members') {
+							const res = await apiCommands.firewallGroup.setGroupMembers(this.ufn, groupId, state.val as string);
+
+							if (res) this.log.info(`${logPrefix} command sent: firewall group '${this.cache.firewallGroup[groupId].name}' - 'members' set to '${state.val}' (id: ${groupId})`);
 						}
 					}
 				} else {
