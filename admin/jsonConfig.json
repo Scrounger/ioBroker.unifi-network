@@ -22,6 +22,10 @@
 			"type": "panel",
 			"#include": "wlan.jsonConfig.json"
 		},
+		"tab_firewall": {
+			"type": "panel",
+			"#include": "firewall.jsonConfig.json"
+		},
 		"tab_expert": {
 			"type": "panel",
 			"#include": "expert.jsonConfig.json"

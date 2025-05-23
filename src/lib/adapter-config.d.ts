@@ -45,6 +45,16 @@ declare global {
 			wlanBlackList: { id: string }[];
 			wlanStatesIsWhiteList: boolean;
 			wlanStatesBlackList: { id: string }[];
+			firewallRuleConfigEnabled: boolean;
+			firewallRuleWhiteList: boolean;
+			firewallRuleBlackList: { id: string }[];
+			firewallRuleStatesIsWhiteList: boolean;
+			firewallRuleStatesBlackList: { id: string }[];
+			firewallGroupConfigEnabled: boolean;
+			firewallGroupWhiteList: boolean;
+			firewallGroupBlackList: { id: string }[];
+			firewallGroupStatesIsWhiteList: boolean;
+			firewallGroupStatesBlackList: { id: string }[];
 		}
 	}
 }

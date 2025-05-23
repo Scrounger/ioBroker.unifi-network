@@ -18,7 +18,7 @@ declare class UnifiNetwork extends utils.Adapter {
     eventListener: (event: NetworkEvent) => Promise<void>;
     pongListener: () => Promise<void>;
     fetch: typeof import("@adobe/fetch").fetch;
-    eventsToIngnore: string[];
+    eventsToIgnore: string[];
     constructor(options?: Partial<utils.AdapterOptions>);
     /**
      * Is called when databases are connected and adapter received configuration.

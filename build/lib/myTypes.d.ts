@@ -71,8 +71,6 @@ export declare enum WebSocketEventMessages {
     wlanConf = "wlanconf:",
     lanConf = "networkconf"
 }
-export declare const WebSocketEvent_Connected: string[];
-export declare const WebSocketEvent_Disconnected: string[];
 export declare const WebSocketEvent: {
     device: {
         Connected: string[];
@@ -82,6 +80,8 @@ export declare const WebSocketEvent: {
         LostContact: string[];
         PoeDisconnect: string[];
         WANTransition: string[];
+        Upgrade: string[];
+        Adopt: string[];
     };
     client: {
         Connected: string[];

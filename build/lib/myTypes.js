@@ -8,8 +8,6 @@ export var WebSocketEventMessages;
     WebSocketEventMessages["wlanConf"] = "wlanconf:";
     WebSocketEventMessages["lanConf"] = "networkconf";
 })(WebSocketEventMessages || (WebSocketEventMessages = {}));
-export const WebSocketEvent_Connected = ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'];
-export const WebSocketEvent_Disconnected = ['EVT_WU_Disconnected', 'EVT_WG_Disconnected', 'EVT_LU_Disconnected', 'EVT_LG_Disconnected'];
 export const WebSocketEvent = {
     device: {
         Connected: ['EVT_SW_Connected', 'EVT_AP_Connected', 'EVT_GW_Connected', 'EVT_DM_Connected'],
@@ -18,7 +16,9 @@ export const WebSocketEvent = {
         ChannelChanged: ['EVT_AP_ChannelChanged'],
         LostContact: ['EVT_SW_Lost_Contact', 'EVT_DM_Lost_Contact', 'EVT_AP_Lost_Contact'],
         PoeDisconnect: ['EVT_SW_PoeDisconnect'],
-        WANTransition: ['EVT_GW_WANTransition']
+        WANTransition: ['EVT_GW_WANTransition'],
+        Upgrade: ['EVT_SW_UpgradeScheduled', 'EVT_SW_Upgraded'],
+        Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted']
     },
     client: {
         Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],

@@ -1,0 +1,242 @@
+{
+    "label": "Firewall",
+    "items": {
+        "donation_link": {
+            "type": "staticLink",
+            "text": "You like the adapter? Then support me.",
+            "sm": 12,
+            "button": true,
+            "newLine": true,
+            "href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
+            "style": {
+                "justifyContent": "flex-start !important"
+            }
+        },
+        "dividerFirewallRule": {
+            "newLine": true,
+            "type": "header",
+            "text": "Firewall - Rule",
+            "size": 2
+        },
+        "firewallRuleConfigEnabled": {
+            "type": "checkbox",
+            "label": "Firewall - Rule enabled",
+            "newLine": true,
+            "sm": 12,
+            "md": 2
+        },
+        "dividerFirewallRuleBlackList": {
+            "newLine": true,
+            "type": "header",
+            "text": "Firewall - Rule: Blacklist / Whitelist",
+            "hidden": "!data.firewallRuleConfigEnabled",
+            "size": 3
+        },
+        "firewallRuleWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.firewallRuleWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.firewallRuleConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
+        },
+        "firewallRuleBlackList": {
+            "type": "table",
+            "xl": 6,
+            "lg": 6,
+            "md": 6,
+            "sm": 12,
+            "xs": 12,
+            "hidden": "!data.firewallRuleConfigEnabled",
+            "uniqueColumns": [
+                "id"
+            ],
+            "confirm": {
+                "condition": "!_alive",
+                "title": "Attention!",
+                "text": "This selection is only possible with a running instance!",
+                "ok": "Got it!",
+                "cancel": "cancel",
+                "type": "warning"
+            },
+            "items": [
+                {
+                    "type": "autocompleteSendTo",
+                    "title": "${data.firewallRuleWhiteList ? 'Choose which LAN should be included' : 'Choose which LAN should be excluded'}",
+                    "attr": "id",
+                    "filter": true,
+                    "sort": true,
+                    "noMultiEdit": true,
+                    "jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+                    "command": "firewallRuleList"
+                }
+            ]
+        },
+        "dividerFirewallRuleBlackListStates": {
+            "newLine": true,
+            "type": "header",
+            "text": "Firewall - Rule: Datapoints Blacklist / Whitelist",
+            "hidden": "!data.firewallRuleConfigEnabled",
+            "size": 3
+        },
+        "firewallRuleStatesIsWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.firewallRuleStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.firewallRuleConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
+        },
+        "firewallRuleStatesBlackList": {
+            "type": "table",
+            "xl": 6,
+            "lg": 6,
+            "md": 6,
+            "sm": 12,
+            "xs": 12,
+            "hidden": "!data.firewallRuleConfigEnabled",
+            "uniqueColumns": [
+                "id"
+            ],
+            "confirm": {
+                "condition": "!_alive",
+                "title": "Attention!",
+                "text": "This selection is only possible with a running instance!",
+                "ok": "Got it!",
+                "cancel": "cancel",
+                "type": "warning"
+            },
+            "items": [
+                {
+                    "type": "autocompleteSendTo",
+                    "title": "${data.firewallRuleStatesIsWhiteList ? 'Choose which datapoint should be included' : 'Choose which datapoint should be excluded'}",
+                    "attr": "id",
+                    "filter": true,
+                    "sort": true,
+                    "noMultiEdit": true,
+                    "jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+                    "command": "firewallRuleStateList"
+                }
+            ]
+        },
+        "dividerFirewallGroup": {
+            "newLine": true,
+            "type": "header",
+            "text": "Firewall - Group",
+            "size": 2
+        },
+        "firewallGroupConfigEnabled": {
+            "type": "checkbox",
+            "label": "Firewall - Group enabled",
+            "newLine": true,
+            "sm": 12,
+            "md": 2
+        },
+        "dividerFirewallGroupBlackList": {
+            "newLine": true,
+            "type": "header",
+            "text": "Firewall - Group: Blacklist / Whitelist",
+            "hidden": "!data.firewallGroupConfigEnabled",
+            "size": 3
+        },
+        "firewallGroupWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.firewallGroupWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.firewallGroupConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
+        },
+        "firewallGroupBlackList": {
+            "type": "table",
+            "xl": 6,
+            "lg": 6,
+            "md": 6,
+            "sm": 12,
+            "xs": 12,
+            "hidden": "!data.firewallGroupConfigEnabled",
+            "uniqueColumns": [
+                "id"
+            ],
+            "confirm": {
+                "condition": "!_alive",
+                "title": "Attention!",
+                "text": "This selection is only possible with a running instance!",
+                "ok": "Got it!",
+                "cancel": "cancel",
+                "type": "warning"
+            },
+            "items": [
+                {
+                    "type": "autocompleteSendTo",
+                    "title": "${data.firewallGroupWhiteList ? 'Choose which LAN should be included' : 'Choose which LAN should be excluded'}",
+                    "attr": "id",
+                    "filter": true,
+                    "sort": true,
+                    "noMultiEdit": true,
+                    "jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+                    "command": "firewallGroupList"
+                }
+            ]
+        },
+        "dividerFirewallGroupBlackListStates": {
+            "newLine": true,
+            "type": "header",
+            "text": "Firewall - Group: Datapoints Blacklist / Whitelist",
+            "hidden": "!data.firewallGroupConfigEnabled",
+            "size": 3
+        },
+        "firewallGroupStatesIsWhiteList": {
+            "newLine": true,
+            "type": "checkbox",
+            "label": "${data.firewallGroupStatesIsWhiteList ? 'use as whitelist' : 'use as blacklist'}",
+            "hidden": "!data.firewallGroupConfigEnabled",
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
+            "sm": 12,
+            "xs": 12
+        },
+        "firewallGroupStatesBlackList": {
+            "type": "table",
+            "xl": 6,
+            "lg": 6,
+            "md": 6,
+            "sm": 12,
+            "xs": 12,
+            "hidden": "!data.firewallGroupConfigEnabled",
+            "uniqueColumns": [
+                "id"
+            ],
+            "confirm": {
+                "condition": "!_alive",
+                "title": "Attention!",
+                "text": "This selection is only possible with a running instance!",
+                "ok": "Got it!",
+                "cancel": "cancel",
+                "type": "warning"
+            },
+            "items": [
+                {
+                    "type": "autocompleteSendTo",
+                    "title": "${data.firewallGroupStatesIsWhiteList ? 'Choose which datapoint should be included' : 'Choose which datapoint should be excluded'}",
+                    "attr": "id",
+                    "filter": true,
+                    "sort": true,
+                    "noMultiEdit": true,
+                    "jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+                    "command": "firewallGroupStateList"
+                }
+            ]
+        }
+    }
+}

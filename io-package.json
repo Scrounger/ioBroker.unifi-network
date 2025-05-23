@@ -358,7 +358,17 @@
       {
         "id": "vlan"
       }
-    ]
+    ],
+    "firewallRuleConfigEnabled": false,
+    "firewallRuleWhiteList": false,
+    "firewallRuleBlackList": [],
+    "firewallRuleStatesIsWhiteList": false,
+    "firewallRuleStatesBlackList": [],
+    "firewallGroupConfigEnabled": false,
+    "firewallGroupWhiteList": false,
+    "firewallGroupBlackList": [],
+    "firewallGroupStatesIsWhiteList": false,
+    "firewallGroupStatesBlackList": []
   },
   "objects": [],
   "instanceObjects": [
