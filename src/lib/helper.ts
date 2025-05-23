@@ -83,72 +83,87 @@ export function getIdLastPart(id: string): string {
 
 /**
  * Compare two objects and return properties that are diffrent
- * @param obj1 
- * @param obj2 
- * @returns 
+ *
+ * @param object
+ * @param base
+ * @param adapter
+ * @param allowedKeys
+ * @param prefix
+ * @returns
  */
-export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
+export const deepDiffBetweenObjects = (object: any, base: any, adapter: ioBroker.Adapter, allowedKeys: any = undefined, prefix: string = ''): any => {
     const logPrefix = '[deepDiffBetweenObjects]:';
 
     try {
-        const changes = (object, base, prefixInner = '') => {
+        const changes = (object, base, prefixInner = ''): any => {
             return _.transform(object, (result, value, key) => {
                 const fullKey: string = prefixInner ? `${prefixInner}.${key as string}` : (key as string);
 
                 try {
                     if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
                         if (_.isArray(value)) {
-                            const tmp = [];
-                            let empty = true
-                            for (var i = 0; i <= value.length - 1; i++) {
-                                const res = deepDiffBetweenObjects(value[i], (base[key] && base[key][i]) ? base[key][i] : {}, adapter, allowedKeys, fullKey);
 
-                                if (!_.isEmpty(res) || res === 0 || res === false) {
-                                    // if (!_.has(result, key)) result[key] = [];
-                                    tmp.push(res);
-                                    empty = false;
-                                } else {
-                                    tmp.push(null);
+                            if (_.some(value, (item: any) => _.isObject(item))) {
+                                // objects in array exists
+                                const tmp = [];
+                                let empty = true;
+
+                                for (let i = 0; i <= value.length - 1; i++) {
+                                    const res = deepDiffBetweenObjects(value[i], base[key] && base[key][i] ? base[key][i] : {}, adapter, allowedKeys, fullKey);
+
+                                    if (!_.isEmpty(res) || res === 0 || res === false) {
+                                        // if (!_.has(result, key)) result[key] = [];
+                                        tmp.push(res);
+                                        empty = false;
+                                    } else {
+                                        tmp.push(null);
+                                    }
+                                }
+
+                                if (!empty) {
+                                    result[key] = tmp;
+                                }
+                            } else {
+                                // is pure array
+                                adapter.log.warn(`${key}: pure Array (base: ${base[key]}, val: ${value})`);
+                                if (!_.isEqual(value, base[key])) {
+                                    result[key] = value
                                 }
                             }
-
-                            if (!empty) {
-                                result[key] = tmp;
-                            }
                         } else if (_.isObject(value) && _.isObject(base[key])) {
-                            const res = changes(value, base[key] ? base[key] : {}, fullKey)
+                            const res = changes(value, base[key] ? base[key] : {}, fullKey);
                             if (!_.isEmpty(res) || res === 0 || res === false) {
                                 result[key] = res;
                             }
                         } else {
-                            result[key] = value
+                            result[key] = value;
                         }
                     }
                 } catch (error) {
                     adapter.log.error(`${logPrefix} transform error: ${error}, stack: ${error.stack}, fullKey: ${fullKey}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
                 }
-            })
-        }
+            });
+        };
 
         return changes(object, base, prefix);
-
     } catch (error) {
         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
     }
 
     return object;
-}
+};
 
 /**
  * Collect all properties used in tree defintions
+ *
  * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
- * @returns 
+ * @returns
  */
-export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; }): string[] {
-    let keys = [];
+export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray }): string[] {
+    const keys = [];
 
     // Hilfsfunktion für rekursive Durchsuchung des Objekts
-    function recurse(currentObj, prefix = '') {
+    function recurse(currentObj, prefix = ''): void {
         _.forOwn(currentObj, (value, key) => {
             const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '');
 
@@ -176,21 +191,21 @@ export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myCo
     return _.uniq(keys);
 }
 
-export function getAllIdsOfTreeDefinition(treefDefintion: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray; }): string[] {
-    let keys = [];
+export function getAllIdsOfTreeDefinition(treefDefintion: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray }): string[] {
+    const keys = [];
 
     // Hilfsfunktion für rekursive Durchsuchung des Objekts
-    function recurse(currentObj, prefix = '') {
+    function recurse(currentObj, prefix = ''): void {
         _.forOwn(currentObj, (value, key) => {
-            let fullKey = (prefix ? `${prefix}.${key}` : key);
+            let fullKey = prefix ? `${prefix}.${key}` : key;
 
             if (Object.hasOwn(value, 'idChannel') && !_.isObject(value.idChannel)) {
-                fullKey = (prefix ? `${prefix}.${value.idChannel}` : value.idChannel)
+                fullKey = prefix ? `${prefix}.${value.idChannel}` : value.idChannel;
             } else if (Object.hasOwn(value, 'id') && !_.isObject(value.id)) {
-                fullKey = (prefix ? `${prefix}.${value.id}` : value.id)
+                fullKey = prefix ? `${prefix}.${value.id}` : value.id;
             }
 
-            fullKey = fullKey.replace('.array', '').replace('.object', '')
+            fullKey = fullKey.replace('.array', '').replace('.object', '');
 
             // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
             if (_.isObject(value) && typeof value !== 'function' && key !== 'states') {
