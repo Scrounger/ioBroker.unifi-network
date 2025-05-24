@@ -1,5 +1,5 @@
-import { NetworkApi } from "./network-api";
-import { NetworkDevice } from "./network-types-device";
+import { NetworkApi } from "./network-api.js";
+import { NetworkDevice } from "./network-types-device.js";
 export declare const apiCommands: {
     devices: {
         restart(ufn: NetworkApi, mac: string): Promise<boolean>;

@@ -1,8 +1,8 @@
-// ToDo: using API Endpoints must be implemented, crash at the moment because of enum
+import { ApiEndpoints } from "./network-api.js";
 export const apiCommands = {
     devices: {
         async restart(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'restart', mac: mac.toLowerCase() });
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async port_cyclePoePower(ufn, mac, port_idx, device) {
@@ -18,7 +18,7 @@ export const apiCommands = {
                         }
                     }
                 }
-                const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
+                const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'power-cycle', port_idx: port_idx, mac: mac.toLowerCase() });
                 return result === null ? false : true;
             }
             catch (error) {
@@ -47,7 +47,7 @@ export const apiCommands = {
                     ufn.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
                     port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
                 }
-                const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
+                const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
                 return result === null ? false : true;
             }
             else {
@@ -56,13 +56,13 @@ export const apiCommands = {
             }
         },
         async ledOverride(val, ufn, device) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
             return result === null ? false : true;
         },
         async upgrade(ufn, device) {
             const logPrefix = '[apiCommands.upgrade]';
             if (device.upgradable) {
-                const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr/upgrade`, { mac: device.mac.toLowerCase() });
+                const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}/upgrade`, { mac: device.mac.toLowerCase() });
                 return result === null ? false : true;
             }
             else {
@@ -75,68 +75,68 @@ export const apiCommands = {
             if (interface_name) {
                 payload.interface_name = interface_name;
             }
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/devmgr`, payload);
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, payload);
             return result === null ? false : true;
         },
         async disableAccessPoint(ufn, ap_id, disabled) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/device/${ap_id.trim()}`, { disabled: disabled }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${ap_id.trim()}`, { disabled: disabled }, 'PUT');
             return result === null ? false : true;
         }
     },
     clients: {
         async block(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'block-sta', mac: mac.toLowerCase() });
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'block-sta', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async unblock(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unblock-sta', mac: mac.toLowerCase() });
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'unblock-sta', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async reconncet(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'kick-sta', mac: mac.toLowerCase() });
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'kick-sta', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async authorizeGuest(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'authorize-guest', mac: mac.toLowerCase() });
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'authorize-guest', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async unauthorizeGuest(ufn, mac) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'unauthorize-guest', mac: mac.toLowerCase() });
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'unauthorize-guest', mac: mac.toLowerCase() });
             return result === null ? false : true;
         },
         async setName(ufn, user_id, name) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/user/${user_id.trim()}`, { _id: user_id, name: name }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clients)}/${user_id.trim()}`, { _id: user_id, name: name }, 'PUT');
             return result === null ? false : true;
         }
         // async remove(ufn: NetworkApi, mac: string) {
         //     // controller 5.9.x only
-        //     const result = await ufn.sendData(`/api/s/${ufn.site}/cmd/stamgr`, { cmd: 'forget-sta', mac: mac.toLowerCase() });
+        //     const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'forget-sta', mac: mac.toLowerCase() });
         //     return result === null ? false : true;
         // },
     },
     wlanConf: {
         async enable(ufn, wlan_id, enabled) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/wlanconf/${wlan_id.trim()}`, { enabled: enabled }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.wlanConfig)}/${wlan_id.trim()}`, { enabled: enabled }, 'PUT');
             return result === null ? false : true;
         }
     },
     lanConf: {
         async enable(ufn, lan_id, enabled) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { enabled: enabled }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${lan_id.trim()}`, { enabled: enabled }, 'PUT');
             return result === null ? false : true;
         },
         async internet_access_enabled(ufn, lan_id, enabled) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/networkconf/${lan_id.trim()}`, { internet_access_enabled: enabled }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${lan_id.trim()}`, { internet_access_enabled: enabled }, 'PUT');
             return result === null ? false : true;
         }
     },
     firewallGroup: {
         async setName(ufn, firewallGroup_id, name) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/firewallgroup/${firewallGroup_id.trim()}`, { name: name }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${firewallGroup_id.trim()}`, { name: name }, 'PUT');
             return result === null ? false : true;
         },
         async setGroupMembers(ufn, firewallGroup_id, members) {
-            const result = await ufn.sendData(`/api/s/${ufn.site}/rest/firewallgroup/${firewallGroup_id.trim()}`, { group_members: JSON.parse(members) }, 'PUT');
+            const result = await ufn.sendData(`${ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${firewallGroup_id.trim()}`, { group_members: JSON.parse(members) }, 'PUT');
             return result === null ? false : true;
         }
     }

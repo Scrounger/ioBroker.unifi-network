@@ -461,7 +461,7 @@ export class NetworkApi extends EventEmitter {
             url = cmd
         }
 
-        this.log.debug(`${logPrefix} url: ${url}`);
+        this.log.debug(`${logPrefix} url: ${url}, body: ${JSON.stringify(payload)}, method: ${method}`);
 
         return await this.retrieve(url, {
             body: JSON.stringify(payload),
@@ -879,12 +879,24 @@ export class NetworkApi extends EventEmitter {
                 endpointSuffix = `/api/s/${this.site}/stat/device`;
                 break;
 
-            case ApiEndpoints.clientsActive:
-                endpointSuffix = `/api/s/${this.site}/stat/sta`;
+            case ApiEndpoints.deviceRest:
+                endpointSuffix = `/api/s/${this.site}/rest/device`;
+                break;
+
+            case ApiEndpoints.deviceCommand:
+                endpointSuffix = `/api/s/${this.site}/cmd/devmgr`;
                 break;
 
             case ApiEndpoints.clients:
                 endpointSuffix = `/api/s/${this.site}/rest/user`;
+                break;
+
+            case ApiEndpoints.clientsActive:
+                endpointSuffix = `/api/s/${this.site}/stat/sta`;
+                break;
+
+            case ApiEndpoints.clientCommand:
+                endpointSuffix = `/api/s/${this.site}/cmd/stamgr`;
                 break;
 
             case ApiEndpoints.wlanConfig:
@@ -1078,11 +1090,15 @@ export enum ApiEndpoints {
     login = 'login',
     self = 'self',
     devices = 'devices',
+    deviceRest = 'deviceRest',
+    deviceCommand = 'deviceCommand',
     clients = 'clients',
     clientsActive = "clientsActive",
+    clientCommand = "clientCommand",
     wlanConfig = 'wlanConfig',
     lanConfig = 'lanConfig',
-    firewallGroup = 'firewallGroup'
+    firewallGroup = 'firewallGroup',
+
 }
 
 export enum ApiEndpoints_V2 {

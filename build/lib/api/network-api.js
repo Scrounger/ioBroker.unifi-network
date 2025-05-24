@@ -338,7 +338,7 @@ export class NetworkApi extends EventEmitter {
         if (cmd.startsWith('https://')) {
             url = cmd;
         }
-        this.log.debug(`${logPrefix} url: ${url}`);
+        this.log.debug(`${logPrefix} url: ${url}, body: ${JSON.stringify(payload)}, method: ${method}`);
         return await this.retrieve(url, {
             body: JSON.stringify(payload),
             method: method
@@ -702,11 +702,20 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.devices:
                 endpointSuffix = `/api/s/${this.site}/stat/device`;
                 break;
-            case ApiEndpoints.clientsActive:
-                endpointSuffix = `/api/s/${this.site}/stat/sta`;
+            case ApiEndpoints.deviceRest:
+                endpointSuffix = `/api/s/${this.site}/rest/device`;
+                break;
+            case ApiEndpoints.deviceCommand:
+                endpointSuffix = `/api/s/${this.site}/cmd/devmgr`;
                 break;
             case ApiEndpoints.clients:
                 endpointSuffix = `/api/s/${this.site}/rest/user`;
+                break;
+            case ApiEndpoints.clientsActive:
+                endpointSuffix = `/api/s/${this.site}/stat/sta`;
+                break;
+            case ApiEndpoints.clientCommand:
+                endpointSuffix = `/api/s/${this.site}/cmd/stamgr`;
                 break;
             case ApiEndpoints.wlanConfig:
                 endpointSuffix = `/api/s/${this.site}/rest/wlanconf`;
@@ -859,8 +868,11 @@ export var ApiEndpoints;
     ApiEndpoints["login"] = "login";
     ApiEndpoints["self"] = "self";
     ApiEndpoints["devices"] = "devices";
+    ApiEndpoints["deviceRest"] = "deviceRest";
+    ApiEndpoints["deviceCommand"] = "deviceCommand";
     ApiEndpoints["clients"] = "clients";
     ApiEndpoints["clientsActive"] = "clientsActive";
+    ApiEndpoints["clientCommand"] = "clientCommand";
     ApiEndpoints["wlanConfig"] = "wlanConfig";
     ApiEndpoints["lanConfig"] = "lanConfig";
     ApiEndpoints["firewallGroup"] = "firewallGroup";

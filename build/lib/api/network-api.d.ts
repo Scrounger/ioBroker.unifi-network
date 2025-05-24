@@ -150,8 +150,11 @@ export declare enum ApiEndpoints {
     login = "login",
     self = "self",
     devices = "devices",
+    deviceRest = "deviceRest",
+    deviceCommand = "deviceCommand",
     clients = "clients",
     clientsActive = "clientsActive",
+    clientCommand = "clientCommand",
     wlanConfig = "wlanConfig",
     lanConfig = "lanConfig",
     firewallGroup = "firewallGroup"
