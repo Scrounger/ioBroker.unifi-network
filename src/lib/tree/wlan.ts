@@ -1,4 +1,4 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes";
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
 import * as myHelper from '../helper.js';
 import { NetworkWlanConfig } from "../api/network-types-wlan-config";
 import { NetworkDevice } from "../api/network-types-device";

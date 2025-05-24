@@ -453,7 +453,15 @@ export class NetworkApi extends EventEmitter {
     }
 
     public async sendData(cmd: string, payload: any, method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH' = 'POST'): Promise<Response> {
-        const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}${cmd}`
+        const logPrefix = `[${this.logPrefix}.sendData]`
+
+        let url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}${cmd}`
+
+        if (cmd.startsWith('https://')) {
+            url = cmd
+        }
+
+        this.log.debug(`${logPrefix} url: ${url}`);
 
         return await this.retrieve(url, {
             body: JSON.stringify(payload),
