@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { NetworkApi } from "./api/network-api";
+import { NetworkApi } from "./api/network-api.js";
 import * as tree from './tree/index.js'
 import { JsonConfigAutocompleteSendTo } from "./myTypes.js";
 import * as myHelper from './helper.js';

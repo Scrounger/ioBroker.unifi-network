@@ -1,4 +1,4 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes";
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes.js";
 export declare function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean;
 export declare function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean;
 export declare function getObjectByString(path: any, obj: any, separator?: string): any;

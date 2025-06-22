@@ -1,9 +1,9 @@
-import { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client";
-import { NetworkDevice } from "./api/network-types-device";
-import { NetworkDeviceModels } from './api/network-types-device-models';
-import { NetworkWlanConfig } from "./api/network-types-wlan-config";
-import { NetworkLanConfig } from "./api/network-types-lan-config";
-import { FirewallGroup } from "./api/network-types-firewall-group";
+import { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client.js";
+import { NetworkDevice } from "./api/network-types-device.js";
+import { NetworkDeviceModels } from './api/network-types-device-models.js';
+import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import { NetworkLanConfig } from "./api/network-types-lan-config.js";
+import { FirewallGroup } from "./api/network-types-firewall-group.js";
 export interface myCommonState {
     id?: string;
     iobType: ioBroker.CommonType;

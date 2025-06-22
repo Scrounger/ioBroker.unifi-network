@@ -1,4 +1,4 @@
-import { NetworkApi } from "./api/network-api";
+import { NetworkApi } from "./api/network-api.js";
 export declare const messageHandler: {
     device: {
         list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void>;

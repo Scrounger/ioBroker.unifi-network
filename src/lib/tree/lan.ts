@@ -1,7 +1,7 @@
 import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
 import * as myHelper from '../helper.js';
-import { NetworkDevice } from "../api/network-types-device";
-import { NetworkLanConfig } from "../api/network-types-lan-config";
+import { NetworkDevice } from "../api/network-types-device.js";
+import { NetworkLanConfig } from "../api/network-types-lan-config.js";
 
 export namespace lan {
     let keys: string[] = undefined;

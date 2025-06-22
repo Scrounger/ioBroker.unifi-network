@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes";
+import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes.js";
 
 export function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
     return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
