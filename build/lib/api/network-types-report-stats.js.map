@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/api/network-types-report-stats.ts"],
+  "sourcesContent": ["export enum NetworkReportInterval {\r\n    '5minutes' = '5minutes',\r\n    hourly = 'hourly',\r\n    daily = 'daily',\r\n    monthly = 'monthly'\r\n}\r\n\r\nexport enum NetworkReportType {\r\n    site = 'site',\r\n    gateway = 'gw',\r\n    switch = 'sw',\r\n    accessPoint = 'ap',\r\n    client = 'user'\r\n}\r\n\r\nexport interface NetworkReportStats {\r\n    time?: number,\r\n    bytes?: number,\r\n    mem?: number,\r\n    cpu?: number,\r\n    loadavg_5?: number,\r\n    wlan_bytes?: number,\r\n    rx_bytes?: number,\r\n    tx_bytes?: number,\r\n    'wan-rx_bytes'?: number,\r\n    'wan-tx_bytes'?: number,\r\n    num_sta?: number,\r\n    'lan-num_sta'?: number,\r\n    'wlan-num_sta'?: number,\r\n    'lan-rx_bytes'?: number,\r\n    'lan-tx_bytes'?: number,\r\n    user?: string,\r\n    sw?: string,\r\n    gw?: string,\r\n    ap?: string,\r\n    o: string,\r\n    oid: string\r\n}"],
+  "mappings": "AAAO,IAAK,wBAAL,kBAAKA,2BAAL;AACH,EAAAA,uBAAA,cAAa;AACb,EAAAA,uBAAA,YAAS;AACT,EAAAA,uBAAA,WAAQ;AACR,EAAAA,uBAAA,aAAU;AAJF,SAAAA;AAAA,GAAA;AAOL,IAAK,oBAAL,kBAAKC,uBAAL;AACH,EAAAA,mBAAA,UAAO;AACP,EAAAA,mBAAA,aAAU;AACV,EAAAA,mBAAA,YAAS;AACT,EAAAA,mBAAA,iBAAc;AACd,EAAAA,mBAAA,YAAS;AALD,SAAAA;AAAA,GAAA;",
+  "names": ["NetworkReportInterval", "NetworkReportType"]
+}
