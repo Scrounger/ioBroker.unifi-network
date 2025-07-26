@@ -886,4 +886,6 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["lanConfig"] = "lanConfig";
     ApiEndpoints_V2["wanConfig"] = "wanConfig";
     ApiEndpoints_V2["models"] = "models";
+    ApiEndpoints_V2["network-members-group"] = "network-members-group";
+    ApiEndpoints_V2["network-members-groups"] = "network-members-groups";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));

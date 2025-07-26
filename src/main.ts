@@ -6,7 +6,8 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import moment from 'moment';
-import { ALPNProtocol, FetchError, context } from '@adobe/fetch';
+import { request } from "undici";
+import { STATUS_CODES } from 'node:http';
 import _ from 'lodash';
 import url from 'node:url';
 
@@ -28,7 +29,6 @@ import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
 import * as myI18n from './lib/i18n.js';
-
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -57,14 +57,6 @@ class UnifiNetwork extends utils.Adapter {
 
 	eventListener = (event: NetworkEvent) => this.onNetworkMessage(event);
 	pongListener = () => this.onPongMessage();
-
-	fetch = context(
-		{
-			alpnProtocols: [ALPNProtocol.ALPN_HTTP2],
-			rejectUnauthorized: false,
-			userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
-		}
-	).fetch;
 
 	eventsToIgnore = [
 		'device:update',
@@ -1287,16 +1279,20 @@ class UnifiNetwork extends utils.Adapter {
 				});
 
 				const url = 'https://static.ui.com/fingerprint/ui/public.json'
-				const response = await this.fetch(url, { follow: 0 });
+				const response = await request(url);
 
-				if (response.status === 200) {
-					const data: any = await response.json();
+				if (response && response.statusCode === 200) {
+					const data: any = await response.body.json();
 
 					if (data && data.devices) {
 						await this.setStateChangedAsync(`${tree.device.idChannel}.publicData`, JSON.stringify(data), true);
 					}
 				} else {
-					this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+					if (response) {
+						this.log.error(`${logPrefix} API endpoint access error: ${response.statusCode} - ${STATUS_CODES[response.statusCode]}`);
+					} else {
+						this.log.error(`${logPrefix} API endpoint access error: response is ${JSON.stringify(response)}`);
+					}
 				}
 			}
 		} catch (error) {
@@ -1365,42 +1361,43 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[downloadImage]:';
 
 		try {
-			let base64ImgString = 'null';		// ToDo: nicht sauber gelöst!
+			let base64ImgString = undefined;		// ToDo: nicht sauber gelöst!
 
 			if (url !== null) {
 
-				const response = await this.fetch(url, { follow: 0 });
+				const response = await request(url);
 
-				if (response.status === 200) {
-					const imageBuffer = Buffer.from(await response.arrayBuffer());
+				if (response && response.statusCode === 200) {
+					const imageBuffer = Buffer.from(await response.body.arrayBuffer());
 					const imageBase64 = imageBuffer.toString('base64');
 					base64ImgString = `data:image/png;base64,` + imageBase64;
 
 					this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
 				} else {
-					this.log.error(`${logPrefix} error downloading image from '${url}', status: ${response.status}`);
+					if (response) {
+						this.log.error(`${logPrefix} API endpoint access error: ${response.statusCode} - ${STATUS_CODES[response.statusCode]}`);
+					} else {
+						this.log.error(`${logPrefix} API endpoint access error: response is ${JSON.stringify(response)}`);
+					}
 				}
 			}
 
-			for (const idChannel of idChannelList) {
+			if (base64ImgString) {
+				for (const idChannel of idChannelList) {
 
-				if (await this.objectExists(`${idChannel}.image`)) {
-					await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
-				}
+					if (await this.objectExists(`${idChannel}.image`)) {
+						await this.setStateChangedAsync(`${idChannel}.image`, base64ImgString, true);
+					}
 
-				if (await this.objectExists(`${idChannel}`)) {
-					await this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+					if (await this.objectExists(`${idChannel}`)) {
+						await this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+					}
 				}
 			}
-
 		} catch (error) {
 			const mac = myHelper.getIdLastPart(idChannelList[0]);
 
-			if (error instanceof FetchError) {
-				this.log.warn(`${logPrefix} [mac: ${mac}]: image download failed, reasign it directly via unifi-network controller`);
-			} else {
-				this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
-			}
+			this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
 		}
 	}
 

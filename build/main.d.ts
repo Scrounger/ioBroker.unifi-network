@@ -18,7 +18,6 @@ declare class UnifiNetwork extends utils.Adapter {
     subscribedList: string[];
     eventListener: (event: NetworkEvent) => Promise<void>;
     pongListener: () => Promise<void>;
-    fetch: typeof import("@adobe/fetch").fetch;
     eventsToIgnore: string[];
     constructor(options?: Partial<utils.AdapterOptions>);
     /**

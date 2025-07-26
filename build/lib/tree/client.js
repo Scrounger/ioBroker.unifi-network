@@ -173,6 +173,15 @@ export var client;
                 iobType: 'string',
                 name: 'network id'
             },
+            network_members_group_ids: {
+                //ToDo: writeable and best case selectable groups
+                id: 'network_members_group',
+                iobType: 'string',
+                name: 'network member groups',
+                readVal(val, adapter, cache, deviceOrClient, id) {
+                    return JSON.stringify(val);
+                },
+            },
             network_name: {
                 iobType: 'string',
                 name: 'network name'

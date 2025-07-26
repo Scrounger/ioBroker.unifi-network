@@ -1108,5 +1108,7 @@ export enum ApiEndpoints_V2 {
     wlanConfig = 'wlanConfig',
     lanConfig = 'lanConfig',
     wanConfig = 'wanConfig',
-    models = 'models'
+    models = 'models',
+    'network-members-group' = 'network-members-group',
+    'network-members-groups' = 'network-members-groups'
 }

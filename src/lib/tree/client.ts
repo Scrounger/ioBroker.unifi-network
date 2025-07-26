@@ -176,6 +176,15 @@ export namespace client {
                 iobType: 'string',
                 name: 'network id'
             },
+            network_members_group_ids: {
+                //ToDo: writeable and best case selectable groups
+                id: 'network_members_group',
+                iobType: 'string',
+                name: 'network member groups',
+                readVal(val: any, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: myNetworkClient, id: string): ioBroker.StateValue {
+                    return JSON.stringify(val);
+                },
+            },
             network_name: {
                 iobType: 'string',
                 name: 'network name'
