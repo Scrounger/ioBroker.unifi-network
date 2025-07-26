@@ -1,168 +1,226 @@
 import _ from "lodash";
-function isDeviceCommonEqual(objCommon, myCommon) {
-  return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
+export function isDeviceCommonEqual(objCommon, myCommon) {
+    return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
+        (!myCommon.icon || objCommon.icon === myCommon.icon) &&
+        objCommon.desc === myCommon.desc &&
+        objCommon.role === myCommon.role &&
+        _.isEqual(objCommon.statusStates, myCommon.statusStates);
 }
-function isChannelCommonEqual(objCommon, myCommon) {
-  return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
+export function isChannelCommonEqual(objCommon, myCommon) {
+    return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
+        (!myCommon.icon || objCommon.icon === myCommon.icon) &&
+        objCommon.desc === myCommon.desc &&
+        objCommon.role === myCommon.role;
 }
-function getObjectByString(path, obj, separator = ".") {
-  const properties = Array.isArray(path) ? path : path.split(separator);
-  return properties.reduce((prev, curr) => prev == null ? void 0 : prev[curr], obj);
+export function getObjectByString(path, obj, separator = '.') {
+    const properties = Array.isArray(path) ? path : path.split(separator);
+    return properties.reduce((prev, curr) => prev?.[curr], obj);
 }
-function getAllowedCommonStates(path, obj, separator = ".") {
-  const objByString = getObjectByString(path, obj, separator);
-  const states = {};
-  if (objByString) {
-    for (const str of objByString) {
-      states[str] = str;
+export function getAllowedCommonStates(path, obj, separator = '.') {
+    const objByString = getObjectByString(path, obj, separator);
+    const states = {};
+    if (objByString) {
+        for (const str of objByString) {
+            states[str] = str;
+        }
+        return states;
     }
-    return states;
-  }
-  return void 0;
+    return undefined;
 }
-function isStateCommonEqual(objCommon, myCommon) {
-  return _.isEqual(objCommon.name, myCommon.name) && _.isEqual(objCommon.type, myCommon.type) && _.isEqual(objCommon.read, myCommon.read) && _.isEqual(objCommon.write, myCommon.write) && _.isEqual(objCommon.role, myCommon.role) && _.isEqual(objCommon.def, myCommon.def) && _.isEqual(objCommon.unit, myCommon.unit) && _.isEqual(objCommon.icon, myCommon.icon) && _.isEqual(objCommon.desc, myCommon.desc) && _.isEqual(objCommon.max, myCommon.max) && _.isEqual(objCommon.min, myCommon.min) && _.isEqual(objCommon.states, myCommon.states);
+/** Compare common properties of State
+ * @param {ioBroker.StateCommon} objCommon
+ * @param {ioBroker.StateCommon} myCommon
+ * @returns {boolean}
+ */
+export function isStateCommonEqual(objCommon, myCommon) {
+    return _.isEqual(objCommon.name, myCommon.name) &&
+        _.isEqual(objCommon.type, myCommon.type) &&
+        _.isEqual(objCommon.read, myCommon.read) &&
+        _.isEqual(objCommon.write, myCommon.write) &&
+        _.isEqual(objCommon.role, myCommon.role) &&
+        _.isEqual(objCommon.def, myCommon.def) &&
+        _.isEqual(objCommon.unit, myCommon.unit) &&
+        _.isEqual(objCommon.icon, myCommon.icon) &&
+        _.isEqual(objCommon.desc, myCommon.desc) &&
+        _.isEqual(objCommon.max, myCommon.max) &&
+        _.isEqual(objCommon.min, myCommon.min) &&
+        _.isEqual(objCommon.states, myCommon.states);
 }
-function zeroPad(source, places) {
-  const zero = places - source.toString().length + 1;
-  return Array(+(zero > 0 && zero)).join("0") + source;
+export function zeroPad(source, places) {
+    const zero = places - source.toString().length + 1;
+    return Array(+(zero > 0 && zero)).join('0') + source;
 }
-function getIdWithoutLastPart(id) {
-  const lastIndex = id.lastIndexOf(".");
-  return id.substring(0, lastIndex);
+/**
+ * Id without last part
+ * @param id
+ * @returns
+ */
+export function getIdWithoutLastPart(id) {
+    const lastIndex = id.lastIndexOf('.');
+    return id.substring(0, lastIndex);
 }
-function getIdLastPart(id) {
-  let result = id.split(".").pop();
-  return result ? result : "";
+/**
+ * last part of id
+ * @param id
+ * @returns
+ */
+export function getIdLastPart(id) {
+    let result = id.split('.').pop();
+    return result ? result : "";
 }
-const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = void 0, prefix = "") => {
-  const logPrefix = "[deepDiffBetweenObjects]:";
-  try {
-    const changes = (object2, base2, prefixInner = "") => {
-      return _.transform(object2, (result, value, key) => {
-        const fullKey = prefixInner ? `${prefixInner}.${key}` : key;
-        try {
-          if (!_.isEqual(value, base2[key]) && (allowedKeys && allowedKeys.includes(fullKey) || allowedKeys === void 0)) {
-            if (_.isArray(value)) {
-              if (_.some(value, (item) => _.isObject(item))) {
-                const tmp = [];
-                let empty = true;
-                for (let i = 0; i <= value.length - 1; i++) {
-                  const res = deepDiffBetweenObjects(value[i], base2[key] && base2[key][i] ? base2[key][i] : {}, adapter, allowedKeys, fullKey);
-                  if (!_.isEmpty(res) || res === 0 || res === false) {
-                    tmp.push(res);
-                    empty = false;
-                  } else {
-                    tmp.push(null);
-                  }
+/**
+ * Compare two objects and return properties that are diffrent
+ *
+ * @param object
+ * @param base
+ * @param adapter
+ * @param allowedKeys
+ * @param prefix
+ * @returns
+ */
+export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
+    const logPrefix = '[deepDiffBetweenObjects]:';
+    try {
+        const changes = (object, base, prefixInner = '') => {
+            return _.transform(object, (result, value, key) => {
+                const fullKey = prefixInner ? `${prefixInner}.${key}` : key;
+                try {
+                    if (!_.isEqual(value, base[key]) && ((allowedKeys && allowedKeys.includes(fullKey)) || allowedKeys === undefined)) {
+                        if (_.isArray(value)) {
+                            if (_.some(value, (item) => _.isObject(item))) {
+                                // objects in array exists
+                                const tmp = [];
+                                let empty = true;
+                                for (let i = 0; i <= value.length - 1; i++) {
+                                    const res = deepDiffBetweenObjects(value[i], base[key] && base[key][i] ? base[key][i] : {}, adapter, allowedKeys, fullKey);
+                                    if (!_.isEmpty(res) || res === 0 || res === false) {
+                                        // if (!_.has(result, key)) result[key] = [];
+                                        tmp.push(res);
+                                        empty = false;
+                                    }
+                                    else {
+                                        tmp.push(null);
+                                    }
+                                }
+                                if (!empty) {
+                                    result[key] = tmp;
+                                }
+                            }
+                            else {
+                                // is pure array
+                                adapter.log.warn(`${key.toString()}: pure Array (base: ${base[key]}, val: ${value})`);
+                                if (!_.isEqual(value, base[key])) {
+                                    result[key] = value;
+                                }
+                            }
+                        }
+                        else if (_.isObject(value) && _.isObject(base[key])) {
+                            const res = changes(value, base[key] ? base[key] : {}, fullKey);
+                            if (!_.isEmpty(res) || res === 0 || res === false) {
+                                result[key] = res;
+                            }
+                        }
+                        else {
+                            result[key] = value;
+                        }
+                    }
                 }
-                if (!empty) {
-                  result[key] = tmp;
+                catch (error) {
+                    adapter.log.error(`${logPrefix} transform error: ${error}, stack: ${error.stack}, fullKey: ${fullKey}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
                 }
-              } else {
-                adapter.log.warn(`${key.toString()}: pure Array (base: ${base2[key]}, val: ${value})`);
-                if (!_.isEqual(value, base2[key])) {
-                  result[key] = value;
+            });
+        };
+        return changes(object, base, prefix);
+    }
+    catch (error) {
+        adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
+    }
+    return object;
+};
+/**
+ * Collect all properties used in tree defintions
+ *
+ * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
+ * @returns
+ */
+export function getAllKeysOfTreeDefinition(treefDefintion) {
+    const keys = [];
+    // Hilfsfunktion für rekursive Durchsuchung des Objekts
+    function recurse(currentObj, prefix = '') {
+        _.forOwn(currentObj, (value, key) => {
+            const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '');
+            // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
+            if (_.isObject(value) && typeof value !== 'function' && key !== 'states') {
+                keys.push(fullKey);
+                // Wenn es ein Array oder Object ist, dann rekursiv weitergehen
+                if (_.isArray(value) || _.isObject(value)) {
+                    // Nur unter "array" oder "object" rekursiv weiter
+                    recurse(value, fullKey);
                 }
-              }
-            } else if (_.isObject(value) && _.isObject(base2[key])) {
-              const res = changes(value, base2[key] ? base2[key] : {}, fullKey);
-              if (!_.isEmpty(res) || res === 0 || res === false) {
-                result[key] = res;
-              }
-            } else {
-              result[key] = value;
             }
-          }
-        } catch (error) {
-          adapter.log.error(`${logPrefix} transform error: ${error}, stack: ${error.stack}, fullKey: ${fullKey}, object: ${JSON.stringify(object2)}, base: ${JSON.stringify(base2)}`);
-        }
-      });
-    };
-    return changes(object, base, prefix);
-  } catch (error) {
-    adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
-  }
-  return object;
-};
-function getAllKeysOfTreeDefinition(treefDefintion) {
-  const keys = [];
-  function recurse(currentObj, prefix = "") {
-    _.forOwn(currentObj, (value, key) => {
-      const fullKey = (prefix ? `${prefix}.${key}` : key).replace(".array", "").replace(".object", "");
-      if (_.isObject(value) && typeof value !== "function" && key !== "states") {
-        keys.push(fullKey);
-        if (_.isArray(value) || _.isObject(value)) {
-          recurse(value, fullKey);
-        }
-      } else {
-        if (key === "valFromProperty") {
-          const prefixCleared = getIdWithoutLastPart(prefix);
-          keys.push(`${prefixCleared ? `${prefixCleared}.` : ""}${value}`);
-        }
-      }
-    });
-  }
-  recurse(treefDefintion);
-  return _.uniq(keys);
+            else {
+                if (key === 'valFromProperty') {
+                    const prefixCleared = getIdWithoutLastPart(prefix);
+                    keys.push(`${prefixCleared ? `${prefixCleared}.` : ''}${value}`);
+                }
+            }
+        });
+    }
+    // Start der Rekursion
+    recurse(treefDefintion);
+    return _.uniq(keys);
 }
-function getAllIdsOfTreeDefinition(treefDefintion) {
-  const keys = [];
-  function recurse(currentObj, prefix = "") {
-    _.forOwn(currentObj, (value, key) => {
-      let fullKey = prefix ? `${prefix}.${key}` : key;
-      if (Object.hasOwn(value, "idChannel") && !_.isObject(value.idChannel)) {
-        fullKey = prefix ? `${prefix}.${value.idChannel}` : value.idChannel;
-      } else if (Object.hasOwn(value, "id") && !_.isObject(value.id)) {
-        fullKey = prefix ? `${prefix}.${value.id}` : value.id;
-      }
-      fullKey = fullKey.replace(".array", "").replace(".object", "");
-      if (_.isObject(value) && typeof value !== "function" && key !== "states") {
-        if (!_.has(value, "required")) {
-          keys.push(fullKey);
-        }
-        if (_.isArray(value) || _.isObject(value)) {
-          recurse(value, fullKey);
-        }
-      }
-    });
-  }
-  recurse(treefDefintion);
-  return _.uniq(keys);
+export function getAllIdsOfTreeDefinition(treefDefintion) {
+    const keys = [];
+    // Hilfsfunktion für rekursive Durchsuchung des Objekts
+    function recurse(currentObj, prefix = '') {
+        _.forOwn(currentObj, (value, key) => {
+            let fullKey = prefix ? `${prefix}.${key}` : key;
+            if (Object.hasOwn(value, 'idChannel') && !_.isObject(value.idChannel)) {
+                fullKey = prefix ? `${prefix}.${value.idChannel}` : value.idChannel;
+            }
+            else if (Object.hasOwn(value, 'id') && !_.isObject(value.id)) {
+                fullKey = prefix ? `${prefix}.${value.id}` : value.id;
+            }
+            fullKey = fullKey.replace('.array', '').replace('.object', '');
+            // Wenn der Wert ein Objekt ist (und kein Array), dann weiter rekursiv gehen
+            if (_.isObject(value) && typeof value !== 'function' && key !== 'states') {
+                if (!_.has(value, 'required')) {
+                    keys.push(fullKey);
+                }
+                // Wenn es ein Array oder Object ist, dann rekursiv weitergehen
+                if (_.isArray(value) || _.isObject(value)) {
+                    // Nur unter "array" oder "object" rekursiv weiter
+                    recurse(value, fullKey);
+                }
+            }
+        });
+    }
+    // Start der Rekursion
+    recurse(treefDefintion);
+    return _.uniq(keys);
 }
-function radioToFrequency(radioVal, adapter) {
-  if (radioVal === "ng") {
-    return "2.4 GHz";
-  } else if (radioVal === "na") {
-    return "5 GHz";
-  } else {
-    adapter.log.warn(`radio ${radioVal} interpreter not implemented! Please create an issue on github.`);
-    return radioVal;
-  }
+export function radioToFrequency(radioVal, adapter) {
+    if (radioVal === 'ng') {
+        return '2.4 GHz';
+    }
+    else if (radioVal === 'na') {
+        return '5 GHz';
+    }
+    else {
+        adapter.log.warn(`radio ${radioVal} interpreter not implemented! Please create an issue on github.`);
+        return radioVal;
+    }
 }
-function radio_nameToFrequency(radio_nameVal, adapter) {
-  if (radio_nameVal === "wifi0" || radio_nameVal === "ra0") {
-    return "2.4 GHz";
-  } else if (radio_nameVal === "wifi1" || radio_nameVal === "rai0") {
-    return "5 GHz";
-  } else {
-    adapter.log.warn(`radio ${radio_nameVal} interpreter not implemented! Please create an issue on github.`);
-    return "n/a";
-  }
+export function radio_nameToFrequency(radio_nameVal, adapter) {
+    if (radio_nameVal === 'wifi0' || radio_nameVal === 'ra0') {
+        return '2.4 GHz';
+    }
+    else if (radio_nameVal === 'wifi1' || radio_nameVal === 'rai0') {
+        return '5 GHz';
+    }
+    else {
+        adapter.log.warn(`radio ${radio_nameVal} interpreter not implemented! Please create an issue on github.`);
+        return 'n/a';
+    }
 }
-export {
-  deepDiffBetweenObjects,
-  getAllIdsOfTreeDefinition,
-  getAllKeysOfTreeDefinition,
-  getAllowedCommonStates,
-  getIdLastPart,
-  getIdWithoutLastPart,
-  getObjectByString,
-  isChannelCommonEqual,
-  isDeviceCommonEqual,
-  isStateCommonEqual,
-  radioToFrequency,
-  radio_nameToFrequency,
-  zeroPad
-};
-//# sourceMappingURL=helper.js.map
