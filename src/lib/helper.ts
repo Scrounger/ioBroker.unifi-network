@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes.js";
+import type { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "./myTypes.js";
 
 export function isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
     return (!myCommon.name || _.isEqual(objCommon.name, myCommon.name)) &&
@@ -16,12 +16,12 @@ export function isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon
         objCommon.role === myCommon.role
 }
 
-export function getObjectByString(path, obj, separator = '.') {
+export function getObjectByString(path: string, obj: any, separator = '.'): any {
     const properties = Array.isArray(path) ? path : path.split(separator);
     return properties.reduce((prev, curr) => prev?.[curr], obj);
 }
 
-export function getAllowedCommonStates(path, obj, separator = '.') {
+export function getAllowedCommonStates(path: string, obj: any, separator = '.'): any {
     const objByString = getObjectByString(path, obj, separator);
     const states = {};
 
@@ -36,10 +36,12 @@ export function getAllowedCommonStates(path, obj, separator = '.') {
     return undefined;
 }
 
-/** Compare common properties of State
- * @param {ioBroker.StateCommon} objCommon
- * @param {ioBroker.StateCommon} myCommon
- * @returns {boolean}
+/**
+ * Compare common properties of State
+ * 
+ * @param objCommon
+ * @param  myCommon
+ * @returns
  */
 export function isStateCommonEqual(objCommon: ioBroker.StateCommon, myCommon: ioBroker.StateCommon): boolean {
     return _.isEqual(objCommon.name, myCommon.name) &&
@@ -63,6 +65,7 @@ export function zeroPad(source: any, places: number): string {
 
 /**
  * Id without last part
+ * 
  * @param id 
  * @returns 
  */
@@ -73,11 +76,12 @@ export function getIdWithoutLastPart(id: string): string {
 
 /**
  * last part of id
+ * 
  * @param id 
  * @returns 
  */
 export function getIdLastPart(id: string): string {
-    let result = id.split('.').pop();
+    const result = id.split('.').pop();
     return result ? result : "";
 }
 
@@ -91,7 +95,7 @@ export function getIdLastPart(id: string): string {
  * @param prefix
  * @returns
  */
-export const deepDiffBetweenObjects = (object: any, base: any, adapter: ioBroker.Adapter, allowedKeys: any = undefined, prefix: string = ''): any => {
+export function deepDiffBetweenObjects(object: any, base: any, adapter: ioBroker.Adapter, allowedKeys: any = undefined, prefix: string = ''): any {
     const logPrefix = '[deepDiffBetweenObjects]:';
 
     try {
@@ -126,7 +130,7 @@ export const deepDiffBetweenObjects = (object: any, base: any, adapter: ioBroker
                             } else {
                                 // is pure array
                                 if (!_.isEqual(value, base[key])) {
-                                    result[key] = value
+                                    result[key] = value;
                                 }
                             }
                         } else if (_.isObject(value) && _.isObject(base[key])) {
@@ -150,7 +154,7 @@ export const deepDiffBetweenObjects = (object: any, base: any, adapter: ioBroker
     }
 
     return object;
-};
+}
 
 /**
  * Collect all properties used in tree defintions

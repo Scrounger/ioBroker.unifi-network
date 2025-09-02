@@ -1,11 +1,11 @@
 import * as utils from '@iobroker/adapter-core';
 import { NetworkApi } from './lib/api/network-api.js';
-import { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
-import { NetworkDevice } from './lib/api/network-types-device.js';
-import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
-import { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
-import { FirewallGroup } from './lib/api/network-types-firewall-group.js';
-import { ConnectedClients, myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myNetworkClient } from './lib/myTypes.js';
+import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
+import type { NetworkDevice } from './lib/api/network-types-device.js';
+import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
+import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
+import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
+import { type ConnectedClients, type myCache, type myCommonChannelArray, type myCommonState, type myCommoneChannelObject, type myNetworkClient } from './lib/myTypes.js';
 declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi;
     isConnected: boolean;
@@ -17,7 +17,7 @@ declare class UnifiNetwork extends utils.Adapter {
     cache: myCache;
     subscribedList: string[];
     eventListener: (event: NetworkEvent) => Promise<void>;
-    pongListener: () => Promise<void>;
+    pongListener: () => void;
     eventsToIgnore: string[];
     constructor(options?: Partial<utils.AdapterOptions>);
     /**
@@ -26,35 +26,44 @@ declare class UnifiNetwork extends utils.Adapter {
     private onReady;
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
+     *
+     * @param callback
      */
     private onUnload;
     /**
      * Is called if a subscribed state changes
+     *
+     * @param id
+     * @param state
      */
     private onStateChange;
     private onMessage;
     /**
      * Establish Connection to NVR and starting the alive checker
-     * @param isAdapterStart
      */
     establishConnection(): Promise<void>;
-    /** Login into NVR and load bootstrap data
-     * @returns {Promise<boolean>} Connection status
+    /**
+     * Login into NVR and load bootstrap data
+     *
+     * @returns Connection status
      */
     login(): Promise<boolean>;
-    /** Check whether the connection to the controller exists, if not try to establish a new connection
+    /**
+     * Check whether the connection to the controller exists, if not try to establish a new connection
      */
     aliveChecker(): Promise<void>;
-    /** Set adapter info.connection state and internal var
-     * @param {boolean} isConnected
+    /**
+     * Set adapter info.connection state and internal var
+     *
+     * @param isConnected
      */
     setConnectionStatus(isConnected: boolean): Promise<void>;
     /**
      * send websocket ping
      */
-    sendPing(): Promise<void>;
+    sendPing(): void;
     updateRealTimeApiData(): Promise<void>;
-    updateApiData(): Promise<void>;
+    updateApiData(): void;
     updateDevices(data?: NetworkDevice[] | null, isAdapterStart?: boolean): Promise<void>;
     updateClients(data?: myNetworkClient[] | null, isAdapterStart?: boolean, isOfflineClients?: boolean): Promise<void>;
     updatClientsOffline(data: myNetworkClient[], isAdapterStart?: boolean): Promise<void>;
@@ -73,24 +82,28 @@ declare class UnifiNetwork extends utils.Adapter {
     _updateClientsImages(objs: Record<string, ioBroker.State>): Promise<void>;
     /**
      * Download image from a given url and update Channel icon if needed
+     *
      * @param url
      * @param idChannelList
      */
     downloadImage(url: string | null, idChannelList: string[]): Promise<void>;
     /**
      * create or update a device object, update will only be done on adapter start
+     *
      * @param id
      * @param name
      * @param onlineId
+     * @param errorId
      * @param icon
      * @param isAdapterStart
+     * @param logChanges
      */
     private createOrUpdateDevice;
     /**
      * create or update a channel object, update will only be done on adapter start
+     *
      * @param id
      * @param name
-     * @param onlineId
      * @param icon
      * @param isAdapterStart
      */
@@ -102,11 +115,11 @@ declare class UnifiNetwork extends utils.Adapter {
     }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, objChannel: any, isAdapterStart?: boolean, filterId?: string, isChannelOnWhitelist?: boolean): Promise<void>;
     getCommonGenericState(id: string, treeDefinition: {
         [key: string]: myCommonState;
-    }, objDevices: any, logMsgState: string): Promise<ioBroker.StateCommon>;
+    }, objDevices: any, logMsgState: string): ioBroker.StateCommon;
     /**
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */
-    onPongMessage(): Promise<void>;
+    onPongMessage(): void;
     onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest | NetworkEventFirewallGroup): Promise<void>;
     onNetworkEvent(event: NetworkEvent): Promise<void>;
     onNetworkClientEvent(events: NetworkEventClient): Promise<void>;

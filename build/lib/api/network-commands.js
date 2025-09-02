@@ -16,7 +16,7 @@ export class NetworkCommands {
             const logPrefix = `[${this.logPrefixCls}.Devices.restart]`;
             const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
             if (result) {
-                this.ackCommand(id, logPrefix, `'${device.name}' (mac: ${device.mac})`);
+                await this.ackCommand(id, logPrefix, `'${device.name}' (mac: ${device.mac})`);
                 return true;
             }
             return false;
@@ -97,7 +97,7 @@ export class NetworkCommands {
             switchPoe: async (device, id, val) => {
                 const logPrefix = `[${this.logPrefixCls}.Devices.Port.port_switchPoe]`;
                 const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
-                let port_overrides = device.port_overrides;
+                const port_overrides = device.port_overrides;
                 if (port_overrides && port_overrides.length > 0) {
                     const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
                     if (indexOfPort !== -1) {

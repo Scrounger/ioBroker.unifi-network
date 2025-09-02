@@ -1,4 +1,4 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
+import type { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
 import * as myHelper from '../helper.js';
 
 export namespace firewallGroup {

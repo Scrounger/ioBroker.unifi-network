@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable } from '../api/network-types-device.js';
-import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
+import type { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable } from '../api/network-types-device.js';
+import type { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
 import * as myHelper from '../helper.js';
 
 
@@ -8,6 +8,157 @@ export namespace device {
     let keys: string[] = undefined;
 
     export const idChannel = 'devices'
+
+    const _WAN_PROPERTIES: { [key: string]: myCommonState } = {
+        current_download: {
+            iobType: 'number',
+            name: 'current download rate',
+            unit: 'Mbps',
+            valFromProperty: 'rx_rate',
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
+                return Math.round(val / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        current_upload: {
+            iobType: 'number',
+            name: 'current upload rate',
+            unit: 'Mbps',
+            valFromProperty: 'tx_rate',
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
+                return Math.round(val / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        ip: {
+            iobType: 'string',
+            name: 'ip address',
+        },
+        latency: {
+            iobType: 'number',
+            name: 'latency',
+            unit: 'ms'
+        },
+        name: {
+            iobType: 'string'
+        },
+        port_idx: {
+            iobType: 'number',
+            name: 'Port'
+        },
+        rx_bytes: {
+            iobType: 'number',
+            name: 'RX Bytes',
+            unit: 'GB',
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
+                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        tx_bytes: {
+            iobType: 'number',
+            name: 'TX Bytes',
+            unit: 'GB',
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
+                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        speedtest_download: {
+            id: 'speedtest_download',
+            iobType: 'number',
+            name: 'speed test download rate',
+            unit: 'Mbps'
+        },
+        speedtest_upload: {
+            id: 'speedtest_upload',
+            iobType: 'number',
+            name: 'speed test upload rate',
+            unit: 'Mbps'
+        },
+        speedtest_run: {
+            id: 'speedtest_run',
+            iobType: 'boolean',
+            name: 'run speedtest',
+            read: false,
+            write: true,
+            role: 'button'
+        },
+        up: {
+            iobType: 'boolean',
+        }
+    }
+
+    const _ISP_UPTIME_PROPERTIES: { [key: string]: myCommonState } = {
+        availability: {
+            iobType: 'number',
+            name: 'availability',
+            unit: '%',
+            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
+                return Math.round(val);
+            }
+        },
+        downtime: {
+            id: 'downtime',
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+            def: 0,
+            async readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
+                // if downtime increase, isp connection is down
+                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                if (await adapter.objectExists(isOnlineId)) {
+                    await adapter.setStateChangedAsync(isOnlineId, false, true);
+                }
+
+                return val;
+            }
+        },
+        isOnline: {
+            id: 'isOnline',
+            iobType: 'boolean',
+            name: 'is connected to internet service provider'
+        },
+        uptime: {
+            id: 'uptime',
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+            def: 0,
+            async readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
+                // if uptime increase, isp connection is up
+                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                if (await adapter.objectExists(isOnlineId)) {
+                    await adapter.setStateChangedAsync(isOnlineId, true, true);
+                }
+
+                return val;
+            }
+        },
+    }
+
+    const _ISP_GEO_INFO_PROPERTIES: { [key: string]: myCommonState } = {
+        address: {
+            id: 'ip',
+            iobType: 'string',
+            name: 'internet ip address',
+        },
+        city: {
+            iobType: 'string',
+            name: 'city',
+        },
+        country_name: {
+            id: 'country',
+            iobType: 'string',
+            name: 'country',
+        },
+        isp_name: {
+            id: 'name',
+            iobType: 'string',
+            name: 'provider name'
+        },
+        isp_organization: {
+            id: 'organization',
+            iobType: 'string',
+            name: 'provider organization'
+        }
+    }
 
     export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
         return {
@@ -152,7 +303,7 @@ export namespace device {
                     return `port_${myHelper.zeroPad(objDevice?.port_idx, 2)}`
                 },
                 arrayChannelNameFromProperty(objDevice: any, adapter: ioBroker.Adapter): string {
-                    return objDevice['name']
+                    return objDevice.name
                 },
                 array: {
                     name: {
@@ -260,7 +411,7 @@ export namespace device {
                     return 'WLAN Radio'
                 },
                 arrayChannelNameFromProperty(objDevice: any, adapter: ioBroker.Adapter): string {
-                    return myHelper.radio_nameToFrequency(objDevice['name'], adapter);
+                    return myHelper.radio_nameToFrequency(objDevice.name, adapter);
                 },
                 array: {
                     channel: {
@@ -706,157 +857,5 @@ export namespace device {
 
     export function getStateIDs(): string[] {
         return myHelper.getAllIdsOfTreeDefinition(get());
-    }
-
-
-    const _WAN_PROPERTIES: { [key: string]: myCommonState } = {
-        current_download: {
-            iobType: 'number',
-            name: 'current download rate',
-            unit: 'Mbps',
-            valFromProperty: 'rx_rate',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
-                return Math.round(val / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        current_upload: {
-            iobType: 'number',
-            name: 'current upload rate',
-            unit: 'Mbps',
-            valFromProperty: 'tx_rate',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
-                return Math.round(val / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        ip: {
-            iobType: 'string',
-            name: 'ip address',
-        },
-        latency: {
-            iobType: 'number',
-            name: 'latency',
-            unit: 'ms'
-        },
-        name: {
-            iobType: 'string'
-        },
-        port_idx: {
-            iobType: 'number',
-            name: 'Port'
-        },
-        rx_bytes: {
-            iobType: 'number',
-            name: 'RX Bytes',
-            unit: 'GB',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
-                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        tx_bytes: {
-            iobType: 'number',
-            name: 'TX Bytes',
-            unit: 'GB',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
-                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        speedtest_download: {
-            id: 'speedtest_download',
-            iobType: 'number',
-            name: 'speed test download rate',
-            unit: 'Mbps'
-        },
-        speedtest_upload: {
-            id: 'speedtest_upload',
-            iobType: 'number',
-            name: 'speed test upload rate',
-            unit: 'Mbps'
-        },
-        speedtest_run: {
-            id: 'speedtest_run',
-            iobType: 'boolean',
-            name: 'run speedtest',
-            read: false,
-            write: true,
-            role: 'button'
-        },
-        up: {
-            iobType: 'boolean',
-        }
-    }
-
-    const _ISP_UPTIME_PROPERTIES: { [key: string]: myCommonState } = {
-        availability: {
-            iobType: 'number',
-            name: 'availability',
-            unit: '%',
-            readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): ioBroker.StateValue {
-                return Math.round(val);
-            }
-        },
-        downtime: {
-            id: 'downtime',
-            iobType: 'number',
-            name: 'uptime',
-            unit: 's',
-            def: 0,
-            async readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
-                // if downtime increase, isp connection is down
-                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
-                if (await adapter.objectExists(isOnlineId)) {
-                    await adapter.setStateChangedAsync(isOnlineId, false, true);
-                }
-
-                return val;
-            }
-        },
-        isOnline: {
-            id: 'isOnline',
-            iobType: 'boolean',
-            name: 'is connected to internet service provider'
-        },
-        uptime: {
-            id: 'uptime',
-            iobType: 'number',
-            name: 'uptime',
-            unit: 's',
-            def: 0,
-            async readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
-                // if uptime increase, isp connection is up
-                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
-                if (await adapter.objectExists(isOnlineId)) {
-                    await adapter.setStateChangedAsync(isOnlineId, true, true);
-                }
-
-                return val;
-            }
-        },
-    }
-
-    const _ISP_GEO_INFO_PROPERTIES: { [key: string]: myCommonState } = {
-        address: {
-            id: 'ip',
-            iobType: 'string',
-            name: 'internet ip address',
-        },
-        city: {
-            iobType: 'string',
-            name: 'city',
-        },
-        country_name: {
-            id: 'country',
-            iobType: 'string',
-            name: 'country',
-        },
-        isp_name: {
-            id: 'name',
-            iobType: 'string',
-            name: 'provider name'
-        },
-        isp_organization: {
-            id: 'organization',
-            iobType: 'string',
-            name: 'provider organization'
-        }
     }
 }

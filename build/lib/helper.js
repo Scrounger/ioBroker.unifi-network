@@ -27,10 +27,12 @@ export function getAllowedCommonStates(path, obj, separator = '.') {
     }
     return undefined;
 }
-/** Compare common properties of State
- * @param {ioBroker.StateCommon} objCommon
- * @param {ioBroker.StateCommon} myCommon
- * @returns {boolean}
+/**
+ * Compare common properties of State
+ *
+ * @param objCommon
+ * @param  myCommon
+ * @returns
  */
 export function isStateCommonEqual(objCommon, myCommon) {
     return _.isEqual(objCommon.name, myCommon.name) &&
@@ -52,6 +54,7 @@ export function zeroPad(source, places) {
 }
 /**
  * Id without last part
+ *
  * @param id
  * @returns
  */
@@ -61,11 +64,12 @@ export function getIdWithoutLastPart(id) {
 }
 /**
  * last part of id
+ *
  * @param id
  * @returns
  */
 export function getIdLastPart(id) {
-    let result = id.split('.').pop();
+    const result = id.split('.').pop();
     return result ? result : "";
 }
 /**
@@ -78,7 +82,7 @@ export function getIdLastPart(id) {
  * @param prefix
  * @returns
  */
-export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
+export function deepDiffBetweenObjects(object, base, adapter, allowedKeys = undefined, prefix = '') {
     const logPrefix = '[deepDiffBetweenObjects]:';
     try {
         const changes = (object, base, prefixInner = '') => {
@@ -135,7 +139,7 @@ export const deepDiffBetweenObjects = (object, base, adapter, allowedKeys = unde
         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
     }
     return object;
-};
+}
 /**
  * Collect all properties used in tree defintions
  *

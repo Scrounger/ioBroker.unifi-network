@@ -198,20 +198,27 @@ export var client;
                 valFromProperty: 'radio_proto',
                 readVal(val, adapter, cache, deviceOrClient, id) {
                     if (val) {
-                        if (val === 'ax')
+                        if (val === 'ax') {
                             return 'WiFi 6';
-                        if (val === 'ac')
+                        }
+                        if (val === 'ac') {
                             return 'WiFi 5';
-                        if (val === 'ng')
+                        }
+                        if (val === 'ng') {
                             return 'WiFi 4';
-                        if (val === 'n')
+                        }
+                        if (val === 'n') {
                             return 'WiFi 4';
-                        if (val === 'g')
+                        }
+                        if (val === 'g') {
                             return 'WiFi 3';
-                        if (val === 'b')
+                        }
+                        if (val === 'b') {
                             return 'WiFi 2';
-                        if (val === 'a')
+                        }
+                        if (val === 'a') {
                             return 'WiFi 1';
+                        }
                     }
                     return 'tbd';
                 }

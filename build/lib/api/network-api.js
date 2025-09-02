@@ -8,6 +8,32 @@ import { API_TIMEOUT } from './network-settings.js';
 import { NetworkReportInterval } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import { NetworkCommands } from "./network-commands.js";
+export var ApiEndpoints;
+(function (ApiEndpoints) {
+    ApiEndpoints["login"] = "login";
+    ApiEndpoints["self"] = "self";
+    ApiEndpoints["devices"] = "devices";
+    ApiEndpoints["deviceRest"] = "deviceRest";
+    ApiEndpoints["deviceCommand"] = "deviceCommand";
+    ApiEndpoints["clients"] = "clients";
+    ApiEndpoints["clientsActive"] = "clientsActive";
+    ApiEndpoints["clientCommand"] = "clientCommand";
+    ApiEndpoints["wlanConfig"] = "wlanConfig";
+    ApiEndpoints["lanConfig"] = "lanConfig";
+    ApiEndpoints["firewallGroup"] = "firewallGroup";
+})(ApiEndpoints || (ApiEndpoints = {}));
+export var ApiEndpoints_V2;
+(function (ApiEndpoints_V2) {
+    ApiEndpoints_V2["devices"] = "devices";
+    ApiEndpoints_V2["clientsActive"] = "clientsActive";
+    ApiEndpoints_V2["clientsHistory"] = "clientsHistory";
+    ApiEndpoints_V2["wlanConfig"] = "wlanConfig";
+    ApiEndpoints_V2["lanConfig"] = "lanConfig";
+    ApiEndpoints_V2["wanConfig"] = "wanConfig";
+    ApiEndpoints_V2["models"] = "models";
+    ApiEndpoints_V2["network-members-group"] = "network-members-group";
+    ApiEndpoints_V2["network-members-groups"] = "network-members-groups";
+})(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     adapter;
@@ -118,8 +144,6 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * Clear the login credentials and terminate any open connection to the UniFi Network API.
-     *
-     * @category Authentication
      */
     logout() {
         const logPrefix = `[${this.logPrefix}.logout]`;
@@ -142,8 +166,6 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * Terminate any open connection to the UniFi Network API.
-     *
-     * @category Utilities
      */
     reset() {
         this._eventsWs?.close();
@@ -154,7 +176,7 @@ export class NetworkApi extends EventEmitter {
             // Create an interceptor that allows us to set the user agent to our liking.
             const ua = (dispatch) => (opts, handler) => {
                 opts.headers ??= {};
-                opts.headers["user-agent"] = "unifi-protect";
+                opts.headers["user-agent"] = "unifi-network";
                 return dispatch(opts, handler);
             };
             // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
@@ -175,20 +197,15 @@ export class NetworkApi extends EventEmitter {
      *
      * @param url       - Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   - Parameters to pass on for the endpoint request.
-     *
+     * @param retrieveOptions
      * @returns Returns a promise that will resolve to a Response object successful, and `null` otherwise.
-     *
-     * @remarks This method should be used when direct access to the Network controller is needed, or when this library doesn't have a needed method to access
-     *   controller capabilities. `options` must be a
-     *   [Fetch API compatible](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#options) request options object.
-     *
-     * @category API Access
      */
     async retrieve(url, options = { method: "GET" }, retrieveOptions = {}) {
         return this._retrieve(url, options, retrieveOptions);
     }
     /**
      * Execute an HTTP fetch request to the Network controller and retriev data as json
+     *
      * @param url       Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   Parameters to pass on for the endpoint request.
      * @param retry     Retry once if we have an issue
@@ -346,6 +363,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * Detailed list of all devices on site
+     *
      * @param mac optional: mac address to receive only the data for this device
      * @returns
      */
@@ -364,7 +382,9 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * API V2 - Detailed list of all devices on site
-     * @param mac optional: mac address to receive only the data for this device
+     *
+     * @param separateUnmanaged
+     * @param includeTrafficUsage
      * @returns
      */
     async getDevices_V2(separateUnmanaged = false, includeTrafficUsage = false) {
@@ -382,6 +402,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * List of all active (connected) clients
+     *
      * @returns
      */
     async getClientsActive() {
@@ -399,6 +420,10 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      *  V2 API - List of all active (connected) clients
+     *
+     * @param mac
+     * @param includeTrafficUsage
+     * @param includeUnifiDevices
      * @returns
      */
     async getClientsActive_V2(mac = undefined, includeTrafficUsage = false, includeUnifiDevices = true) {
@@ -417,6 +442,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * List of all configured / known clients on the site
+     *
      * @returns
      */
     async getClients() {
@@ -434,6 +460,9 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      *  V2 API - List of all disconnected clients
+     *
+     * @param withinHour
+     * @param includeUnifiDevices
      * @returns
      */
     async getClientsHistory_V2(withinHour = 0, includeUnifiDevices = true) {
@@ -452,6 +481,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * List all WLan configurations
+     *
      * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns
      */
@@ -470,6 +500,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * API V2 - List all WLan configurations
+     *
      * @returns
      */
     async getWlanConfig_V2() {
@@ -487,6 +518,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * List all LAN configurations
+     *
      * @param network_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
@@ -505,6 +537,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * API V2 - List all Lan configurations
+     *
      * @returns
      */
     async getLanConfig_V2() {
@@ -521,9 +554,11 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
     /**
-      * API V2 - List model information for devices
-      * @returns
-      */
+     * API V2 - List model information for devices
+     *
+     * @param model
+     * @returns
+     */
     async getDeviceModels_V2(model = undefined) {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`;
         try {
@@ -539,6 +574,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * List all LAN configurations
+     *
      * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
@@ -557,6 +593,7 @@ export class NetworkApi extends EventEmitter {
     }
     /**
      * get statistics for site, gateway, switches or access points
+     *
      * @param type report type @see reportType
      * @param interval report interval @see reportInterval
      * @param attrs filter by attributes @see NetworkReportStats
@@ -637,28 +674,29 @@ export class NetworkApi extends EventEmitter {
                 pageSize: pages_size
             };
             if (type === SystemLogType.critical) {
-                payload['nextAiCategory'] = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
+                payload.nextAiCategory = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
             }
             else if (type === SystemLogType.devices) {
-                if (!macs)
-                    payload['macs'] = macs;
+                if (!macs) {
+                    payload.macs = macs;
+                }
             }
             else if (type === SystemLogType.admin) {
-                payload['activity_keys'] = ['ACCESSED_NETWORK_WEB', 'ACCESSED_NETWORK_IOS', 'ACCESSED_NETWORK_ANDROID'];
-                payload['change_keys'] = ['CLIENT', 'DEVICE', 'HOTSPOT', 'INTERNET', 'NETWORK', 'PROFILE', 'ROUTING', 'SECURITY', 'SYSTEM', 'VPN', 'WIFI'];
+                payload.activity_keys = ['ACCESSED_NETWORK_WEB', 'ACCESSED_NETWORK_IOS', 'ACCESSED_NETWORK_ANDROID'];
+                payload.change_keys = ['CLIENT', 'DEVICE', 'HOTSPOT', 'INTERNET', 'NETWORK', 'PROFILE', 'ROUTING', 'SECURITY', 'SYSTEM', 'VPN', 'WIFI'];
             }
             else if (type === SystemLogType.updates) {
-                payload['systemLogDeviceTypes'] = ['GATEWAYS', 'SWITCHES', 'ACCESS_POINT', 'SMART_POWER', 'BUILDING_TO_BUILDING_BRIDGES', 'UNIFI_LTE'];
+                payload.systemLogDeviceTypes = ['GATEWAYS', 'SWITCHES', 'ACCESS_POINT', 'SMART_POWER', 'BUILDING_TO_BUILDING_BRIDGES', 'UNIFI_LTE'];
             }
             else if (type === SystemLogType.clients) {
-                payload['clientType'] = ['GUEST', 'TELEPORT', 'VPN', 'WIRELESS', 'RADIUS', 'WIRED'];
-                payload['guestAuthorizationMethod'] = ['FACEBOOK_SOCIAL_GATEWAY', 'FREE_TRIAL', 'GOOGLE_SOCIAL_GATEWAY', 'NONE', 'PASSWORD', 'PAYMENT', 'RADIUS', 'VOUCHER'];
+                payload.clientType = ['GUEST', 'TELEPORT', 'VPN', 'WIRELESS', 'RADIUS', 'WIRED'];
+                payload.guestAuthorizationMethod = ['FACEBOOK_SOCIAL_GATEWAY', 'FREE_TRIAL', 'GOOGLE_SOCIAL_GATEWAY', 'NONE', 'PASSWORD', 'PAYMENT', 'RADIUS', 'VOUCHER'];
             }
             else if (type === SystemLogType.threats) {
-                payload['threatTypes'] = ['HONEYPOT', 'THREAT'];
+                payload.threatTypes = ['HONEYPOT', 'THREAT'];
             }
             else if (type === SystemLogType.triggers) {
-                payload['triggerTypes'] = ['TRAFFIC_RULE', 'TRAFFIC_ROUTE', 'FIREWALL_RULE'];
+                payload.triggerTypes = ['TRAFFIC_RULE', 'TRAFFIC_ROUTE', 'FIREWALL_RULE'];
             }
             const res = await this.retrievData(url, {
                 method: 'POST',
@@ -724,7 +762,7 @@ export class NetworkApi extends EventEmitter {
     getApiEndpoint_V2(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api
         let endpointSuffix;
-        let endpointPrefix = this.isUnifiOs ? '/proxy/network' : '';
+        const endpointPrefix = this.isUnifiOs ? '/proxy/network' : '';
         switch (endpoint) {
             case ApiEndpoints_V2.devices:
                 endpointSuffix = `/v2/api/site/${this.site}/device`;
@@ -784,12 +822,12 @@ export class NetworkApi extends EventEmitter {
             }, { once: true });
             // Handle any websocket errors.
             ws.addEventListener('error', (event) => {
-                this.log.error(`${this.logPrefix} Events API error: ${event.error.cause}`);
+                this.log.error(`${this.logPrefix} Events API error: ${JSON.stringify(event.error.cause)}`);
                 this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
                 ws.close();
             }, { once: true });
             // Process messages as they come in.
-            ws.addEventListener('message', messageHandler = async (event) => {
+            ws.addEventListener('message', messageHandler = (event) => {
                 try {
                     if (event.data) {
                         if (event.data.toLowerCase() === 'pong') {
@@ -832,30 +870,4 @@ export class NetworkApi extends EventEmitter {
         }
     }
 }
-export var ApiEndpoints;
-(function (ApiEndpoints) {
-    ApiEndpoints["login"] = "login";
-    ApiEndpoints["self"] = "self";
-    ApiEndpoints["devices"] = "devices";
-    ApiEndpoints["deviceRest"] = "deviceRest";
-    ApiEndpoints["deviceCommand"] = "deviceCommand";
-    ApiEndpoints["clients"] = "clients";
-    ApiEndpoints["clientsActive"] = "clientsActive";
-    ApiEndpoints["clientCommand"] = "clientCommand";
-    ApiEndpoints["wlanConfig"] = "wlanConfig";
-    ApiEndpoints["lanConfig"] = "lanConfig";
-    ApiEndpoints["firewallGroup"] = "firewallGroup";
-})(ApiEndpoints || (ApiEndpoints = {}));
-export var ApiEndpoints_V2;
-(function (ApiEndpoints_V2) {
-    ApiEndpoints_V2["devices"] = "devices";
-    ApiEndpoints_V2["clientsActive"] = "clientsActive";
-    ApiEndpoints_V2["clientsHistory"] = "clientsHistory";
-    ApiEndpoints_V2["wlanConfig"] = "wlanConfig";
-    ApiEndpoints_V2["lanConfig"] = "lanConfig";
-    ApiEndpoints_V2["wanConfig"] = "wanConfig";
-    ApiEndpoints_V2["models"] = "models";
-    ApiEndpoints_V2["network-members-group"] = "network-members-group";
-    ApiEndpoints_V2["network-members-groups"] = "network-members-groups";
-})(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));
 //# sourceMappingURL=network-api.js.map

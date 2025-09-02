@@ -1,4 +1,4 @@
-import { myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
+import type { myCommonChannelArray, myCommonState, myCommoneChannelObject } from '../myTypes.js';
 export declare namespace client {
     const idChannel = "clients";
     const idChannelUsers = "clients.users";

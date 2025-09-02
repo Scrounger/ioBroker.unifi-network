@@ -1,6 +1,6 @@
 import moment from 'moment';
-import { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myNetworkClient } from '../myTypes.js';
-import { NetworkClientFingerprint } from '../api/network-types-client.js';
+import type { myCache, myCommonChannelArray, myCommonState, myCommoneChannelObject, myNetworkClient } from '../myTypes.js';
+import type { NetworkClientFingerprint } from '../api/network-types-client.js';
 import * as myHelper from '../helper.js';
 
 
@@ -201,13 +201,27 @@ export namespace client {
                 valFromProperty: 'radio_proto',
                 readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: myNetworkClient, id: string): ioBroker.StateValue {
                     if (val) {
-                        if (val === 'ax') return 'WiFi 6'
-                        if (val === 'ac') return 'WiFi 5'
-                        if (val === 'ng') return 'WiFi 4'
-                        if (val === 'n') return 'WiFi 4'
-                        if (val === 'g') return 'WiFi 3'
-                        if (val === 'b') return 'WiFi 2'
-                        if (val === 'a') return 'WiFi 1'
+                        if (val === 'ax') {
+                            return 'WiFi 6'
+                        }
+                        if (val === 'ac') {
+                            return 'WiFi 5'
+                        }
+                        if (val === 'ng') {
+                            return 'WiFi 4'
+                        }
+                        if (val === 'n') {
+                            return 'WiFi 4'
+                        }
+                        if (val === 'g') {
+                            return 'WiFi 3'
+                        }
+                        if (val === 'b') {
+                            return 'WiFi 2'
+                        }
+                        if (val === 'a') {
+                            return 'WiFi 1'
+                        }
                     }
 
                     return 'tbd'

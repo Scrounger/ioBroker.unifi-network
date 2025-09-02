@@ -2,7 +2,7 @@ import { WebSocketEvent } from "./myTypes.js";
 import * as myHelper from './helper.js';
 import * as tree from './tree/index.js';
 import moment from "moment";
-let disconnectDebounceList = {};
+const disconnectDebounceList = {};
 export const eventHandler = {
     device: {
         async restarted(meta, data, adapter, cache) {
@@ -50,7 +50,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.speedTest]:';
             try {
                 const mac = event.meta.mac;
-                for (let data of event.data) {
+                for (const data of event.data) {
                     if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
                         const wan = cache.devices[mac]?.wan1?.ifname === data.interface_name ? 'wan1' : cache.devices[mac]?.wan2?.ifname === data.interface_name ? 'wan2' : 'wan1';
                         adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
@@ -139,8 +139,9 @@ export const eventHandler = {
                             else {
                                 adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
                             }
-                            if (delete disconnectDebounceList[mac])
+                            if (delete disconnectDebounceList[mac]) {
                                 delete disconnectDebounceList[mac];
+                            }
                             if (await adapter.objectExists(id)) {
                                 await adapter.setState(id, connected, true);
                             }
@@ -163,8 +164,9 @@ export const eventHandler = {
                                 else {
                                     adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' 're-connected' in the debounce time, nothing to do`);
                                 }
-                                if (delete disconnectDebounceList[mac])
+                                if (delete disconnectDebounceList[mac]) {
                                     delete disconnectDebounceList[mac];
+                                }
                             }, adapter.config.clientRealtimeDisconnectDebounceTime * 1000);
                         }
                     }
@@ -297,7 +299,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.wlanConf.deleted]:';
             try {
                 if (data && adapter.config.keepIobSynchron) {
-                    for (let wlan of data) {
+                    for (const wlan of data) {
                         const idChannel = `${tree.wlan.idChannel}.${wlan._id}`;
                         if (await adapter.objectExists(idChannel)) {
                             await adapter.delObjectAsync(idChannel, { recursive: true });
@@ -328,7 +330,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.lanConf.deleted]:';
             try {
                 if (data && adapter.config.keepIobSynchron) {
-                    for (let lan of data) {
+                    for (const lan of data) {
                         const idChannel = `${tree.lan.idChannel}.${lan._id}`;
                         if (await adapter.objectExists(idChannel)) {
                             await adapter.delObjectAsync(idChannel, { recursive: true });
@@ -347,7 +349,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.firewallGroup.deleted]:';
             try {
                 if (data && adapter.config.keepIobSynchron) {
-                    for (let firewallGroup of data) {
+                    for (const firewallGroup of data) {
                         const idChannel = `${tree.firewallGroup.idChannel}.${firewallGroup._id}`;
                         if (await adapter.objectExists(idChannel)) {
                             await adapter.delObjectAsync(idChannel, { recursive: true });

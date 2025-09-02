@@ -1,9 +1,9 @@
-import { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client.js";
-import { NetworkDevice } from "./api/network-types-device.js";
-import { NetworkDeviceModels } from './api/network-types-device-models.js'
-import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
-import { NetworkLanConfig } from "./api/network-types-lan-config.js";
-import { FirewallGroup } from "./api/network-types-firewall-group.js";
+import type { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client.js";
+import type { NetworkDevice } from "./api/network-types-device.js";
+import type { NetworkDeviceModels } from './api/network-types-device-models.js'
+import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
+import type { FirewallGroup } from "./api/network-types-firewall-group.js";
 
 export interface myCommonState {
     id?: string,

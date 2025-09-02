@@ -4,6 +4,152 @@ export var device;
 (function (device) {
     let keys = undefined;
     device.idChannel = 'devices';
+    const _WAN_PROPERTIES = {
+        current_download: {
+            iobType: 'number',
+            name: 'current download rate',
+            unit: 'Mbps',
+            valFromProperty: 'rx_rate',
+            readVal(val, adapter, cache, deviceOrClient, id) {
+                return Math.round(val / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        current_upload: {
+            iobType: 'number',
+            name: 'current upload rate',
+            unit: 'Mbps',
+            valFromProperty: 'tx_rate',
+            readVal(val, adapter, cache, deviceOrClient, id) {
+                return Math.round(val / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        ip: {
+            iobType: 'string',
+            name: 'ip address',
+        },
+        latency: {
+            iobType: 'number',
+            name: 'latency',
+            unit: 'ms'
+        },
+        name: {
+            iobType: 'string'
+        },
+        port_idx: {
+            iobType: 'number',
+            name: 'Port'
+        },
+        rx_bytes: {
+            iobType: 'number',
+            name: 'RX Bytes',
+            unit: 'GB',
+            readVal(val, adapter, cache, deviceOrClient, id) {
+                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        tx_bytes: {
+            iobType: 'number',
+            name: 'TX Bytes',
+            unit: 'GB',
+            readVal(val, adapter, cache, deviceOrClient, id) {
+                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+            }
+        },
+        speedtest_download: {
+            id: 'speedtest_download',
+            iobType: 'number',
+            name: 'speed test download rate',
+            unit: 'Mbps'
+        },
+        speedtest_upload: {
+            id: 'speedtest_upload',
+            iobType: 'number',
+            name: 'speed test upload rate',
+            unit: 'Mbps'
+        },
+        speedtest_run: {
+            id: 'speedtest_run',
+            iobType: 'boolean',
+            name: 'run speedtest',
+            read: false,
+            write: true,
+            role: 'button'
+        },
+        up: {
+            iobType: 'boolean',
+        }
+    };
+    const _ISP_UPTIME_PROPERTIES = {
+        availability: {
+            iobType: 'number',
+            name: 'availability',
+            unit: '%',
+            readVal(val, adapter, cache, deviceOrClient, id) {
+                return Math.round(val);
+            }
+        },
+        downtime: {
+            id: 'downtime',
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+            def: 0,
+            async readVal(val, adapter, cache, deviceOrClient, id) {
+                // if downtime increase, isp connection is down
+                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                if (await adapter.objectExists(isOnlineId)) {
+                    await adapter.setStateChangedAsync(isOnlineId, false, true);
+                }
+                return val;
+            }
+        },
+        isOnline: {
+            id: 'isOnline',
+            iobType: 'boolean',
+            name: 'is connected to internet service provider'
+        },
+        uptime: {
+            id: 'uptime',
+            iobType: 'number',
+            name: 'uptime',
+            unit: 's',
+            def: 0,
+            async readVal(val, adapter, cache, deviceOrClient, id) {
+                // if uptime increase, isp connection is up
+                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                if (await adapter.objectExists(isOnlineId)) {
+                    await adapter.setStateChangedAsync(isOnlineId, true, true);
+                }
+                return val;
+            }
+        },
+    };
+    const _ISP_GEO_INFO_PROPERTIES = {
+        address: {
+            id: 'ip',
+            iobType: 'string',
+            name: 'internet ip address',
+        },
+        city: {
+            iobType: 'string',
+            name: 'city',
+        },
+        country_name: {
+            id: 'country',
+            iobType: 'string',
+            name: 'country',
+        },
+        isp_name: {
+            id: 'name',
+            iobType: 'string',
+            name: 'provider name'
+        },
+        isp_organization: {
+            id: 'organization',
+            iobType: 'string',
+            name: 'provider organization'
+        }
+    };
     function get() {
         return {
             connected_clients: {
@@ -146,7 +292,7 @@ export var device;
                     return `port_${myHelper.zeroPad(objDevice?.port_idx, 2)}`;
                 },
                 arrayChannelNameFromProperty(objDevice, adapter) {
-                    return objDevice['name'];
+                    return objDevice.name;
                 },
                 array: {
                     name: {
@@ -254,7 +400,7 @@ export var device;
                     return 'WLAN Radio';
                 },
                 arrayChannelNameFromProperty(objDevice, adapter) {
-                    return myHelper.radio_nameToFrequency(objDevice['name'], adapter);
+                    return myHelper.radio_nameToFrequency(objDevice.name, adapter);
                 },
                 array: {
                     channel: {
@@ -701,151 +847,5 @@ export var device;
         return myHelper.getAllIdsOfTreeDefinition(get());
     }
     device.getStateIDs = getStateIDs;
-    const _WAN_PROPERTIES = {
-        current_download: {
-            iobType: 'number',
-            name: 'current download rate',
-            unit: 'Mbps',
-            valFromProperty: 'rx_rate',
-            readVal(val, adapter, cache, deviceOrClient, id) {
-                return Math.round(val / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        current_upload: {
-            iobType: 'number',
-            name: 'current upload rate',
-            unit: 'Mbps',
-            valFromProperty: 'tx_rate',
-            readVal(val, adapter, cache, deviceOrClient, id) {
-                return Math.round(val / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        ip: {
-            iobType: 'string',
-            name: 'ip address',
-        },
-        latency: {
-            iobType: 'number',
-            name: 'latency',
-            unit: 'ms'
-        },
-        name: {
-            iobType: 'string'
-        },
-        port_idx: {
-            iobType: 'number',
-            name: 'Port'
-        },
-        rx_bytes: {
-            iobType: 'number',
-            name: 'RX Bytes',
-            unit: 'GB',
-            readVal(val, adapter, cache, deviceOrClient, id) {
-                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        tx_bytes: {
-            iobType: 'number',
-            name: 'TX Bytes',
-            unit: 'GB',
-            readVal(val, adapter, cache, deviceOrClient, id) {
-                return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
-            }
-        },
-        speedtest_download: {
-            id: 'speedtest_download',
-            iobType: 'number',
-            name: 'speed test download rate',
-            unit: 'Mbps'
-        },
-        speedtest_upload: {
-            id: 'speedtest_upload',
-            iobType: 'number',
-            name: 'speed test upload rate',
-            unit: 'Mbps'
-        },
-        speedtest_run: {
-            id: 'speedtest_run',
-            iobType: 'boolean',
-            name: 'run speedtest',
-            read: false,
-            write: true,
-            role: 'button'
-        },
-        up: {
-            iobType: 'boolean',
-        }
-    };
-    const _ISP_UPTIME_PROPERTIES = {
-        availability: {
-            iobType: 'number',
-            name: 'availability',
-            unit: '%',
-            readVal(val, adapter, cache, deviceOrClient, id) {
-                return Math.round(val);
-            }
-        },
-        downtime: {
-            id: 'downtime',
-            iobType: 'number',
-            name: 'uptime',
-            unit: 's',
-            def: 0,
-            async readVal(val, adapter, cache, deviceOrClient, id) {
-                // if downtime increase, isp connection is down
-                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
-                if (await adapter.objectExists(isOnlineId)) {
-                    await adapter.setStateChangedAsync(isOnlineId, false, true);
-                }
-                return val;
-            }
-        },
-        isOnline: {
-            id: 'isOnline',
-            iobType: 'boolean',
-            name: 'is connected to internet service provider'
-        },
-        uptime: {
-            id: 'uptime',
-            iobType: 'number',
-            name: 'uptime',
-            unit: 's',
-            def: 0,
-            async readVal(val, adapter, cache, deviceOrClient, id) {
-                // if uptime increase, isp connection is up
-                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
-                if (await adapter.objectExists(isOnlineId)) {
-                    await adapter.setStateChangedAsync(isOnlineId, true, true);
-                }
-                return val;
-            }
-        },
-    };
-    const _ISP_GEO_INFO_PROPERTIES = {
-        address: {
-            id: 'ip',
-            iobType: 'string',
-            name: 'internet ip address',
-        },
-        city: {
-            iobType: 'string',
-            name: 'city',
-        },
-        country_name: {
-            id: 'country',
-            iobType: 'string',
-            name: 'country',
-        },
-        isp_name: {
-            id: 'name',
-            iobType: 'string',
-            name: 'provider name'
-        },
-        isp_organization: {
-            id: 'organization',
-            iobType: 'string',
-            name: 'provider organization'
-        }
-    };
 })(device || (device = {}));
 //# sourceMappingURL=device.js.map

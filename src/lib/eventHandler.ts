@@ -1,17 +1,17 @@
-import { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
-import { WebSocketEvent, myCache, myNetworkClient } from "./myTypes.js";
+import type { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
+import { WebSocketEvent, type myCache, type myNetworkClient } from "./myTypes.js";
 import * as myHelper from './helper.js';
-import { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
-import { NetworkLanConfig } from "./api/network-types-lan-config.js";
+import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
 import moment from "moment";
-import { FirewallGroup } from "./api/network-types-firewall-group.js";
+import type { FirewallGroup } from "./api/network-types-firewall-group.js";
 
-let disconnectDebounceList = {};
+const disconnectDebounceList = {};
 
 export const eventHandler = {
     device: {
-        async restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.device.restarted]:'
 
             try {
@@ -32,7 +32,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.device.connected]:'
 
             try {
@@ -54,13 +54,13 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async speedTest(event: NetworkEventSpeedTest, adapter: ioBroker.Adapter, cache: myCache) {
+        async speedTest(event: NetworkEventSpeedTest, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.device.speedTest]:'
 
             try {
                 const mac = event.meta.mac;
 
-                for (let data of event.data) {
+                for (const data of event.data) {
                     if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
                         const wan = cache.devices[mac]?.wan1?.ifname === data.interface_name ? 'wan1' : cache.devices[mac]?.wan2?.ifname === data.interface_name ? 'wan2' : 'wan1';
 
@@ -86,7 +86,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, event: ${JSON.stringify(event)}`);
             }
         },
-        async lostContact(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async lostContact(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.device.lostContact]:'
 
             try {
@@ -113,7 +113,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async wanTransition(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async wanTransition(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.device.wanTransition]:'
 
             try {
@@ -144,7 +144,7 @@ export const eventHandler = {
         },
     },
     client: {
-        async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async connected(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.client.connected]:'
 
             try {
@@ -163,7 +163,9 @@ export const eventHandler = {
                                 adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
                             }
 
-                            if (delete disconnectDebounceList[mac]) delete disconnectDebounceList[mac];
+                            if (delete disconnectDebounceList[mac]) {
+                                delete disconnectDebounceList[mac];
+                            }
 
                             if (await adapter.objectExists(id)) {
                                 await adapter.setState(id, connected, true);
@@ -190,7 +192,9 @@ export const eventHandler = {
                                     adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' 're-connected' in the debounce time, nothing to do`);
                                 }
 
-                                if (delete disconnectDebounceList[mac]) delete disconnectDebounceList[mac];
+                                if (delete disconnectDebounceList[mac]) {
+                                    delete disconnectDebounceList[mac];
+                                }
 
                             }, adapter.config.clientRealtimeDisconnectDebounceTime * 1000);
                         }
@@ -202,7 +206,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async roamed(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async roamed(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.client.roamed]:'
 
             try {
@@ -230,7 +234,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async roamedRadio(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async roamedRadio(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.client.roamedRadio]:'
 
             try {
@@ -260,7 +264,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async block(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache) {
+        async block(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.client.block]:'
 
             try {
@@ -286,7 +290,7 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
-        async vpnDisconnect(meta: NetworkEventMeta, data: myNetworkClient, adapter: ioBroker.Adapter, cache: myCache) {
+        async vpnDisconnect(meta: NetworkEventMeta, data: myNetworkClient, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.client.vpnDisconnect]:'
 
             try {
@@ -309,7 +313,7 @@ export const eventHandler = {
         }
     },
     user: {
-        async clientRemoved(meta: NetworkEventMeta, data: { [key: string]: boolean | number | object | string } | any, adapter: ioBroker.Adapter, cache: myCache) {
+        async clientRemoved(meta: NetworkEventMeta, data: { [key: string]: boolean | number | object | string } | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.user.clientRemoved]:'
 
             try {
@@ -329,12 +333,12 @@ export const eventHandler = {
         },
     },
     wlanConf: {
-        async deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache) {
+        async deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.wlanConf.deleted]:'
 
             try {
                 if (data && adapter.config.keepIobSynchron) {
-                    for (let wlan of data) {
+                    for (const wlan of data) {
                         const idChannel = `${tree.wlan.idChannel}.${wlan._id}`
 
                         if (await adapter.objectExists(idChannel)) {
@@ -364,12 +368,12 @@ export const eventHandler = {
         }
     },
     lanConf: {
-        async deleted(meta: NetworkEventMeta, data: NetworkLanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache) {
+        async deleted(meta: NetworkEventMeta, data: NetworkLanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.lanConf.deleted]:'
 
             try {
                 if (data && adapter.config.keepIobSynchron) {
-                    for (let lan of data) {
+                    for (const lan of data) {
                         const idChannel = `${tree.lan.idChannel}.${lan._id}`
 
                         if (await adapter.objectExists(idChannel)) {
@@ -384,12 +388,12 @@ export const eventHandler = {
         }
     },
     firewallGroup: {
-        async deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache) {
+        async deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.firewallGroup.deleted]:'
 
             try {
                 if (data && adapter.config.keepIobSynchron) {
-                    for (let firewallGroup of data) {
+                    for (const firewallGroup of data) {
                         const idChannel = `${tree.firewallGroup.idChannel}.${firewallGroup._id}`
 
                         if (await adapter.objectExists(idChannel)) {

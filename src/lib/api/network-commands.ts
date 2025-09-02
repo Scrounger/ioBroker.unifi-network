@@ -1,11 +1,11 @@
-import { ApiEndpoints, NetworkApi } from "./network-api.js";
-import { NetworkLogging } from "./network-logging.js";
-import { NetworkDevice } from "./network-types-device.js";
+import { ApiEndpoints, type NetworkApi } from "./network-api.js";
+import type { NetworkLogging } from "./network-logging.js";
+import type { NetworkDevice } from "./network-types-device.js";
 import * as myHelper from '../helper.js';
-import { NetworkClient } from "./network-types-client.js";
-import { NetworkWlanConfig } from "./network-types-wlan-config.js";
-import { NetworkLanConfig } from "./network-types-lan-config.js";
-import { FirewallGroup } from "./network-types-firewall-group.js";
+import type { NetworkClient } from "./network-types-client.js";
+import type { NetworkWlanConfig } from "./network-types-wlan-config.js";
+import type { NetworkLanConfig } from "./network-types-lan-config.js";
+import type { FirewallGroup } from "./network-types-firewall-group.js";
 
 export class NetworkCommands {
     private ufn: NetworkApi;
@@ -27,7 +27,7 @@ export class NetworkCommands {
             const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
 
             if (result) {
-                this.ackCommand(id, logPrefix, `'${device.name}' (mac: ${device.mac})`)
+                await this.ackCommand(id, logPrefix, `'${device.name}' (mac: ${device.mac})`)
                 return true;
             }
             return false;
@@ -126,7 +126,7 @@ export class NetworkCommands {
                 const logPrefix = `[${this.logPrefixCls}.Devices.Port.port_switchPoe]`;
 
                 const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
-                let port_overrides = device.port_overrides;
+                const port_overrides = device.port_overrides;
 
                 if (port_overrides && port_overrides.length > 0) {
                     const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
@@ -278,7 +278,7 @@ export class NetworkCommands {
     }
 
     public FirewallGroup = {
-        setName: async (firewallGroup: FirewallGroup, name: string) => {
+        setName: async (firewallGroup: FirewallGroup, name: string): Promise<boolean> => {
             const logPrefix = `[${this.logPrefixCls}.FirewallGroup.setName]`;
 
             const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${firewallGroup._id.trim()}`, { name: name }, 'PUT');
@@ -289,7 +289,7 @@ export class NetworkCommands {
             }
             return false;
         },
-        setGroupMembers: async (firewallGroup: FirewallGroup, members: string) => {
+        setGroupMembers: async (firewallGroup: FirewallGroup, members: string): Promise<boolean> => {
             const logPrefix = `[${this.logPrefixCls}.FirewallGroup.setGroupMembers]`;
 
             try {
@@ -307,13 +307,13 @@ export class NetworkCommands {
         }
     }
 
-    private async ackCommand(id: string, logPrefix: string, message: string) {
+    private async ackCommand(id: string, logPrefix: string, message: string): Promise<void> {
         await this.adapter.setState(id, { ack: true });
 
         this.logCommandSuccess(logPrefix, message);
     }
 
-    private logCommandSuccess(logPrefix: string, message: string) {
+    private logCommandSuccess(logPrefix: string, message: string): void {
         this.log.info(`${logPrefix} command successfully sent: ${message}`);
     }
 }

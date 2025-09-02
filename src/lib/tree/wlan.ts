@@ -1,7 +1,7 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
+import type { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
 import * as myHelper from '../helper.js';
-import { NetworkWlanConfig } from "../api/network-types-wlan-config.js";
-import { NetworkDevice } from "../api/network-types-device.js";
+import type { NetworkWlanConfig } from "../api/network-types-wlan-config.js";
+import type { NetworkDevice } from "../api/network-types-device.js";
 
 export namespace wlan {
     let keys: string[] = undefined;

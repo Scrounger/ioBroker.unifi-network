@@ -5,17 +5,17 @@ import { EventEmitter } from 'node:events';
 import util from "node:util";
 
 // API imports
-import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-settings.js';
-import { NetworkLogging } from './network-logging.js';
-import { NetworkEvent } from './network-types.js'
-import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
-import { NetworkDeviceModels } from './network-types-device-models.js'
-import { NetworkClient } from './network-types-client.js';
-import { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
-import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
-import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
+import { API_TIMEOUT } from './network-settings.js';
+import type { NetworkLogging } from './network-logging.js';
+import type { NetworkEvent } from './network-types.js'
+import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
+import type { NetworkDeviceModels } from './network-types-device-models.js'
+import type { NetworkClient } from './network-types-client.js';
+import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
+import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
+import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
-import { FirewallGroup } from './network-types-firewall-group.js';
+import type { FirewallGroup } from './network-types-firewall-group.js';
 import { NetworkCommands } from "./network-commands.js";
 
 
@@ -23,10 +23,6 @@ export type Nullable<T> = T | null;
 
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
- *
- * @remarks Extends Undici’s [`Dispatcher.RequestOptions`](https://undici.nodejs.org/#/docs/api/Dispatcher.md?id=parameter-requestoptions), but omits the `origin` and
- * `path` properties, since those are derived from the `url` argument passed to `retrieve()`. You can optionally supply a custom `Dispatcher` instance to control
- * connection pooling, timeouts, etc.
  */
 export type RequestOptions = {
 
@@ -39,11 +35,36 @@ export type RequestOptions = {
 
 /**
  * Options to tailor the behavior
- *
- * @property {number} [timeout=3500] - Amount of time, in milliseconds, to wait for the Network controller to respond before timing out. Defaults to `3500`.
  */
 export interface RetrieveOptions {
     timeout?: number;
+}
+
+export enum ApiEndpoints {
+    login = 'login',
+    self = 'self',
+    devices = 'devices',
+    deviceRest = 'deviceRest',
+    deviceCommand = 'deviceCommand',
+    clients = 'clients',
+    clientsActive = "clientsActive",
+    clientCommand = "clientCommand",
+    wlanConfig = 'wlanConfig',
+    lanConfig = 'lanConfig',
+    firewallGroup = 'firewallGroup',
+
+}
+
+export enum ApiEndpoints_V2 {
+    devices = 'devices',
+    clientsActive = "clientsActive",
+    clientsHistory = "clientsHistory",
+    wlanConfig = 'wlanConfig',
+    lanConfig = 'lanConfig',
+    wanConfig = 'wanConfig',
+    models = 'models',
+    'network-members-group' = 'network-members-group',
+    'network-members-groups' = 'network-members-groups'
 }
 
 export class NetworkApi extends EventEmitter {
@@ -198,8 +219,6 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * Clear the login credentials and terminate any open connection to the UniFi Network API.
-     *
-     * @category Authentication
      */
     public logout(): void {
         const logPrefix = `[${this.logPrefix}.logout]`
@@ -228,8 +247,6 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * Terminate any open connection to the UniFi Network API.
-     *
-     * @category Utilities
      */
     public reset(): void {
         this._eventsWs?.close();
@@ -244,7 +261,7 @@ export class NetworkApi extends EventEmitter {
             const ua: Dispatcher.DispatcherComposeInterceptor = (dispatch) => (opts: Dispatcher.DispatchOptions, handler: Dispatcher.DispatchHandler) => {
 
                 opts.headers ??= {};
-                (opts.headers as Record<string, string>)["user-agent"] = "unifi-protect";
+                (opts.headers as Record<string, string>)["user-agent"] = "unifi-network";
 
                 return dispatch(opts, handler);
             };
@@ -269,14 +286,8 @@ export class NetworkApi extends EventEmitter {
      *
      * @param url       - Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   - Parameters to pass on for the endpoint request.
-     *
+     * @param retrieveOptions
      * @returns Returns a promise that will resolve to a Response object successful, and `null` otherwise.
-     *
-     * @remarks This method should be used when direct access to the Network controller is needed, or when this library doesn't have a needed method to access
-     *   controller capabilities. `options` must be a
-     *   [Fetch API compatible](https://developer.mozilla.org/en-US/docs/Web/API/Request/Request#options) request options object.
-     *
-     * @category API Access
      */
     public async retrieve(url: string, options: RequestOptions = { method: "GET" }, retrieveOptions: RetrieveOptions = {}):
         Promise<Nullable<Dispatcher.ResponseData<unknown>>> {
@@ -286,6 +297,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * Execute an HTTP fetch request to the Network controller and retriev data as json
+     * 
      * @param url       Complete URL to execute **without** any additional parameters you want to pass.
      * @param options   Parameters to pass on for the endpoint request.
      * @param retry     Retry once if we have an issue
@@ -494,6 +506,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * Detailed list of all devices on site
+     * 
      * @param mac optional: mac address to receive only the data for this device
      * @returns 
      */
@@ -515,7 +528,9 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * API V2 - Detailed list of all devices on site
-     * @param mac optional: mac address to receive only the data for this device
+     * 
+     * @param separateUnmanaged
+     * @param includeTrafficUsage
      * @returns 
      */
     public async getDevices_V2(separateUnmanaged: boolean = false, includeTrafficUsage: boolean = false): Promise<NetworkDevice_V2 | undefined> {
@@ -537,6 +552,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * List of all active (connected) clients
+     * 
      * @returns 
      */
     public async getClientsActive(): Promise<NetworkClient[] | undefined> {
@@ -557,6 +573,10 @@ export class NetworkApi extends EventEmitter {
 
     /**
      *  V2 API - List of all active (connected) clients
+     * 
+     * @param mac
+     * @param includeTrafficUsage
+     * @param includeUnifiDevices
      * @returns 
      */
     public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
@@ -578,6 +598,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * List of all configured / known clients on the site
+     * 
      * @returns 
      */
     public async getClients(): Promise<NetworkClient[] | undefined> {
@@ -598,6 +619,9 @@ export class NetworkApi extends EventEmitter {
 
     /**
      *  V2 API - List of all disconnected clients
+     * 
+     * @param withinHour
+     * @param includeUnifiDevices
      * @returns 
      */
     public async getClientsHistory_V2(withinHour: number = 0, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
@@ -619,6 +643,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * List all WLan configurations
+     * 
      * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns 
      */
@@ -640,6 +665,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * API V2 - List all WLan configurations
+     * 
      * @returns 
      */
     public async getWlanConfig_V2(): Promise<NetworkWlanConfig_V2[] | undefined> {
@@ -660,6 +686,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * List all LAN configurations
+     * 
      * @param network_id optional: network id to receive only the configuration for this wlan
      * @returns 
      */
@@ -681,6 +708,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * API V2 - List all Lan configurations
+     * 
      * @returns 
      */
     public async getLanConfig_V2(): Promise<NetworkLanConfig_V2[] | undefined> {
@@ -700,9 +728,11 @@ export class NetworkApi extends EventEmitter {
     }
 
     /**
-      * API V2 - List model information for devices
-      * @returns 
-      */
+     * API V2 - List model information for devices
+     * 
+     * @param model
+     * @returns 
+     */
     public async getDeviceModels_V2(model: string = undefined): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined> {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`
 
@@ -721,6 +751,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * List all LAN configurations
+     * 
      * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns 
      */
@@ -742,6 +773,7 @@ export class NetworkApi extends EventEmitter {
 
     /**
      * get statistics for site, gateway, switches or access points
+     * 
      * @param type report type @see reportType
      * @param interval report interval @see reportInterval
      * @param attrs filter by attributes @see NetworkReportStats
@@ -807,7 +839,7 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
-    public async getSystemLog(type: SystemLogType, page_number: number = 0, pages_size: number = 10, start: number = undefined, end: number = undefined, macs: string[] = undefined) {
+    public async getSystemLog(type: SystemLogType, page_number: number = 0, pages_size: number = 10, start: number = undefined, end: number = undefined, macs: string[] = undefined): Promise<Record<string, any>> {
         const logPrefix = `[${this.logPrefix}.getSystemLog]`
 
         try {
@@ -822,7 +854,7 @@ export class NetworkApi extends EventEmitter {
                 start = end - (1 * 24 * 3600 * 1000);
             }
 
-            const payload = {
+            const payload: any = {
                 timestampFrom: start,
                 timestampTo: end,
                 pageNumber: page_number,
@@ -830,21 +862,23 @@ export class NetworkApi extends EventEmitter {
             };
 
             if (type === SystemLogType.critical) {
-                payload['nextAiCategory'] = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
+                payload.nextAiCategory = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
             } else if (type === SystemLogType.devices) {
-                if (!macs) payload['macs'] = macs;
+                if (!macs) {
+                    payload.macs = macs;
+                }
             } else if (type === SystemLogType.admin) {
-                payload['activity_keys'] = ['ACCESSED_NETWORK_WEB', 'ACCESSED_NETWORK_IOS', 'ACCESSED_NETWORK_ANDROID'];
-                payload['change_keys'] = ['CLIENT', 'DEVICE', 'HOTSPOT', 'INTERNET', 'NETWORK', 'PROFILE', 'ROUTING', 'SECURITY', 'SYSTEM', 'VPN', 'WIFI'];
+                payload.activity_keys = ['ACCESSED_NETWORK_WEB', 'ACCESSED_NETWORK_IOS', 'ACCESSED_NETWORK_ANDROID'];
+                payload.change_keys = ['CLIENT', 'DEVICE', 'HOTSPOT', 'INTERNET', 'NETWORK', 'PROFILE', 'ROUTING', 'SECURITY', 'SYSTEM', 'VPN', 'WIFI'];
             } else if (type === SystemLogType.updates) {
-                payload['systemLogDeviceTypes'] = ['GATEWAYS', 'SWITCHES', 'ACCESS_POINT', 'SMART_POWER', 'BUILDING_TO_BUILDING_BRIDGES', 'UNIFI_LTE'];
+                payload.systemLogDeviceTypes = ['GATEWAYS', 'SWITCHES', 'ACCESS_POINT', 'SMART_POWER', 'BUILDING_TO_BUILDING_BRIDGES', 'UNIFI_LTE'];
             } else if (type === SystemLogType.clients) {
-                payload['clientType'] = ['GUEST', 'TELEPORT', 'VPN', 'WIRELESS', 'RADIUS', 'WIRED'];
-                payload['guestAuthorizationMethod'] = ['FACEBOOK_SOCIAL_GATEWAY', 'FREE_TRIAL', 'GOOGLE_SOCIAL_GATEWAY', 'NONE', 'PASSWORD', 'PAYMENT', 'RADIUS', 'VOUCHER'];
+                payload.clientType = ['GUEST', 'TELEPORT', 'VPN', 'WIRELESS', 'RADIUS', 'WIRED'];
+                payload.guestAuthorizationMethod = ['FACEBOOK_SOCIAL_GATEWAY', 'FREE_TRIAL', 'GOOGLE_SOCIAL_GATEWAY', 'NONE', 'PASSWORD', 'PAYMENT', 'RADIUS', 'VOUCHER'];
             } else if (type === SystemLogType.threats) {
-                payload['threatTypes'] = ['HONEYPOT', 'THREAT'];
+                payload.threatTypes = ['HONEYPOT', 'THREAT'];
             } else if (type === SystemLogType.triggers) {
-                payload['triggerTypes'] = ['TRAFFIC_RULE', 'TRAFFIC_ROUTE', 'FIREWALL_RULE'];
+                payload.triggerTypes = ['TRAFFIC_RULE', 'TRAFFIC_ROUTE', 'FIREWALL_RULE'];
             }
 
 
@@ -933,7 +967,7 @@ export class NetworkApi extends EventEmitter {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
         let endpointSuffix: string;
-        let endpointPrefix: string = this.isUnifiOs ? '/proxy/network' : '';
+        const endpointPrefix: string = this.isUnifiOs ? '/proxy/network' : '';
 
         switch (endpoint) {
             case ApiEndpoints_V2.devices:
@@ -1018,14 +1052,14 @@ export class NetworkApi extends EventEmitter {
 
             // Handle any websocket errors.
             ws.addEventListener('error', (event: ErrorEvent): void => {
-                this.log.error(`${this.logPrefix} Events API error: ${event.error.cause}`);
+                this.log.error(`${this.logPrefix} Events API error: ${JSON.stringify(event.error.cause)}`);
                 this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
 
                 ws.close();
             }, { once: true });
 
             // Process messages as they come in.
-            ws.addEventListener('message', messageHandler = async (event: MessageEvent): Promise<void> => {
+            ws.addEventListener('message', messageHandler = (event: MessageEvent): void => {
                 try {
                     if (event.data) {
                         if (event.data.toLowerCase() === 'pong') {
@@ -1068,31 +1102,4 @@ export class NetworkApi extends EventEmitter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-}
-
-export enum ApiEndpoints {
-    login = 'login',
-    self = 'self',
-    devices = 'devices',
-    deviceRest = 'deviceRest',
-    deviceCommand = 'deviceCommand',
-    clients = 'clients',
-    clientsActive = "clientsActive",
-    clientCommand = "clientCommand",
-    wlanConfig = 'wlanConfig',
-    lanConfig = 'lanConfig',
-    firewallGroup = 'firewallGroup',
-
-}
-
-export enum ApiEndpoints_V2 {
-    devices = 'devices',
-    clientsActive = "clientsActive",
-    clientsHistory = "clientsHistory",
-    wlanConfig = 'wlanConfig',
-    lanConfig = 'lanConfig',
-    wanConfig = 'wanConfig',
-    models = 'models',
-    'network-members-group' = 'network-members-group',
-    'network-members-groups' = 'network-members-groups'
 }

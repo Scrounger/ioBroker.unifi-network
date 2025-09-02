@@ -1,4 +1,4 @@
-import { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "../myTypes.js";
+import type { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "../myTypes.js";
 export declare namespace firewallGroup {
     const idChannel = "firewall.groups";
     function get(): {

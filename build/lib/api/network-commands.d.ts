@@ -1,9 +1,9 @@
-import { NetworkApi } from "./network-api.js";
-import { NetworkDevice } from "./network-types-device.js";
-import { NetworkClient } from "./network-types-client.js";
-import { NetworkWlanConfig } from "./network-types-wlan-config.js";
-import { NetworkLanConfig } from "./network-types-lan-config.js";
-import { FirewallGroup } from "./network-types-firewall-group.js";
+import { type NetworkApi } from "./network-api.js";
+import type { NetworkDevice } from "./network-types-device.js";
+import type { NetworkClient } from "./network-types-client.js";
+import type { NetworkWlanConfig } from "./network-types-wlan-config.js";
+import type { NetworkLanConfig } from "./network-types-lan-config.js";
+import type { FirewallGroup } from "./network-types-firewall-group.js";
 export declare class NetworkCommands {
     private ufn;
     private adapter;

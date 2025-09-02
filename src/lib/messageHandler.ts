@@ -1,7 +1,7 @@
 import _ from "lodash";
-import { NetworkApi } from "./api/network-api.js";
+import type { NetworkApi } from "./api/network-api.js";
 import * as tree from './tree/index.js'
-import { JsonConfigAutocompleteSendTo } from "./myTypes.js";
+import type { JsonConfigAutocompleteSendTo } from "./myTypes.js";
 import * as myHelper from './helper.js';
 
 let deviceList: JsonConfigAutocompleteSendTo[] = undefined;
@@ -21,14 +21,14 @@ let firewallGroupStateList: JsonConfigAutocompleteSendTo[] = undefined;
 
 export const messageHandler = {
     device: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
             if (deviceList === undefined) {
                 const data = (await ufn.getDevices_V2())?.network_devices;
 
                 deviceList = [];
 
                 if (data && data !== null) {
-                    for (let device of data) {
+                    for (const device of data) {
                         deviceList.push({
                             label: `${device.name} (${device.mac})`,
                             value: device.mac,
@@ -39,9 +39,11 @@ export const messageHandler = {
                 deviceList = _.orderBy(deviceList, ['label'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, deviceList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, deviceList, message.callback);
+            }
         },
-        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
             if (deviceStateList === undefined) {
                 const states = tree.device.getStateIDs();
 
@@ -67,18 +69,20 @@ export const messageHandler = {
                 deviceStateList = _.orderBy(deviceStateList, ['value'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, deviceStateList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, deviceStateList, message.callback);
+            }
         }
     },
     client: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
             if (clientList === undefined) {
                 const data = await ufn.getClients();
 
                 clientList = [];
 
                 if (data && data !== null) {
-                    for (let client of data) {
+                    for (const client of data) {
                         const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
 
                         clientList.push({
@@ -91,9 +95,11 @@ export const messageHandler = {
                 clientList = _.orderBy(clientList, ['label'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, clientList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, clientList, message.callback);
+            }
         },
-        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
             if (clientStateList === undefined) {
                 const states = tree.client.getStateIDs();
 
@@ -119,18 +125,20 @@ export const messageHandler = {
                 clientStateList = _.orderBy(clientStateList, ['value'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, clientStateList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, clientStateList, message.callback);
+            }
         }
     },
     wlan: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
             if (wlanList === undefined) {
                 const data = await ufn.getWlanConfig_V2();
 
                 wlanList = [];
 
                 if (data && data !== null) {
-                    for (let wlan of data) {
+                    for (const wlan of data) {
                         wlanList.push({
                             label: wlan.configuration.name,
                             value: wlan.configuration._id
@@ -141,9 +149,11 @@ export const messageHandler = {
                 wlanList = _.orderBy(wlanList, ['label'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, wlanList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, wlanList, message.callback);
+            }
         },
-        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
             if (wlanStateList === undefined) {
                 const states = tree.wlan.getStateIDs();
 
@@ -169,18 +179,20 @@ export const messageHandler = {
                 wlanStateList = _.orderBy(wlanStateList, ['value'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, wlanStateList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, wlanStateList, message.callback);
+            }
         }
     },
     lan: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
             if (lanList === undefined) {
                 const data = await ufn.getLanConfig_V2();
 
                 lanList = [];
 
                 if (data && data !== null) {
-                    for (let lan of data) {
+                    for (const lan of data) {
                         lanList.push({
                             label: `${lan.configuration.name}${lan.configuration.vlan ? ` (VLAN: ${lan.configuration.vlan})` : ''}`,
                             value: lan.configuration._id
@@ -191,9 +203,11 @@ export const messageHandler = {
                 lanList = _.orderBy(lanList, ['label'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, lanList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, lanList, message.callback);
+            }
         },
-        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
             if (lanStateList === undefined) {
                 const states = tree.lan.getStateIDs();
 
@@ -219,18 +233,20 @@ export const messageHandler = {
                 lanStateList = _.orderBy(lanStateList, ['value'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, lanStateList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, lanStateList, message.callback);
+            }
         }
     },
     firewallGroup: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
             if (firewallGroupList === undefined) {
                 const data = await ufn.getFirewallGroup();
 
                 firewallGroupList = [];
 
                 if (data && data !== null) {
-                    for (let firewallGroup of data) {
+                    for (const firewallGroup of data) {
                         firewallGroupList.push({
                             label: `${firewallGroup.name}`,
                             value: firewallGroup._id
@@ -241,9 +257,11 @@ export const messageHandler = {
                 firewallGroupList = _.orderBy(firewallGroupList, ['label'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
+            }
         },
-        async stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi) {
+        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
             if (firewallGroupStateList === undefined) {
                 const states = tree.firewallGroup.getStateIDs();
 
@@ -269,7 +287,9 @@ export const messageHandler = {
                 firewallGroupStateList = _.orderBy(firewallGroupStateList, ['value'], ['asc']);
             }
 
-            if (message.callback) adapter.sendTo(message.from, message.command, firewallGroupStateList, message.callback);
+            if (message.callback) {
+                adapter.sendTo(message.from, message.command, firewallGroupStateList, message.callback);
+            }
         }
     }
 }
