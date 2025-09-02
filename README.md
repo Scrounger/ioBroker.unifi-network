@@ -30,6 +30,7 @@ Unifi Network uses the websocket interface to receive real-time information from
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) replaced fetch with undici
 - (Scrounger) firewall group added
 - (Scrounger) more network events handler added
 - (Scrounger) bug fixes
