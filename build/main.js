@@ -11,7 +11,6 @@ import _ from 'lodash';
 import url from 'node:url';
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
-import { apiCommands } from './lib/api/network-command.js';
 // Adapter imports
 import * as myHelper from './lib/helper.js';
 import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
@@ -68,7 +67,7 @@ class UnifiNetwork extends utils.Adapter {
             // ohne worte....
             await utils.I18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
             if (this.config.host, this.config.user, this.config.password) {
-                this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this.log);
+                this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this);
                 await this.establishConnection();
                 this.ufn.on('message', this.eventListener);
                 this.ufn.on('pong', this.pongListener);
@@ -162,20 +161,14 @@ class UnifiNetwork extends utils.Adapter {
                         // Client state changed
                         if (myHelper.getIdLastPart(id) === 'blocked') {
                             if (state.val) {
-                                const res = await apiCommands.clients.block(this.ufn, mac);
-                                if (res)
-                                    this.log.info(`${logPrefix} command sent: block - '${this.cache.clients[mac].name}' (mac: ${mac})`);
+                                await this.ufn.Commands.Clients.block(this.cache.clients[mac]);
                             }
                             else {
-                                const res = await apiCommands.clients.unblock(this.ufn, mac);
-                                if (res)
-                                    this.log.info(`${logPrefix} command sent: unblock - '${this.cache.clients[mac].name}' (mac: ${mac})`);
+                                await this.ufn.Commands.Clients.unblock(this.cache.clients[mac]);
                             }
                         }
                         else if (myHelper.getIdLastPart(id) === 'reconnect') {
-                            const res = await apiCommands.clients.reconncet(this.ufn, mac);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: reconnect - '${this.cache.clients[mac].name}' (mac: ${mac})`);
+                            await this.ufn.Commands.Clients.reconnect(this.cache.clients[mac], id);
                             // } else if (myHelper.getIdLastPart(id) === 'authorized') {
                             // 	let res = undefined;
                             // 	if (state.val === true) {
@@ -186,60 +179,41 @@ class UnifiNetwork extends utils.Adapter {
                             // 	if (res) this.log.info(`${logPrefix} command sent: ${state.val ? 'authorize' : 'unauthorize'} guest - '${this.cache.clients[mac].name}' (mac: ${mac})`);
                         }
                         else if (myHelper.getIdLastPart(id) === 'name') {
-                            const res = await apiCommands.clients.setName(this.ufn, this.cache.clients[mac].user_id, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: set name - '${this.cache.clients[mac].name}' (mac: ${mac}, new name: ${state.val})`);
+                            await this.ufn.Commands.Clients.setName(this.cache.clients[mac], state.val);
                         }
                         else {
                             this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
                         }
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
+                        // Device state changed
                         if (myHelper.getIdLastPart(id) === 'restart') {
-                            const res = await apiCommands.devices.restart(this.ufn, mac);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: restart - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+                            await this.ufn.Commands.Devices.restart(this.cache.devices[mac], id);
                         }
                         else if (id.includes('.port_')) {
                             if (myHelper.getIdLastPart(id) === 'poe_cycle') {
                                 const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-                                const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
-                                const res = await apiCommands.devices.port_cyclePoePower(this.ufn, mac, port_idx, this.cache.devices[mac]);
-                                if (res)
-                                    this.log.info(`${logPrefix} command sent: cycle poe power - '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
+                                await this.ufn.Commands.Devices.Port.cyclePoePower(this.cache.devices[mac], id);
                             }
                             else if (myHelper.getIdLastPart(id) === 'poe_enable') {
                                 const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
-                                const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
-                                const res = await apiCommands.devices.port_switchPoe(state.val, port_idx, this.ufn, this.cache.devices[mac]);
-                                if (res)
-                                    this.log.info(`${logPrefix} command sent: switch poe power - '${state.val ? 'on' : 'off'}' '${this.cache.devices[mac].name}' (mac: ${mac}) - Port ${port_idx}`);
+                                await this.ufn.Commands.Devices.Port.switchPoe(this.cache.devices[mac], id, state.val);
                             }
                         }
                         else if (myHelper.getIdLastPart(id) === 'led_override') {
-                            const res = await apiCommands.devices.ledOverride(state.val, this.ufn, this.cache.devices[mac]);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: LED override to '${state.val}' - '${this.cache.devices[mac].name}' (mac: ${mac}) - `);
+                            await this.ufn.Commands.Devices.ledOverride(this.cache.devices[mac], id, state.val);
                         }
                         else if (myHelper.getIdLastPart(id) === 'upgrade') {
-                            const res = await apiCommands.devices.upgrade(this.ufn, this.cache.devices[mac]);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: upgrade to new firmware version - '${this.cache.devices[mac].name}' (mac: ${mac})`);
+                            await this.ufn.Commands.Devices.upgrade(this.cache.devices[mac], id);
                         }
                         else if (id.includes('wan')) {
                             if (myHelper.getIdLastPart(id) === 'speedtest_run') {
-                                const wan_interface = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
                                 const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
-                                const interface_name = this.cache.devices[mac][wan_interface].ifname;
-                                const res = await apiCommands.devices.runSpeedtest(this.ufn, interface_name);
-                                if (res)
-                                    this.log.info(`${logPrefix} command sent: run speedtest (mac: ${mac}, wan: ${wan_interface}, interface: ${interface_name})`);
+                                await this.ufn.Commands.Devices.runSpeedtest(this.cache.devices[mac], id);
                             }
                         }
                         else if (myHelper.getIdLastPart(id) === 'disabled') {
-                            const res = await apiCommands.devices.disableAccessPoint(this.ufn, this.cache.devices[mac]._id, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: ${state.val ? 'disable' : 'enable'} access point '${this.cache.devices[mac].name}' (mac: ${mac})`);
+                            await this.ufn.Commands.Devices.disableAccessPoint(this.cache.devices[mac], id, state.val);
                         }
                         else {
                             this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
@@ -248,36 +222,26 @@ class UnifiNetwork extends utils.Adapter {
                     else if (id.startsWith(`${this.namespace}.${tree.wlan.idChannel}.`)) {
                         if (myHelper.getIdLastPart(id) === 'enabled') {
                             const wlan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
-                            const res = await apiCommands.wlanConf.enable(this.ufn, wlan_id, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: wlan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id})`);
+                            await this.ufn.Commands.WLanConf.enable(this.cache.wlan[wlan_id], state.val);
                         }
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
                         if (myHelper.getIdLastPart(id) === 'enabled') {
                             const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
-                            const res = await apiCommands.lanConf.enable(this.ufn, lan_id, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: lan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.lan[lan_id].name}' (id: ${lan_id})`);
+                            await this.ufn.Commands.LanConf.enable(this.cache.lan[lan_id], state.val);
                         }
                         else if (myHelper.getIdLastPart(id) === 'internet_enabled') {
                             const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
-                            const res = await apiCommands.lanConf.internet_access_enabled(this.ufn, lan_id, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: internet access of lan ${state.val ? 'enabled' : 'disabled'} - '${this.cache.lan[lan_id].name}' (id: ${lan_id})`);
+                            await this.ufn.Commands.LanConf.internet_access_enabled(this.cache.lan[lan_id], state.val);
                         }
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
                         const groupId = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
                         if (myHelper.getIdLastPart(id) === 'name') {
-                            const res = await apiCommands.firewallGroup.setName(this.ufn, groupId, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: firewall group '${this.cache.firewallGroup[groupId].name}' - 'name' set to '${state.val}' (id: ${groupId})`);
+                            await this.ufn.Commands.FirewallGroup.setName(this.cache.firewallGroup[groupId], state.val);
                         }
                         else if (myHelper.getIdLastPart(id) === 'group_members') {
-                            const res = await apiCommands.firewallGroup.setGroupMembers(this.ufn, groupId, state.val);
-                            if (res)
-                                this.log.info(`${logPrefix} command sent: firewall group '${this.cache.firewallGroup[groupId].name}' - 'members' set to '${state.val}' (id: ${groupId})`);
+                            await this.ufn.Commands.FirewallGroup.setGroupMembers(this.cache.firewallGroup[groupId], state.val);
                         }
                     }
                 }
@@ -1771,3 +1735,4 @@ export default function startAdapter(options) {
     // compact mode
     return new UnifiNetwork(options);
 }
+//# sourceMappingURL=main.js.map

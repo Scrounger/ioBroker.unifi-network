@@ -16,6 +16,7 @@ import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import { FirewallGroup } from './network-types-firewall-group.js';
+import { NetworkCommands } from "./network-commands.js";
 
 
 export type Nullable<T> = T | null;
@@ -48,7 +49,9 @@ export interface RetrieveOptions {
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
 
-    // private adapter: ioBroker.Adapter;
+    private adapter: ioBroker.Adapter;
+
+    public Commands: NetworkCommands;
 
     private dispatcher!: Dispatcher;
 
@@ -67,11 +70,14 @@ export class NetworkApi extends EventEmitter {
 
     private _eventsWs: WebSocket | null;
 
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log: NetworkLogging) {
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.Adapter) {
         // Initialize our parent.
         super();
 
-        this.log = log;
+        this.adapter = adapter;
+        this.log = adapter.log;
+
+        this.Commands = new NetworkCommands(this, adapter);
 
         this._eventsWs = null;
 
@@ -254,7 +260,7 @@ export class NetworkApi extends EventEmitter {
         }
     }
 
-    public responseOk(code?: number): boolean {
+    private responseOk(code?: number): boolean {
         return (code !== undefined) && (code >= 200) && (code < 300);
     }
 

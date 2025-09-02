@@ -7,9 +7,11 @@ import util from "node:util";
 import { API_TIMEOUT } from './network-settings.js';
 import { NetworkReportInterval } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
+import { NetworkCommands } from "./network-commands.js";
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
-    // private adapter: ioBroker.Adapter;
+    adapter;
+    Commands;
     dispatcher;
     apiErrorCount;
     apiLastSuccess;
@@ -23,10 +25,12 @@ export class NetworkApi extends EventEmitter {
     password;
     username;
     _eventsWs;
-    constructor(host, port, isUnifiOs, site, username, password, log) {
+    constructor(host, port, isUnifiOs, site, username, password, adapter) {
         // Initialize our parent.
         super();
-        this.log = log;
+        this.adapter = adapter;
+        this.log = adapter.log;
+        this.Commands = new NetworkCommands(this, adapter);
         this._eventsWs = null;
         this.apiErrorCount = 0;
         this.apiLastSuccess = 0;
@@ -854,3 +858,4 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["network-members-group"] = "network-members-group";
     ApiEndpoints_V2["network-members-groups"] = "network-members-groups";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));
+//# sourceMappingURL=network-api.js.map

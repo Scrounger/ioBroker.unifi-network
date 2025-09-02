@@ -9,6 +9,7 @@ import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import { FirewallGroup } from './network-types-firewall-group.js';
+import { NetworkCommands } from "./network-commands.js";
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -34,6 +35,8 @@ export interface RetrieveOptions {
 }
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
+    private adapter;
+    Commands: NetworkCommands;
     private dispatcher;
     private apiErrorCount;
     private apiLastSuccess;
@@ -46,7 +49,7 @@ export declare class NetworkApi extends EventEmitter {
     private password;
     private username;
     private _eventsWs;
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log: NetworkLogging);
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.Adapter);
     login(): Promise<boolean>;
     private loginController;
     /**
@@ -61,7 +64,7 @@ export declare class NetworkApi extends EventEmitter {
      * @category Utilities
      */
     reset(): void;
-    responseOk(code?: number): boolean;
+    private responseOk;
     /**
      * Execute an HTTP fetch request to the Network controller.
      *

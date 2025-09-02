@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": [],
-  "sourcesContent": [],
-  "mappings": "",
-  "names": []
-}
+{"version":3,"file":"network-types-firewall-group.js","sourceRoot":"","sources":["../../../src/lib/api/network-types-firewall-group.ts"],"names":[],"mappings":""}

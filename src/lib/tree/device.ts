@@ -31,9 +31,8 @@ export namespace device {
                     // only wireless clients
                     return objDevice?.is_access_point;
                 },
-                read: false,
+                read: true,
                 write: true,
-                role: 'button',
                 def: false,
             },
             fan_level: {

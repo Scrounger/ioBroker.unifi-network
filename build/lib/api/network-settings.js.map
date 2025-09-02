@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": ["../../../src/lib/api/network-settings.ts"],
-  "sourcesContent": ["// Number of API errors to accept before we backoff so we don't slam a Network controller.\r\nexport const API_ERROR_LIMIT = 10;\r\n\r\n// Interval, in seconds, to wait before trying to access the API again once we've hit the NETWORK_API_ERROR_LIMIT threshold.\r\nexport const API_RETRY_INTERVAL = 60;\r\n\r\n// Network API response timeout, in milliseconds. This should never be greater than 5 seconds.\r\nexport const API_TIMEOUT = 5000;"],
-  "mappings": "AACO,MAAM,kBAAkB;AAGxB,MAAM,qBAAqB;AAG3B,MAAM,cAAc;",
-  "names": []
-}
+{"version":3,"file":"network-settings.js","sourceRoot":"","sources":["../../../src/lib/api/network-settings.ts"],"names":[],"mappings":"AAAA,0FAA0F;AAC1F,MAAM,CAAC,MAAM,eAAe,GAAG,EAAE,CAAC;AAElC,4HAA4H;AAC5H,MAAM,CAAC,MAAM,kBAAkB,GAAG,EAAE,CAAC;AAErC,8FAA8F;AAC9F,MAAM,CAAC,MAAM,WAAW,GAAG,IAAI,CAAC"}

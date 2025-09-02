@@ -4,3 +4,4 @@ export const API_ERROR_LIMIT = 10;
 export const API_RETRY_INTERVAL = 60;
 // Network API response timeout, in milliseconds. This should never be greater than 5 seconds.
 export const API_TIMEOUT = 5000;
+//# sourceMappingURL=network-settings.js.map

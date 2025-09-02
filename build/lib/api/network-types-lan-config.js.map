@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": [],
-  "sourcesContent": [],
-  "mappings": "",
-  "names": []
-}
+{"version":3,"file":"network-types-lan-config.js","sourceRoot":"","sources":["../../../src/lib/api/network-types-lan-config.ts"],"names":[],"mappings":""}

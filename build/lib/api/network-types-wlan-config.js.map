@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": [],
-  "sourcesContent": [],
-  "mappings": "",
-  "names": []
-}
+{"version":3,"file":"network-types-wlan-config.js","sourceRoot":"","sources":["../../../src/lib/api/network-types-wlan-config.ts"],"names":[],"mappings":""}

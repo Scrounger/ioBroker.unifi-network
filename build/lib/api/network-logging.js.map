@@ -1,7 +1,1 @@
-{
-  "version": 3,
-  "sources": [],
-  "sourcesContent": [],
-  "mappings": "",
-  "names": []
-}
+{"version":3,"file":"network-logging.js","sourceRoot":"","sources":["../../../src/lib/api/network-logging.ts"],"names":[],"mappings":"AAAA;;;;;;;GAOG"}

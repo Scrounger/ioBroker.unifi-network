@@ -1,0 +1,1 @@
+{"version":3,"file":"network-types-firewall-group.d.ts","sourceRoot":"","sources":["../../../src/lib/api/network-types-firewall-group.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,aAAa;IAC1B,aAAa,EAAE,MAAM,EAAE,CAAA;IACvB,IAAI,EAAE,MAAM,CAAA;IACZ,OAAO,EAAE,MAAM,CAAA;IACf,GAAG,EAAE,MAAM,CAAA;IACX,UAAU,EAAE,MAAM,CAAA;CACrB"}

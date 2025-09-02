@@ -90,3 +90,4 @@ export var wlan;
     }
     wlan.getStateIDs = getStateIDs;
 })(wlan || (wlan = {}));
+//# sourceMappingURL=wlan.js.map

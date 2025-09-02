@@ -13,3 +13,4 @@ export var NetworkReportType;
     NetworkReportType["accessPoint"] = "ap";
     NetworkReportType["client"] = "user";
 })(NetworkReportType || (NetworkReportType = {}));
+//# sourceMappingURL=network-types-report-stats.js.map
