@@ -125,7 +125,6 @@ export const deepDiffBetweenObjects = (object: any, base: any, adapter: ioBroker
                                 }
                             } else {
                                 // is pure array
-                                adapter.log.warn(`${key.toString()}: pure Array (base: ${base[key]}, val: ${value})`);
                                 if (!_.isEqual(value, base[key])) {
                                     result[key] = value
                                 }
