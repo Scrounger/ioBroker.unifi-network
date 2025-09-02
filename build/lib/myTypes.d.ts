@@ -84,6 +84,7 @@ export declare const WebSocketEvent: {
         WANTransition: string[];
         Upgrade: string[];
         Adopt: string[];
+        DhcpPool: string[];
     };
     client: {
         Connected: string[];

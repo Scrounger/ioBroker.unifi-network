@@ -1,4 +1,4 @@
-import { RequestOptions, Response } from '@adobe/fetch';
+import { type Dispatcher } from "undici";
 import { EventEmitter } from 'node:events';
 import { NetworkLogging } from './network-logging.js';
 import { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
@@ -9,11 +9,34 @@ import { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import { FirewallGroup } from './network-types-firewall-group.js';
+export type Nullable<T> = T | null;
+/**
+ * Configuration options for HTTP requests executed by `retrieve()`.
+ *
+ * @remarks Extends Undici’s [`Dispatcher.RequestOptions`](https://undici.nodejs.org/#/docs/api/Dispatcher.md?id=parameter-requestoptions), but omits the `origin` and
+ * `path` properties, since those are derived from the `url` argument passed to `retrieve()`. You can optionally supply a custom `Dispatcher` instance to control
+ * connection pooling, timeouts, etc.
+ */
+export type RequestOptions = {
+    /**
+     * Optional custom Undici `Dispatcher` instance to use for this request. If omitted, the native `unifi-network` dispatcher is used, which should be suitable for most
+     * use cases.
+     */
+    dispatcher?: Dispatcher;
+} & Omit<Dispatcher.RequestOptions, "origin" | "path">;
+/**
+ * Options to tailor the behavior
+ *
+ * @property {number} [timeout=3500] - Amount of time, in milliseconds, to wait for the Network controller to respond before timing out. Defaults to `3500`.
+ */
+export interface RetrieveOptions {
+    timeout?: number;
+}
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
+    private dispatcher;
     private apiErrorCount;
     private apiLastSuccess;
-    private fetch;
     private headers;
     log: NetworkLogging;
     private host;
@@ -23,7 +46,7 @@ export declare class NetworkApi extends EventEmitter {
     private password;
     private username;
     private _eventsWs;
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log?: NetworkLogging);
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log: NetworkLogging);
     login(): Promise<boolean>;
     private loginController;
     /**
@@ -38,6 +61,7 @@ export declare class NetworkApi extends EventEmitter {
      * @category Utilities
      */
     reset(): void;
+    responseOk(code?: number): boolean;
     /**
      * Execute an HTTP fetch request to the Network controller.
      *
@@ -52,7 +76,7 @@ export declare class NetworkApi extends EventEmitter {
      *
      * @category API Access
      */
-    retrieve(url: string, options?: RequestOptions): Promise<Response | null>;
+    retrieve(url: string, options?: RequestOptions, retrieveOptions?: RetrieveOptions): Promise<Nullable<Dispatcher.ResponseData<unknown>>>;
     /**
      * Execute an HTTP fetch request to the Network controller and retriev data as json
      * @param url       Complete URL to execute **without** any additional parameters you want to pass.
@@ -60,9 +84,9 @@ export declare class NetworkApi extends EventEmitter {
      * @param retry     Retry once if we have an issue
      * @returns         Returns a promise json object
      */
-    retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<any | undefined>;
+    retrievData(url: string, options?: RequestOptions, retry?: boolean): Promise<Record<string, any> | undefined>;
     private _retrieve;
-    sendData(cmd: string, payload: any, method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH'): Promise<Response>;
+    sendData(cmd: string, payload: any, method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH'): Promise<Nullable<Dispatcher.ResponseData<unknown>>>;
     /**
      * Detailed list of all devices on site
      * @param mac optional: mac address to receive only the data for this device
@@ -84,7 +108,7 @@ export declare class NetworkApi extends EventEmitter {
      *  V2 API - List of all active (connected) clients
      * @returns
      */
-    getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean): Promise<NetworkClient[] | NetworkClient | undefined>;
+    getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean): Promise<NetworkClient[] | undefined>;
     /**
      * List of all configured / known clients on the site
      * @returns
@@ -128,7 +152,6 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getFirewallGroup(firewallGroup_id?: any): Promise<FirewallGroup[] | undefined>;
-    testConnection(): Promise<boolean>;
     /**
      * get statistics for site, gateway, switches or access points
      * @param type report type @see reportType
@@ -140,7 +163,7 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
-    getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<any>;
+    getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     launchEventsWs(): Promise<boolean>;

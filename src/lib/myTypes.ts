@@ -86,7 +86,8 @@ export const WebSocketEvent = {
         PoeDisconnect: ['EVT_SW_PoeDisconnect'],
         WANTransition: ['EVT_GW_WANTransition'],
         Upgrade: ['EVT_SW_UpgradeScheduled', 'EVT_SW_Upgraded'],
-        Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted']
+        Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted'],
+        DhcpPool: ['EVT_GW_DhcpPoolExhausted'],
     },
     client: {
         Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],

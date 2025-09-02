@@ -1,7 +1,8 @@
 // Lib imports
-import { ALPNProtocol, AbortError, FetchError, Headers, Request, RequestOptions, Response, context, timeoutSignal } from '@adobe/fetch';
+import { Agent, type Dispatcher, type ErrorEvent, type MessageEvent, Pool, errors, interceptors, request, WebSocket } from "undici";
+import { STATUS_CODES } from "node:http";
 import { EventEmitter } from 'node:events';
-import WebSocket from 'ws';
+import util from "node:util";
 
 // API imports
 import { API_ERROR_LIMIT, API_RETRY_INTERVAL, API_TIMEOUT } from './network-settings.js';
@@ -16,15 +17,44 @@ import { NetworkReportInterval, NetworkReportStats, NetworkReportType } from './
 import { SystemLogType } from './network-types-system-log.js';
 import { FirewallGroup } from './network-types-firewall-group.js';
 
+
+export type Nullable<T> = T | null;
+
+/**
+ * Configuration options for HTTP requests executed by `retrieve()`.
+ *
+ * @remarks Extends Undici’s [`Dispatcher.RequestOptions`](https://undici.nodejs.org/#/docs/api/Dispatcher.md?id=parameter-requestoptions), but omits the `origin` and
+ * `path` properties, since those are derived from the `url` argument passed to `retrieve()`. You can optionally supply a custom `Dispatcher` instance to control
+ * connection pooling, timeouts, etc.
+ */
+export type RequestOptions = {
+
+    /**
+     * Optional custom Undici `Dispatcher` instance to use for this request. If omitted, the native `unifi-network` dispatcher is used, which should be suitable for most
+     * use cases.
+     */
+    dispatcher?: Dispatcher;
+} & Omit<Dispatcher.RequestOptions, "origin" | "path">;
+
+/**
+ * Options to tailor the behavior
+ *
+ * @property {number} [timeout=3500] - Amount of time, in milliseconds, to wait for the Network controller to respond before timing out. Defaults to `3500`.
+ */
+export interface RetrieveOptions {
+    timeout?: number;
+}
+
 export class NetworkApi extends EventEmitter {
     private logPrefix: string = 'NetworkApi'
 
     // private adapter: ioBroker.Adapter;
 
+    private dispatcher!: Dispatcher;
+
     private apiErrorCount: number;
     private apiLastSuccess: number;
-    private fetch: (url: string | Request, options?: RequestOptions) => Promise<Response>;
-    private headers: Headers;
+    private headers: Record<string, string>;;
 
     public log: NetworkLogging;
 
@@ -37,7 +67,7 @@ export class NetworkApi extends EventEmitter {
 
     private _eventsWs: WebSocket | null;
 
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log: NetworkLogging = console) {
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, log: NetworkLogging) {
         // Initialize our parent.
         super();
 
@@ -47,8 +77,7 @@ export class NetworkApi extends EventEmitter {
 
         this.apiErrorCount = 0;
         this.apiLastSuccess = 0;
-        this.fetch = context({ alpnProtocols: [ALPNProtocol.ALPN_HTTP2], rejectUnauthorized: false, userAgent: 'unifi-network' }).fetch;
-        this.headers = new Headers();
+        this.headers = {};
 
         this.host = host;
         this.port = isUnifiOs ? '' : `:${port}`;
@@ -80,32 +109,42 @@ export class NetworkApi extends EventEmitter {
         return false;
     }
 
-    // Login to the UniFi Network API.
     private async loginController(): Promise<boolean> {
         const logPrefix = `[${this.logPrefix}.loginController]`
 
         try {
             // If we're already logged in, we're done.
-            if (this.headers.has('Cookie') && this.headers.has('X-CSRF-Token')) {
-
-                // this.log.debug(`${logPrefix} we are already logged in to the controller`);
+            if (this.headers.cookie && this.headers["x-csrf-token"]) {
                 return true;
             }
 
+            // Utility to grab the headers we're interested in a normalized manner.
+            const getHeader = (name: string, headers?: Record<string, string | string[] | undefined>): Nullable<string> => {
+                const rawHeader = headers?.[name.toLowerCase()];
+
+                if (!rawHeader) {
+                    return null;
+                }
+
+                // Normalize it to a string:
+                return Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
+            };
+
             // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
-            if (!this.headers.has('X-CSRF-Token')) {
+            if (!this.headers["x-csrf-token"]) {
 
                 // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
                 // controller and checking the headers for it.
-                const response = await this.retrieve(`https://${this.host}${this.port}`, { method: 'GET' });
+                const response = await this.retrieve(`https://${this.host}${this.port}`, { method: "GET" });
 
-                if (response?.ok) {
-                    const csrfToken = response.headers.get('X-CSRF-Token');
+                if (this.responseOk(response?.statusCode)) {
+
+                    const csrfToken = getHeader("X-CSRF-Token", response?.headers);
 
                     // Preserve the CSRF token, if found, for future API calls.
                     if (csrfToken) {
 
-                        this.headers.set('X-CSRF-Token', csrfToken);
+                        this.headers["x-csrf-token"] = csrfToken;
                     }
                 }
             }
@@ -113,12 +152,12 @@ export class NetworkApi extends EventEmitter {
             // Log us in.
             const response = await this.retrieve(this.getApiEndpoint(ApiEndpoints.login), {
 
-                body: JSON.stringify({ password: this.password, rememberMe: true, token: '', username: this.username }),
-                method: 'POST'
+                body: JSON.stringify({ password: this.password, rememberMe: true, token: "", username: this.username }),
+                method: "POST"
             });
 
             // Something went wrong with the login call, possibly a controller reboot or failure.
-            if (!response?.ok) {
+            if (!this.responseOk(response?.statusCode)) {
 
                 this.logout();
 
@@ -126,41 +165,23 @@ export class NetworkApi extends EventEmitter {
             }
 
             // We're logged in. Let's configure our headers.
-            const csrfToken = response.headers.get('X-Updated-CSRF-Token') ?? response.headers.get('X-CSRF-Token');
-            const cookie = response.headers.get('Set-Cookie');
+            const csrfToken = getHeader("X-Updated-CSRF-Token", response?.headers) ?? getHeader("X-CSRF-Token", response?.headers);
+            const cookie = getHeader("Set-Cookie", response?.headers);
 
             // Save the refreshed cookie and CSRF token for future API calls and we're done.
-            if (cookie) {
+            if (csrfToken && cookie) {
 
                 // Only preserve the token element of the cookie and not the superfluous information that's been added to it.
-                this.headers.set('Cookie', cookie.split(';')[0]);
+                this.headers.cookie = cookie.split(";")[0];
 
                 // Save the CSRF token.
-                if (csrfToken && csrfToken !== null) {
-                    // unifi OS
-                    this.headers.set('X-CSRF-Token', csrfToken);
-                } else {
-                    // self hosted controller, extract from cookie
-                    if (cookie.includes('csrf_token=')) {
-                        let extractCsrf = cookie.split(';').map(c => c.trim()).find(c => c.includes('csrf_token='));
-                        extractCsrf = extractCsrf.split('csrf_token=').pop();
+                this.headers["x-csrf-token"] = csrfToken;
 
-                        this.headers.set('X-CSRF-Token', extractCsrf);
-
-                        this.log.debug(`${logPrefix} csrf token extracted from cookie`);
-                    } else {
-                        this.log.warn(`${logPrefix} cookie not have a csrf token! ${JSON.stringify(cookie)}`)
-                        return false;
-                    }
-                }
-
-                this.log.debug(`${logPrefix} successfully logged into the controller (host: ${this.host}${this.port}, site: ${this.site}, isUnifiOs: ${this.isUnifiOs})`);
                 return true;
             }
 
             // Clear out our login credentials.
             this.logout();
-
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
@@ -178,19 +199,21 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.logout]`
 
         try {
+
             // Close any connection to the Network API.
             this.reset();
 
             // Save our CSRF token, if we have one.
-            const csrfToken = this.headers?.get('X-CSRF-Token');
+            const csrfToken = this.headers["x-csrf-token"];
 
             // Initialize the headers we need.
-            this.headers = new Headers();
-            this.headers.set('Content-Type', 'application/json');
+            this.headers = {};
+            this.headers["content-type"] = "application/json";
 
             // Restore the CSRF token if we have one.
             if (csrfToken) {
-                this.headers.set('X-CSRF-Token', csrfToken);
+
+                this.headers["x-csrf-token"] = csrfToken;
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -203,8 +226,36 @@ export class NetworkApi extends EventEmitter {
      * @category Utilities
      */
     public reset(): void {
-        this._eventsWs?.terminate();
+        this._eventsWs?.close();
         this._eventsWs = null;
+
+        if (this.host) {
+
+            // Cleanup any prior pool.
+            void this.dispatcher?.destroy();
+
+            // Create an interceptor that allows us to set the user agent to our liking.
+            const ua: Dispatcher.DispatcherComposeInterceptor = (dispatch) => (opts: Dispatcher.DispatchOptions, handler: Dispatcher.DispatchHandler) => {
+
+                opts.headers ??= {};
+                (opts.headers as Record<string, string>)["user-agent"] = "unifi-protect";
+
+                return dispatch(opts, handler);
+            };
+
+            // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
+            // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
+            // 1500ms per retry, in factors of 2 starting from a 100ms delay.
+            this.dispatcher = new Pool(`https://${this.host}${this.port}`, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+                .compose(ua, interceptors.retry({
+                    maxRetries: 5, maxTimeout: 1500, methods: ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"], minTimeout: 100,
+                    statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
+                }));
+        }
+    }
+
+    public responseOk(code?: number): boolean {
+        return (code !== undefined) && (code >= 200) && (code < 300);
     }
 
     /**
@@ -221,9 +272,10 @@ export class NetworkApi extends EventEmitter {
      *
      * @category API Access
      */
-    public async retrieve(url: string, options: RequestOptions = { method: 'GET' }): Promise<Response | null> {
+    public async retrieve(url: string, options: RequestOptions = { method: "GET" }, retrieveOptions: RetrieveOptions = {}):
+        Promise<Nullable<Dispatcher.ResponseData<unknown>>> {
 
-        return this._retrieve(url, options);
+        return this._retrieve(url, options, retrieveOptions);
     }
 
     /**
@@ -233,7 +285,7 @@ export class NetworkApi extends EventEmitter {
      * @param retry     Retry once if we have an issue
      * @returns         Returns a promise json object
      */
-    public async retrievData(url: string, options: RequestOptions = { method: 'GET' }, retry: boolean = true): Promise<any | undefined> {
+    public async retrievData(url: string, options: RequestOptions = { method: 'GET' }, retry: boolean = true): Promise<Record<string, any> | undefined> {
         const logPrefix = `[${this.logPrefix}.retrievData]`
 
         try {
@@ -246,13 +298,13 @@ export class NetworkApi extends EventEmitter {
             const response = await this.retrieve(url, options);
 
             if (response && response !== null) {
-                if (!response.ok) {
+                if (response.statusCode !== 200) {
                     // Something went wrong. Retry the bootstrap attempt once, and then we're done.
-                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response?.status}, text: ${response?.statusText}, url: ${url}`);
+                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response?.statusCode}, text: ${STATUS_CODES[response.statusCode]}, url: ${url}`);
 
                     return retry ? this.retrievData(url, options, false) : undefined;
                 } else {
-                    const data = await response.json();
+                    const data = await response.body.json() as Record<string, string>;
 
                     if (data) {
                         return data;
@@ -260,21 +312,17 @@ export class NetworkApi extends EventEmitter {
                 }
             }
         } catch (error: any) {
-            if (error instanceof FetchError) {
-                this.log.error(`${logPrefix} FetchError error: ${JSON.stringify(error)}`);
-            } else if (error.includes('is not valid JSON')) {
-                this.log.error(`${logPrefix} Network controller service is unavailable. This is usually temporary and will occur during device reboots.`);
-            } else {
-                this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-            }
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
         return undefined;
     }
 
     // Internal interface to communicating HTTP requests with a Network controller, with error handling.
-    private async _retrieve(url: string, options: RequestOptions = { method: 'GET' }, decodeResponse = true, isRetry = false): Promise<Response | null> {
+    private async _retrieve(url: string, options: RequestOptions = { method: "GET" }, retrieveOptions: RetrieveOptions = {}, isRetry = false): Promise<Nullable<Dispatcher.ResponseData<unknown>>> {
         const logPrefix = `[${this.logPrefix}._retrieve]`
+
+        retrieveOptions.timeout ??= API_TIMEOUT;
 
         // Catch Network controller server-side issues:
         //
@@ -284,175 +332,144 @@ export class NetworkApi extends EventEmitter {
         // 500: Internal server error.
         // 502: Bad gateway.
         // 503: Service temporarily unavailable.
-        const isServerSideIssue = (code: number): boolean => [400, 404, 429, 500, 502, 503].some(x => x === code);
+        const serverErrors = new Set([400, 404, 429, 500, 502, 503]);
 
-        let response: Response;
+        let response: Dispatcher.ResponseData<unknown>;
 
         // Create a signal handler to deliver the abort operation.
-        const signal = timeoutSignal(API_TIMEOUT);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), retrieveOptions.timeout);
 
+        options.dispatcher = this.dispatcher;
         options.headers = this.headers;
-        options.signal = signal;
+        options.signal = controller.signal;
 
         try {
-
-            const now = Date.now();
-
-            // Throttle this after API_ERROR_LIMIT attempts.
-            if (this.apiErrorCount >= API_ERROR_LIMIT) {
-
-                // Let the user know we've got an API problem.
-                if (this.apiErrorCount === API_ERROR_LIMIT) {
-
-                    this.log.error(`Throttling API calls due to errors with the ${this.apiErrorCount} previous attempts. Pausing communication with the Network controller for ${API_RETRY_INTERVAL / 60} minutes.`);
-                    this.apiErrorCount++;
-                    this.apiLastSuccess = now;
-                    this.reset();
-
-                    return null;
-                }
-
-                // Check to see if we are still throttling our API calls.
-                if ((this.apiLastSuccess + (API_RETRY_INTERVAL * 1000)) > now) {
-
-                    return null;
-                }
-
-                // Inform the user that we're out of the penalty box and try again.
-                this.log.error(`Resuming connectivity to the UniFi Network API after pausing for ${API_RETRY_INTERVAL / 60} minutes.`);
-
-                this.apiErrorCount = 0;
-                this.reset();
-
-                if (!(await this.loginController())) {
-
-                    return null;
-                }
-            }
-
-            response = await this.fetch(url, options);
-
-            // The caller will sort through responses instead of us.
-            if (!decodeResponse) {
-
-                return response;
-            }
+            // Execute the API request.
+            response = await request(url, options);
 
             // Preemptively increase the error count.
             this.apiErrorCount++;
 
             // Bad username and password.
-            if (response.status === 401) {
-
+            if (response.statusCode === 401) {
                 this.logout();
-                this.log.error(`${logPrefix} code: ${response.status} - Invalid login credentials given. Please check your login and password.`);
+                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password.`);
 
                 return null;
             }
 
             // Insufficient privileges.
-            if (response.status === 403) {
-
-                this.log.error(`${logPrefix} code: ${response.status} - Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`);
-
-                return null;
-            }
-
-            // Insufficient privileges.
-            if (response.status === 429) {
-
-                this.log.error(`${logPrefix} code: ${response.status} - Too many requests. Please check the settings at your unifi network controller or wait a while and restart the connection`);
+            if (response.statusCode === 403) {
+                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`)
 
                 return null;
             }
 
-            if (response.status === 503) {
-                this.log.error(`${logPrefix} code: ${response.status} - Network controller service is unavailable. This is usually temporary and will occur during device reboots.`);
+            if (!this.responseOk(response.statusCode)) {
 
+                if (serverErrors.has(response.statusCode)) {
+                    this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots.`);
+
+                    return null;
+                }
+
+                // Some other unknown error occurred.
+                this.log.error(`${logPrefix} ${response.statusCode} - ${STATUS_CODES[response.statusCode]}`);
                 return null;
             }
 
-            if (!response.ok && isServerSideIssue(response.status)) {
-
-                this.log.error(`${logPrefix} code: ${response.status} - Unable to connect to the Network controller. This is usually temporary and will occur during device reboots.`);
-
-                return null;
-            }
-
-            // Some other unknown error occurred.
-            if (!response.ok) {
-
-                this.log.error(`${logPrefix} code: ${response.status} - ${response.statusText}`);
-
-                return null;
-            }
-
+            // We're all good - return the response and we're done.
             this.apiLastSuccess = Date.now();
             this.apiErrorCount = 0;
 
             return response;
         } catch (error) {
 
+            // Increment our API error count.
             this.apiErrorCount++;
 
-            if (error instanceof AbortError) {
-
+            // We aborted the connection.
+            if ((error instanceof DOMException) && (error.name === "AbortError")) {
                 this.log.error(`${logPrefix} Network controller is taking too long to respond to a request. This error can usually be safely ignored.`);
-                this.log.debug(`${logPrefix} Original request was: ${url}`);
 
                 return null;
             }
 
-            if (error instanceof FetchError) {
+            // We destroyed the pool due to a reset event and our inflight connections are failing.
+            if (error instanceof errors.ClientDestroyedError) {
+                return null;
+            }
 
-                switch (error.code) {
+            // We destroyed the pool due to a reset event and our inflight connections are failing.
+            if (error instanceof errors.RequestRetryError) {
+                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots.`);
 
-                    case 'ECONNREFUSED':
-                    case 'EHOSTDOWN':
-                    case 'ERR_HTTP2_STREAM_CANCEL':
-                    case 'ERR_HTTP2_STREAM_ERROR':
+                return null;
+            }
 
+            // Connection timed out.
+            if (error instanceof errors.ConnectTimeoutError) {
+                this.log.error(`${logPrefix} Connection timed out.`);
+
+                return null;
+            }
+
+            let cause;
+
+            if (error instanceof TypeError) {
+                cause = error.cause as NodeJS.ErrnoException;
+            }
+
+            if ((error instanceof Error) && ("code" in error) && (typeof (error as NodeJS.ErrnoException).code === "string")) {
+                cause = error;
+            }
+
+            if (cause) {
+
+                switch (cause.code) {
+
+                    case "ECONNREFUSED":
+                    case "EHOSTDOWN":
                         this.log.error(`${logPrefix} Connection refused.`);
 
                         break;
 
-                    case 'ECONNRESET':
-
-                        // Retry on connection reset, but no more than once.
-                        if (!isRetry) {
-
-                            return this._retrieve(url, options, decodeResponse, true);
-                        }
-
+                    case "ECONNRESET":
                         this.log.error(`${logPrefix} Network connection to Network controller has been reset.`);
 
                         break;
 
-                    case 'ENOTFOUND':
-
-                        this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}${this.port}. Please ensure the address you configured for this UniFi Network controller is correct.`);
-
+                    case "ENOTFOUND":
+                        if (this.host) {
+                            this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct.`)
+                        } else {
+                            this.log.error(`${logPrefix} No hostname or IP address provided.`);
+                        }
 
                         break;
 
                     default:
-
                         // If we're logging when we have an error, do so.
-                        this.log.error(`${logPrefix} ${error.code} - ${error.message}`);
+                        this.log.error(`${logPrefix} Error: ${cause.code} | ${cause.message}`);
 
                         break;
                 }
+
+                return null;
             }
+
+            this.log.error(`${logPrefix} Error: ${util.inspect(error, { colors: true, depth: null, sorted: true })}`);
 
             return null;
         } finally {
 
-            // Clear out our response timeout if needed.
-            signal.clear();
+            // Clear out our response timeout.
+            clearTimeout(timer);
         }
     }
 
-    public async sendData(cmd: string, payload: any, method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH' = 'POST'): Promise<Response> {
+    public async sendData(cmd: string, payload: any, method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH' = 'POST'): Promise<Nullable<Dispatcher.ResponseData<unknown>>> {
         const logPrefix = `[${this.logPrefix}.sendData]`
 
         let url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}${cmd}`
@@ -483,7 +500,6 @@ export class NetworkApi extends EventEmitter {
             if (res && res.data && res.data.length > 0) {
                 return res.data;
             }
-
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
@@ -503,7 +519,7 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.devices)}?separateUnmanaged=${separateUnmanaged}&includeTrafficUsage=${includeTrafficUsage}`);
 
             if (res) {
-                return res;
+                return res as NetworkDevice_V2;
             }
 
         } catch (error: any) {
@@ -537,7 +553,7 @@ export class NetworkApi extends EventEmitter {
      *  V2 API - List of all active (connected) clients
      * @returns 
      */
-    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | NetworkClient | undefined> {
+    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`
 
         try {
@@ -545,7 +561,7 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(url);
 
             if (res && res.length > 0) {
-                return res;
+                return res as NetworkClient[];
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -586,7 +602,7 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(url);
 
             if (res && res.length > 0) {
-                return res;
+                return res as NetworkClient[];
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -627,7 +643,7 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.wlanConfig)}`);
 
             if (res && res.length > 0) {
-                return res;
+                return res as NetworkWlanConfig_V2[];
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -668,7 +684,7 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.lanConfig)}`);
 
             if (res && res.length > 0) {
-                return res;
+                return res as NetworkLanConfig_V2[];
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -716,22 +732,6 @@ export class NetworkApi extends EventEmitter {
         }
 
         return undefined;
-    }
-
-    public async testConnection(): Promise<boolean> {
-        const logPrefix = `[${this.logPrefix}.testConnection]`
-
-        try {
-            const res = await this.retrieve(`${this.getApiEndpoint(ApiEndpoints.self)}`);
-
-            if (res?.ok) {
-                return true;
-            }
-        } catch (error: any) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-
-        return false;
     }
 
     /**
@@ -787,7 +787,7 @@ export class NetworkApi extends EventEmitter {
 
             const res = await this.retrievData(url, {
                 method: 'POST',
-                body: payload
+                body: JSON.stringify(payload)
             });
 
             if (res && res.data && res.data.length > 0) {
@@ -844,7 +844,7 @@ export class NetworkApi extends EventEmitter {
 
             const res = await this.retrievData(url, {
                 method: 'POST',
-                body: payload
+                body: JSON.stringify(payload),
             });
 
             if (res) {
@@ -986,13 +986,7 @@ export class NetworkApi extends EventEmitter {
 
             const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
 
-            const ws = new WebSocket(url, {
-                headers: {
-                    Cookie: this.headers.get('Cookie') ?? ''
-                },
-
-                rejectUnauthorized: false
-            });
+            const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? "" } });
 
             if (!ws) {
 
@@ -1002,61 +996,45 @@ export class NetworkApi extends EventEmitter {
                 return false;
             }
 
-            let messageHandler: ((data: string) => void) | null;
+            let messageHandler: Nullable<(event: MessageEvent) => void>;
 
             // Cleanup after ourselves if our websocket closes for some resaon.
-            ws.once('close', (): void => {
+            ws.addEventListener('close', (): void => {
 
                 this._eventsWs = null;
 
                 if (messageHandler) {
 
-                    ws.removeListener('message', messageHandler);
+                    ws.removeEventListener('message', messageHandler);
                     messageHandler = null;
                 }
-            });
+            }, { once: true });
 
             // Handle any websocket errors.
-            ws.once('error', (error: Error): void => {
+            ws.addEventListener('error', (event: ErrorEvent): void => {
+                this.log.error(`${this.logPrefix} Events API error: ${event.error.cause}`);
+                this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
 
-                this._eventsWs = null;
-
-                // If we're closing before fully established it's because we're shutting down the API - ignore it.
-                if (error.message !== 'WebSocket was closed before the connection was established') {
-                    if (error.message === 'Unexpected server response: 502' || error.message === 'Unexpected server response: 503' || error.message === 'Unexpected server response: 200') {
-                        this.log.error(`${logPrefix} Network controller - WebSocket service is unavailable. This is usually temporary and will occur during device reboots.`);
-                    } else {
-                        this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
-                    }
-                }
-
-                ws.removeListener('message', messageHandler);
-                ws.terminate();
-            });
+                ws.close();
+            }, { once: true });
 
             // Process messages as they come in.
-            ws.on('message', messageHandler = (data: string): void => {
+            ws.addEventListener('message', messageHandler = async (event: MessageEvent): Promise<void> => {
                 try {
-                    if (data.toString().toLowerCase() === 'pong') {
-                        this.log.warn('PONG');
-                    }
-                    if (data.toString() === 'pong') {
-                        this.log.warn('PONG');
-                    }
-                    const event: NetworkEvent = JSON.parse(data.toString());
+                    if (event.data) {
+                        if (event.data.toLowerCase() === 'pong') {
+                            this.emit("pong");
+                            this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
+                        } else {
+                            const data: NetworkEvent = JSON.parse(event.data);
 
-                    if (event) {
-                        this.emit("message", event);
+                            if (data) {
+                                this.emit("message", data);
+                            }
+                        }
+                    } else {
+                        this.log.warn(`${logPrefix} event has no data!`);
                     }
-                } catch (error: any) {
-                    this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
-                }
-            });
-
-            ws.on('pong', messageHandler = (data: string): void => {
-                try {
-                    this.emit("pong");
-                    this.log.silly ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
@@ -1077,8 +1055,8 @@ export class NetworkApi extends EventEmitter {
 
         try {
             if (this._eventsWs && this._eventsWs !== null) {
-                this._eventsWs.ping();
-                this.log.silly ? this.log.silly(`ping sent`) : this.log.debug(`ping sent`);
+                this._eventsWs.send('ping');
+                this.log.level === 'silly' ? this.log.silly(`ping sent`) : this.log.debug(`ping sent`);
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
