@@ -254,4 +254,3 @@ export class NetworkCommands {
         this.log.info(`${logPrefix} command successfully sent: ${message}`);
     }
 }
-//# sourceMappingURL=network-commands.js.map

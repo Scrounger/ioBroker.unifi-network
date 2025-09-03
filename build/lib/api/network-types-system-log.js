@@ -9,4 +9,3 @@ export var SystemLogType;
     SystemLogType["triggers"] = "triggers";
     SystemLogType["vpn"] = "vpn-alert";
 })(SystemLogType || (SystemLogType = {}));
-//# sourceMappingURL=network-types-system-log.js.map

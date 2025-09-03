@@ -227,4 +227,3 @@ export function radio_nameToFrequency(radio_nameVal, adapter) {
         return 'n/a';
     }
 }
-//# sourceMappingURL=helper.js.map

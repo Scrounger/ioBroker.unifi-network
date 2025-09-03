@@ -1779,4 +1779,3 @@ export default function startAdapter(options) {
     // compact mode
     return new UnifiNetwork(options);
 }
-//# sourceMappingURL=main.js.map

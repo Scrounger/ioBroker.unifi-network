@@ -848,4 +848,3 @@ export var device;
     }
     device.getStateIDs = getStateIDs;
 })(device || (device = {}));
-//# sourceMappingURL=device.js.map

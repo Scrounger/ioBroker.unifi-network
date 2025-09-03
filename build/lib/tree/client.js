@@ -359,4 +359,3 @@ export var client;
     }
     client.getStateIDs = getStateIDs;
 })(client || (client = {}));
-//# sourceMappingURL=client.js.map

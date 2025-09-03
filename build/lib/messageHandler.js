@@ -244,4 +244,3 @@ export const messageHandler = {
         }
     }
 };
-//# sourceMappingURL=messageHandler.js.map
