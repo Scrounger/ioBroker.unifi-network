@@ -198,6 +198,11 @@ export declare class NetworkApi extends EventEmitter {
     getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
+    /**
+     * @deprecated this using undici websocket, but loosing very often connection, perhaps caused by the ping pong implementations
+     * @returns
+     */
+    launchEventsWsUndici(): Promise<boolean>;
     launchEventsWs(): Promise<boolean>;
     wsSendPing(): void;
 }
