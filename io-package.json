@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.0.0-beta.0",
+    "version": "1.1.0-beta.0",
     "news": {
+      "1.1.0-beta.0": {
+        "en": "replaced fetch with undici\nfirewall group added\nmore network events handler added\nbug fixes",
+        "de": "ersatz-fetch mit undici\nfirewall gruppe hinzugefügt\nmehr netzwerk-events-handler hinzugefügt\nfehlerbehebungen",
+        "ru": "заменить fetch на undici\nгруппа firewall добавлена\nдобавлено больше обработчиков сетевых событий\nисправление ошибок",
+        "pt": "substituído fetch com undici\ngrupo de firewall adicionado\nmais gerenciador de eventos de rede adicionado\ncorreções de erros",
+        "nl": "vervangen fetch door undici\nfirewall-groep toegevoegd\nmeer netwerk evenementen begeleider toegevoegd\nfoutherstel",
+        "fr": "remplacement fetch par undici\ngroupe pare-feu ajouté\nplus de gestionnaire d'événements réseau ajouté\ncorrections des bogues",
+        "it": "sostituto fetch con undici\ngruppo firewall aggiunto\npiù rete eventi handler aggiunto\ncorrezioni di bug",
+        "es": "remplazada la embrague con undici\ngrupo de cortafuegos añadido\nmás organizador de eventos de red añadido\nbug fixes",
+        "pl": "zastąpiony pobrać z undici\ngrupa firewall\ndodano więcej menedżerów zdarzeń sieciowych\npoprawki błędów",
+        "uk": "заміщений фехт з ундиком\nгрупа брандмауера додано\nдодано більше мережевих заходів\nвиправлення помилок",
+        "zh-cn": "替换为 undici 获取\n添加防火墙组\n添加更多网络事件处理器\n错误修正"
+      },
       "1.0.0-beta.0": {
         "en": "initial release",
         "de": "erstausstrahlung",

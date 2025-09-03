@@ -794,70 +794,70 @@ export class NetworkApi extends EventEmitter {
         }
         return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`;
     }
-    /**
-     * @deprecated this using undici websocket, but loosing very often connection, perhaps caused by the ping pong implementations
-     * @returns
-     */
-    async launchEventsWsUndici() {
-        // const logPrefix = `[${this.logPrefix}.launchEventsWs]`
-        // try {
-        //     // Log us in if needed.
-        //     if (!(await this.loginController())) {
-        //         return false;
-        //     }
-        //     // If we already have a listener, we're already all set.
-        //     if (this._eventsWs) {
-        //         return true;
-        //     }
-        //     const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
-        //     const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? "" } });
-        //     if (!ws) {
-        //         this.log.error('Unable to connect to the realtime update events API. Will retry again later.');
-        //         this._eventsWs = null;
-        //         return false;
-        //     }
-        //     let messageHandler: Nullable<(event: MessageEvent) => void>;
-        //     // Cleanup after ourselves if our websocket closes for some resaon.
-        //     ws.addEventListener('close', (): void => {
-        //         this._eventsWs = null;
-        //         if (messageHandler) {
-        //             ws.removeEventListener('message', messageHandler);
-        //             messageHandler = null;
-        //         }
-        //     }, { once: true });
-        //     // Handle any websocket errors.
-        //     ws.addEventListener('error', (event: ErrorEvent): void => {
-        //         this.log.error(`${this.logPrefix} Events API error: ${JSON.stringify(event.error.cause)}`);
-        //         this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
-        //         ws.close();
-        //     }, { once: true });
-        //     // Process messages as they come in.
-        //     ws.addEventListener('message', messageHandler = (event: MessageEvent): void => {
-        //         try {
-        //             if (event.data) {
-        //                 if (event.data.toLowerCase() === 'pong') {
-        //                     this.emit("pong");
-        //                     this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
-        //                 } else {
-        //                     const data: NetworkEvent = JSON.parse(event.data);
-        //                     if (data) {
-        //                         this.emit("message", data);
-        //                     }
-        //                 }
-        //             } else {
-        //                 this.log.warn(`${logPrefix} event has no data!`);
-        //             }
-        //         } catch (error: any) {
-        //             this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
-        //         }
-        //     });
-        //     // Make the websocket available, and then we're done.
-        //     this._eventsWs = ws;
-        // } catch (error: any) {
-        //     this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        // }
-        return true;
-    }
+    // /**
+    //  * @deprecated this using undici websocket, but loosing very often connection, perhaps caused by the ping pong implementations
+    //  * @returns 
+    //  */
+    // public async launchEventsWsUndici(): Promise<boolean> {
+    // const logPrefix = `[${this.logPrefix}.launchEventsWs]`
+    // try {
+    //     // Log us in if needed.
+    //     if (!(await this.loginController())) {
+    //         return false;
+    //     }
+    //     // If we already have a listener, we're already all set.
+    //     if (this._eventsWs) {
+    //         return true;
+    //     }
+    //     const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
+    //     const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? "" } });
+    //     if (!ws) {
+    //         this.log.error('Unable to connect to the realtime update events API. Will retry again later.');
+    //         this._eventsWs = null;
+    //         return false;
+    //     }
+    //     let messageHandler: Nullable<(event: MessageEvent) => void>;
+    //     // Cleanup after ourselves if our websocket closes for some resaon.
+    //     ws.addEventListener('close', (): void => {
+    //         this._eventsWs = null;
+    //         if (messageHandler) {
+    //             ws.removeEventListener('message', messageHandler);
+    //             messageHandler = null;
+    //         }
+    //     }, { once: true });
+    //     // Handle any websocket errors.
+    //     ws.addEventListener('error', (event: ErrorEvent): void => {
+    //         this.log.error(`${this.logPrefix} Events API error: ${JSON.stringify(event.error.cause)}`);
+    //         this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
+    //         ws.close();
+    //     }, { once: true });
+    //     // Process messages as they come in.
+    //     ws.addEventListener('message', messageHandler = (event: MessageEvent): void => {
+    //         try {
+    //             if (event.data) {
+    //                 if (event.data.toLowerCase() === 'pong') {
+    //                     this.emit("pong");
+    //                     this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
+    //                 } else {
+    //                     const data: NetworkEvent = JSON.parse(event.data);
+    //                     if (data) {
+    //                         this.emit("message", data);
+    //                     }
+    //                 }
+    //             } else {
+    //                 this.log.warn(`${logPrefix} event has no data!`);
+    //             }
+    //         } catch (error: any) {
+    //             this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+    //         }
+    //     });
+    //     // Make the websocket available, and then we're done.
+    //     this._eventsWs = ws;
+    // } catch (error: any) {
+    //     this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+    // }
+    //     return true;
+    // }
     async launchEventsWs() {
         const logPrefix = `[${this.logPrefix}.launchEventsWs]`;
         try {

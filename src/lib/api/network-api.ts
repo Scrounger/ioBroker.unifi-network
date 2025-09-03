@@ -1009,91 +1009,91 @@ export class NetworkApi extends EventEmitter {
         return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`
     }
 
-    /**
-     * @deprecated this using undici websocket, but loosing very often connection, perhaps caused by the ping pong implementations
-     * @returns 
-     */
-    public async launchEventsWsUndici(): Promise<boolean> {
-        // const logPrefix = `[${this.logPrefix}.launchEventsWs]`
+    // /**
+    //  * @deprecated this using undici websocket, but loosing very often connection, perhaps caused by the ping pong implementations
+    //  * @returns 
+    //  */
+    // public async launchEventsWsUndici(): Promise<boolean> {
+    // const logPrefix = `[${this.logPrefix}.launchEventsWs]`
 
-        // try {
-        //     // Log us in if needed.
-        //     if (!(await this.loginController())) {
+    // try {
+    //     // Log us in if needed.
+    //     if (!(await this.loginController())) {
 
-        //         return false;
-        //     }
+    //         return false;
+    //     }
 
-        //     // If we already have a listener, we're already all set.
-        //     if (this._eventsWs) {
+    //     // If we already have a listener, we're already all set.
+    //     if (this._eventsWs) {
 
-        //         return true;
-        //     }
+    //         return true;
+    //     }
 
-        //     const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
+    //     const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
 
-        //     const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? "" } });
+    //     const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? "" } });
 
-        //     if (!ws) {
+    //     if (!ws) {
 
-        //         this.log.error('Unable to connect to the realtime update events API. Will retry again later.');
-        //         this._eventsWs = null;
+    //         this.log.error('Unable to connect to the realtime update events API. Will retry again later.');
+    //         this._eventsWs = null;
 
-        //         return false;
-        //     }
+    //         return false;
+    //     }
 
-        //     let messageHandler: Nullable<(event: MessageEvent) => void>;
+    //     let messageHandler: Nullable<(event: MessageEvent) => void>;
 
-        //     // Cleanup after ourselves if our websocket closes for some resaon.
-        //     ws.addEventListener('close', (): void => {
+    //     // Cleanup after ourselves if our websocket closes for some resaon.
+    //     ws.addEventListener('close', (): void => {
 
-        //         this._eventsWs = null;
+    //         this._eventsWs = null;
 
-        //         if (messageHandler) {
+    //         if (messageHandler) {
 
-        //             ws.removeEventListener('message', messageHandler);
-        //             messageHandler = null;
-        //         }
-        //     }, { once: true });
+    //             ws.removeEventListener('message', messageHandler);
+    //             messageHandler = null;
+    //         }
+    //     }, { once: true });
 
-        //     // Handle any websocket errors.
-        //     ws.addEventListener('error', (event: ErrorEvent): void => {
-        //         this.log.error(`${this.logPrefix} Events API error: ${JSON.stringify(event.error.cause)}`);
-        //         this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
+    //     // Handle any websocket errors.
+    //     ws.addEventListener('error', (event: ErrorEvent): void => {
+    //         this.log.error(`${this.logPrefix} Events API error: ${JSON.stringify(event.error.cause)}`);
+    //         this.log.error(`${this.logPrefix} ${util.inspect(event.error, { colors: true, depth: null, sorted: true })}`);
 
-        //         ws.close();
-        //     }, { once: true });
+    //         ws.close();
+    //     }, { once: true });
 
-        //     // Process messages as they come in.
-        //     ws.addEventListener('message', messageHandler = (event: MessageEvent): void => {
-        //         try {
-        //             if (event.data) {
-        //                 if (event.data.toLowerCase() === 'pong') {
-        //                     this.emit("pong");
-        //                     this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
-        //                 } else {
-        //                     const data: NetworkEvent = JSON.parse(event.data);
+    //     // Process messages as they come in.
+    //     ws.addEventListener('message', messageHandler = (event: MessageEvent): void => {
+    //         try {
+    //             if (event.data) {
+    //                 if (event.data.toLowerCase() === 'pong') {
+    //                     this.emit("pong");
+    //                     this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
+    //                 } else {
+    //                     const data: NetworkEvent = JSON.parse(event.data);
 
-        //                     if (data) {
-        //                         this.emit("message", data);
-        //                     }
-        //                 }
-        //             } else {
-        //                 this.log.warn(`${logPrefix} event has no data!`);
-        //             }
-        //         } catch (error: any) {
-        //             this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
-        //         }
-        //     });
+    //                     if (data) {
+    //                         this.emit("message", data);
+    //                     }
+    //                 }
+    //             } else {
+    //                 this.log.warn(`${logPrefix} event has no data!`);
+    //             }
+    //         } catch (error: any) {
+    //             this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
+    //         }
+    //     });
 
-        //     // Make the websocket available, and then we're done.
-        //     this._eventsWs = ws;
+    //     // Make the websocket available, and then we're done.
+    //     this._eventsWs = ws;
 
-        // } catch (error: any) {
-        //     this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        // }
+    // } catch (error: any) {
+    //     this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+    // }
 
-        return true;
-    }
+    //     return true;
+    // }
 
     public async launchEventsWs(): Promise<boolean> {
         const logPrefix = `[${this.logPrefix}.launchEventsWs]`
