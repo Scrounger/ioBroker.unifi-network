@@ -68,7 +68,6 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onReady]:';
         try {
             moment.locale(this.language);
-            // ohne worte....
             await utils.I18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
             if (this.config.host, this.config.user, this.config.password) {
                 this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this);
@@ -80,6 +79,7 @@ class UnifiNetwork extends utils.Adapter {
             else {
                 this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
             }
+            this.findMissingTranslation();
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1762,6 +1762,24 @@ class UnifiNetwork extends utils.Adapter {
         try {
             if (this.config.devicesEnabled) {
                 await eventHandler.device.speedTest(event, this, this.cache);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    findMissingTranslation() {
+        const logPrefix = '[findMissingTranslation]:';
+        try {
+            if (this.log.level === 'debug') {
+                for (const key in tree) {
+                    if (_.isObject(tree[key]) && !key.includes('events')) {
+                        const result = myHelper.tree2Translation(tree[key].get(), this, utils.I18n);
+                        if (result) {
+                            this.log.debug(`${logPrefix} ${key} - missiing translation ${JSON.stringify(result)}`);
+                        }
+                    }
+                }
             }
         }
         catch (error) {

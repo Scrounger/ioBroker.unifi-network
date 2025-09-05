@@ -227,3 +227,39 @@ export function radio_nameToFrequency(radio_nameVal, adapter) {
         return 'n/a';
     }
 }
+export function getTreeNameOrKey(obj, path = []) {
+    const result = {};
+    if (obj && typeof obj === "object") {
+        if ("iobType" in obj) {
+            const lastKey = path[path.length - 1];
+            result[obj.name ?? lastKey] = obj.name ?? lastKey;
+        }
+        for (const [childKey, value] of Object.entries(obj)) {
+            if (value && typeof value === "object") {
+                Object.assign(result, getTreeNameOrKey(value, [...path, childKey]));
+            }
+        }
+    }
+    return result;
+}
+/**
+ * generate a list with all defined names, that can be used for translation
+ *
+ * @param tree
+ * @param adapter
+ * @param i18n
+ */
+export function tree2Translation(tree, adapter, i18n) {
+    const result = getTreeNameOrKey(tree);
+    for (const key of Object.keys(result)) {
+        if (Object.keys(i18n.getTranslatedObject(key)).length > 1) {
+            delete result[key];
+        }
+    }
+    if (result && Object.keys(result).length > 0) {
+        return result;
+    }
+    else {
+        return null;
+    }
+}

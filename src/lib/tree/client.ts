@@ -58,7 +58,7 @@ export namespace client {
             },
             imageUrl: {
                 iobType: 'string',
-                name: 'imageUrl',
+                name: 'image url',
                 expert: true,
                 subscribeMe: true,
                 valFromProperty: 'fingerprint',

@@ -91,7 +91,6 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			moment.locale(this.language);
 
-			// ohne worte....
 			await utils.I18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
 
 			if (this.config.host, this.config.user, this.config.password) {
@@ -106,6 +105,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 			}
 
+			this.findMissingTranslation();
 
 		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -2023,6 +2023,26 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (this.config.devicesEnabled) {
 				await eventHandler.device.speedTest(event, this, this.cache);
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	private findMissingTranslation(): void {
+		const logPrefix = '[findMissingTranslation]:';
+
+		try {
+			if (this.log.level === 'debug') {
+				for (const key in tree) {
+					if (_.isObject(tree[key]) && !key.includes('events')) {
+						const result = myHelper.tree2Translation((tree[key] as any).get(), this, utils.I18n);
+
+						if (result) {
+							this.log.debug(`${logPrefix} ${key} - missiing translation ${JSON.stringify(result)}`);
+						}
+					}
+				}
 			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

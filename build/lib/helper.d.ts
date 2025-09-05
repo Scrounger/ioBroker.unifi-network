@@ -51,3 +51,16 @@ export declare function getAllIdsOfTreeDefinition(treefDefintion: {
 }): string[];
 export declare function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string;
 export declare function radio_nameToFrequency(radio_nameVal: string, adapter: ioBroker.Adapter): string;
+export declare function getTreeNameOrKey(obj: {
+    [key: string]: any;
+}, path?: string[]): Record<string, string>;
+/**
+ * generate a list with all defined names, that can be used for translation
+ *
+ * @param tree
+ * @param adapter
+ * @param i18n
+ */
+export declare function tree2Translation(tree: {
+    [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
+}, adapter: ioBroker.Adapter, i18n: any): Record<string, string>;

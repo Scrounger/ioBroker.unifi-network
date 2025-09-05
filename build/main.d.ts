@@ -128,6 +128,7 @@ declare class UnifiNetwork extends utils.Adapter {
     onNetworkLanConfEvent(event: NetworkEventLanConfig): Promise<void>;
     onNetworkFirewallGroupEvent(event: NetworkEventFirewallGroup): Promise<void>;
     onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void>;
+    private findMissingTranslation;
 }
 export default function startAdapter(options: Partial<utils.AdapterOptions> | undefined): UnifiNetwork;
 export {};
