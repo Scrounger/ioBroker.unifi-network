@@ -41,7 +41,8 @@ export default [
             '@typescript-eslint/ban-ts-comment': 'off',
             '@typescript-eslint/no-redundant-type-constituents': 'off',
             'prettier/prettier': 0,
-            'no-else-return': 'off'
+            'no-else-return': 'off',
+            '@typescript-eslint/consistent-type-imports': 'off',
         },
     },
 
