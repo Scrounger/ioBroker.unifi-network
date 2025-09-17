@@ -13,7 +13,6 @@ declare global {
 			user: string;
 			password: string;
 			isUnifiOs: boolean;
-			expert: boolean;
 			expertAliveInterval: number;
 			expertConnectionMaxRetries: number;
 			realTimeApiDebounceTime: number;

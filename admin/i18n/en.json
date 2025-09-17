@@ -171,5 +171,9 @@
 	"type of network": "type of network",
 	"VLAN Id": "VLAN Id",
 	"number of access points": "number of access points",
-	"peak of connected clients": "peak of connected clients"
+	"peak of connected clients": "peak of connected clients",
+	"WLAN Radio": "WLAN Radio",
+	"storage": "storage",
+	"WLAN Network Statistics": "WLAN Network Statistics",
+	"WAN 1": "WAN 1"
 }

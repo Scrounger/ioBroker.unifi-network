@@ -1,6 +1,6 @@
 {
     "label": "Expert",
-    "hidden": "!data.expert",
+    "expertMode": true,
     "items": {
         "donation_link": {
             "type": "staticLink",

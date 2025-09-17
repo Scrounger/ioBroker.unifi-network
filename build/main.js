@@ -11,6 +11,7 @@ import _ from 'lodash';
 import url from 'node:url';
 // API imports
 import { NetworkApi } from './lib/api/network-api.js';
+// Adapter imports
 import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js';

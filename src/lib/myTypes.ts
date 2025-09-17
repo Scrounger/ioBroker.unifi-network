@@ -1,4 +1,4 @@
-import type { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client.js";
+import type { NetworkClient } from "./api/network-types-client.js";
 import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
 import type { NetworkDeviceModels } from './api/network-types-device-models.js'
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";

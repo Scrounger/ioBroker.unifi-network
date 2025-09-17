@@ -172,5 +172,9 @@
     "type of network": "type netwerk",
     "VLAN Id": "VLAN ID",
     "number of access points": "Aantal toegangspunten",
-    "peak of connected clients": "Peak of Connected Cliënten"
+    "peak of connected clients": "Peak of Connected Cliënten",
+    "WLAN Radio": "Wlan radio",
+    "storage": "opslag",
+    "WLAN Network Statistics": "WLAN -netwerkstatistieken",
+    "WAN 1": "Wan 1"
 }

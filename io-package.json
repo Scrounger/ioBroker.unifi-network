@@ -126,7 +126,6 @@
     "site": "default",
     "user": "",
     "password": "",
-    "expert": false,
     "expertAliveInterval": 30,
     "expertConnectionMaxRetries": 200,
     "realTimeApiDebounceTime": 15,

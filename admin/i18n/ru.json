@@ -172,5 +172,9 @@
     "type of network": "тип сети",
     "VLAN Id": "ID VLAN",
     "number of access points": "Количество точек доступа",
-    "peak of connected clients": "пик подключенных клиентов"
+    "peak of connected clients": "пик подключенных клиентов",
+    "WLAN Radio": "WLAN Radio",
+    "storage": "хранилище",
+    "WLAN Network Statistics": "WLAN Network Statistics",
+    "WAN 1": "Ван 1"
 }

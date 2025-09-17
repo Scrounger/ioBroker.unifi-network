@@ -2,7 +2,6 @@ import _ from "lodash";
 import type { NetworkApi } from "./api/network-api.js";
 import * as tree from './tree/index.js'
 import type { JsonConfigAutocompleteSendTo } from "./myTypes.js";
-import * as myHelper from './helper.js';
 
 let deviceList: JsonConfigAutocompleteSendTo[] = undefined;
 let deviceStateList: JsonConfigAutocompleteSendTo[] = undefined;

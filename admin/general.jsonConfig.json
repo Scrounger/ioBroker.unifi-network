@@ -109,12 +109,6 @@
             "max": 10000,
             "sm": 12,
             "md": 3
-        },
-        "expert": {
-            "type": "checkbox",
-            "label": "show expert settings",
-            "sm": 12,
-            "md": 3
         }
     }
 }

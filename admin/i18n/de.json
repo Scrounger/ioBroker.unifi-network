@@ -173,5 +173,9 @@
     "type of network": "Art des Netzwerks",
     "VLAN Id": "Vlan id",
     "number of access points": "Anzahl der Zugangspunkte",
-    "peak of connected clients": "Spitzenwert der vernetzten Clients"
+    "peak of connected clients": "Spitzenwert der vernetzten Clients",
+    "WLAN Radio": "WLAN -Radio",
+    "storage": "Lagerung",
+    "WLAN Network Statistics": "WLAN -Netzwerkstatistik",
+    "WAN 1": "Wan 1"
 }

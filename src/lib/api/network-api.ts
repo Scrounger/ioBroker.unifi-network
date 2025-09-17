@@ -1,5 +1,5 @@
 // Lib imports
-import { Agent, type Dispatcher, type ErrorEvent, type MessageEvent, Pool, errors, interceptors, request } from "undici";
+import { type Dispatcher, Pool, errors, interceptors, request } from "undici";
 import { STATUS_CODES } from "node:http";
 import { EventEmitter } from 'node:events';
 import util from "node:util";

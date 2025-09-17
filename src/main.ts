@@ -21,7 +21,6 @@ import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-ty
 import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
 
 // Adapter imports
-import * as myHelper from './lib/helper.js';
 import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myImgCache, type myNetworkClient } from './lib/myTypes.js';
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'

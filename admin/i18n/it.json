@@ -172,5 +172,9 @@
     "type of network": "Tipo di rete",
     "VLAN Id": "VLAN ID",
     "number of access points": "Numero di punti di accesso",
-    "peak of connected clients": "Picco di client connessi"
+    "peak of connected clients": "Picco di client connessi",
+    "WLAN Radio": "Radio WLAN",
+    "storage": "magazzinaggio",
+    "WLAN Network Statistics": "Statistiche della rete WLAN",
+    "WAN 1": "WAN 1"
 }

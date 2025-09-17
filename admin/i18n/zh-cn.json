@@ -172,5 +172,9 @@
     "type of network": "网络类型",
     "VLAN Id": "VLAN ID",
     "number of access points": "访问点数",
-    "peak of connected clients": "连接客户的峰值"
+    "peak of connected clients": "连接客户的峰值",
+    "WLAN Radio": "WLAN广播",
+    "storage": "贮存",
+    "WLAN Network Statistics": "WLAN网络统计",
+    "WAN 1": "WAN 1"
 }
