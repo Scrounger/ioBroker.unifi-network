@@ -1,6 +1,5 @@
 import _ from "lodash";
 import * as tree from './tree/index.js';
-import * as myHelper from './helper.js';
 let deviceList = undefined;
 let deviceStateList = undefined;
 let clientList = undefined;
@@ -37,7 +36,7 @@ export const messageHandler = {
                 deviceStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             deviceStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -84,7 +83,7 @@ export const messageHandler = {
                 clientStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             clientStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -130,7 +129,7 @@ export const messageHandler = {
                 wlanStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             wlanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -176,7 +175,7 @@ export const messageHandler = {
                 lanStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             lanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -222,7 +221,7 @@ export const messageHandler = {
                 firewallGroupStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             firewallGroupStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],

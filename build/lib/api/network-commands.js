@@ -1,5 +1,4 @@
 import { ApiEndpoints } from "./network-api.js";
-import * as myHelper from '../helper.js';
 export class NetworkCommands {
     ufn;
     adapter;
@@ -55,7 +54,7 @@ export class NetworkCommands {
         },
         runSpeedtest: async (device, id) => {
             const logPrefix = `[${this.logPrefixCls}.Devices.runSpeedtest]`;
-            const wan_interface = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+            const wan_interface = this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id));
             const interface_name = device[wan_interface].ifname;
             const payload = { cmd: 'speedtest' };
             if (interface_name) {
@@ -72,7 +71,7 @@ export class NetworkCommands {
             cyclePoePower: async (device, id) => {
                 const logPrefix = `[${this.logPrefixCls}.Devices.Port.cyclePoePower]`;
                 try {
-                    const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+                    const port_idx = parseInt(this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
                     const port_table = device.port_table;
                     if (port_table && port_table.length > 0) {
                         const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
@@ -96,7 +95,7 @@ export class NetworkCommands {
             },
             switchPoe: async (device, id, val) => {
                 const logPrefix = `[${this.logPrefixCls}.Devices.Port.port_switchPoe]`;
-                const port_idx = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+                const port_idx = parseInt(this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
                 const port_overrides = device.port_overrides;
                 if (port_overrides && port_overrides.length > 0) {
                     const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);

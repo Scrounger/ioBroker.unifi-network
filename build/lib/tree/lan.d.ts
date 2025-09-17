@@ -1,11 +1,11 @@
-import type { myCommonState, myCommoneChannelObject, myCommonChannelArray } from "../myTypes.js";
+import type { myTreeDefinition } from "../myTypes.js";
 export declare namespace lan {
     const idChannel = "lan";
     function get(): {
-        [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
+        [key: string]: myTreeDefinition;
     };
     function getGlobal(): {
-        [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
+        [key: string]: myTreeDefinition;
     };
     function getKeys(): string[];
     function getStateIDs(): string[];

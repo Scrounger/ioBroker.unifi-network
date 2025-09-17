@@ -9,7 +9,7 @@ export declare class NetworkCommands {
     private adapter;
     private log;
     private logPrefixCls;
-    constructor(ufn: NetworkApi, adapter: ioBroker.Adapter);
+    constructor(ufn: NetworkApi, adapter: ioBroker.myAdapter);
     Devices: {
         restart: (device: NetworkDevice, id: string) => Promise<boolean>;
         ledOverride: (device: NetworkDevice, id: string, val: string) => Promise<boolean>;

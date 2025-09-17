@@ -22,14 +22,16 @@ import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
 
 // Adapter imports
 import * as myHelper from './lib/helper.js';
-import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myCommonChannelArray, type myCommonState, type myCommoneChannelObject, type myImgCache, type myNetworkClient } from './lib/myTypes.js';
+import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myImgCache, type myNetworkClient } from './lib/myTypes.js';
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
+import { myIob } from './lib/myIob.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
+	myIob: myIob;
 
 	isConnected: boolean = false;
 
@@ -67,6 +69,12 @@ class UnifiNetwork extends utils.Adapter {
 		'session-metadata:sync'
 	]
 
+	statesUsingValAsLastChanged = [          // id of states where lc is taken from the value
+		'last_seen',
+		'first_seen',
+		'rundate',
+	];
+
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
 			...options,
@@ -93,6 +101,8 @@ class UnifiNetwork extends utils.Adapter {
 
 			await utils.I18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
 
+			this.myIob = new myIob(this, utils, this.statesUsingValAsLastChanged);
+
 			if (this.config.host, this.config.user, this.config.password) {
 				this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this);
 
@@ -105,7 +115,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 			}
 
-			this.findMissingTranslation();
+			this.myIob.findMissingTranslation();
 
 		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -169,16 +179,16 @@ class UnifiNetwork extends utils.Adapter {
 			if (state) {
 				if (state.from.includes(this.namespace)) {
 					// internal changes
-					if (myHelper.getIdLastPart(id) === 'imageUrl') {
+					if (this.myIob.getIdLastPart(id) === 'imageUrl') {
 						if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`))) {
-							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
+							await this.downloadImage(state.val as string, [this.myIob.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
 						} else if (this.config.deviceImageDownload && id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
-							await this.downloadImage(state.val as string, [myHelper.getIdWithoutLastPart(id)]);
+							await this.downloadImage(state.val as string, [this.myIob.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
 						}
-					} else if (myHelper.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelVpn}.`))) {
-						const macOrIp = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replaceAll('_', '.');
+					} else if (this.myIob.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelVpn}.`))) {
+						const macOrIp = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id)).replaceAll('_', '.');
 
 						if (state.val !== this.cache.isOnline[macOrIp].val) {
 							const old = {
@@ -199,11 +209,11 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
 					// state changed from outside of the adapter
-					const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+					const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 					if (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`)) {
 						// Client state changed
-						if (myHelper.getIdLastPart(id) === 'blocked') {
+						if (this.myIob.getIdLastPart(id) === 'blocked') {
 							if (state.val) {
 								await this.ufn.Commands.Clients.block(this.cache.clients[mac]);
 
@@ -211,10 +221,10 @@ class UnifiNetwork extends utils.Adapter {
 								await this.ufn.Commands.Clients.unblock(this.cache.clients[mac]);
 							}
 
-						} else if (myHelper.getIdLastPart(id) === 'reconnect') {
+						} else if (this.myIob.getIdLastPart(id) === 'reconnect') {
 							await this.ufn.Commands.Clients.reconnect(this.cache.clients[mac], id);
 
-							// } else if (myHelper.getIdLastPart(id) === 'authorized') {
+							// } else if (this.myIob.getIdLastPart(id) === 'authorized') {
 							// 	let res = undefined;
 
 							// 	if (state.val === true) {
@@ -224,7 +234,7 @@ class UnifiNetwork extends utils.Adapter {
 							// 	}
 
 							// 	if (res) this.log.info(`${logPrefix} command sent: ${state.val ? 'authorize' : 'unauthorize'} guest - '${this.cache.clients[mac].name}' (mac: ${mac})`);
-						} else if (myHelper.getIdLastPart(id) === 'name') {
+						} else if (this.myIob.getIdLastPart(id) === 'name') {
 							await this.ufn.Commands.Clients.setName(this.cache.clients[mac], state.val as string);
 
 						} else {
@@ -232,64 +242,64 @@ class UnifiNetwork extends utils.Adapter {
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
 						// Device state changed
-						if (myHelper.getIdLastPart(id) === 'restart') {
+						if (this.myIob.getIdLastPart(id) === 'restart') {
 							await this.ufn.Commands.Devices.restart(this.cache.devices[mac], id);
 
 						} else if (id.includes('.port_')) {
-							if (myHelper.getIdLastPart(id) === 'poe_cycle') {
-								const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+							if (this.myIob.getIdLastPart(id) === 'poe_cycle') {
+								const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(id))));
 
 								await this.ufn.Commands.Devices.Port.cyclePoePower(this.cache.devices[mac], id);
 
-							} else if (myHelper.getIdLastPart(id) === 'poe_enable') {
-								const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id))));
+							} else if (this.myIob.getIdLastPart(id) === 'poe_enable') {
+								const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(id))));
 
 								await this.ufn.Commands.Devices.Port.switchPoe(this.cache.devices[mac], id, state.val as boolean);
 
 							}
-						} else if (myHelper.getIdLastPart(id) === 'led_override') {
+						} else if (this.myIob.getIdLastPart(id) === 'led_override') {
 							await this.ufn.Commands.Devices.ledOverride(this.cache.devices[mac], id, state.val as string);
 
-						} else if (myHelper.getIdLastPart(id) === 'upgrade') {
+						} else if (this.myIob.getIdLastPart(id) === 'upgrade') {
 							await this.ufn.Commands.Devices.upgrade(this.cache.devices[mac], id);
 
 						} else if (id.includes('wan')) {
-							if (myHelper.getIdLastPart(id) === 'speedtest_run') {
-								const mac = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(myHelper.getIdWithoutLastPart(id)));
+							if (this.myIob.getIdLastPart(id) === 'speedtest_run') {
+								const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(id)));
 
 								await this.ufn.Commands.Devices.runSpeedtest(this.cache.devices[mac], id);
 							}
-						} else if (myHelper.getIdLastPart(id) === 'disabled') {
+						} else if (this.myIob.getIdLastPart(id) === 'disabled') {
 							await this.ufn.Commands.Devices.disableAccessPoint(this.cache.devices[mac], id, state.val as boolean);
 
 						} else {
 							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.wlan.idChannel}.`)) {
-						if (myHelper.getIdLastPart(id) === 'enabled') {
-							const wlan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+						if (this.myIob.getIdLastPart(id) === 'enabled') {
+							const wlan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 							await this.ufn.Commands.WLanConf.enable(this.cache.wlan[wlan_id], state.val as boolean);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
-						if (myHelper.getIdLastPart(id) === 'enabled') {
-							const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+						if (this.myIob.getIdLastPart(id) === 'enabled') {
+							const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 							await this.ufn.Commands.LanConf.enable(this.cache.lan[lan_id], state.val as boolean);
 
-						} else if (myHelper.getIdLastPart(id) === 'internet_enabled') {
-							const lan_id = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+						} else if (this.myIob.getIdLastPart(id) === 'internet_enabled') {
+							const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 							await this.ufn.Commands.LanConf.internet_access_enabled(this.cache.lan[lan_id], state.val as boolean);
 
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
-						const groupId = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+						const groupId = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
-						if (myHelper.getIdLastPart(id) === 'name') {
+						if (this.myIob.getIdLastPart(id) === 'name') {
 							await this.ufn.Commands.FirewallGroup.setName(this.cache.firewallGroup[groupId], state.val as string);
 
-						} else if (myHelper.getIdLastPart(id) === 'group_members') {
+						} else if (this.myIob.getIdLastPart(id) === 'group_members') {
 							await this.ufn.Commands.FirewallGroup.setGroupMembers(this.cache.firewallGroup[groupId], state.val as string);
 
 						}
@@ -579,7 +589,7 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.devicesEnabled) {
 
 					if (isAdapterStart) {
-						await this.createOrUpdateChannel(tree.device.idChannel, 'unifi devices', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.device.idChannel, 'unifi devices', undefined, true);
 					}
 
 					if (data && data !== null) {
@@ -615,7 +625,7 @@ class UnifiNetwork extends utils.Adapter {
 								let dataToProcess = device;
 								if (this.cache.devices[device.mac]) {
 									// filter out unchanged properties
-									dataToProcess = myHelper.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys()) as NetworkDevice;
+									dataToProcess = this.myIob.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys()) as NetworkDevice;
 								}
 
 								if (!_.isEmpty(dataToProcess)) {
@@ -628,8 +638,8 @@ class UnifiNetwork extends utils.Adapter {
 										this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 									}
 
-									await this.createOrUpdateDevice(idDevice, device.name, `${this.namespace}.${idDevice}.isOnline`, `${this.namespace}.${idDevice}.hasError`, undefined, isAdapterStart, true);
-									await this.createOrUpdateGenericState(idDevice, tree.device.get(), dataToProcess, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device, device, isAdapterStart);
+									await this.myIob.createOrUpdateDevice(idDevice, device.name, `${this.namespace}.${idDevice}.isOnline`, `${this.namespace}.${idDevice}.hasError`, undefined, isAdapterStart, true);
+									await this.myIob.createOrUpdateStates(idDevice, tree.device.get(), dataToProcess, device, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -670,19 +680,19 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (isAdapterStart && !isOfflineClients) {
 					if (this.config.clientsEnabled) {
-						await this.createOrUpdateChannel(idChannel, 'users', undefined, true);
+						await this.myIob.createOrUpdateChannel(idChannel, 'users', undefined, true);
 					}
 
 					if (this.config.guestsEnabled) {
-						await this.createOrUpdateChannel(idGuestChannel, 'guests', undefined, true);
+						await this.myIob.createOrUpdateChannel(idGuestChannel, 'guests', undefined, true);
 					}
 
 					if (this.config.vpnEnabled) {
-						await this.createOrUpdateChannel(idVpnChannel, 'vpn users', undefined, true);
+						await this.myIob.createOrUpdateChannel(idVpnChannel, 'vpn users', undefined, true);
 					}
 
 					if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-						await this.createOrUpdateChannel(tree.client.idChannel, 'client devices', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.client.idChannel, 'client devices', undefined, true);
 						data = await this.ufn.getClientsActive_V2() as myNetworkClient[];
 					} else {
 						if (await this.objectExists(tree.client.idChannel)) {
@@ -730,7 +740,7 @@ class UnifiNetwork extends utils.Adapter {
 										let dataToProcess = client;
 										if (this.cache.clients[client.mac]) {
 											// filter out unchanged properties
-											dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
 										if (Object.keys(dataToProcess).length > 0) {
@@ -748,8 +758,8 @@ class UnifiNetwork extends utils.Adapter {
 												this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 											}
 
-											await this.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
-											await this.createOrUpdateGenericState(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
+											await this.myIob.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, `${this.namespace}.${idChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
+											await this.myIob.createOrUpdateStates(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
 										}
 									} else {
 
@@ -775,7 +785,7 @@ class UnifiNetwork extends utils.Adapter {
 										let dataToProcess = client;
 										if (this.cache.clients[client.mac]) {
 											// filter out unchanged properties
-											dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
 										if (Object.keys(dataToProcess).length > 0) {
@@ -793,8 +803,8 @@ class UnifiNetwork extends utils.Adapter {
 												this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 											}
 
-											await this.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
-											await this.createOrUpdateGenericState(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
+											await this.myIob.createOrUpdateDevice(`${idGuestChannel}.${client.mac}`, name, `${this.namespace}.${idGuestChannel}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
+											await this.myIob.createOrUpdateStates(`${idGuestChannel}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
 										}
 
 									} else {
@@ -819,12 +829,12 @@ class UnifiNetwork extends utils.Adapter {
 										}
 
 										const idChannel = client.network_id;
-										await this.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
+										await this.myIob.createOrUpdateChannel(`${idVpnChannel}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
 
 										let dataToProcess = client;
 										if (this.cache.vpn[client.ip]) {
 											// filter out unchanged properties
-											dataToProcess = myHelper.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
+											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
 										const preparedIp = client.ip.replaceAll('.', '_');
@@ -844,8 +854,8 @@ class UnifiNetwork extends utils.Adapter {
 												this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 											}
 
-											await this.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart, true);
-											await this.createOrUpdateGenericState(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client, client, isAdapterStart);
+											await this.myIob.createOrUpdateDevice(`${idVpnChannel}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${this.namespace}.${idVpnChannel}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart, true);
+											await this.myIob.createOrUpdateStates(`${idVpnChannel}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
 										}
 									}
 								}
@@ -933,9 +943,9 @@ class UnifiNetwork extends utils.Adapter {
 			for (const id in clients) {
 
 				const lastSeen = clients[id];
-				const isOnline = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.isOnline`);
-				const mac = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.mac`);
-				const ip = await this.getStateAsync(`${myHelper.getIdWithoutLastPart(id)}.ip`);
+				const isOnline = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`);
+				const mac = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.mac`);
+				const ip = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.ip`);
 
 				const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val as string] : this.cache.vpn[ip.val as string];
 
@@ -946,7 +956,7 @@ class UnifiNetwork extends utils.Adapter {
 				if (!t.isBetween(before, now) || t.diff(before, 'seconds') <= 2) {
 					// isOnline not changed between now an last reported last_seen val
 					const diff = now.diff(before, 'seconds');
-					await this.setState(`${myHelper.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
+					await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
 
 					if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
 						this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${before.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
@@ -967,7 +977,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.wlanConfigEnabled) {
 					if (isAdapterStart) {
-						await this.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
+						await this.myIob.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
 						data = await this.ufn.getWlanConfig_V2();
 					}
 
@@ -997,7 +1007,7 @@ class UnifiNetwork extends utils.Adapter {
 								let dataToProcess = wlan;
 								if (this.cache.wlan[wlan._id]) {
 									// filter out unchanged properties
-									dataToProcess = myHelper.deepDiffBetweenObjects(wlan, this.cache.wlan[wlan._id], this, tree.wlan.getKeys()) as NetworkWlanConfig;
+									dataToProcess = this.myIob.deepDiffBetweenObjects(wlan, this.cache.wlan[wlan._id], this, tree.wlan.getKeys()) as NetworkWlanConfig;
 								}
 
 								this.cache.wlan[wlan._id] = wlan;
@@ -1005,8 +1015,8 @@ class UnifiNetwork extends utils.Adapter {
 								if (!_.isEmpty(dataToProcess)) {
 									dataToProcess._id = wlan._id;
 
-									await this.createOrUpdateDevice(idWlan, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
-									await this.createOrUpdateGenericState(idWlan, tree.wlan.get(), dataToProcess, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan, wlan, isAdapterStart);
+									await this.myIob.createOrUpdateDevice(idWlan, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob.createOrUpdateStates(idWlan, tree.wlan.get(), dataToProcess, wlan, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1043,7 +1053,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.wlanConfigEnabled) {
 				if (isAdapterStart) {
 					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'wlan' };
-					await this.createOrUpdateGenericState('wlan', tree.wlan.getGlobal(), obj, undefined, false, obj, obj, true);
+					await this.myIob.createOrUpdateStates('wlan', tree.wlan.getGlobal(), obj, obj, undefined, false, obj.name, true);
 				}
 
 				let sumClients = 0;
@@ -1090,7 +1100,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.lanConfigEnabled) {
 					if (isAdapterStart) {
-						await this.createOrUpdateChannel(idChannel, 'lan', undefined, true);
+						await this.myIob.createOrUpdateChannel(idChannel, 'lan', undefined, true);
 						data = await this.ufn.getLanConfig_V2();
 					}
 
@@ -1121,7 +1131,7 @@ class UnifiNetwork extends utils.Adapter {
 								let dataToProcess = lan;
 								if (this.cache.lan[lan._id]) {
 									// filter out unchanged properties
-									dataToProcess = myHelper.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys()) as NetworkLanConfig;
+									dataToProcess = this.myIob.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys()) as NetworkLanConfig;
 								}
 
 								this.cache.lan[lan._id] = lan;
@@ -1129,8 +1139,8 @@ class UnifiNetwork extends utils.Adapter {
 								if (!_.isEmpty(dataToProcess)) {
 									dataToProcess._id = lan._id;
 
-									await this.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart, true);
-									await this.createOrUpdateGenericState(idLan, tree.lan.get(), dataToProcess, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan, lan, isAdapterStart);
+									await this.myIob.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob.createOrUpdateStates(idLan, tree.lan.get(), dataToProcess, lan, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1166,7 +1176,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.lanConfigEnabled) {
 				if (isAdapterStart) {
 					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'lan' };
-					await this.createOrUpdateGenericState('lan', tree.lan.getGlobal(), obj, undefined, false, obj, obj, true);
+					await this.myIob.createOrUpdateStates('lan', tree.lan.getGlobal(), obj, obj, undefined, false, obj.name, true);
 				}
 
 				let sumClients = 0;
@@ -1212,7 +1222,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.firewallGroupConfigEnabled) {
 					if (isAdapterStart) {
-						await this.createOrUpdateChannel(idChannel, 'firewall group', undefined, true);
+						await this.myIob.createOrUpdateChannel(idChannel, 'firewall group', undefined, true);
 						data = await this.ufn.getFirewallGroup();
 					}
 
@@ -1236,7 +1246,7 @@ class UnifiNetwork extends utils.Adapter {
 								let dataToProcess = firewallGroup;
 								if (this.cache.firewallGroup[firewallGroup._id]) {
 									// filter out unchanged properties
-									dataToProcess = myHelper.deepDiffBetweenObjects(firewallGroup, this.cache.firewallGroup[firewallGroup._id], this, tree.firewallGroup.getKeys()) as FirewallGroup;
+									dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewallGroup[firewallGroup._id], this, tree.firewallGroup.getKeys()) as FirewallGroup;
 								}
 
 								this.cache.firewallGroup[firewallGroup._id] = firewallGroup;
@@ -1244,8 +1254,8 @@ class UnifiNetwork extends utils.Adapter {
 								if (!_.isEmpty(dataToProcess)) {
 									dataToProcess._id = firewallGroup._id;
 
-									await this.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${this.namespace}.${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
-									await this.createOrUpdateGenericState(idFirewallGroup, tree.firewallGroup.get(), dataToProcess, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup, firewallGroup, isAdapterStart);
+									await this.myIob.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${this.namespace}.${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob.createOrUpdateStates(idFirewallGroup, tree.firewallGroup.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1356,9 +1366,9 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (url && url.val) {
 					if (imgCache[url.val as string]) {
-						imgCache[url.val as string].push(myHelper.getIdWithoutLastPart(id))
+						imgCache[url.val as string].push(this.myIob.getIdWithoutLastPart(id))
 					} else {
-						imgCache[url.val as string] = [myHelper.getIdWithoutLastPart(id)]
+						imgCache[url.val as string] = [this.myIob.getIdWithoutLastPart(id)]
 					}
 				}
 			}
@@ -1410,364 +1420,15 @@ class UnifiNetwork extends utils.Adapter {
 					}
 
 					if (await this.objectExists(`${idChannel}`)) {
-						await this.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+						await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
 					}
 				}
 			}
 		} catch (error) {
-			const mac = myHelper.getIdLastPart(idChannelList[0]);
+			const mac = this.myIob.getIdLastPart(idChannelList[0]);
 
 			this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
 		}
-	}
-
-	//#endregion
-
-	//#region Device, Channel, State Handlers
-
-	/**
-	 * create or update a device object, update will only be done on adapter start
-	 * 
-	 * @param id 
-	 * @param name 
-	 * @param onlineId 
-	 * @param errorId
-	 * @param icon 
-	 * @param isAdapterStart
-	 * @param logChanges
-	 */
-	private async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string | undefined = undefined, isAdapterStart: boolean = false, logChanges: boolean = true): Promise<void> {
-		const logPrefix = '[createOrUpdateDevice]:';
-
-		try {
-			const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
-
-			const common = {
-				name: name && Object.keys(i18n).length > 1 ? i18n : name,
-				icon: icon
-			};
-
-			if (onlineId) {
-				//@ts-ignore
-				common.statusStates = {
-					onlineId: onlineId
-				}
-			}
-
-			if (errorId) {
-				//@ts-ignore
-				common.statusStates.errorId = errorId;
-			}
-
-			if (!await this.objectExists(id)) {
-				this.log.debug(`${logPrefix} creating device '${id}'`);
-				await this.setObjectAsync(id, {
-					type: 'device',
-					common: common,
-					native: {}
-				});
-			} else {
-				if (isAdapterStart) {
-					const obj = await this.getObjectAsync(id);
-
-					if (obj && obj.common) {
-						if (!myHelper.isDeviceCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
-							await this.extendObject(id, { common: common });
-
-							const diff = myHelper.deepDiffBetweenObjects(common, obj.common, this);
-							if (diff && diff.icon) {
-								diff.icon = _.truncate(diff.icon);	// reduce base64 image string for logging
-							}
-
-							this.log.debug(`${logPrefix} device updated '${id}' ${logChanges ? `(updated properties: ${JSON.stringify(diff)})` : ''}`);
-						}
-					}
-				}
-			}
-		} catch (error: any) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	/**
-	 * create or update a channel object, update will only be done on adapter start
-	 * 
-	 * @param id 
-	 * @param name 
-	 * @param icon 
-	 * @param isAdapterStart
-	 */
-	private async createOrUpdateChannel(id: string, name: string, icon: string = undefined, isAdapterStart: boolean = false): Promise<void> {
-		const logPrefix = '[createOrUpdateChannel]:';
-
-		try {
-			const i18n = name ? utils.I18n.getTranslatedObject(name) : name;
-
-			const common = {
-				name: name && Object.keys(i18n).length > 1 ? i18n : name,
-				icon: icon
-			};
-
-			if (!await this.objectExists(id)) {
-				this.log.debug(`${logPrefix} creating channel '${id}'`);
-				await this.setObjectAsync(id, {
-					type: 'channel',
-					common: common,
-					native: {}
-				});
-			} else {
-				if (isAdapterStart) {
-					const obj = await this.getObjectAsync(id);
-
-					if (obj && obj.common) {
-						if (!myHelper.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
-							await this.extendObject(id, { common: common });
-
-							const diff = myHelper.deepDiffBetweenObjects(common, obj.common, this);
-							if (diff && diff.icon) {
-								diff.icon = _.truncate(diff.icon);	// reduce base64 image string for logging
-							}
-
-							this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(diff)})`);
-						}
-					}
-				}
-			}
-		} catch (error: any) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	async createOrUpdateGenericState(channel: string, treeDefinition: { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, blacklistFilter: { id: string }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, objChannel, isAdapterStart: boolean = false, filterId = '', isChannelOnWhitelist: boolean = false): Promise<void> {
-		const logPrefix = '[createOrUpdateGenericState]:';
-
-		try {
-			if (this.connected && this.isConnected) {
-				for (const key in treeDefinition) {
-					let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
-
-					const logDetails = `${(objDevices as any)?.mac ? `mac: ${(objDevices as any)?.mac}` : (objDevices as any)?.ip ? `ip: ${(objDevices as any)?.ip}` : (objDevices as any)?._id ? `id: ${(objDevices as any)?._id}` : ''}`
-
-					try {
-						// if we have an own defined state which takes val from other property
-						const valKey = Object.hasOwn(objValues, treeDefinition[key].valFromProperty) && treeDefinition[key].valFromProperty ? treeDefinition[key].valFromProperty : key
-
-						const cond1 = (Object.hasOwn(objValues, valKey) && objValues[valKey] !== undefined) || (Object.hasOwn(treeDefinition[key], 'id') && !Object.hasOwn(treeDefinition[key], 'valFromProperty'));
-						const cond2 = Object.hasOwn(treeDefinition[key], 'iobType') && !Object.hasOwn(treeDefinition[key], 'object') && !Object.hasOwn(treeDefinition[key], 'array');
-						const cond3 = (Object.hasOwn(treeDefinition[key], 'conditionToCreateState') && treeDefinition[key].conditionToCreateState(objChannel, this) === true) || !Object.hasOwn(treeDefinition[key], 'conditionToCreateState');
-
-						// if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
-						// 	this.log.warn(`cond 1: ${cond1}`);
-						// 	this.log.warn(`cond 2: ${cond2}`);
-						// 	this.log.warn(`cond 3: ${cond3}`)
-						// 	this.log.warn(`val: ${objValues[valKey]}`);
-						// }
-
-						if (key && cond1 && cond2 && cond3) {
-							// if we have a 'iobType' property, then it's a state
-							let stateId = key;
-
-							if (Object.hasOwn(treeDefinition[key], 'id')) {
-								// if we have a custom state, use defined id
-								stateId = treeDefinition[key].id;
-							}
-
-							logMsgState = `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
-
-							if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${stateId}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${stateId}` })) || isChannelOnWhitelist || Object.hasOwn(treeDefinition[key], 'required')) {
-								if (!await this.objectExists(`${channel}.${stateId}`)) {
-									// create State
-									this.log.silly(`${logPrefix} ${objDevices?.name} - creating state '${logMsgState}'`);
-									const obj = {
-										type: 'state',
-										common: this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objDevices, logMsgState),
-										native: {}
-									};
-
-									// @ts-ignore
-									await this.setObjectAsync(`${channel}.${stateId}`, obj);
-								} else {
-									// update State if needed (only on adapter start)
-									if (isAdapterStart) {
-										const obj: ioBroker.Object = await this.getObjectAsync(`${channel}.${stateId}`);
-
-										const commonUpdated = this.getCommonGenericState(key, (treeDefinition as { [key: string]: myCommonState }), objDevices, logMsgState);
-
-										if (obj && obj.common) {
-											if (!myHelper.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
-												await this.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-												this.log.debug(`${logPrefix} ${objDevices?.name} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(myHelper.deepDiffBetweenObjects(commonUpdated, obj.common, this))})`);
-											}
-										}
-									}
-								}
-
-								if (!this.subscribedList.includes(`${channel}.${stateId}`) && ((treeDefinition[key].write && treeDefinition[key].write === true) || Object.hasOwn(treeDefinition[key], 'subscribeMe'))) {
-									// state is writeable or has subscribeMe Property -> subscribe it
-									this.log.silly(`${logPrefix} ${objDevices?.name} - subscribing state '${logMsgState}'`);
-									await this.subscribeStatesAsync(`${channel}.${stateId}`);
-
-									this.subscribedList.push(`${channel}.${stateId}`);
-								}
-
-								if (objValues && (Object.hasOwn(objValues, key) || (Object.hasOwn(objValues, treeDefinition[key].valFromProperty)))) {
-									const val = treeDefinition[key].readVal ? await treeDefinition[key].readVal(objValues[valKey], this, this.cache, objDevices, `${channel}.${stateId}`) : objValues[valKey];
-
-									let changedObj: any = undefined
-
-									if (key === 'last_seen' || key === 'first_seen' || key === 'rundate') {
-										// set lc to last_seen value
-										changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val * 1000 }, true);
-									} else {
-										changedObj = await this.setStateChangedAsync(`${channel}.${stateId}`, val, true);
-									}
-
-									if (!isAdapterStart && changedObj && Object.hasOwn(changedObj, 'notChanged') && !changedObj.notChanged) {
-										this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
-									}
-								} else {
-									if (!Object.hasOwn(treeDefinition[key], 'id')) {
-										// only report it if it's not a custom defined state
-										this.log.debug(`${logPrefix} ${objDevices?.name} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
-									}
-								}
-							} else {
-								// channel is on blacklist
-								// delete also at runtime, because some properties are only available on websocket data
-								if (await this.objectExists(`${channel}.${stateId}`)) {
-									await this.delObjectAsync(`${channel}.${stateId}`);
-
-									this.log.info(`${logPrefix} '${objDevices?.name}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
-								}
-							}
-						} else {
-							// it's a channel from type object
-							if (Object.hasOwn(treeDefinition[key], 'object') && Object.hasOwn(objValues, key)) {
-								const idChannelAppendix = Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key
-								const idChannel = `${channel}.${idChannelAppendix}`;
-
-								if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, (x) => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeDefinition[key], 'required')) {
-									await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName(objDevices, objChannel, this) : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, true);
-									await this.createOrUpdateGenericState(`${idChannel}`, treeDefinition[key].object, objValues[key], blacklistFilter, isWhiteList, objDevices, objChannel[key], isAdapterStart, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
-								} else {
-									// channel is on blacklist
-									if (await this.objectExists(idChannel)) {
-										await this.delObjectAsync(idChannel, { recursive: true });
-										this.log.info(`${logPrefix} '${objDevices?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
-									}
-								}
-							}
-
-							// it's a channel from type array
-							if (Object.hasOwn(treeDefinition[key], 'array') && Object.hasOwn(objValues, key)) {
-
-								if (objValues[key] !== null && objValues[key].length > 0) {
-									const idChannelAppendix = Object.hasOwn(treeDefinition[key], 'idChannel') ? treeDefinition[key].idChannel : key
-									const idChannel = `${channel}.${idChannelAppendix}`;
-
-									if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, (x) => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeDefinition[key], 'required')) {
-										await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeDefinition[key], 'channelName') ? treeDefinition[key].channelName(objDevices, objChannel, this) : key, Object.hasOwn(treeDefinition[key], 'icon') ? treeDefinition[key].icon : undefined, isAdapterStart);
-
-										const arrayNumberAdd = Object.hasOwn(treeDefinition[key], 'arrayStartNumber') ? treeDefinition[key].arrayStartNumber : 0
-
-										for (let i = 0; i <= objValues[key].length - 1; i++) {
-											const nr = i + arrayNumberAdd;
-
-											if (objValues[key][i] !== null && objValues[key][i] !== undefined) {
-												let idChannelArray: string | undefined = myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
-
-												if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdFromProperty')) {
-													idChannelArray = treeDefinition[key].arrayChannelIdFromProperty(objChannel[key][i], i, this);
-												} else if (Object.hasOwn(treeDefinition[key], 'arrayChannelIdPrefix')) {
-													idChannelArray = treeDefinition[key].arrayChannelIdPrefix + myHelper.zeroPad(nr, treeDefinition[key].arrayChannelIdZeroPad || 0);
-												}
-
-												if (idChannelArray !== undefined) {
-													await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeDefinition[key], 'arrayChannelNameFromProperty') ? treeDefinition[key].arrayChannelNameFromProperty(objChannel[key][i], this) : treeDefinition[key].arrayChannelNamePrefix + nr || nr.toString(), undefined, true)
-													await this.createOrUpdateGenericState(`${idChannel}.${idChannelArray}`, treeDefinition[key].array, objValues[key][i], blacklistFilter, isWhiteList, objDevices, objChannel[key][i], true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
-												}
-											}
-										}
-									} else {
-										// channel is on blacklist, wlan is comming from realtime api
-										if (await this.objectExists(idChannel)) {
-											await this.delObjectAsync(idChannel, { recursive: true });
-											this.log.info(`${logPrefix} '${objDevices?.name}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? 'it\'s not on the whitelist' : 'it\'s on the blacklist'}`);
-										}
-									}
-								}
-							}
-						}
-					} catch (error) {
-						this.log.error(`${logPrefix} [id: ${key}, ${logDetails ? `${logDetails}, ` : ''}key: ${key}] error: ${error}, stack: ${error.stack}, data: ${JSON.stringify(objValues[key])}`);
-					}
-				}
-			}
-		} catch (error) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	getCommonGenericState(id: string, treeDefinition: { [key: string]: myCommonState }, objDevices, logMsgState: string): ioBroker.StateCommon {
-		const logPrefix = '[getCommonGenericState]:';
-
-		try {
-			// i18x translation if exists
-			const i18n = utils.I18n.getTranslatedObject(treeDefinition[id].name || id);
-			const name = Object.keys(i18n).length > 1 ? i18n : treeDefinition[id].name || id;
-
-			const common: ioBroker.StateCommon = {
-				name: name,
-				//@ts-ignore -> missing in iob type defintion, 'json' is allowed e.g. admin
-				type: treeDefinition[id].iobType,
-				read: treeDefinition[id].read !== undefined ? treeDefinition[id].read : true,
-				write: treeDefinition[id].write !== undefined ? treeDefinition[id].write : false,
-				role: treeDefinition[id].role ? treeDefinition[id].role : 'state',
-			};
-
-			if (treeDefinition[id].unit) {
-				common.unit = treeDefinition[id].unit;
-			}
-
-			if (treeDefinition[id].min || treeDefinition[id].min === 0) {
-				common.min = treeDefinition[id].min;
-			}
-
-			if (treeDefinition[id].max || treeDefinition[id].max === 0) {
-				common.max = treeDefinition[id].max;
-			}
-
-			if (treeDefinition[id].step) {
-				common.step = treeDefinition[id].step;
-			}
-
-			if (treeDefinition[id].expert) {
-				common.expert = treeDefinition[id].expert;
-			}
-
-			if (treeDefinition[id].def || treeDefinition[id].def === 0 || treeDefinition[id].def === false) {
-				common.def = treeDefinition[id].def;
-			}
-
-			if (treeDefinition[id].states) {
-				common.states = treeDefinition[id].states;
-			} else if (Object.hasOwn(treeDefinition[id], 'statesFromProperty')) {
-				const statesFromProp = myHelper.getAllowedCommonStates(treeDefinition[id].statesFromProperty, objDevices);
-
-				common.states = statesFromProp;
-				this.log.debug(`${logPrefix} ${objDevices?.name} - set allowed common.states for '${logMsgState}' (from: ${treeDefinition[id].statesFromProperty})`);
-			}
-
-			if (treeDefinition[id].desc) {
-				common.desc = treeDefinition[id].desc;
-			}
-
-			return common;
-		} catch (error) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-
-		return undefined;
 	}
 
 	//#endregion
@@ -1951,8 +1612,8 @@ class UnifiNetwork extends utils.Adapter {
 							if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: event.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: event.mac }))) {
 								this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac]?.name}'`);
 
-								await this.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${this.namespace}.${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
-								await this.createOrUpdateGenericState(`${idChannel}.${event.mac}`, tree.client.get(), event as myNetworkClient, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, this.cache.clients[event.mac], this.cache.clients[event.mac], true);
+								await this.myIob.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${this.namespace}.${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
+								await this.myIob.createOrUpdateStates(`${idChannel}.${event.mac}`, tree.client.get(), event as myNetworkClient, this.cache.clients[event.mac], this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, this.cache.clients[event.mac].name, true);
 							}
 						}
 					}
@@ -2023,26 +1684,6 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 			if (this.config.devicesEnabled) {
 				await eventHandler.device.speedTest(event, this, this.cache);
-			}
-		} catch (error) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	private findMissingTranslation(): void {
-		const logPrefix = '[findMissingTranslation]:';
-
-		try {
-			if (this.log.level === 'debug') {
-				for (const key in tree) {
-					if (_.isObject(tree[key]) && !key.includes('events')) {
-						const result = myHelper.tree2Translation((tree[key] as any).get(), this, utils.I18n);
-
-						if (result) {
-							this.log.debug(`${logPrefix} ${key} - missiing translation ${JSON.stringify(result)}`);
-						}
-					}
-				}
 			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

@@ -1,10 +1,11 @@
+import moment from "moment";
+
 import type { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
 import { WebSocketEvent, type myCache, type myNetworkClient } from "./myTypes.js";
 import * as myHelper from './helper.js';
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
-import moment from "moment";
 import type { FirewallGroup } from "./api/network-types-firewall-group.js";
 
 const disconnectDebounceList = {};
@@ -333,7 +334,7 @@ export const eventHandler = {
         },
     },
     wlanConf: {
-        async deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
+        async deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.myAdapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.wlanConf.deleted]:'
 
             try {
@@ -351,7 +352,7 @@ export const eventHandler = {
 
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {
-                                    const idChannel = myHelper.getIdWithoutLastPart(id);
+                                    const idChannel = adapter.myIob.getIdWithoutLastPart(id);
 
                                     if (await adapter.objectExists(idChannel)) {
                                         await adapter.delObjectAsync(idChannel, { recursive: true });

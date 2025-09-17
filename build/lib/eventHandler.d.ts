@@ -24,7 +24,7 @@ export declare const eventHandler: {
         } | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };
     wlanConf: {
-        deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+        deleted(meta: NetworkEventMeta, data: NetworkWlanConfig[] | any, adapter: ioBroker.myAdapter, cache: myCache): Promise<void>;
     };
     lanConf: {
         deleted(meta: NetworkEventMeta, data: NetworkLanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;

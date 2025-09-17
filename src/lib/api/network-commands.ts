@@ -1,7 +1,6 @@
 import { ApiEndpoints, type NetworkApi } from "./network-api.js";
 import type { NetworkLogging } from "./network-logging.js";
 import type { NetworkDevice } from "./network-types-device.js";
-import * as myHelper from '../helper.js';
 import type { NetworkClient } from "./network-types-client.js";
 import type { NetworkWlanConfig } from "./network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./network-types-lan-config.js";
@@ -9,11 +8,11 @@ import type { FirewallGroup } from "./network-types-firewall-group.js";
 
 export class NetworkCommands {
     private ufn: NetworkApi;
-    private adapter: ioBroker.Adapter;
+    private adapter: ioBroker.myAdapter;
     private log: NetworkLogging;
     private logPrefixCls = `NetworkCommands`
 
-    constructor(ufn: NetworkApi, adapter: ioBroker.Adapter) {
+    constructor(ufn: NetworkApi, adapter: ioBroker.myAdapter) {
         this.ufn = ufn;
         this.adapter = adapter;
         this.log = adapter.log;
@@ -72,7 +71,7 @@ export class NetworkCommands {
         runSpeedtest: async (device: NetworkDevice, id: string): Promise<boolean> => {
             const logPrefix = `[${this.logPrefixCls}.Devices.runSpeedtest]`;
 
-            const wan_interface = myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id));
+            const wan_interface = this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id));
             const interface_name = device[wan_interface].ifname;
 
             const payload: any = { cmd: 'speedtest' }
@@ -96,7 +95,7 @@ export class NetworkCommands {
                 const logPrefix = `[${this.logPrefixCls}.Devices.Port.cyclePoePower]`;
 
                 try {
-                    const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+                    const port_idx: number = parseInt(this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
                     const port_table = device.port_table;
 
                     if (port_table && port_table.length > 0) {
@@ -125,7 +124,7 @@ export class NetworkCommands {
             switchPoe: async (device: NetworkDevice, id: string, val: boolean): Promise<boolean> => {
                 const logPrefix = `[${this.logPrefixCls}.Devices.Port.port_switchPoe]`;
 
-                const port_idx: number = parseInt(myHelper.getIdLastPart(myHelper.getIdWithoutLastPart(id)).replace('port_', ''));
+                const port_idx: number = parseInt(this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
                 const port_overrides = device.port_overrides;
 
                 if (port_overrides && port_overrides.length > 0) {

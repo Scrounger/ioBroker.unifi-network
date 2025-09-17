@@ -1,7 +1,7 @@
+import moment from "moment";
 import { WebSocketEvent } from "./myTypes.js";
 import * as myHelper from './helper.js';
 import * as tree from './tree/index.js';
-import moment from "moment";
 const disconnectDebounceList = {};
 export const eventHandler = {
     device: {
@@ -309,7 +309,7 @@ export const eventHandler = {
                             const devices = await adapter.getStatesAsync(`${tree.device.idChannel}.*.wlan.*.id`);
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {
-                                    const idChannel = myHelper.getIdWithoutLastPart(id);
+                                    const idChannel = adapter.myIob.getIdWithoutLastPart(id);
                                     if (await adapter.objectExists(idChannel)) {
                                         await adapter.delObjectAsync(idChannel, { recursive: true });
                                         adapter.log.debug(`${logPrefix} wlan '${wlan.name}' deleted from device (channel: ${idChannel})`);

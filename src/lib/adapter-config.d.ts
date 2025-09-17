@@ -1,4 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
+import { myIob } from './myIob.js'
+import { NetworkApi } from './api/network-api.js';
+import { WriteValFunction, myCache } from './myTypes.js'
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -55,6 +58,13 @@ declare global {
 			firewallGroupBlackList: { id: string }[];
 			firewallGroupStatesIsWhiteList: boolean;
 			firewallGroupStatesBlackList: { id: string }[];
+		}
+
+		interface myAdapter extends ioBroker.Adapter {
+			// Functions must be public
+			ufn: NetworkApi;
+			myIob: myIob;
+			cache: myCache;
 		}
 	}
 }

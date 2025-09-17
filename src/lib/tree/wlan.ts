@@ -1,14 +1,13 @@
-import type { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
-import * as myHelper from '../helper.js';
+import type { myTreeDefinition } from "../myTypes.js";
 import type { NetworkWlanConfig } from "../api/network-types-wlan-config.js";
-import type { NetworkDevice } from "../api/network-types-device.js";
+import * as myHelper from '../helper.js';
 
 export namespace wlan {
     let keys: string[] = undefined;
 
     export const idChannel = 'wlan';
 
-    export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
+    export function get(): { [key: string]: myTreeDefinition } {
         return {
             current_access_point_count: {
                 id: 'access_point_count',
@@ -34,7 +33,7 @@ export namespace wlan {
                 id: 'connected_clients',
                 iobType: 'number',
                 name: 'connected clients',
-                conditionToCreateState(objDevice: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                conditionToCreateState(objDevice: NetworkWlanConfig, objChannel: NetworkWlanConfig, adapter: ioBroker.myAdapter): boolean {
                     return !objDevice?.is_guest
                 },
                 valFromProperty: 'current_client_count',
@@ -43,7 +42,7 @@ export namespace wlan {
                 id: 'connected_clients_peak',
                 iobType: 'number',
                 name: 'peak of connected clients',
-                conditionToCreateState(objDevice: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                conditionToCreateState(objDevice: NetworkWlanConfig, objChannel: NetworkWlanConfig, adapter: ioBroker.myAdapter): boolean {
                     return !objDevice?.is_guest
                 },
             },
@@ -51,7 +50,7 @@ export namespace wlan {
                 id: 'connected_guests',
                 iobType: 'number',
                 name: 'connected guests',
-                conditionToCreateState(objDevice: NetworkWlanConfig, adapter: ioBroker.Adapter): boolean {
+                conditionToCreateState(objDevice: NetworkWlanConfig, objChannel: NetworkWlanConfig, adapter: ioBroker.myAdapter): boolean {
                     return objDevice?.is_guest
                 },
                 valFromProperty: 'current_client_count',
@@ -61,14 +60,14 @@ export namespace wlan {
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',
-                readVal(val: number, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkWlanConfig, id: string): ioBroker.StateValue {
                     return val >= 0 ? val : 0
                 },
             },
         }
     }
 
-    export function getGlobal(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
+    export function getGlobal(): { [key: string]: myTreeDefinition } {
         return {
             connected_clients: {
                 id: 'connected_clients',

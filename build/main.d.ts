@@ -5,9 +5,11 @@ import type { NetworkDevice } from './lib/api/network-types-device.js';
 import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
 import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
 import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
-import { type ConnectedClients, type myCache, type myCommonChannelArray, type myCommonState, type myCommoneChannelObject, type myNetworkClient } from './lib/myTypes.js';
+import { type myCache, type myNetworkClient } from './lib/myTypes.js';
+import { myIob } from './lib/myIob.js';
 declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi;
+    myIob: myIob;
     isConnected: boolean;
     aliveTimeout: ioBroker.Timeout | undefined;
     pingTimeout: ioBroker.Timeout | undefined;
@@ -19,6 +21,7 @@ declare class UnifiNetwork extends utils.Adapter {
     eventListener: (event: NetworkEvent) => Promise<void>;
     pongListener: () => void;
     eventsToIgnore: string[];
+    statesUsingValAsLastChanged: string[];
     constructor(options?: Partial<utils.AdapterOptions>);
     /**
      * Is called when databases are connected and adapter received configuration.
@@ -88,35 +91,6 @@ declare class UnifiNetwork extends utils.Adapter {
      */
     downloadImage(url: string | null, idChannelList: string[]): Promise<void>;
     /**
-     * create or update a device object, update will only be done on adapter start
-     *
-     * @param id
-     * @param name
-     * @param onlineId
-     * @param errorId
-     * @param icon
-     * @param isAdapterStart
-     * @param logChanges
-     */
-    private createOrUpdateDevice;
-    /**
-     * create or update a channel object, update will only be done on adapter start
-     *
-     * @param id
-     * @param name
-     * @param icon
-     * @param isAdapterStart
-     */
-    private createOrUpdateChannel;
-    createOrUpdateGenericState(channel: string, treeDefinition: {
-        [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray;
-    } | myCommonState, objValues: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, blacklistFilter: {
-        id: string;
-    }[], isWhiteList: boolean, objDevices: NetworkDevice | myNetworkClient | NetworkWlanConfig | NetworkLanConfig | ConnectedClients | FirewallGroup, objChannel: any, isAdapterStart?: boolean, filterId?: string, isChannelOnWhitelist?: boolean): Promise<void>;
-    getCommonGenericState(id: string, treeDefinition: {
-        [key: string]: myCommonState;
-    }, objDevices: any, logMsgState: string): ioBroker.StateCommon;
-    /**
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */
     onPongMessage(): void;
@@ -128,7 +102,6 @@ declare class UnifiNetwork extends utils.Adapter {
     onNetworkLanConfEvent(event: NetworkEventLanConfig): Promise<void>;
     onNetworkFirewallGroupEvent(event: NetworkEventFirewallGroup): Promise<void>;
     onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void>;
-    private findMissingTranslation;
 }
 export default function startAdapter(options: Partial<utils.AdapterOptions> | undefined): UnifiNetwork;
 export {};

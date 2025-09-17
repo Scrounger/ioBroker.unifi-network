@@ -14,7 +14,7 @@ export var client;
             //     name: 'client is authorized',
             //     read: true,
             //     write: true,
-            //     conditionToCreateState(objDevice: myNetworkClient, adapter: ioBroker.Adapter): boolean {
+            //     conditionToCreateState(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.myAdapter): boolean {
             //         // only wired and wireless clients
             //         return objDevice.is_guest;
             //     },
@@ -34,7 +34,7 @@ export var client;
                 iobType: 'string',
                 name: 'channel name',
                 valFromProperty: 'radio_name',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
@@ -57,21 +57,21 @@ export var client;
                 subscribeMe: true,
                 valFromProperty: 'fingerprint',
                 required: true,
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 },
-                readVal(val, adapter, cache, deviceOrClient, id) {
-                    if (deviceOrClient.fingerprint && adapter.config.clientImageDownload) {
-                        if (deviceOrClient.unifi_device_info && deviceOrClient.unifi_device_info.icon_filename) {
-                            return `https://static.ui.com/fingerprint/ui/icons/${deviceOrClient.unifi_device_info.icon_filename}_257x257.png?q=100`;
+                readVal(val, adapter, device, id) {
+                    if (device.fingerprint && adapter.config.clientImageDownload) {
+                        if (device.unifi_device_info && device.unifi_device_info.icon_filename) {
+                            return `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`;
                         }
-                        else if (Object.prototype.hasOwnProperty.call(deviceOrClient.fingerprint, 'computed_engine')) {
-                            if (Object.prototype.hasOwnProperty.call(deviceOrClient.fingerprint, 'dev_id_override')) {
-                                return `https://static.ui.com/fingerprint/${deviceOrClient.fingerprint.computed_engine}/${deviceOrClient.fingerprint.dev_id_override}_257x257.png?q=100`;
+                        else if (Object.prototype.hasOwnProperty.call(device.fingerprint, 'computed_engine')) {
+                            if (Object.prototype.hasOwnProperty.call(device.fingerprint, 'dev_id_override')) {
+                                return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id_override}_257x257.png?q=100`;
                             }
-                            else if (Object.prototype.hasOwnProperty.call(deviceOrClient.fingerprint, 'dev_id')) {
-                                return `https://static.ui.com/fingerprint/${deviceOrClient.fingerprint.computed_engine}/${deviceOrClient.fingerprint.dev_id}_257x257.png?q=100`;
+                            else if (Object.prototype.hasOwnProperty.call(device.fingerprint, 'dev_id')) {
+                                return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`;
                             }
                         }
                     }
@@ -82,7 +82,7 @@ export var client;
                 id: 'image',
                 iobType: 'string',
                 name: 'base64 image',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 }
@@ -107,9 +107,9 @@ export var client;
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
                 required: true,
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     const diff = moment().diff(val * 1000, 'seconds');
-                    if (deviceOrClient.type !== 'VPN') {
+                    if (device.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
                     }
                     else {
@@ -126,7 +126,7 @@ export var client;
                 id: 'uplink_mac',
                 iobType: 'string',
                 name: 'mac address of the connected access point or switch',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 }
@@ -135,7 +135,7 @@ export var client;
                 id: 'uplink_name',
                 iobType: 'string',
                 name: 'name of the connected access point or switch',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 }
@@ -144,7 +144,7 @@ export var client;
                 id: 'uplink_port',
                 iobType: 'number',
                 name: 'port of the connected switch',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired clients
                     return (objDevice?.is_wired && objDevice?.type === undefined) || objDevice?.type === "WIRED";
                 }
@@ -158,7 +158,7 @@ export var client;
                 id: 'model',
                 iobType: 'string',
                 name: 'model name',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 },
@@ -178,7 +178,7 @@ export var client;
                 id: 'network_members_group',
                 iobType: 'string',
                 name: 'network member groups',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return JSON.stringify(val);
                 },
             },
@@ -196,7 +196,7 @@ export var client;
                 iobType: 'string',
                 name: 'radio name',
                 valFromProperty: 'radio_proto',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     if (val) {
                         if (val === 'ax') {
                             return 'WiFi 6';
@@ -227,7 +227,7 @@ export var client;
                 id: 'reconnect',
                 iobType: 'boolean',
                 name: 'reconnect client',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wireless clients
                     return (!objDevice?.is_wired && objDevice?.type === undefined) || objDevice?.type === 'WIRELESS';
                 },
@@ -238,7 +238,7 @@ export var client;
             remote_ip: {
                 iobType: 'string',
                 name: 'remote ip',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wireless clients
                     return objDevice?.type === 'VPN';
                 },
@@ -255,7 +255,7 @@ export var client;
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -263,7 +263,7 @@ export var client;
                 iobType: 'number',
                 name: 'Rx Rate',
                 unit: 'mbps',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return Math.round(val / 1000);
                 }
             },
@@ -276,7 +276,7 @@ export var client;
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -284,7 +284,7 @@ export var client;
                 iobType: 'number',
                 name: 'Tx Rate',
                 unit: 'mbps',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return Math.round(val / 1000);
                 }
             },
@@ -307,7 +307,7 @@ export var client;
                 id: 'network_vlan',
                 iobType: 'number',
                 name: 'VLAN number',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 },
@@ -317,7 +317,7 @@ export var client;
                 iobType: 'number',
                 name: 'wired speed',
                 unit: 'mbps',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired clients
                     return (objDevice?.is_wired && objDevice?.type === undefined) || objDevice?.type === "WIRED";
                 },
@@ -327,7 +327,7 @@ export var client;
                 iobType: 'number',
                 name: 'experience',
                 unit: '%',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wireless clients
                     return (!objDevice?.is_wired && objDevice?.type === undefined) || objDevice?.type === 'WIRELESS';
                 },
@@ -337,7 +337,7 @@ export var client;
                 iobType: 'number',
                 name: 'TX Retries',
                 unit: '%',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wireless clients
                     return (!objDevice?.is_wired && objDevice?.type === undefined) || objDevice?.type === 'WIRELESS';
                 },

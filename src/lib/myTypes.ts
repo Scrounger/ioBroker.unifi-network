@@ -1,57 +1,71 @@
 import type { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client.js";
-import type { NetworkDevice } from "./api/network-types-device.js";
+import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
 import type { NetworkDeviceModels } from './api/network-types-device-models.js'
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { FirewallGroup } from "./api/network-types-firewall-group.js";
 
-export interface myCommonState {
-    id?: string,
-    iobType: ioBroker.CommonType,
-    name?: string,
-    role?: string,
-    read?: boolean,
-    write?: boolean,
-    unit?: string,
-    min?: number,
-    max?: number,
-    step?: number,
-    states?: { [key: string]: string } | { [key: number]: string },
-    expert?: true,
-    icon?: string,
-    def?: ioBroker.StateValue,
-    desc?: string,
+export type myTreeData =
+    NetworkDevice | NetworkDevicePortTable | NetworkDeviceRadioTable | NetworkDeviceRadioTableStat | NetworkDeviceVapTable | NetworkDeviceStorage | NetworkDeviceWan | NetworkDeviceWanUptimeStats |
+    NetworkClient | myNetworkClient | ConnectedClients |
+    NetworkLanConfig |
+    NetworkWlanConfig |
+    FirewallGroup;
 
-    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue | Promise<ioBroker.StateValue>,
-    writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>,
+type ReadValFunction = (val: any, adapter: ioBroker.Adapter | ioBroker.myAdapter, device: myTreeData, id: string) => ioBroker.StateValue | Promise<ioBroker.StateValue>
+export type WriteValFunction = (val: ioBroker.StateValue, id?: string, device?: myTreeData, adapter?: ioBroker.Adapter | ioBroker.myAdapter) => any | Promise<any>;
+type ConditionToCreateStateFunction = (objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => boolean;
 
-    valFromProperty?: string                                        // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be regoniczed
-    statesFromProperty?: string                                     // ToDo: perhaps can be removed
+export type myTreeDefinition = myTreeState | myTreeObject | myTreeArray;
 
-    conditionToCreateState?(objDevice: any, adapter: ioBroker.Adapter): boolean     // condition to create state
-
-    subscribeMe?: true                                              // subscribe
-    required?: true                                                 // required, can not be blacklisted
-}
-
-export interface myCommoneChannelObject {
-    idChannel?: string;
-    channelName?(objDevice: NetworkDevice | myNetworkClient, objChannel: any, adapter: ioBroker.Adapter): string;
+export interface myTreeState {
+    id?: string;
+    iobType: ioBroker.CommonType;
+    name?: string;
+    role?: string;
+    read?: boolean;
+    write?: boolean;
+    unit?: string;
+    min?: number;
+    max?: number;
+    step?: number;
+    states?: Record<string, string> | string[] | string;
+    expert?: true;
     icon?: string;
-    object: { [key: string]: myCommonState | myCommoneChannelObject; };
+    def?: ioBroker.StateValue;
+    desc?: string;
+
+    readVal?: ReadValFunction;
+    writeVal?: WriteValFunction;
+
+    valFromProperty?: string; // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be regoniczed
+    statesFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): Record<string, string> | string[] | string; // ToDo: perhaps can be removed
+
+    conditionToCreateState?: ConditionToCreateStateFunction // condition to create state
+
+    subscribeMe?: true; // subscribe
+    required?: true; // required, can not be blacklisted
 }
 
-export interface myCommonChannelArray {
+export interface myTreeObject {
     idChannel?: string;
-    channelName?(objDevice: NetworkDevice | myNetworkClient, objChannel: any, adapter: ioBroker.Adapter): string;
-    icon?: string,
-    arrayChannelIdPrefix?: string,                                                                  // Array item id get a prefix e.g. myPrefix_0
-    arrayChannelIdZeroPad?: number,                                                                 // Array item id get a padding for the number
-    arrayChannelIdFromProperty?(objDevice: any, i: number, adapter: ioBroker.Adapter): string,      // Array item id is taken from a property in the corresponding tree
-    arrayChannelNamePrefix?: string,                                                                // Array item common.name get a prefix e.g. myPrefix_0
-    arrayChannelNameFromProperty?(objDevice: any, adapter: ioBroker.Adapter): string,               // Array item common.name is taken from a property in the corresponding tree
-    arrayStartNumber?: number,                                                                      // Array custom start number of array
-    array: { [key: string]: myCommonState; },
+    name?: string | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string);
+    icon?: string;
+    object: { [key: string]: myTreeDefinition };
+    conditionToCreateState?: ConditionToCreateStateFunction // condition to create state
+}
+
+export interface myTreeArray {
+    idChannel?: string;
+    name?: string;
+    icon?: string;
+    arrayChannelIdPrefix?: string; // Array item id get a prefix e.g. myPrefix_0
+    arrayChannelIdZeroPad?: number; // Array item id get a padding for the number
+    arrayChannelIdFromProperty?(objDevice: myTreeData, objChannel: myTreeData, i: number, adapter: ioBroker.Adapter | ioBroker.myAdapter): string; // Array item id is taken from a property in the corresponding tree
+    arrayChannelNamePrefix?: string; // Array item common.name get a prefix e.g. myPrefix_0
+    arrayChannelNameFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): string; // Array item common.name is taken from a property in the corresponding tree
+    arrayStartNumber?: number; // Array custom start number of array
+    array: { [key: string]: myTreeDefinition };
 }
 
 export interface myNetworkClient extends NetworkClient {

@@ -67,7 +67,7 @@ export declare class NetworkApi extends EventEmitter {
     private password;
     private username;
     private _eventsWs;
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.Adapter);
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter);
     login(): Promise<boolean>;
     private loginController;
     /**

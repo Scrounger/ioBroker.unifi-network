@@ -92,7 +92,7 @@ export class NetworkApi extends EventEmitter {
 
     private _eventsWs: WebSocket | null;
 
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.Adapter) {
+    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter) {
         // Initialize our parent.
         super();
 

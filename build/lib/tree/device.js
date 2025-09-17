@@ -1,16 +1,16 @@
 import _ from 'lodash';
 import * as myHelper from '../helper.js';
 export var device;
-(function (device) {
+(function (device_1) {
     let keys = undefined;
-    device.idChannel = 'devices';
+    device_1.idChannel = 'devices';
     const _WAN_PROPERTIES = {
         current_download: {
             iobType: 'number',
             name: 'current download rate',
             unit: 'Mbps',
             valFromProperty: 'rx_rate',
-            readVal(val, adapter, cache, deviceOrClient, id) {
+            readVal(val, adapter, device, id) {
                 return Math.round(val / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -19,7 +19,7 @@ export var device;
             name: 'current upload rate',
             unit: 'Mbps',
             valFromProperty: 'tx_rate',
-            readVal(val, adapter, cache, deviceOrClient, id) {
+            readVal(val, adapter, device, id) {
                 return Math.round(val / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -43,7 +43,7 @@ export var device;
             iobType: 'number',
             name: 'RX Bytes',
             unit: 'GB',
-            readVal(val, adapter, cache, deviceOrClient, id) {
+            readVal(val, adapter, device, id) {
                 return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -51,7 +51,7 @@ export var device;
             iobType: 'number',
             name: 'TX Bytes',
             unit: 'GB',
-            readVal(val, adapter, cache, deviceOrClient, id) {
+            readVal(val, adapter, device, id) {
                 return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -84,7 +84,7 @@ export var device;
             iobType: 'number',
             name: 'availability',
             unit: '%',
-            readVal(val, adapter, cache, deviceOrClient, id) {
+            readVal(val, adapter, device, id) {
                 return Math.round(val);
             }
         },
@@ -94,9 +94,9 @@ export var device;
             name: 'uptime',
             unit: 's',
             def: 0,
-            async readVal(val, adapter, cache, deviceOrClient, id) {
+            async readVal(val, adapter, device, id) {
                 // if downtime increase, isp connection is down
-                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                const isOnlineId = `${adapter.myIob.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
                 if (await adapter.objectExists(isOnlineId)) {
                     await adapter.setStateChangedAsync(isOnlineId, false, true);
                 }
@@ -114,9 +114,9 @@ export var device;
             name: 'uptime',
             unit: 's',
             def: 0,
-            async readVal(val, adapter, cache, deviceOrClient, id) {
+            async readVal(val, adapter, device, id) {
                 // if uptime increase, isp connection is up
-                const isOnlineId = `${myHelper.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                const isOnlineId = `${adapter.myIob.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
                 if (await adapter.objectExists(isOnlineId)) {
                     await adapter.setStateChangedAsync(isOnlineId, true, true);
                 }
@@ -168,7 +168,7 @@ export var device;
                 id: 'disabled',
                 iobType: 'boolean',
                 name: 'access point is disabled',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wireless clients
                     return objDevice?.is_access_point;
                 },
@@ -187,7 +187,7 @@ export var device;
                 name: 'device reported errors',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return val === 6 || val === 9;
                 },
             },
@@ -198,9 +198,9 @@ export var device;
                 subscribeMe: true,
                 valFromProperty: 'model',
                 required: true,
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     if (val && adapter.config.deviceImageDownload) {
-                        const find = _.find(cache.deviceModels, (x) => x.model_name.includes(val));
+                        const find = _.find(adapter.cache.deviceModels, (x) => x.model_name.includes(val));
                         if (find) {
                             return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.default_image_id}.png&w=256?q=100`;
                         }
@@ -224,7 +224,7 @@ export var device;
                 name: 'is device online',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return val !== 0 && val !== 6 && val !== 9;
                 },
             },
@@ -264,7 +264,7 @@ export var device;
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -285,14 +285,12 @@ export var device;
             },
             port_table: {
                 idChannel: 'ports',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'port table';
+                name: 'port table',
+                arrayChannelIdFromProperty(objDevice, objChannel, i, adapter) {
+                    return `port_${myHelper.zeroPad(objChannel?.port_idx, 2)}`;
                 },
-                arrayChannelIdFromProperty(objDevice, i, adapter) {
-                    return `port_${myHelper.zeroPad(objDevice?.port_idx, 2)}`;
-                },
-                arrayChannelNameFromProperty(objDevice, adapter) {
-                    return objDevice.name;
+                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                    return objChannel.name;
                 },
                 array: {
                     name: {
@@ -311,14 +309,14 @@ export var device;
                         id: 'poe_enable',
                         iobType: 'boolean',
                         name: 'POE enabled',
-                        conditionToCreateState(objDevice, adapter) {
+                        conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
-                            return objDevice?.port_poe === true;
+                            return objChannel?.port_poe === true;
                         },
                         valFromProperty: 'poe_mode',
                         read: true,
                         write: true,
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return val === 'auto';
                         }
                     },
@@ -329,20 +327,20 @@ export var device;
                         read: false,
                         write: true,
                         role: 'button',
-                        conditionToCreateState(objDevice, adapter) {
+                        conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
-                            return objDevice?.port_poe === true;
+                            return objChannel?.port_poe === true;
                         },
                     },
                     poe_power: {
                         iobType: 'number',
                         name: 'POE power consumption',
                         unit: 'W',
-                        conditionToCreateState(objDevice, adapter) {
+                        conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
-                            return objDevice?.port_poe === true;
+                            return objChannel?.port_poe === true;
                         },
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return parseFloat(val);
                         }
                     },
@@ -350,11 +348,11 @@ export var device;
                         iobType: 'number',
                         name: 'POE voltage',
                         unit: 'V',
-                        conditionToCreateState(objDevice, adapter) {
+                        conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
-                            return objDevice?.port_poe === true;
+                            return objChannel?.port_poe === true;
                         },
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return parseFloat(val);
                         }
                     },
@@ -366,16 +364,16 @@ export var device;
                         iobType: 'number',
                         name: 'RX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objDevice, adapter) {
+                        conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
-                            return objDevice?.satisfaction >= 0 ? true : false;
+                            return objChannel?.satisfaction >= 0 ? true : false;
                         },
                         unit: '%'
                     },
@@ -388,7 +386,7 @@ export var device;
                         iobType: 'number',
                         name: 'TX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     }
@@ -396,11 +394,9 @@ export var device;
             },
             radio_table: {
                 idChannel: 'radio',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'WLAN Radio';
-                },
-                arrayChannelNameFromProperty(objDevice, adapter) {
-                    return myHelper.radio_nameToFrequency(objDevice.name, adapter);
+                name: 'WLAN Radio',
+                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                    return myHelper.radio_nameToFrequency(objChannel.name, adapter);
                 },
                 array: {
                     channel: {
@@ -412,7 +408,7 @@ export var device;
                         iobType: 'string',
                         name: 'channel name',
                         valFromProperty: 'name',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
@@ -445,11 +441,9 @@ export var device;
             },
             radio_table_stats: {
                 idChannel: 'radio',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'WLAN Radio';
-                },
-                arrayChannelNameFromProperty(objDevice, adapter) {
-                    return myHelper.radio_nameToFrequency(objDevice?.name, adapter);
+                name: 'WLAN Radio',
+                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                    return myHelper.radio_nameToFrequency(objChannel?.name, adapter);
                 },
                 array: {
                     channel_utilization: {
@@ -485,9 +479,9 @@ export var device;
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objDevice, adapter) {
+                        conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
-                            return objDevice?.satisfaction >= 0 ? true : false;
+                            return objChannel?.satisfaction >= 0 ? true : false;
                         },
                         unit: '%'
                     },
@@ -509,18 +503,16 @@ export var device;
             satisfaction: {
                 iobType: 'number',
                 name: 'satisfaction',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     // only create state if it's a poe port
                     return objDevice?.satisfaction >= 0 ? true : false;
                 },
                 unit: '%'
             },
             storage: {
-                channelName(objDevice, objChannel, adapter) {
-                    return 'storage';
-                },
-                arrayChannelNameFromProperty(objDevice, adapter) {
-                    return objDevice?.name;
+                name: 'storage',
+                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                    return objChannel?.name;
                 },
                 array: {
                     'mount_point': {
@@ -535,7 +527,7 @@ export var device;
                         iobType: 'number',
                         name: 'size',
                         unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -547,7 +539,7 @@ export var device;
                         iobType: 'number',
                         name: 'used',
                         unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     }
@@ -555,35 +547,31 @@ export var device;
             },
             "system-stats": {
                 idChannel: 'system',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'system statistics';
-                },
+                name: 'system statistics',
                 object: {
                     cpu: {
                         iobType: 'number',
                         unit: '%',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return parseFloat(val);
                         },
                     },
                     mem: {
                         iobType: 'number',
                         unit: '%',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return parseFloat(val);
                         },
                     }
                 }
             },
             temperatures: {
-                channelName(objDevice, objChannel, adapter) {
-                    return 'temperature';
+                name: 'temperature',
+                arrayChannelIdFromProperty(objDevice, objChannel, i, adapter) {
+                    return objChannel?.name;
                 },
-                arrayChannelIdFromProperty(objDevice, i, adapter) {
-                    return objDevice?.name;
-                },
-                arrayChannelNameFromProperty(objDevice, adapter) {
-                    return objDevice?.name;
+                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                    return objChannel?.name;
                 },
                 array: {
                     type: {
@@ -594,7 +582,7 @@ export var device;
                         iobType: 'number',
                         name: 'value',
                         unit: '°C',
-                        readVal: function (val, adapter, cache, deviceOrClient) {
+                        readVal: function (val, adapter, device, id) {
                             return Math.round(val * 10) / 10;
                         },
                     },
@@ -606,7 +594,7 @@ export var device;
                 name: 'temperature',
                 unit: '°C',
                 valFromProperty: 'general_temperature',
-                readVal: function (val, adapter, cache, deviceOrClient, id) {
+                readVal: function (val, adapter, device, id) {
                     return Math.round(val * 10) / 10;
                 },
             },
@@ -614,7 +602,7 @@ export var device;
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -638,9 +626,7 @@ export var device;
                 role: 'button'
             },
             uplink: {
-                channelName(objDevice, objChannel, adapter) {
-                    return 'uplink device';
-                },
+                name: 'uplink device',
                 object: {
                     // Ip is same as from device, it's not the ip of the uplink device
                     // ip: {
@@ -684,19 +670,17 @@ export var device;
             },
             vap_table: {
                 idChannel: 'wlan',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'WLAN Network Statistics';
-                },
-                arrayChannelIdFromProperty(objDevice, i, adapter) {
-                    if (objDevice?.id) {
-                        return `${objDevice?.id}_${objDevice?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
+                name: 'WLAN Network Statistics',
+                arrayChannelIdFromProperty(objDevice, objChannel, i, adapter) {
+                    if (objChannel?.id) {
+                        return `${objChannel?.id}_${objChannel?.radio_name.replace('wifi', '').replace('ra0', '0').replace('rai0', '1')}`;
                     }
                     else {
                         return undefined;
                     }
                 },
-                arrayChannelNameFromProperty(objDevice, adapter) {
-                    return `${objDevice?.essid} - ${myHelper.radio_nameToFrequency(objDevice?.radio_name, adapter)}`;
+                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                    return `${objChannel?.essid} - ${myHelper.radio_nameToFrequency(objChannel?.radio_name, adapter)}`;
                 },
                 array: {
                     avg_client_signal: {
@@ -713,7 +697,7 @@ export var device;
                         iobType: 'string',
                         name: 'channel frequency',
                         valFromProperty: 'radio_name',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
@@ -721,8 +705,8 @@ export var device;
                         id: 'connected_clients',
                         iobType: 'number',
                         name: 'connected clients',
-                        conditionToCreateState(objDevice, adapter) {
-                            return !objDevice?.is_guest;
+                        conditionToCreateState(objDevice, objChannel, adapter) {
+                            return !objChannel?.is_guest;
                         },
                         valFromProperty: 'num_sta',
                     },
@@ -730,8 +714,8 @@ export var device;
                         id: 'connected_guests',
                         iobType: 'number',
                         name: 'connected guests',
-                        conditionToCreateState(objDevice, adapter) {
-                            return objDevice?.is_guest;
+                        conditionToCreateState(objDevice, objChannel, adapter) {
+                            return objChannel?.is_guest;
                         },
                         valFromProperty: 'num_sta',
                     },
@@ -753,7 +737,7 @@ export var device;
                         iobType: 'number',
                         name: 'RX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -761,7 +745,7 @@ export var device;
                         iobType: 'number',
                         name: 'satisfaction',
                         unit: '%',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return val >= 0 ? val : 0;
                         },
                     },
@@ -769,7 +753,7 @@ export var device;
                         iobType: 'number',
                         name: 'TX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, cache, deviceOrClient, id) {
+                        readVal(val, adapter, device, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -777,20 +761,18 @@ export var device;
             },
             active_geo_info: {
                 idChannel: 'isp',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'internet service provider';
-                },
+                name: 'internet service provider',
                 object: {
                     WAN: {
                         idChannel: 'wan1',
-                        channelName(objDevice, objChannel, adapter) {
+                        name(objDevice, objChannel, adapter) {
                             return objChannel.isp_name;
                         },
                         object: _ISP_GEO_INFO_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
-                        channelName(objDevice, objChannel, adapter) {
+                        name(objDevice, objChannel, adapter) {
                             return objChannel.isp_name;
                         },
                         object: _ISP_GEO_INFO_PROPERTIES
@@ -799,20 +781,18 @@ export var device;
             },
             uptime_stats: {
                 idChannel: 'isp',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'internet service provider';
-                },
+                name: 'internet service provider',
                 object: {
                     WAN: {
                         idChannel: 'wan1',
-                        channelName(objDevice, objChannel, adapter) {
+                        name(objDevice, objChannel, adapter) {
                             return objDevice.active_geo_info.WAN.isp_name;
                         },
                         object: _ISP_UPTIME_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
-                        channelName(objDevice, objChannel, adapter) {
+                        name(objDevice, objChannel, adapter) {
                             return objDevice.active_geo_info.WAN2.isp_name;
                         },
                         object: _ISP_UPTIME_PROPERTIES
@@ -821,30 +801,26 @@ export var device;
             },
             wan1: {
                 idChannel: 'wan1',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'WAN 1';
-                },
+                name: 'WAN 1',
                 object: _WAN_PROPERTIES
             },
             wan2: {
                 idChannel: 'wan2',
-                channelName(objDevice, objChannel, adapter) {
-                    return 'WAN 1';
-                },
+                name: 'WAN 1',
                 object: _WAN_PROPERTIES
             }
         };
     }
-    device.get = get;
+    device_1.get = get;
     function getKeys() {
         if (keys === undefined) {
             keys = myHelper.getAllKeysOfTreeDefinition(get());
         }
         return keys;
     }
-    device.getKeys = getKeys;
+    device_1.getKeys = getKeys;
     function getStateIDs() {
         return myHelper.getAllIdsOfTreeDefinition(get());
     }
-    device.getStateIDs = getStateIDs;
+    device_1.getStateIDs = getStateIDs;
 })(device || (device = {}));

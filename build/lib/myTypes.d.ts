@@ -1,10 +1,15 @@
-import type { NetworkClient, NetworkClientFingerprint } from "./api/network-types-client.js";
-import type { NetworkDevice } from "./api/network-types-device.js";
+import type { NetworkClient } from "./api/network-types-client.js";
+import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
 import type { NetworkDeviceModels } from './api/network-types-device-models.js';
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { FirewallGroup } from "./api/network-types-firewall-group.js";
-export interface myCommonState {
+export type myTreeData = NetworkDevice | NetworkDevicePortTable | NetworkDeviceRadioTable | NetworkDeviceRadioTableStat | NetworkDeviceVapTable | NetworkDeviceStorage | NetworkDeviceWan | NetworkDeviceWanUptimeStats | NetworkClient | myNetworkClient | ConnectedClients | NetworkLanConfig | NetworkWlanConfig | FirewallGroup;
+type ReadValFunction = (val: any, adapter: ioBroker.Adapter | ioBroker.myAdapter, device: myTreeData, id: string) => ioBroker.StateValue | Promise<ioBroker.StateValue>;
+export type WriteValFunction = (val: ioBroker.StateValue, id?: string, device?: myTreeData, adapter?: ioBroker.Adapter | ioBroker.myAdapter) => any | Promise<any>;
+type ConditionToCreateStateFunction = (objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => boolean;
+export type myTreeDefinition = myTreeState | myTreeObject | myTreeArray;
+export interface myTreeState {
     id?: string;
     iobType: ioBroker.CommonType;
     name?: string;
@@ -15,43 +20,40 @@ export interface myCommonState {
     min?: number;
     max?: number;
     step?: number;
-    states?: {
-        [key: string]: string;
-    } | {
-        [key: number]: string;
-    };
+    states?: Record<string, string> | string[] | string;
     expert?: true;
     icon?: string;
     def?: ioBroker.StateValue;
     desc?: string;
-    readVal?(val: ioBroker.StateValue | NetworkClientFingerprint, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue | Promise<ioBroker.StateValue>;
-    writeVal?(val: ioBroker.StateValue, adapter: ioBroker.Adapter, cache: myCache): ioBroker.StateValue | Promise<ioBroker.StateValue>;
+    readVal?: ReadValFunction;
+    writeVal?: WriteValFunction;
     valFromProperty?: string;
-    statesFromProperty?: string;
-    conditionToCreateState?(objDevice: any, adapter: ioBroker.Adapter): boolean;
+    statesFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): Record<string, string> | string[] | string;
+    conditionToCreateState?: ConditionToCreateStateFunction;
     subscribeMe?: true;
     required?: true;
 }
-export interface myCommoneChannelObject {
+export interface myTreeObject {
     idChannel?: string;
-    channelName?(objDevice: NetworkDevice | myNetworkClient, objChannel: any, adapter: ioBroker.Adapter): string;
+    name?: string | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string);
     icon?: string;
     object: {
-        [key: string]: myCommonState | myCommoneChannelObject;
+        [key: string]: myTreeDefinition;
     };
+    conditionToCreateState?: ConditionToCreateStateFunction;
 }
-export interface myCommonChannelArray {
+export interface myTreeArray {
     idChannel?: string;
-    channelName?(objDevice: NetworkDevice | myNetworkClient, objChannel: any, adapter: ioBroker.Adapter): string;
+    name?: string;
     icon?: string;
     arrayChannelIdPrefix?: string;
     arrayChannelIdZeroPad?: number;
-    arrayChannelIdFromProperty?(objDevice: any, i: number, adapter: ioBroker.Adapter): string;
+    arrayChannelIdFromProperty?(objDevice: myTreeData, objChannel: myTreeData, i: number, adapter: ioBroker.Adapter | ioBroker.myAdapter): string;
     arrayChannelNamePrefix?: string;
-    arrayChannelNameFromProperty?(objDevice: any, adapter: ioBroker.Adapter): string;
+    arrayChannelNameFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): string;
     arrayStartNumber?: number;
     array: {
-        [key: string]: myCommonState;
+        [key: string]: myTreeDefinition;
     };
 }
 export interface myNetworkClient extends NetworkClient {
@@ -131,3 +133,4 @@ export interface JsonConfigAutocompleteSendTo {
     value: string;
     label: string;
 }
+export {};

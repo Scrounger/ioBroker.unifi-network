@@ -1,20 +1,19 @@
-import type { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
-import * as myHelper from '../helper.js';
-import type { NetworkDevice } from "../api/network-types-device.js";
+import type { myTreeDefinition } from "../myTypes.js";
 import type { NetworkLanConfig } from "../api/network-types-lan-config.js";
+import * as myHelper from '../helper.js';
 
 export namespace lan {
     let keys: string[] = undefined;
 
     export const idChannel = 'lan';
 
-    export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
+    export function get(): { [key: string]: myTreeDefinition } {
         return {
             connected_clients: {
                 id: 'connected_clients',
                 iobType: 'number',
                 name: 'connected clients',
-                conditionToCreateState(objDevice: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
+                conditionToCreateState(objDevice: NetworkLanConfig, objChannel: NetworkLanConfig, adapter: ioBroker.myAdapter): boolean {
                     return objDevice?.purpose !== 'guest'
                 },
                 valFromProperty: 'dhcp_active_leases',
@@ -23,7 +22,7 @@ export namespace lan {
                 id: 'connected_guests',
                 iobType: 'number',
                 name: 'connected guests',
-                conditionToCreateState(objDevice: NetworkLanConfig, adapter: ioBroker.Adapter): boolean {
+                conditionToCreateState(objDevice: NetworkLanConfig, objChannel: NetworkLanConfig, adapter: ioBroker.myAdapter): boolean {
                     return objDevice?.purpose === 'guest'
                 },
                 valFromProperty: 'dhcp_active_leases',
@@ -59,14 +58,14 @@ export namespace lan {
             vlan: {
                 iobType: 'number',
                 name: 'VLAN Id',
-                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: NetworkDevice | myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.myAdapter, device: NetworkLanConfig, id: string): ioBroker.StateValue {
                     return parseInt(val);
                 },
             }
         }
     }
 
-    export function getGlobal(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
+    export function getGlobal(): { [key: string]: myTreeDefinition } {
         return {
             connected_clients: {
                 id: 'connected_clients',

@@ -1,4 +1,5 @@
-import type { myCommonState, myCommoneChannelObject, myCommonChannelArray, myCache, myNetworkClient } from "../myTypes.js";
+import type { myTreeDefinition } from "../myTypes.js";
+import { FirewallGroup } from "../api/network-types-firewall-group.js";
 import * as myHelper from '../helper.js';
 
 export namespace firewallGroup {
@@ -6,7 +7,7 @@ export namespace firewallGroup {
 
     export const idChannel = 'firewall.groups';
 
-    export function get(): { [key: string]: myCommonState | myCommoneChannelObject | myCommonChannelArray } {
+    export function get(): { [key: string]: myTreeDefinition } {
         return {
             name: {
                 iobType: 'string',
@@ -18,7 +19,7 @@ export namespace firewallGroup {
                 iobType: 'string',
                 write: true,
                 name: 'group members',
-                readVal(val: string, adapter: ioBroker.Adapter, cache: myCache, deviceOrClient: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.myAdapter, device: FirewallGroup, id: string): ioBroker.StateValue {
                     return JSON.stringify(val);
                 }
             },

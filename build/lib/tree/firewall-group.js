@@ -15,7 +15,7 @@ export var firewallGroup;
                 iobType: 'string',
                 write: true,
                 name: 'group members',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return JSON.stringify(val);
                 }
             },

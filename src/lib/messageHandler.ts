@@ -43,7 +43,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, deviceList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
             if (deviceStateList === undefined) {
                 const states = tree.device.getStateIDs();
 
@@ -52,7 +52,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             deviceStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -99,7 +99,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, clientList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
             if (clientStateList === undefined) {
                 const states = tree.client.getStateIDs();
 
@@ -108,7 +108,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             clientStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -153,7 +153,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, wlanList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
             if (wlanStateList === undefined) {
                 const states = tree.wlan.getStateIDs();
 
@@ -162,7 +162,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             wlanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -207,7 +207,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, lanList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
             if (lanStateList === undefined) {
                 const states = tree.lan.getStateIDs();
 
@@ -216,7 +216,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             lanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -261,7 +261,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
             if (firewallGroupStateList === undefined) {
                 const states = tree.firewallGroup.getStateIDs();
 
@@ -270,7 +270,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === myHelper.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
                             firewallGroupStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],

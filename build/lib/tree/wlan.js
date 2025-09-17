@@ -29,7 +29,7 @@ export var wlan;
                 id: 'connected_clients',
                 iobType: 'number',
                 name: 'connected clients',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     return !objDevice?.is_guest;
                 },
                 valFromProperty: 'current_client_count',
@@ -38,7 +38,7 @@ export var wlan;
                 id: 'connected_clients_peak',
                 iobType: 'number',
                 name: 'peak of connected clients',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     return !objDevice?.is_guest;
                 },
             },
@@ -46,7 +46,7 @@ export var wlan;
                 id: 'connected_guests',
                 iobType: 'number',
                 name: 'connected guests',
-                conditionToCreateState(objDevice, adapter) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
                     return objDevice?.is_guest;
                 },
                 valFromProperty: 'current_client_count',
@@ -56,7 +56,7 @@ export var wlan;
                 iobType: 'number',
                 name: 'satisfaction',
                 unit: '%',
-                readVal(val, adapter, cache, deviceOrClient, id) {
+                readVal(val, adapter, device, id) {
                     return val >= 0 ? val : 0;
                 },
             },

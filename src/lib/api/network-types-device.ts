@@ -282,7 +282,7 @@ interface NetworkDeviceLldpTable {
     port_id: string
 }
 
-interface NetworkDeviceRadioTable {
+export interface NetworkDeviceRadioTable {
     antenna_gain: number
     antenna_id: number
     builtin_ant_gain: number
@@ -572,7 +572,7 @@ export interface NetworkDeviceVapTable {
     wlanconf_id: string
 }
 
-interface NetworkDeviceWan {
+export interface NetworkDeviceWan {
     accuracy: number
     address: string
     asn: number
@@ -837,7 +837,7 @@ interface NetworkDeviceUptimeStats {
     WAN2: NetworkDeviceWanUptimeStats
 }
 
-interface NetworkDeviceWanUptimeStats {
+export interface NetworkDeviceWanUptimeStats {
     alerting_monitors: NetworkDeviceAlertingMonitor[]
     availability: number
     latency_average: number
