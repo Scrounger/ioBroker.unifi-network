@@ -1,7 +1,8 @@
 import moment from 'moment';
-import type { myNetworkClient, myTreeDefinition } from '../myTypes.js';
+import type { myNetworkClient } from '../myTypes.js';
 import type { NetworkClientFingerprint } from '../api/network-types-client.js';
 import * as myHelper from '../helper.js';
+import type { myTreeDefinition } from '../myIob.js';
 
 export namespace client {
     let keys: string[] = undefined;

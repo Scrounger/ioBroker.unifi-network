@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import type { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable, NetworkDeviceRadioTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from '../api/network-types-device.js';
-import type { myTreeDefinition, myTreeState } from '../myTypes.js';
 import * as myHelper from '../helper.js';
+import { myTreeDefinition, myTreeState } from '../myIob.js';
 
 
 export namespace device {

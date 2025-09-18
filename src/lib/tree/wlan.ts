@@ -1,6 +1,6 @@
-import type { myTreeDefinition } from "../myTypes.js";
 import type { NetworkWlanConfig } from "../api/network-types-wlan-config.js";
 import * as myHelper from '../helper.js';
+import type { myTreeDefinition } from "../myIob.js";
 
 export namespace wlan {
     let keys: string[] = undefined;

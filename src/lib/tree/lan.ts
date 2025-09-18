@@ -1,6 +1,6 @@
-import type { myTreeDefinition } from "../myTypes.js";
 import type { NetworkLanConfig } from "../api/network-types-lan-config.js";
 import * as myHelper from '../helper.js';
+import type { myTreeDefinition } from "../myIob.js";
 
 export namespace lan {
     let keys: string[] = undefined;

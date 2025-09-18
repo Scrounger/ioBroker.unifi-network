@@ -1,4 +1,4 @@
-import type { myTreeDefinition } from "../myTypes.js";
+import type { myTreeDefinition } from "../myIob.js";
 export declare namespace firewallGroup {
     const idChannel = "firewall.groups";
     function get(): {

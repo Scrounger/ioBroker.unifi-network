@@ -1,6 +1,6 @@
-import type { myTreeDefinition } from "../myTypes.js";
 import { FirewallGroup } from "../api/network-types-firewall-group.js";
 import * as myHelper from '../helper.js';
+import type { myTreeDefinition } from "../myIob.js";
 
 export namespace firewallGroup {
     let keys: string[] = undefined;
