@@ -100,6 +100,7 @@ class UnifiNetwork extends utils.Adapter {
     async onUnload(callback) {
         const logPrefix = '[onUnload]:';
         try {
+            this.clearTimeout(this.ufn.connectionTimeout);
             this.removeListener('message', this.eventListener);
             this.removeListener('pong', this.pongListener);
             this.clearTimeout(this.aliveTimeout);
@@ -1284,6 +1285,7 @@ class UnifiNetwork extends utils.Adapter {
                 // if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
                 // }
             }
+            await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

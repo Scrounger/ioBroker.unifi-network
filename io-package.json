@@ -404,6 +404,18 @@
         "def": false
       },
       "native": {}
+    },
+    {
+      "_id": "info.lastRealTimeData",
+      "type": "state",
+      "common": {
+        "role": "state",
+        "name": "last real time data received",
+        "type": "number",
+        "read": true,
+        "write": false
+      },
+      "native": {}
     }
   ]
 }

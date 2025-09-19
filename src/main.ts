@@ -102,19 +102,28 @@ class UnifiNetwork extends utils.Adapter {
 
 			this.myIob = new myIob(this, utils, this.statesUsingValAsLastChanged);
 
-			if (this.config.host, this.config.user, this.config.password) {
-				this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this);
+			if (this.config.expertAliveInterval >= 30 && this.config.expertAliveInterval <= 10000 &&
+				this.config.realTimeApiDebounceTime >= 92 && this.config.realTimeApiDebounceTime <= 10000 &&
+				this.config.apiUpdateInterval >= 5 && this.config.apiUpdateInterval <= 10000 &&
+				this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
 
-				await this.establishConnection();
+				if (this.config.host, this.config.user, this.config.password) {
+					this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this);
 
-				this.ufn.on('message', this.eventListener);
-				this.ufn.on('pong', this.pongListener);
-				this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
+					await this.establishConnection();
+
+					this.ufn.on('message', this.eventListener);
+					this.ufn.on('pong', this.pongListener);
+					this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
+				} else {
+					this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
+				}
+
+				this.myIob.findMissingTranslation();
 			} else {
-				this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
+				this.log.error(`${logPrefix} adapter config settings wrong!`);
+				await this.stop({ reason: 'adapter config settings wrong' });
 			}
-
-			this.myIob.findMissingTranslation();
 
 		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -130,6 +139,8 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onUnload]:';
 
 		try {
+			this.clearTimeout(this.ufn.connectionTimeout);
+
 			this.removeListener('message', this.eventListener);
 			this.removeListener('pong', this.pongListener);
 
@@ -1483,6 +1494,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				// }
 			}
+
+			await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

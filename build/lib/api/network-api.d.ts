@@ -67,6 +67,7 @@ export declare class NetworkApi extends EventEmitter {
     private password;
     private username;
     private _eventsWs;
+    connectionTimeout: ioBroker.Timeout | undefined;
     constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter);
     login(): Promise<boolean>;
     private loginController;
@@ -78,7 +79,7 @@ export declare class NetworkApi extends EventEmitter {
      * Terminate any open connection to the UniFi Network API.
      */
     reset(): void;
-    private responseOk;
+    responseOk(code?: number): boolean;
     /**
      * Execute an HTTP fetch request to the Network controller.
      *

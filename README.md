@@ -27,6 +27,12 @@ Unifi Network uses the websocket interface to receive real-time information from
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (Scrounger) check adapter settings for timeout and interval implemented
+- (Scrounger) bug fixes
+
 ### 1.1.0-beta.0 (2025-09-03)
 
 - (Scrounger) replaced fetch with undici

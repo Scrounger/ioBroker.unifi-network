@@ -92,6 +92,8 @@ export class NetworkApi extends EventEmitter {
 
     private _eventsWs: WebSocket | null;
 
+    public connectionTimeout: ioBroker.Timeout | undefined = undefined;
+
     constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter) {
         // Initialize our parent.
         super();
@@ -278,7 +280,7 @@ export class NetworkApi extends EventEmitter {
         }
     }
 
-    private responseOk(code?: number): boolean {
+    public responseOk(code?: number): boolean {
         return (code !== undefined) && (code >= 200) && (code < 300);
     }
 
@@ -357,7 +359,7 @@ export class NetworkApi extends EventEmitter {
 
         // Create a signal handler to deliver the abort operation.
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), retrieveOptions.timeout);
+        this.connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
 
         options.dispatcher = this.dispatcher;
         options.headers = this.headers;
@@ -484,7 +486,7 @@ export class NetworkApi extends EventEmitter {
         } finally {
 
             // Clear out our response timeout.
-            clearTimeout(timer);
+            this.adapter.clearTimeout(this.connectionTimeout);
         }
     }
 

@@ -52,6 +52,7 @@ export class NetworkApi extends EventEmitter {
     password;
     username;
     _eventsWs;
+    connectionTimeout = undefined;
     constructor(host, port, isUnifiOs, site, username, password, adapter) {
         // Initialize our parent.
         super();
@@ -255,7 +256,7 @@ export class NetworkApi extends EventEmitter {
         let response;
         // Create a signal handler to deliver the abort operation.
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), retrieveOptions.timeout);
+        this.connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
         options.dispatcher = this.dispatcher;
         options.headers = this.headers;
         options.signal = controller.signal;
@@ -347,7 +348,7 @@ export class NetworkApi extends EventEmitter {
         }
         finally {
             // Clear out our response timeout.
-            clearTimeout(timer);
+            this.adapter.clearTimeout(this.connectionTimeout);
         }
     }
     async sendData(cmd, payload, method = 'POST') {
