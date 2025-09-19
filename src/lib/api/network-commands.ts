@@ -20,54 +20,6 @@ export class NetworkCommands {
 
     // Gerätebefehle als Pfeilfunktion im Objekt, damit der Kontext beibehalten wird
     public Devices = {
-        restart: async (device: NetworkDevice, id: string): Promise<boolean> => {
-            const logPrefix = `[${this.logPrefixCls}.Devices.restart]`;
-
-            const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
-
-            if (result) {
-                await this.ackCommand(id, logPrefix, `'${device.name}' (mac: ${device.mac})`)
-                return true;
-            }
-            return false;
-        },
-        ledOverride: async (device: NetworkDevice, id: string, val: string): Promise<boolean> => {
-            const logPrefix = `[${this.logPrefixCls}.Devices.ledOverride]`;
-
-            const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
-
-            if (result) {
-                this.logCommandSuccess(logPrefix, `LED override to '${val}' - '${device.name}' (mac: ${device.mac})`);
-                return true;
-            }
-            return false;
-        },
-        upgrade: async (device: NetworkDevice, id: string): Promise<boolean> => {
-            const logPrefix = `[${this.logPrefixCls}.Devices.upgrade]`;
-
-            if (device.upgradable) {
-                const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}/upgrade`, { mac: device.mac.toLowerCase() });
-
-                if (result) {
-                    await this.ackCommand(id, logPrefix, `upgrade to new firmware version - '${device.name}' (mac: ${device.mac})`);
-                    return true;
-                }
-            } else {
-                this.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): upgrade not possible, no new firmware avaiable`);
-            }
-            return false;
-        },
-        disableAccessPoint: async (device: NetworkDevice, id: string, disabled: boolean): Promise<boolean> => {
-            const logPrefix = `[${this.logPrefixCls}.Devices.disableAccessPoint]`;
-
-            const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { disabled: disabled }, 'PUT');
-
-            if (result) {
-                this.logCommandSuccess(logPrefix, `{state.val ? 'disable' : 'enable'} access point '${device.name}' (mac: ${device.mac})`);
-                return true;
-            }
-            return false;
-        },
         runSpeedtest: async (device: NetworkDevice, id: string): Promise<boolean> => {
             const logPrefix = `[${this.logPrefixCls}.Devices.runSpeedtest]`;
 
@@ -89,78 +41,6 @@ export class NetworkCommands {
             }
             return false;
         },
-
-        Port: {
-            cyclePoePower: async (device: NetworkDevice, id: string): Promise<boolean> => {
-                const logPrefix = `[${this.logPrefixCls}.Devices.Port.cyclePoePower]`;
-
-                try {
-                    const port_idx: number = parseInt(this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
-                    const port_table = device.port_table;
-
-                    if (port_table && port_table.length > 0) {
-                        const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
-
-                        if (indexOfPort !== -1) {
-                            if (!port_table[indexOfPort].poe_enable) {
-                                this.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: cycle poe power not possible, because poe is not enabled for this port!`);
-                                return false;
-                            }
-                        }
-                    }
-
-                    const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'power-cycle', port_idx: port_idx, mac: device.mac.toLowerCase() });
-
-                    if (result) {
-                        await this.ackCommand(id, logPrefix, `cycle poe power - '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`)
-                        return true;
-                    }
-
-                } catch (error) {
-                    this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-                }
-                return false;
-            },
-            switchPoe: async (device: NetworkDevice, id: string, val: boolean): Promise<boolean> => {
-                const logPrefix = `[${this.logPrefixCls}.Devices.Port.port_switchPoe]`;
-
-                const port_idx: number = parseInt(this.adapter.myIob.getIdLastPart(this.adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
-                const port_overrides = device.port_overrides;
-
-                if (port_overrides && port_overrides.length > 0) {
-                    const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
-
-                    if (indexOfPort !== -1) {
-
-                        // port_overrides has settings for this port
-                        if (port_overrides[indexOfPort].portconf_id) {
-                            // ethernet profil is configured, change poe not possible
-                            this.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
-                            return false;
-                        } else {
-                            port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
-                        }
-                    } else {
-                        // port_overrides has no settings for this port
-                        this.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
-                        port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
-                    }
-
-                    const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
-
-                    if (result) {
-                        this.logCommandSuccess(logPrefix, `command sent: switch poe power - '${val ? 'on' : 'off'}' '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`);
-                        return true;
-                    }
-
-                } else {
-                    this.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
-                }
-                return false;
-            },
-        }
-
-
     }
 
     public Clients = {

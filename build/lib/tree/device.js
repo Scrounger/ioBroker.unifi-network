@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import * as myHelper from '../helper.js';
+import { ApiEndpoints } from '../api/network-api.js';
 export var device;
 (function (device_1) {
     let keys = undefined;
@@ -73,7 +74,23 @@ export var device;
             name: 'run speedtest',
             read: false,
             write: true,
-            role: 'button'
+            role: 'button',
+            async writeVal(val, id, device, adapter) {
+                const logPrefix = `[device.speedtest_run]:`;
+                try {
+                    const wan_interface = adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id));
+                    const interface_name = device[wan_interface].ifname;
+                    const payload = { cmd: 'speedtest' };
+                    if (interface_name) {
+                        payload.interface_name = interface_name;
+                    }
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, payload);
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `run speedtest (mac: ${device.mac}, wan: ${wan_interface}, interface: ${interface_name})`, id);
+                }
+                catch (error) {
+                    adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                }
+            },
         },
         up: {
             iobType: 'boolean',
@@ -175,6 +192,11 @@ export var device;
                 read: true,
                 write: true,
                 def: false,
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[device.disabled]:`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { disabled: val }, 'PUT');
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `{state.val ? 'disable' : 'enable'} access point '${device.name}' (mac: ${device.mac})`);
+                },
             },
             fan_level: {
                 iobType: 'number',
@@ -236,7 +258,12 @@ export var device;
                     'on': 'on',
                     'off': 'off',
                     'default': 'default'
-                }
+                },
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[device.led_override]:`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `LED override to '${val}' - '${device.name}' (mac: ${device.mac})`);
+                },
             },
             last_seen: {
                 iobType: 'number',
@@ -258,7 +285,12 @@ export var device;
                 name: 'restart device',
                 read: false,
                 write: true,
-                role: 'button'
+                role: 'button',
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[device.restart]:`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `'${device.name}' (mac: ${device.mac})`, id);
+                },
             },
             rx_bytes: {
                 iobType: 'number',
@@ -318,7 +350,41 @@ export var device;
                         write: true,
                         readVal(val, adapter, device, id) {
                             return val === 'auto';
-                        }
+                        },
+                        async writeVal(val, id, device, adapter) {
+                            const logPrefix = `[devices.port.port_switchPoe]`;
+                            try {
+                                const port_idx = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
+                                const port_overrides = device.port_overrides;
+                                if (port_overrides && port_overrides.length > 0) {
+                                    const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
+                                    if (indexOfPort !== -1) {
+                                        // port_overrides has settings for this port
+                                        if (port_overrides[indexOfPort].portconf_id) {
+                                            // ethernet profil is configured, change poe not possible
+                                            adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
+                                            return;
+                                        }
+                                        else {
+                                            port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
+                                        }
+                                    }
+                                    else {
+                                        // port_overrides has no settings for this port
+                                        adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
+                                        port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
+                                    }
+                                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
+                                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `command sent: switch poe power - '${val ? 'on' : 'off'}' '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`);
+                                }
+                                else {
+                                    adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
+                                }
+                            }
+                            catch (error) {
+                                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                            }
+                        },
                     },
                     poe_cycle: {
                         id: 'poe_cycle',
@@ -330,6 +396,27 @@ export var device;
                         conditionToCreateState(objDevice, objChannel, adapter) {
                             // only create state if it's a poe port
                             return objChannel?.port_poe === true;
+                        },
+                        async writeVal(val, id, device, adapter) {
+                            const logPrefix = `[device.port.cyclePoePower]`;
+                            try {
+                                const port_idx = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
+                                const port_table = device.port_table;
+                                if (port_table && port_table.length > 0) {
+                                    const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
+                                    if (indexOfPort !== -1) {
+                                        if (!port_table[indexOfPort].poe_enable) {
+                                            adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: cycle poe power not possible, because poe is not enabled for this port!`);
+                                            return;
+                                        }
+                                    }
+                                }
+                                const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'power-cycle', port_idx: port_idx, mac: device.mac.toLowerCase() });
+                                await adapter.ufn.checkCommandSuccessful(result, logPrefix, `cycle poe power - '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`, id);
+                            }
+                            catch (error) {
+                                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                            }
                         },
                     },
                     poe_power: {
@@ -623,7 +710,17 @@ export var device;
                 name: 'upgrade device to new firmware',
                 read: false,
                 write: true,
-                role: 'button'
+                role: 'button',
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[device.upgrade]:`;
+                    if (device.upgradable) {
+                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}/upgrade`, { mac: device.mac.toLowerCase() });
+                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `upgrade to new firmware version - '${device.name}' (mac: ${device.mac})`, id);
+                    }
+                    else {
+                        adapter.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): upgrade not possible, no new firmware avaiable`);
+                    }
+                },
             },
             uplink: {
                 name: 'uplink device',

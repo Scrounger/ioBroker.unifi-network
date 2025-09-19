@@ -1011,6 +1011,16 @@ export class NetworkApi extends EventEmitter {
         return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`
     }
 
+    public async checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id: string | undefined = undefined): Promise<void> {
+        if (result) {
+            if (id) {
+                await this.adapter.setState(id, { ack: true });
+            }
+
+            this.log.info(`${logPrefix} command successfully sent: ${message}`);
+        }
+    }
+
     // /**
     //  * @deprecated this using undici websocket, but loosing very often connection, perhaps caused by the ping pong implementations
     //  * @returns 
@@ -1185,7 +1195,7 @@ export class NetworkApi extends EventEmitter {
             ws.on('pong', messageHandler = (data: string): void => {
                 try {
                     this.emit("pong");
-                    this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
+                    this.log.silly(`pong received`);
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
@@ -1207,7 +1217,7 @@ export class NetworkApi extends EventEmitter {
         try {
             if (this._eventsWs && this._eventsWs !== null) {
                 this._eventsWs.ping();
-                this.log.level === 'silly' ? this.log.silly(`ping sent`) : this.log.debug(`ping sent`);
+                this.log.silly(`ping sent`);
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

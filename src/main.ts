@@ -103,7 +103,7 @@ class UnifiNetwork extends utils.Adapter {
 			this.myIob = new myIob(this, utils, this.statesUsingValAsLastChanged);
 
 			if (this.config.expertAliveInterval >= 30 && this.config.expertAliveInterval <= 10000 &&
-				this.config.realTimeApiDebounceTime >= 92 && this.config.realTimeApiDebounceTime <= 10000 &&
+				this.config.realTimeApiDebounceTime >= 0 && this.config.realTimeApiDebounceTime <= 10000 &&
 				this.config.apiUpdateInterval >= 5 && this.config.apiUpdateInterval <= 10000 &&
 				this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
 
@@ -219,7 +219,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
 					// state changed from outside of the adapter
-					const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+					let mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 					if (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`)) {
 						// Client state changed
@@ -251,37 +251,12 @@ class UnifiNetwork extends utils.Adapter {
 							this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
-						// Device state changed
-						if (this.myIob.getIdLastPart(id) === 'restart') {
-							await this.ufn.Commands.Devices.restart(this.cache.devices[mac], id);
+						// Device state changed						
+						mac = id.replace(`${this.namespace}.${tree.device.idChannel}.`, '').split('.')[0];
 
-						} else if (id.includes('.port_')) {
-							if (this.myIob.getIdLastPart(id) === 'poe_cycle') {
-								const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(id))));
-
-								await this.ufn.Commands.Devices.Port.cyclePoePower(this.cache.devices[mac], id);
-
-							} else if (this.myIob.getIdLastPart(id) === 'poe_enable') {
-								const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(id))));
-
-								await this.ufn.Commands.Devices.Port.switchPoe(this.cache.devices[mac], id, state.val as boolean);
-
-							}
-						} else if (this.myIob.getIdLastPart(id) === 'led_override') {
-							await this.ufn.Commands.Devices.ledOverride(this.cache.devices[mac], id, state.val as string);
-
-						} else if (this.myIob.getIdLastPart(id) === 'upgrade') {
-							await this.ufn.Commands.Devices.upgrade(this.cache.devices[mac], id);
-
-						} else if (id.includes('wan')) {
-							if (this.myIob.getIdLastPart(id) === 'speedtest_run') {
-								const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(this.myIob.getIdWithoutLastPart(id)));
-
-								await this.ufn.Commands.Devices.runSpeedtest(this.cache.devices[mac], id);
-							}
-						} else if (this.myIob.getIdLastPart(id) === 'disabled') {
-							await this.ufn.Commands.Devices.disableAccessPoint(this.cache.devices[mac], id, state.val as boolean);
-
+						const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
+						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.devices[mac], this);
 						} else {
 							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}

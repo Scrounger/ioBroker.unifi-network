@@ -11,15 +11,7 @@ export declare class NetworkCommands {
     private logPrefixCls;
     constructor(ufn: NetworkApi, adapter: ioBroker.myAdapter);
     Devices: {
-        restart: (device: NetworkDevice, id: string) => Promise<boolean>;
-        ledOverride: (device: NetworkDevice, id: string, val: string) => Promise<boolean>;
-        upgrade: (device: NetworkDevice, id: string) => Promise<boolean>;
-        disableAccessPoint: (device: NetworkDevice, id: string, disabled: boolean) => Promise<boolean>;
         runSpeedtest: (device: NetworkDevice, id: string) => Promise<boolean>;
-        Port: {
-            cyclePoePower: (device: NetworkDevice, id: string) => Promise<boolean>;
-            switchPoe: (device: NetworkDevice, id: string, val: boolean) => Promise<boolean>;
-        };
     };
     Clients: {
         block: (client: NetworkClient) => Promise<boolean>;

@@ -199,6 +199,7 @@ export declare class NetworkApi extends EventEmitter {
     getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
+    checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id?: string | undefined): Promise<void>;
     launchEventsWs(): Promise<boolean>;
     wsSendPing(): void;
 }
