@@ -81,7 +81,7 @@ export namespace device {
             write: true,
             role: 'button',
             async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                const logPrefix = `[device.speedtest_run]:`;
+                const logPrefix = `[tree.device.speedtest_run]:`;
 
                 try {
                     const wan_interface = adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id));
@@ -208,7 +208,7 @@ export namespace device {
                 write: true,
                 def: false,
                 async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                    const logPrefix = `[device.disabled]:`;
+                    const logPrefix = `[tree.device.disabled]:`;
 
                     const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { disabled: val }, 'PUT');
 
@@ -278,7 +278,7 @@ export namespace device {
                     'default': 'default'
                 },
                 async writeVal(val: string, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                    const logPrefix = `[device.led_override]:`;
+                    const logPrefix = `[tree.device.led_override]:`;
 
                     const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
 
@@ -307,7 +307,7 @@ export namespace device {
                 write: true,
                 role: 'button',
                 async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                    const logPrefix = `[device.restart]:`;
+                    const logPrefix = `[tree.device.restart]:`;
 
                     const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
 
@@ -374,7 +374,7 @@ export namespace device {
                             return val === 'auto';
                         },
                         async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                            const logPrefix = `[devices.port.port_switchPoe]`;
+                            const logPrefix = `[tree.devices.port.port_switchPoe]`;
 
                             try {
                                 const port_idx: number = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
@@ -423,7 +423,7 @@ export namespace device {
                             return objChannel?.port_poe === true;
                         },
                         async writeVal(val: ioBroker.StateValue, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                            const logPrefix = `[device.port.cyclePoePower]`;
+                            const logPrefix = `[tree.device.port.cyclePoePower]`;
 
                             try {
                                 const port_idx: number = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
@@ -743,7 +743,7 @@ export namespace device {
                 write: true,
                 role: 'button',
                 async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                    const logPrefix = `[device.upgrade]:`;
+                    const logPrefix = `[tree.device.upgrade]:`;
 
                     if (device.upgradable) {
                         const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}/upgrade`, { mac: device.mac.toLowerCase() });

@@ -771,7 +771,9 @@ export class myIob {
             if ("iobType" in obj || 'array' in obj || 'object' in obj) {
                 const lastKey = path[path.length - 1];
 
-                result[obj.name ?? lastKey] = obj.name ?? lastKey;
+                if (typeof obj.name !== 'function') {
+                    result[obj.name ?? lastKey] = obj.name ?? lastKey;
+                }
             }
 
             for (const [childKey, value] of Object.entries(obj)) {

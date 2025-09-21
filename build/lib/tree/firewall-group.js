@@ -1,3 +1,4 @@
+import { ApiEndpoints } from "../api/network-api.js";
 import * as myHelper from '../helper.js';
 export var firewallGroup;
 (function (firewallGroup) {
@@ -9,7 +10,12 @@ export var firewallGroup;
                 iobType: 'string',
                 name: 'name',
                 write: true,
-                required: true
+                required: true,
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[firewallGroup.name]`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
+                },
             },
             group_members: {
                 iobType: 'string',
@@ -17,7 +23,18 @@ export var firewallGroup;
                 name: 'group members',
                 readVal(val, adapter, device, id) {
                     return JSON.stringify(val);
-                }
+                },
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[firewallGroup.group_members]`;
+                    try {
+                        const memObj = JSON.parse(val);
+                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
+                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
+                    }
+                    catch (error) {
+                        adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                    }
+                },
             },
             group_type: {
                 iobType: 'string',

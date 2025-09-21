@@ -1,3 +1,4 @@
+import { ApiEndpoints } from "../api/network-api.js";
 import type { NetworkWlanConfig } from "../api/network-types-wlan-config.js";
 import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from "../myIob.js";
@@ -18,7 +19,14 @@ export namespace wlan {
                 iobType: 'boolean',
                 name: 'WLAN enabled',
                 read: true,
-                write: true
+                write: true,
+                async writeVal(val: boolean, id: string, device: NetworkWlanConfig, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[tree.wlan.enable]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.wlanConfig)}/${device._id.trim()}`, { enabled: val }, 'PUT');
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `wlan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                }
             },
             is_guest: {
                 iobType: 'boolean',

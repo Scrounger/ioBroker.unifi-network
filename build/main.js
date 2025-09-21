@@ -223,28 +223,33 @@ class UnifiNetwork extends utils.Adapter {
                         }
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.wlan.idChannel}.`)) {
-                        if (this.myIob.getIdLastPart(id) === 'enabled') {
-                            const wlan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                            await this.ufn.Commands.WLanConf.enable(this.cache.wlan[wlan_id], state.val);
+                        const wlan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+                        const writeValKey = id.replace(`.${wlan_id}.`, '.').replace(`${this.namespace}.`, '');
+                        if (this.myIob.statesWithWriteFunction[writeValKey]) {
+                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.wlan[wlan_id], this);
+                        }
+                        else {
+                            this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
                         }
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
-                        if (this.myIob.getIdLastPart(id) === 'enabled') {
-                            const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                            await this.ufn.Commands.LanConf.enable(this.cache.lan[lan_id], state.val);
+                        const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+                        const writeValKey = id.replace(`.${lan_id}.`, '.').replace(`${this.namespace}.`, '');
+                        if (this.myIob.statesWithWriteFunction[writeValKey]) {
+                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.lan[lan_id], this);
                         }
-                        else if (this.myIob.getIdLastPart(id) === 'internet_enabled') {
-                            const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                            await this.ufn.Commands.LanConf.internet_access_enabled(this.cache.lan[lan_id], state.val);
+                        else {
+                            this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
                         }
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
                         const groupId = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                        if (this.myIob.getIdLastPart(id) === 'name') {
-                            await this.ufn.Commands.FirewallGroup.setName(this.cache.firewallGroup[groupId], state.val);
+                        const writeValKey = id.replace(`.${groupId}.`, '.').replace(`${this.namespace}.`, '');
+                        if (this.myIob.statesWithWriteFunction[writeValKey]) {
+                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewallGroup[groupId], this);
                         }
-                        else if (this.myIob.getIdLastPart(id) === 'group_members') {
-                            await this.ufn.Commands.FirewallGroup.setGroupMembers(this.cache.firewallGroup[groupId], state.val);
+                        else {
+                            this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
                         }
                     }
                 }

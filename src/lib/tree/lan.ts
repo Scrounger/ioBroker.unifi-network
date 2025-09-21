@@ -1,3 +1,4 @@
+import { ApiEndpoints } from "../api/network-api.js";
 import type { NetworkLanConfig } from "../api/network-types-lan-config.js";
 import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from "../myIob.js";
@@ -31,7 +32,14 @@ export namespace lan {
                 iobType: 'boolean',
                 name: 'WLAN enabled',
                 read: true,
-                write: true
+                write: true,
+                async writeVal(val: boolean, id: string, device: NetworkLanConfig, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[tree.lan.enable]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id.trim()}`, { enabled: val }, 'PUT');
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                }
             },
             ip_subnet: {
                 iobType: 'string',
@@ -43,7 +51,14 @@ export namespace lan {
                 name: 'internet access enabled',
                 read: true,
                 write: true,
-                valFromProperty: 'internet_access_enabled'
+                valFromProperty: 'internet_access_enabled',
+                async writeVal(val: boolean, id: string, device: NetworkLanConfig, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[tree.lan.internet_enabled]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id.trim()}`, { internet_access_enabled: val }, 'PUT');
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `internet access of lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                }
             },
             name: {
                 iobType: 'string',

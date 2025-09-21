@@ -1,3 +1,4 @@
+import { ApiEndpoints } from "../api/network-api.js";
 import { FirewallGroup } from "../api/network-types-firewall-group.js";
 import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from "../myIob.js";
@@ -13,7 +14,14 @@ export namespace firewallGroup {
                 iobType: 'string',
                 name: 'name',
                 write: true,
-                required: true
+                required: true,
+                async writeVal(val: string, id: string, device: FirewallGroup, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[firewallGroup.name]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
+                },
             },
             group_members: {
                 iobType: 'string',
@@ -21,7 +29,20 @@ export namespace firewallGroup {
                 name: 'group members',
                 readVal(val: string, adapter: ioBroker.myAdapter, device: FirewallGroup, id: string): ioBroker.StateValue {
                     return JSON.stringify(val);
-                }
+                },
+                async writeVal(val: string, id: string, device: FirewallGroup, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[firewallGroup.group_members]`;
+
+                    try {
+                        const memObj = JSON.parse(val);
+                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
+
+                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
+
+                    } catch (error) {
+                        adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                    }
+                },
             },
             group_type: {
                 iobType: 'string',
