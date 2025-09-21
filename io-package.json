@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.0-beta.0",
+    "version": "1.1.0",
     "news": {
+      "1.1.0": {
+        "en": "dependencies updated\ncheck adapter settings for timeout and interval implemented\ntranslation optimized\nbug fixes",
+        "de": "aktualisierte abhängigkeiten\nüberprüfen sie die adaptereinstellungen für timeout und intervall implementiert\nübersetzung optimiert\nfehlerbehebungen",
+        "ru": "обновленные зависимости\nпроверить настройки адаптера для тайм-аута и интервала\nоптимизирован перевод\nисправление ошибок",
+        "pt": "dependências atualizadas\nverificar as configurações do adaptador para timeout e intervalo implementados\ntradução otimizada\ncorreções de erros",
+        "nl": "afhankelijkheden bijgewerkt\ncontroleer adapter instellingen voor timeout en interval geïmplementeerd\nvertaling geoptimaliseerd\nfoutherstel",
+        "fr": "dépendances mises à jour\nvérifier les paramètres de l'adaptateur pour le timeout et l'intervalle implémenté\ntraduction optimisée\ncorrections des bogues",
+        "it": "dipendenze aggiornate\ncontrollare le impostazioni dell'adattatore per il timeout e l'intervallo implementato\ntraduzione ottimizzata\ncorrezioni di bug",
+        "es": "dependencias actualizadas\nconfiguración del adaptador de verificación para el tiempo y el intervalo implementado\ntraducción optimizada\nbug fixes",
+        "pl": "zaktualizowane zależności\nsprawdź ustawienia adaptera dla timeout i interwał zaimplementowany\nzoptymalizowane tłumaczenie\npoprawki błędów",
+        "uk": "оновлені залежності\nперевірити налаштування адаптера для таймера та інтервалу\nоптимізація перекладу\nвиправлення помилок",
+        "zh-cn": "更新依赖关系\n检查适配器设置是否用于超时和间隔\n翻译优化\n错误修正"
+      },
       "1.1.0-beta.0": {
         "en": "replaced fetch with undici\nfirewall group added\nmore network events handler added\nbug fixes",
         "de": "ersatz-fetch mit undici\nfirewall gruppe hinzugefügt\nmehr netzwerk-events-handler hinzugefügt\nfehlerbehebungen",
