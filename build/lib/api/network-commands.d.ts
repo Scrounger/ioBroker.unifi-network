@@ -7,9 +7,6 @@ export declare class NetworkCommands {
     private logPrefixCls;
     constructor(ufn: NetworkApi, adapter: ioBroker.myAdapter);
     Clients: {
-        block: (client: NetworkClient) => Promise<boolean>;
-        unblock: (client: NetworkClient) => Promise<boolean>;
-        reconnect: (client: NetworkClient, id: string) => Promise<boolean>;
         authorizeGuest: (client: NetworkClient) => Promise<boolean>;
         unauthorizeGuest: (client: NetworkClient) => Promise<boolean>;
         setName: (client: NetworkClient, name: string) => Promise<boolean>;

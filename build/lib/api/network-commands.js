@@ -11,32 +11,6 @@ export class NetworkCommands {
     }
     // Gerätebefehle als Pfeilfunktion im Objekt, damit der Kontext beibehalten wird
     Clients = {
-        block: async (client) => {
-            const logPrefix = `[${this.logPrefixCls}.Client.block]`;
-            const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'block-sta', mac: client.mac.toLowerCase() });
-            if (result) {
-                this.logCommandSuccess(logPrefix, `block - '${client.name}' (mac: ${client.mac})`);
-                return true;
-            }
-            return false;
-        },
-        unblock: async (client) => {
-            const logPrefix = `[${this.logPrefixCls}.Client.unblock]`;
-            const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'unblock-sta', mac: client.mac.toLowerCase() });
-            if (result) {
-                this.logCommandSuccess(logPrefix, `unblock - '${client.name}' (mac: ${client.mac})`);
-                return true;
-            }
-            return false;
-        },
-        reconnect: async (client, id) => {
-            const logPrefix = `[${this.logPrefixCls}.Client.reconnect]`;
-            const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'kick-sta', mac: client.mac.toLowerCase() });
-            if (result) {
-                await this.ackCommand(id, logPrefix, `reconnect - '${client.name}' (mac: ${client.mac})`);
-            }
-            return false;
-        },
         authorizeGuest: async (client) => {
             const logPrefix = `[${this.logPrefixCls}.Client.authorizeGuest]`;
             const result = await this.ufn.sendData(`${this.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'authorize-guest', mac: client.mac.toLowerCase() });

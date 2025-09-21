@@ -17,8 +17,6 @@ import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall-group.js';
-import { NetworkCommands } from "./network-commands.js";
-
 
 export type Nullable<T> = T | null;
 
@@ -73,8 +71,6 @@ export class NetworkApi extends EventEmitter {
 
     private adapter: ioBroker.Adapter;
 
-    public Commands: NetworkCommands;
-
     private dispatcher!: Dispatcher;
 
     private apiErrorCount: number;
@@ -100,8 +96,6 @@ export class NetworkApi extends EventEmitter {
 
         this.adapter = adapter;
         this.log = adapter.log;
-
-        this.Commands = new NetworkCommands(this, adapter);
 
         this._eventsWs = null;
 

@@ -3,6 +3,7 @@ import type { myNetworkClient } from '../myTypes.js';
 import type { NetworkClientFingerprint } from '../api/network-types-client.js';
 import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from '../myIob.js';
+import { ApiEndpoints } from '../api/network-api.js';
 
 export namespace client {
     let keys: string[] = undefined;
@@ -15,14 +16,21 @@ export namespace client {
 
     export function get(): { [key: string]: myTreeDefinition } {
         return {
-            // authorized: {                                --> just kicks the client, use case ???
+            // authorized: {                                //-- > just kicks the client, use case ???
             //     iobType: 'boolean',
             //     name: 'client is authorized',
             //     read: true,
             //     write: true,
-            //     conditionToCreateState(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.myAdapter): boolean {
+            //     conditionToCreateState(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): boolean {
             //         // only wired and wireless clients
             //         return objDevice.is_guest;
+            //     },
+            //     async writeVal(val: boolean, id: string, device: myNetworkClient, adapter: ioBroker.myAdapter): Promise<void> {
+            //         const logPrefix = `[tree.client.authorized]`;
+
+            //         const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: val ? 'authorize-guest' : 'unauthorize-guest', mac: device.mac.toLowerCase() });
+
+            //         await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'authorize guest' : 'unauthorize guest'} - '${device.name}' (mac: ${device.mac})`);
             //     },
             // },
             blocked: {
@@ -30,6 +38,13 @@ export namespace client {
                 name: 'client is blocked',
                 read: true,
                 write: true,
+                async writeVal(val: boolean, id: string, device: myNetworkClient, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[tree.client.blocked]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: val ? 'block-sta' : 'unblock-sta', mac: device.mac.toLowerCase() });
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'block' : 'unblock'} - '${device.name}' (mac: ${device.mac})`);
+                },
             },
             channel: {
                 iobType: 'number',
@@ -170,7 +185,14 @@ export namespace client {
                 iobType: 'string',
                 name: 'device name',
                 read: true,
-                write: true
+                write: true,
+                async writeVal(val: string, id: string, device: myNetworkClient, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[tree.client.name]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clients)}/${device.user_id.trim()}`, { name: val }, 'PUT');
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `set name - '${device.name}' (mac: ${device.mac}, new name: ${val})`);
+                }
             },
             network_id: {
                 iobType: 'string',
@@ -237,7 +259,14 @@ export namespace client {
                 },
                 read: false,
                 write: true,
-                role: 'button'
+                role: 'button',
+                async writeVal(val: boolean, id: string, device: myNetworkClient, adapter: ioBroker.myAdapter): Promise<void> {
+                    const logPrefix = `[tree.client.reconnect]`;
+
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'kick-sta', mac: device.mac.toLowerCase() });
+
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `reconnect - '${device.name}' (mac: ${device.mac})`, id);
+                },
             },
             remote_ip: {
                 iobType: 'string',

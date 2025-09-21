@@ -9,7 +9,6 @@ import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall-group.js';
-import { NetworkCommands } from "./network-commands.js";
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -54,7 +53,6 @@ export declare enum ApiEndpoints_V2 {
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private adapter;
-    Commands: NetworkCommands;
     private dispatcher;
     private apiErrorCount;
     private apiLastSuccess;

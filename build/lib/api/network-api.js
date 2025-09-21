@@ -8,7 +8,6 @@ import WebSocket from 'ws';
 import { API_TIMEOUT } from './network-settings.js';
 import { NetworkReportInterval } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
-import { NetworkCommands } from "./network-commands.js";
 export var ApiEndpoints;
 (function (ApiEndpoints) {
     ApiEndpoints["login"] = "login";
@@ -38,7 +37,6 @@ export var ApiEndpoints_V2;
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     adapter;
-    Commands;
     dispatcher;
     apiErrorCount;
     apiLastSuccess;
@@ -58,7 +56,6 @@ export class NetworkApi extends EventEmitter {
         super();
         this.adapter = adapter;
         this.log = adapter.log;
-        this.Commands = new NetworkCommands(this, adapter);
         this._eventsWs = null;
         this.apiErrorCount = 0;
         this.apiLastSuccess = 0;

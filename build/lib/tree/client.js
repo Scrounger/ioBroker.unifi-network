@@ -1,5 +1,6 @@
 import moment from 'moment';
 import * as myHelper from '../helper.js';
+import { ApiEndpoints } from '../api/network-api.js';
 export var client;
 (function (client) {
     let keys = undefined;
@@ -9,14 +10,19 @@ export var client;
     client.idChannelVpn = `${client.idChannel}.vpn`;
     function get() {
         return {
-            // authorized: {                                --> just kicks the client, use case ???
+            // authorized: {                                //-- > just kicks the client, use case ???
             //     iobType: 'boolean',
             //     name: 'client is authorized',
             //     read: true,
             //     write: true,
-            //     conditionToCreateState(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.myAdapter): boolean {
+            //     conditionToCreateState(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): boolean {
             //         // only wired and wireless clients
             //         return objDevice.is_guest;
+            //     },
+            //     async writeVal(val: boolean, id: string, device: myNetworkClient, adapter: ioBroker.myAdapter): Promise<void> {
+            //         const logPrefix = `[tree.client.authorized]`;
+            //         const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: val ? 'authorize-guest' : 'unauthorize-guest', mac: device.mac.toLowerCase() });
+            //         await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'authorize guest' : 'unauthorize guest'} - '${device.name}' (mac: ${device.mac})`);
             //     },
             // },
             blocked: {
@@ -24,6 +30,11 @@ export var client;
                 name: 'client is blocked',
                 read: true,
                 write: true,
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[tree.client.blocked]`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: val ? 'block-sta' : 'unblock-sta', mac: device.mac.toLowerCase() });
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'block' : 'unblock'} - '${device.name}' (mac: ${device.mac})`);
+                },
             },
             channel: {
                 iobType: 'number',
@@ -167,7 +178,12 @@ export var client;
                 iobType: 'string',
                 name: 'device name',
                 read: true,
-                write: true
+                write: true,
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[tree.client.name]`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clients)}/${device.user_id.trim()}`, { name: val }, 'PUT');
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `set name - '${device.name}' (mac: ${device.mac}, new name: ${val})`);
+                }
             },
             network_id: {
                 iobType: 'string',
@@ -233,7 +249,12 @@ export var client;
                 },
                 read: false,
                 write: true,
-                role: 'button'
+                role: 'button',
+                async writeVal(val, id, device, adapter) {
+                    const logPrefix = `[tree.client.reconnect]`;
+                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'kick-sta', mac: device.mac.toLowerCase() });
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `reconnect - '${device.name}' (mac: ${device.mac})`, id);
+                },
             },
             remote_ip: {
                 iobType: 'string',

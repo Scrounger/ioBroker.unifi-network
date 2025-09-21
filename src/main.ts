@@ -219,40 +219,21 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				} else if (!state.from.includes(this.namespace) && state.ack === false) {
 					// state changed from outside of the adapter
-					let mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+
 
 					if (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`)) {
 						// Client state changed
-						if (this.myIob.getIdLastPart(id) === 'blocked') {
-							if (state.val) {
-								await this.ufn.Commands.Clients.block(this.cache.clients[mac]);
+						const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
-							} else {
-								await this.ufn.Commands.Clients.unblock(this.cache.clients[mac]);
-							}
-
-						} else if (this.myIob.getIdLastPart(id) === 'reconnect') {
-							await this.ufn.Commands.Clients.reconnect(this.cache.clients[mac], id);
-
-							// } else if (this.myIob.getIdLastPart(id) === 'authorized') {
-							// 	let res = undefined;
-
-							// 	if (state.val === true) {
-							// 		res = await apiCommands.clients.authorizeGuest(this.ufn, mac);
-							// 	} else {
-							// 		res = await apiCommands.clients.unauthorizeGuest(this.ufn, mac);
-							// 	}
-
-							// 	if (res) this.log.info(`${logPrefix} command sent: ${state.val ? 'authorize' : 'unauthorize'} guest - '${this.cache.clients[mac].name}' (mac: ${mac})`);
-						} else if (this.myIob.getIdLastPart(id) === 'name') {
-							await this.ufn.Commands.Clients.setName(this.cache.clients[mac], state.val as string);
-
+						const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
+						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.clients[mac], this);
 						} else {
 							this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
 						// Device state changed						
-						mac = id.replace(`${this.namespace}.${tree.device.idChannel}.`, '').split('.')[0];
+						const mac = id.replace(`${this.namespace}.${tree.device.idChannel}.`, '').split('.')[0];
 
 						const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
 						if (this.myIob.statesWithWriteFunction[writeValKey]) {
@@ -267,7 +248,7 @@ class UnifiNetwork extends utils.Adapter {
 						if (this.myIob.statesWithWriteFunction[writeValKey]) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.wlan[wlan_id], this);
 						} else {
-							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
+							this.log.debug(`${logPrefix} wlan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
 						const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
@@ -276,7 +257,7 @@ class UnifiNetwork extends utils.Adapter {
 						if (this.myIob.statesWithWriteFunction[writeValKey]) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.lan[lan_id], this);
 						} else {
-							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
+							this.log.debug(`${logPrefix} lan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
 						const groupId = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
@@ -285,7 +266,7 @@ class UnifiNetwork extends utils.Adapter {
 						if (this.myIob.statesWithWriteFunction[writeValKey]) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewallGroup[groupId], this);
 						} else {
-							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
+							this.log.debug(`${logPrefix} firewall group state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					}
 				} else {
