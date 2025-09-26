@@ -652,8 +652,8 @@ class UnifiNetwork extends utils.Adapter {
                                             // filter out unchanged properties
                                             dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
                                         }
-                                        if (Object.keys(dataToProcess).length > 0) {
-                                            this.cache.clients[client.mac] = client;
+                                        if (!_.isEmpty(dataToProcess)) {
+                                            this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
                                             this.cache.clients[client.mac].name = name;
                                             this.cache.clients[client.mac].timestamp = moment().unix();
                                             this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
@@ -695,8 +695,8 @@ class UnifiNetwork extends utils.Adapter {
                                             dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys());
                                         }
                                         const preparedIp = client.ip.replaceAll('.', '_');
-                                        if (Object.keys(dataToProcess).length > 0) {
-                                            this.cache.vpn[client.ip] = client;
+                                        if (!_.isEmpty(dataToProcess)) {
+                                            this.cache.vpn[client.ip] = { ...this.cache.vpn[client.ip], ...client };
                                             this.cache.vpn[client.ip].name = name;
                                             this.cache.vpn[client.ip].timestamp = moment().unix();
                                             this.cache.isOnline[client.ip].wlan_id = client.wlanconf_id;

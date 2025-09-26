@@ -709,7 +709,7 @@ class UnifiNetwork extends utils.Adapter {
 										}
 
 										if (!_.isEmpty(dataToProcess)) {
-											this.cache.clients[client.mac] = { ... this.cache.clients[client.mac], ...client };
+											this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
 											this.cache.clients[client.mac].name = name;
 											this.cache.clients[client.mac].timestamp = moment().unix();
 
@@ -753,8 +753,8 @@ class UnifiNetwork extends utils.Adapter {
 											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
-										if (Object.keys(dataToProcess).length > 0) {
-											this.cache.clients[client.mac] = client;
+										if (!_.isEmpty(dataToProcess)) {
+											this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
 											this.cache.clients[client.mac].name = name;
 											this.cache.clients[client.mac].timestamp = moment().unix();
 
@@ -804,8 +804,8 @@ class UnifiNetwork extends utils.Adapter {
 
 										const preparedIp = client.ip.replaceAll('.', '_');
 
-										if (Object.keys(dataToProcess).length > 0) {
-											this.cache.vpn[client.ip] = client;
+										if (!_.isEmpty(dataToProcess)) {
+											this.cache.vpn[client.ip] = { ...this.cache.vpn[client.ip], ...client };
 											this.cache.vpn[client.ip].name = name;
 											this.cache.vpn[client.ip].timestamp = moment().unix();
 

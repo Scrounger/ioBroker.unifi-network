@@ -126,7 +126,18 @@ export class myIob {
                     const logDetails = `${fullData?.mac ? `mac: ${fullData?.mac}` : fullData?.ip ? `ip: ${fullData?.ip}` : fullData?._id ? `id: ${fullData?._id}` : ''}`;
                     try {
                         // if we have an own defined state which takes val from other property
-                        const valKey = Object.hasOwn(treeData, treeDef.valFromProperty) && treeDef.valFromProperty ? treeDef.valFromProperty : key;
+                        let valKey = key;
+                        if (Object.hasOwn(treeDef, 'valFromProperty')) {
+                            if (Object.hasOwn(treeData, treeDef.valFromProperty)) {
+                                valKey = treeDef.valFromProperty;
+                            }
+                            else {
+                                if (this.log.level === 'silly') {
+                                    this.log.silly(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''} key '${key}' has valFromProperty '${treeDef.valFromProperty}' not exist in data -> skipping!`);
+                                }
+                                continue;
+                            }
+                        }
                         const cond1 = (Object.hasOwn(treeData, valKey) && treeData[valKey] !== undefined) || (Object.hasOwn(treeDef, 'id') && !Object.hasOwn(treeDef, 'valFromProperty'));
                         const cond2 = Object.hasOwn(treeDef, 'iobType') && !Object.hasOwn(treeDef, 'object') && !Object.hasOwn(treeDef, 'array');
                         // if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
@@ -196,7 +207,7 @@ export class myIob {
                                     else {
                                         if (!Object.hasOwn(treeDef, 'id')) {
                                             // only report it if it's not a custom defined state
-                                            this.log.debug(`${logPrefix} ${logDeviceName} - property '${logMsgState}' not exists in bootstrap values (sometimes this option may first need to be activated / used in the Unifi Network application or will update by an event)`);
+                                            this.log.debug(`${logPrefix} ${logDeviceName} - property '${logMsgState}' not exists in data (sometimes this option may first need to be activated / used or will update by an event)`);
                                         }
                                     }
                                 }
