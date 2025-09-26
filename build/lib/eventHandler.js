@@ -84,6 +84,7 @@ export const eventHandler = {
                             await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.isOnline`, false, true);
                         }
                         if (await adapter.objectExists(`${tree.device.idChannel}.${mac}.state`)) {
+                            cache.devices[mac].state = 0;
                             await adapter.setStateChangedAsync(`${tree.device.idChannel}.${mac}.state`, 0, true);
                         }
                     }
@@ -189,10 +190,12 @@ export const eventHandler = {
                         adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' (mac: ${mac}, ip: ${cache?.clients[mac]?.ip}) roamed from '${cache?.devices[data.ap_from]?.name}' (mac: ${data.ap_from}) to '${cache?.devices[data.ap_to]?.name}' (mac: ${data.ap_to})`);
                         const idApName = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.uplink_name`;
                         if (await adapter.objectExists(idApName)) {
+                            cache.clients[mac].last_uplink_name = cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null;
                             await adapter.setState(idApName, cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null, true);
                         }
                         const idApMac = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.uplink_mac`;
                         if (await adapter.objectExists(idApMac)) {
+                            cache.clients[mac].last_uplink_mac = (data.ap_to) ? (data.ap_to) : null;
                             await adapter.setState(idApMac, (data.ap_to) ? (data.ap_to) : null, true);
                         }
                     }
@@ -216,10 +219,12 @@ export const eventHandler = {
                         const idChannel = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.channel`;
                         const valChannel = parseInt(data.channel_to);
                         if (await adapter.objectExists(idChannel)) {
+                            cache.clients[mac].channel = valChannel;
                             await adapter.setState(idChannel, valChannel, true);
                         }
                         const idChannelName = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.channel_frequency`;
                         if (await adapter.objectExists(idChannelName)) {
+                            cache.clients[mac].radio_name = data.radio_to;
                             await adapter.setState(idChannelName, myHelper.radioToFrequency(data.radio_to, adapter), true);
                         }
                     }

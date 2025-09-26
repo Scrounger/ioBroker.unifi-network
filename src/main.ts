@@ -594,7 +594,7 @@ class UnifiNetwork extends utils.Adapter {
 								}
 
 								if (!_.isEmpty(dataToProcess)) {
-									this.cache.devices[device.mac] = device;
+									this.cache.devices[device.mac] = { ...this.cache.devices[device.mac], ...device };
 									this.cache.devices[device.mac].iobTimestamp = moment().unix();
 
 									dataToProcess.mac = device.mac;
@@ -708,8 +708,8 @@ class UnifiNetwork extends utils.Adapter {
 											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
-										if (Object.keys(dataToProcess).length > 0) {
-											this.cache.clients[client.mac] = client;
+										if (!_.isEmpty(dataToProcess)) {
+											this.cache.clients[client.mac] = { ... this.cache.clients[client.mac], ...client };
 											this.cache.clients[client.mac].name = name;
 											this.cache.clients[client.mac].timestamp = moment().unix();
 
@@ -975,9 +975,8 @@ class UnifiNetwork extends utils.Adapter {
 									dataToProcess = this.myIob.deepDiffBetweenObjects(wlan, this.cache.wlan[wlan._id], this, tree.wlan.getKeys()) as NetworkWlanConfig;
 								}
 
-								this.cache.wlan[wlan._id] = wlan;
-
 								if (!_.isEmpty(dataToProcess)) {
+									this.cache.wlan[wlan._id] = { ... this.cache.wlan[wlan._id], ...wlan };
 									dataToProcess._id = wlan._id;
 
 									await this.myIob.createOrUpdateDevice(idWlan, wlan.name, `${this.namespace}.${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
@@ -1099,9 +1098,9 @@ class UnifiNetwork extends utils.Adapter {
 									dataToProcess = this.myIob.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys()) as NetworkLanConfig;
 								}
 
-								this.cache.lan[lan._id] = lan;
-
 								if (!_.isEmpty(dataToProcess)) {
+									this.cache.lan[lan._id] = { ... this.cache.lan[lan._id], ...lan };
+
 									dataToProcess._id = lan._id;
 
 									await this.myIob.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${this.namespace}.${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart, true);
@@ -1214,9 +1213,8 @@ class UnifiNetwork extends utils.Adapter {
 									dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewallGroup[firewallGroup._id], this, tree.firewallGroup.getKeys()) as FirewallGroup;
 								}
 
-								this.cache.firewallGroup[firewallGroup._id] = firewallGroup;
-
 								if (!_.isEmpty(dataToProcess)) {
+									this.cache.firewallGroup[firewallGroup._id] = { ...this.cache.firewallGroup[firewallGroup._id], ...firewallGroup };
 									dataToProcess._id = firewallGroup._id;
 
 									await this.myIob.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${this.namespace}.${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
