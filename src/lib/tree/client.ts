@@ -55,7 +55,7 @@ export namespace client {
                 iobType: 'string',
                 name: 'channel name',
                 valFromProperty: 'radio_name',
-                readVal(val: string, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
@@ -82,7 +82,7 @@ export namespace client {
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 },
-                readVal(val: NetworkClientFingerprint, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: NetworkClientFingerprint, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     if (device.fingerprint && adapter.config.clientImageDownload) {
                         if (device.unifi_device_info && device.unifi_device_info.icon_filename) {
                             return `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`
@@ -126,7 +126,7 @@ export namespace client {
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
                 required: true,
-                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (device.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
@@ -203,7 +203,7 @@ export namespace client {
                 id: 'network_members_group',
                 iobType: 'string',
                 name: 'network member groups',
-                readVal(val: any, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: any, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return JSON.stringify(val);
                 },
             },
@@ -221,7 +221,7 @@ export namespace client {
                 iobType: 'string',
                 name: 'radio name',
                 valFromProperty: 'radio_proto',
-                readVal(val: string, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     if (val) {
                         if (val === 'ax') {
                             return 'WiFi 6'
@@ -288,7 +288,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -296,7 +296,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'Rx Rate',
                 unit: 'mbps',
-                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return Math.round(val / 1000);
                 }
             },
@@ -309,7 +309,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -317,7 +317,7 @@ export namespace client {
                 iobType: 'number',
                 name: 'Tx Rate',
                 unit: 'mbps',
-                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return Math.round(val / 1000);
                 }
             },

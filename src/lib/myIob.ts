@@ -3,8 +3,8 @@ import type { myTreeData } from './myTypes.js';
 import * as tree from './tree/index.js';
 import _ from 'lodash';
 
-type ReadValFunction = (val: any, adapter: ioBroker.Adapter | ioBroker.myAdapter, device: myTreeData, id: string) => ioBroker.StateValue | Promise<ioBroker.StateValue>
-export type WriteValFunction = (val: ioBroker.StateValue, id?: string, device?: myTreeData, adapter?: ioBroker.Adapter | ioBroker.myAdapter) => any | Promise<any>;
+type ReadValFunction = (val: any, adapter: ioBroker.Adapter | ioBroker.myAdapter, device: myTreeData, channel: myTreeData, id: string) => ioBroker.StateValue | Promise<ioBroker.StateValue>
+export type WriteValFunction = (val: ioBroker.StateValue, id: string, device: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => any | Promise<any>;
 type ConditionToCreateStateFunction = (objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => boolean;
 
 export type myTreeDefinition = myTreeState | myTreeObject | myTreeArray;
@@ -273,7 +273,7 @@ export class myIob {
                                     }
 
                                     if (treeData && (Object.hasOwn(treeData, key) || Object.hasOwn(treeData, treeDef.valFromProperty))) {
-                                        const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, `${channel}.${stateId}`) : treeData[valKey];
+                                        const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, channelData, `${channel}.${stateId}`) : treeData[valKey];
 
                                         let changedObj: any = undefined;
 

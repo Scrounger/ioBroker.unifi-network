@@ -11,7 +11,7 @@ export var device;
             name: 'current download rate',
             unit: 'Mbps',
             valFromProperty: 'rx_rate',
-            readVal(val, adapter, device, id) {
+            readVal(val, adapter, device, channel, id) {
                 return Math.round(val / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -20,7 +20,7 @@ export var device;
             name: 'current upload rate',
             unit: 'Mbps',
             valFromProperty: 'tx_rate',
-            readVal(val, adapter, device, id) {
+            readVal(val, adapter, device, channel, id) {
                 return Math.round(val / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -44,7 +44,7 @@ export var device;
             iobType: 'number',
             name: 'RX Bytes',
             unit: 'GB',
-            readVal(val, adapter, device, id) {
+            readVal(val, adapter, device, channel, id) {
                 return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -52,7 +52,7 @@ export var device;
             iobType: 'number',
             name: 'TX Bytes',
             unit: 'GB',
-            readVal(val, adapter, device, id) {
+            readVal(val, adapter, device, channel, id) {
                 return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
             }
         },
@@ -101,7 +101,7 @@ export var device;
             iobType: 'number',
             name: 'availability',
             unit: '%',
-            readVal(val, adapter, device, id) {
+            readVal(val, adapter, device, channel, id) {
                 return Math.round(val);
             }
         },
@@ -111,7 +111,7 @@ export var device;
             name: 'uptime',
             unit: 's',
             def: 0,
-            async readVal(val, adapter, device, id) {
+            async readVal(val, adapter, device, channel, id) {
                 // if downtime increase, isp connection is down
                 const isOnlineId = `${adapter.myIob.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
                 if (await adapter.objectExists(isOnlineId)) {
@@ -131,7 +131,7 @@ export var device;
             name: 'uptime',
             unit: 's',
             def: 0,
-            async readVal(val, adapter, device, id) {
+            async readVal(val, adapter, device, channel, id) {
                 // if uptime increase, isp connection is up
                 const isOnlineId = `${adapter.myIob.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
                 if (await adapter.objectExists(isOnlineId)) {
@@ -209,7 +209,7 @@ export var device;
                 name: 'device reported errors',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return val === 6 || val === 9;
                 },
             },
@@ -220,7 +220,7 @@ export var device;
                 subscribeMe: true,
                 valFromProperty: 'model',
                 required: true,
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     if (val && adapter.config.deviceImageDownload) {
                         const find = _.find(adapter.cache.deviceModels, (x) => x.model_name.includes(val));
                         if (find) {
@@ -246,7 +246,7 @@ export var device;
                 name: 'is device online',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return val !== 0 && val !== 6 && val !== 9;
                 },
             },
@@ -296,7 +296,7 @@ export var device;
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -348,7 +348,7 @@ export var device;
                         valFromProperty: 'poe_mode',
                         read: true,
                         write: true,
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return val === 'auto';
                         },
                         async writeVal(val, id, device, adapter) {
@@ -427,7 +427,7 @@ export var device;
                             // only create state if it's a poe port
                             return objChannel?.port_poe === true;
                         },
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return parseFloat(val);
                         }
                     },
@@ -439,7 +439,7 @@ export var device;
                             // only create state if it's a poe port
                             return objChannel?.port_poe === true;
                         },
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return parseFloat(val);
                         }
                     },
@@ -451,7 +451,7 @@ export var device;
                         iobType: 'number',
                         name: 'RX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -473,7 +473,7 @@ export var device;
                         iobType: 'number',
                         name: 'TX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     }
@@ -495,7 +495,7 @@ export var device;
                         iobType: 'string',
                         name: 'channel name',
                         valFromProperty: 'name',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
@@ -614,7 +614,7 @@ export var device;
                         iobType: 'number',
                         name: 'size',
                         unit: 'GB',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -626,7 +626,7 @@ export var device;
                         iobType: 'number',
                         name: 'used',
                         unit: 'GB',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     }
@@ -639,14 +639,14 @@ export var device;
                     cpu: {
                         iobType: 'number',
                         unit: '%',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return parseFloat(val);
                         },
                     },
                     mem: {
                         iobType: 'number',
                         unit: '%',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return parseFloat(val);
                         },
                     }
@@ -669,7 +669,7 @@ export var device;
                         iobType: 'number',
                         name: 'value',
                         unit: '°C',
-                        readVal: function (val, adapter, device, id) {
+                        readVal: function (val, adapter, device, channel, id) {
                             return Math.round(val * 10) / 10;
                         },
                     },
@@ -681,7 +681,7 @@ export var device;
                 name: 'temperature',
                 unit: '°C',
                 valFromProperty: 'general_temperature',
-                readVal: function (val, adapter, device, id) {
+                readVal: function (val, adapter, device, channel, id) {
                     return Math.round(val * 10) / 10;
                 },
             },
@@ -689,7 +689,7 @@ export var device;
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -794,7 +794,7 @@ export var device;
                         iobType: 'string',
                         name: 'channel frequency',
                         valFromProperty: 'radio_name',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return myHelper.radio_nameToFrequency(val, adapter);
                         }
                     },
@@ -834,7 +834,7 @@ export var device;
                         iobType: 'number',
                         name: 'RX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
@@ -842,7 +842,7 @@ export var device;
                         iobType: 'number',
                         name: 'satisfaction',
                         unit: '%',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return val >= 0 ? val : 0;
                         },
                     },
@@ -850,7 +850,7 @@ export var device;
                         iobType: 'number',
                         name: 'TX Bytes',
                         unit: 'GB',
-                        readVal(val, adapter, device, id) {
+                        readVal(val, adapter, device, channel, id) {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },

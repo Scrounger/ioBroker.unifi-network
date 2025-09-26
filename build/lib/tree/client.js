@@ -45,7 +45,7 @@ export var client;
                 iobType: 'string',
                 name: 'channel name',
                 valFromProperty: 'radio_name',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return myHelper.radio_nameToFrequency(val, adapter);
                 }
             },
@@ -72,7 +72,7 @@ export var client;
                     // only wired and wireless clients
                     return objDevice?.type === undefined || objDevice?.type !== "VPN";
                 },
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     if (device.fingerprint && adapter.config.clientImageDownload) {
                         if (device.unifi_device_info && device.unifi_device_info.icon_filename) {
                             return `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`;
@@ -118,7 +118,7 @@ export var client;
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
                 required: true,
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (device.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
@@ -194,7 +194,7 @@ export var client;
                 id: 'network_members_group',
                 iobType: 'string',
                 name: 'network member groups',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return JSON.stringify(val);
                 },
             },
@@ -212,7 +212,7 @@ export var client;
                 iobType: 'string',
                 name: 'radio name',
                 valFromProperty: 'radio_proto',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     if (val) {
                         if (val === 'ax') {
                             return 'WiFi 6';
@@ -276,7 +276,7 @@ export var client;
                 iobType: 'number',
                 name: 'RX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -284,7 +284,7 @@ export var client;
                 iobType: 'number',
                 name: 'Rx Rate',
                 unit: 'mbps',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return Math.round(val / 1000);
                 }
             },
@@ -297,7 +297,7 @@ export var client;
                 iobType: 'number',
                 name: 'TX Bytes',
                 unit: 'GB',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                 }
             },
@@ -305,7 +305,7 @@ export var client;
                 iobType: 'number',
                 name: 'Tx Rate',
                 unit: 'mbps',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return Math.round(val / 1000);
                 }
             },

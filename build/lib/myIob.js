@@ -180,7 +180,7 @@ export class myIob {
                                         this.statesWithWriteFunction[writeValKey] = treeDef.writeVal;
                                     }
                                     if (treeData && (Object.hasOwn(treeData, key) || Object.hasOwn(treeData, treeDef.valFromProperty))) {
-                                        const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, `${channel}.${stateId}`) : treeData[valKey];
+                                        const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, channelData, `${channel}.${stateId}`) : treeData[valKey];
                                         let changedObj = undefined;
                                         if (this.statesUsingValAsLastChanged.includes(key)) {
                                             // set lc to last_seen value

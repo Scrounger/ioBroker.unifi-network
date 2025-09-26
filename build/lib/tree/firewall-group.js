@@ -21,7 +21,7 @@ export var firewallGroup;
                 iobType: 'string',
                 write: true,
                 name: 'group members',
-                readVal(val, adapter, device, id) {
+                readVal(val, adapter, device, channel, id) {
                     return JSON.stringify(val);
                 },
                 async writeVal(val, id, device, adapter) {

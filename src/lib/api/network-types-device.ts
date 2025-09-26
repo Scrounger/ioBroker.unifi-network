@@ -479,7 +479,7 @@ interface NetworkDeviceSysStats {
     mem_used: number
 }
 
-interface NetworkDeviceSystemStats {
+export interface NetworkDeviceSystemStats {
     cpu: string
     mem: string
     uptime: string

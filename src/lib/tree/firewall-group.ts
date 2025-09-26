@@ -27,7 +27,7 @@ export namespace firewallGroup {
                 iobType: 'string',
                 write: true,
                 name: 'group members',
-                readVal(val: string, adapter: ioBroker.myAdapter, device: FirewallGroup, id: string): ioBroker.StateValue {
+                readVal(val: string, adapter: ioBroker.myAdapter, device: FirewallGroup, channel: FirewallGroup, id: string): ioBroker.StateValue {
                     return JSON.stringify(val);
                 },
                 async writeVal(val: string, id: string, device: FirewallGroup, adapter: ioBroker.myAdapter): Promise<void> {
