@@ -2,10 +2,11 @@ name: Bug Report
 description: Something is not working as it should
 title: '[bug]: '
 labels: ['bug']
-body: - type: markdown
-attributes:
-value: |
-Thanks for taking the time to fill out this report!
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for taking the time to fill out this report!
 
     - type: checkboxes
       id: checked-other-issues
