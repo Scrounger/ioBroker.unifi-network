@@ -60,14 +60,14 @@ body:
 
     - type: input
       attributes:
-          label: unifi network version
+          label: UniFi Network version
           description: determine this under settings in your unifi-network application
       validations:
           required: true
 
     - type: input
       attributes:
-          label: unifi operating system
+          label: UniFi Operating System version
           description: determine this under control plane in your unifi-os application
       validations:
           required: false
