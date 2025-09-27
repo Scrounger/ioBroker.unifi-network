@@ -60,6 +60,20 @@ body:
 
     - type: input
       attributes:
+          label: unifi network version
+          description: determine this under settings in your unifi-network application
+      validations:
+          required: true
+
+    - type: input
+      attributes:
+          label: unifi operating system
+          description: determine this under control plane in your unifi-os application
+      validations:
+          required: false
+
+    - type: input
+      attributes:
           label: js-controller version
           description: determine this with "iobroker -v" on the console
       validations:
