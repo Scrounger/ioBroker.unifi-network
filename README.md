@@ -15,6 +15,26 @@
 
 Unifi Network uses the websocket interface to receive real-time information from the unifi-network application
 
+# Configuration
+
+## Local user (UniFi OS)
+
+You will need a local user created in your UniFi OS Console to log in with. Ubiquiti SSO Cloud Users will not work. It is recommended you use the Administrator or a user with full read/write access to get the most out of the integration, but it is not required.
+
+1. Login to your Local Portal on your UniFi OS device, and click on Users.\
+   **Note**: This **must** be done from the UniFi OS by accessing it directly by IP address (e.g. 192.168.1.1), not via unifi.ui.com or within the UniFi Network app.
+
+2. Go to **Admins & Users** from the left hand side menu and select the Admins tab or go to [IP address]/admins/ (e.g. 192.168.1.1/admins/).
+
+3. Click on **+** in the top right corner and select **Add Admin**.
+
+4. Select **Restrict to local access only** and enter a new username and password.
+
+5. Select **Hotspot Operator** and **Site Admin** for the Network role.\
+   **Note** This is not absolutely necessary, if the permissions are not sufficient, you will be informed via log message
+
+![image info](./doc/config_local_user.png)
+
 ## Important
 
 1. **This adapter can be very resource intensive!**<br>This depends on your environment, i.e. how many unifi-devices and clients are in your network. This can be influenced somewhat via the `update interval` parameter in the adapter settings. Real-time events are not affected by this setting, only the cyclical update of devices, clients, etc.
@@ -27,6 +47,7 @@ Unifi Network uses the websocket interface to receive real-time information from
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
 ### 1.1.0 (2025-09-21)
 
 - (Scrounger) dependencies updated
