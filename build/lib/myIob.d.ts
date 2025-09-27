@@ -70,6 +70,7 @@ export declare class myIob {
      * @param icon
      * @param updateObject
      * @param logChanges
+     * @param native
      */
     createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId?: string, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
     /**
@@ -79,6 +80,7 @@ export declare class myIob {
      * @param name
      * @param icon
      * @param updateObject
+     * @param native
      */
     createOrUpdateChannel(id: string, name: string, icon?: string, updateObject?: boolean, native?: Record<string, any>): Promise<void>;
     createOrUpdateStates(idChannel: string, treeDefinition: {

@@ -87,6 +87,7 @@ export class myIob {
      * @param icon
      * @param updateObject
      * @param logChanges
+     * @param native
      */
     public async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string | undefined = undefined, updateObject: boolean = false, logChanges: boolean = true, native: Record<string, any> = {}): Promise<void> {
         const logPrefix = '[createOrUpdateDevice]:';
@@ -146,6 +147,7 @@ export class myIob {
      * @param name
      * @param icon
      * @param updateObject
+     * @param native
      */
     public async createOrUpdateChannel(id: string, name: string, icon: string = undefined, updateObject: boolean = false, native: Record<string, any> = {}): Promise<void> {
         const logPrefix = '[createOrUpdateChannel]:';

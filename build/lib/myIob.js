@@ -24,6 +24,7 @@ export class myIob {
      * @param icon
      * @param updateObject
      * @param logChanges
+     * @param native
      */
     async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, updateObject = false, logChanges = true, native = {}) {
         const logPrefix = '[createOrUpdateDevice]:';
@@ -76,6 +77,7 @@ export class myIob {
      * @param name
      * @param icon
      * @param updateObject
+     * @param native
      */
     async createOrUpdateChannel(id, name, icon = undefined, updateObject = false, native = {}) {
         const logPrefix = '[createOrUpdateChannel]:';
