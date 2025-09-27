@@ -71,7 +71,7 @@ export declare class myIob {
      * @param updateObject
      * @param logChanges
      */
-    createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId?: string, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean): Promise<void>;
+    createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId?: string, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
     /**
      * create or update a channel object, update will only be done on adapter start
      *
@@ -80,7 +80,7 @@ export declare class myIob {
      * @param icon
      * @param updateObject
      */
-    createOrUpdateChannel(id: string, name: string, icon?: string, updateObject?: boolean): Promise<void>;
+    createOrUpdateChannel(id: string, name: string, icon?: string, updateObject?: boolean, native?: Record<string, any>): Promise<void>;
     createOrUpdateStates(idChannel: string, treeDefinition: {
         [key: string]: myTreeDefinition;
     }, partialData: myTreeData, fullData: myTreeData, blacklistFilter?: {

@@ -88,7 +88,7 @@ export class myIob {
      * @param updateObject
      * @param logChanges
      */
-    public async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string | undefined = undefined, updateObject: boolean = false, logChanges: boolean = true): Promise<void> {
+    public async createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId: string = undefined, icon: string | undefined = undefined, updateObject: boolean = false, logChanges: boolean = true, native: Record<string, any> = {}): Promise<void> {
         const logPrefix = '[createOrUpdateDevice]:';
 
         try {
@@ -114,7 +114,7 @@ export class myIob {
                 await this.adapter.setObject(id, {
                     type: 'device',
                     common: common,
-                    native: {},
+                    native,
                 });
             } else {
                 if (updateObject) {
@@ -147,7 +147,7 @@ export class myIob {
      * @param icon
      * @param updateObject
      */
-    public async createOrUpdateChannel(id: string, name: string, icon: string = undefined, updateObject: boolean = false): Promise<void> {
+    public async createOrUpdateChannel(id: string, name: string, icon: string = undefined, updateObject: boolean = false, native: Record<string, any> = {}): Promise<void> {
         const logPrefix = '[createOrUpdateChannel]:';
 
         try {
@@ -163,7 +163,7 @@ export class myIob {
                 await this.adapter.setObject(id, {
                     type: 'channel',
                     common: common,
-                    native: {},
+                    native,
                 });
             } else {
                 if (updateObject) {

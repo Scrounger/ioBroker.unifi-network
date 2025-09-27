@@ -25,7 +25,7 @@ export class myIob {
      * @param updateObject
      * @param logChanges
      */
-    async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, updateObject = false, logChanges = true) {
+    async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, updateObject = false, logChanges = true, native = {}) {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
             const i18n = name ? this.utils.I18n.getTranslatedObject(name) : name;
@@ -46,7 +46,7 @@ export class myIob {
                 await this.adapter.setObject(id, {
                     type: 'device',
                     common: common,
-                    native: {},
+                    native,
                 });
             }
             else {
@@ -77,7 +77,7 @@ export class myIob {
      * @param icon
      * @param updateObject
      */
-    async createOrUpdateChannel(id, name, icon = undefined, updateObject = false) {
+    async createOrUpdateChannel(id, name, icon = undefined, updateObject = false, native = {}) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
             const i18n = name ? this.utils.I18n.getTranslatedObject(name) : name;
@@ -90,7 +90,7 @@ export class myIob {
                 await this.adapter.setObject(id, {
                     type: 'channel',
                     common: common,
-                    native: {},
+                    native,
                 });
             }
             else {
