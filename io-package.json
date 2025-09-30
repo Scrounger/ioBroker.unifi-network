@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "news": {
+      "1.1.1": {
+        "en": "bug fixes\nroles added\nreponsiv adapter config implemented",
+        "de": "fehlerbehebungen\nrollen hinzugefügt\nreponsiv adapter config implementiert",
+        "ru": "исправление ошибок\nдобавлены роли\nreponsiv adapter config реализован",
+        "pt": "correções de erros\nfunções adicionadas\nconfiguração do adaptador reponsiv implementada",
+        "nl": "foutherstel\nrol toegevoegd\nreponsiv-adapterconfiguratie geïmplementeerd",
+        "fr": "corrections des bogues\nrôles ajoutés\nreponsiv configuration de l'adaptateur implémenté",
+        "it": "correzioni di bug\nruoli aggiunti\nreponsiv adattatore config implementato",
+        "es": "bug fixes\nfunciones adicionales\nadaptador reponsiv config implementado",
+        "pl": "poprawki błędów\nrole dodane\nreponsiv adapter konfiguracyjny zaimplementowany",
+        "uk": "виправлення помилок\nдодано ролі\njavascript licenses api веб-сайт",
+        "zh-cn": "错误修正\n增加的角色\n已执行适配器配置"
+      },
       "1.1.0": {
         "en": "dependencies updated\ncheck adapter settings for timeout and interval implemented\ntranslation optimized\nbug fixes",
         "de": "aktualisierte abhängigkeiten\nüberprüfen sie die adaptereinstellungen für timeout und intervall implementiert\nübersetzung optimiert\nfehlerbehebungen",
