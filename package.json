@@ -58,6 +58,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "prebuild": "rimraf build",
     "build": "tsc",
     "build-watch": "clear && tsc-watch --noClear --onSuccess 'iobroker restart unifi-network'",
     "watch": "build-adapter ts --watch",
