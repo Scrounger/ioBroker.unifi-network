@@ -4,13 +4,17 @@
         "donation_link": {
             "type": "staticLink",
             "text": "You like the adapter? Then support me.",
-            "sm": 12,
             "button": true,
             "newLine": true,
             "href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
             "style": {
                 "justifyContent": "flex-start !important"
-            }
+            },
+            "xl": 12,
+            "lg": 12,
+            "md": 12,
+            "sm": 12,
+            "xs": 12
         },
         "dividerFirewallRule": {
             "newLine": true,
@@ -22,8 +26,11 @@
             "type": "checkbox",
             "label": "Firewall - Rule enabled",
             "newLine": true,
+            "xl": 2,
+            "lg": 2,
+            "md": 2,
             "sm": 12,
-            "md": 2
+            "xs": 12
         },
         "dividerFirewallRuleBlackList": {
             "newLine": true,

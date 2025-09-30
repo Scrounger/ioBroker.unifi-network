@@ -4,13 +4,17 @@
 		"donation_link": {
 			"type": "staticLink",
 			"text": "You like the adapter? Then support me.",
-			"sm": 12,
 			"button": true,
 			"newLine": true,
 			"href": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VWAXSTS634G88&source=url",
 			"style": {
 				"justifyContent": "flex-start !important"
-			}
+			},
+			"xl": 12,
+			"lg": 12,
+			"md": 12,
+			"sm": 12,
+			"xs": 12
 		},
 		"dividerClients": {
 			"newLine": true,
@@ -22,8 +26,11 @@
 			"type": "checkbox",
 			"label": "clients enabled",
 			"newLine": true,
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
 			"sm": 12,
-			"md": 2
+			"xs": 12
 		},
 		"deleteClientsOlderThan": {
 			"type": "number",
@@ -31,8 +38,11 @@
 			"disabled": "!data.clientsEnabled",
 			"min": 0,
 			"step": 1,
+			"xl": 3,
+			"lg": 3,
+			"md": 3,
 			"sm": 12,
-			"md": 3
+			"xs": 12
 		},
 		"clientRealtimeDisconnectDebounceTime": {
 			"type": "number",
@@ -45,8 +55,11 @@
 			"min": 0,
 			"max": 10000,
 			"step": 1,
+			"xl": 3,
+			"lg": 3,
+			"md": 3,
 			"sm": 12,
-			"md": 3
+			"xs": 12
 		},
 		"clientOfflineTimeout": {
 			"type": "number",
@@ -60,15 +73,21 @@
 			"min": 92,
 			"max": 10000,
 			"step": 1,
+			"xl": 3,
+			"lg": 3,
+			"md": 3,
 			"sm": 12,
-			"md": 3
+			"xs": 12
 		},
 		"guestsEnabled": {
 			"type": "checkbox",
 			"label": "guests enabled",
 			"newLine": true,
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
 			"sm": 12,
-			"md": 2
+			"xs": 12
 		},
 		"deleteGuestsOlderThan": {
 			"type": "number",
@@ -76,15 +95,21 @@
 			"disabled": "!data.guestsEnabled",
 			"min": 0,
 			"step": 1,
+			"xl": 3,
+			"lg": 3,
+			"md": 3,
 			"sm": 12,
-			"md": 3
+			"xs": 12
 		},
 		"vpnEnabled": {
 			"type": "checkbox",
 			"label": "vpn clients enabled",
 			"newLine": true,
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
 			"sm": 12,
-			"md": 2
+			"xs": 12
 		},
 		"vpnOfflineTimeout": {
 			"type": "number",
@@ -97,16 +122,22 @@
 			"min": 92,
 			"max": 10000,
 			"step": 1,
+			"xl": 3,
+			"lg": 3,
+			"md": 3,
 			"sm": 12,
-			"md": 3
+			"xs": 12
 		},
 		"clientImageDownload": {
 			"type": "checkbox",
 			"label": "download images",
 			"newLine": true,
 			"disabled": "!data.clientsEnabled && !data.guestsEnabled && !data.vpnEnabled",
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
 			"sm": 12,
-			"md": 2
+			"xs": 12
 		},
 		"dividerClientBlackList": {
 			"newLine": true,

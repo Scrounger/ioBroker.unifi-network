@@ -10,7 +10,7 @@ export interface myTreeState {
     role?: string;
     read?: boolean;
     write?: boolean;
-    unit?: string;
+    unit?: string | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string);
     min?: number;
     max?: number;
     step?: number;
@@ -72,7 +72,7 @@ export declare class myIob {
      * @param logChanges
      * @param native
      */
-    createOrUpdateDevice(id: string, name: string | undefined, onlineId: string, errorId?: string, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
+    createOrUpdateDevice(id: string, name: string | ioBroker.Translated, onlineId: string, errorId?: string, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
     /**
      * create or update a channel object, update will only be done on adapter start
      *
@@ -82,12 +82,12 @@ export declare class myIob {
      * @param updateObject
      * @param native
      */
-    createOrUpdateChannel(id: string, name: string, icon?: string, updateObject?: boolean, native?: Record<string, any>): Promise<void>;
+    createOrUpdateChannel(id: string, name: string | ioBroker.Translated, icon?: string, updateObject?: boolean, native?: Record<string, any>): Promise<void>;
     createOrUpdateStates(idChannel: string, treeDefinition: {
         [key: string]: myTreeDefinition;
     }, partialData: myTreeData, fullData: myTreeData, blacklistFilter?: {
         id: string;
-    }[] | undefined, isWhiteList?: boolean, logDeviceName?: string, updateObject?: boolean): Promise<void>;
+    }[] | undefined, isWhiteList?: boolean, logDeviceName?: string, updateObject?: boolean): Promise<boolean>;
     private _createOrUpdateStates;
     private getCommonForState;
     private assignPredefinedRoles;
@@ -150,6 +150,7 @@ export declare class myIob {
      */
     deepDiffBetweenObjects: (object: any, base: any, adapter: ioBroker.Adapter, allowedKeys?: any, prefix?: string) => any;
     findMissingTranslation(): void;
+    _findMissingTranslation(obj: any, logSuffix?: any): void;
     /**
      * generate a list with all defined names, that can be used for translation
      *

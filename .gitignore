@@ -9,6 +9,7 @@ nbproject
 
 # npm package files
 iobroker.*.tgz
+.commitinfo
 
 Thumbs.db
 
@@ -16,3 +17,4 @@ Thumbs.db
 admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 mybuild.sh
+myrelease.sh

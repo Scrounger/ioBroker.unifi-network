@@ -75,7 +75,7 @@ export class NetworkApi extends EventEmitter {
 
     private apiErrorCount: number;
     private apiLastSuccess: number;
-    private headers: Record<string, string>;;
+    private headers: Record<string, string>;
 
     public log: NetworkLogging;
 
@@ -307,7 +307,7 @@ export class NetworkApi extends EventEmitter {
             // Log us in if needed.
             if (!(await this.loginController())) {
 
-                return retry ? this.retrievData(url, options, false) : undefined;
+                return retry ? await this.retrievData(url, options, false) : undefined;
             }
 
             const response = await this.retrieve(url, options);
@@ -316,8 +316,6 @@ export class NetworkApi extends EventEmitter {
                 if (response.statusCode !== 200) {
                     // Something went wrong. Retry the bootstrap attempt once, and then we're done.
                     this.log.error(`${logPrefix} Unable to retrieve data. code: ${response?.statusCode}, text: ${STATUS_CODES[response.statusCode]}, url: ${url}`);
-
-                    return retry ? this.retrievData(url, options, false) : undefined;
                 } else {
                     const data = await response.body.json() as Record<string, string>;
 
@@ -330,7 +328,7 @@ export class NetworkApi extends EventEmitter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
-        return undefined;
+        return retry ? await this.retrievData(url, options, false) : undefined;
     }
 
     // Internal interface to communicating HTTP requests with a Network controller, with error handling.

@@ -1,6 +1,6 @@
+import _ from 'lodash';
 import * as myHelper from './helper.js';
 import * as tree from './tree/index.js';
-import _ from 'lodash';
 export class myIob {
     adapter;
     log;
@@ -29,9 +29,11 @@ export class myIob {
     async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, updateObject = false, logChanges = true, native = {}) {
         const logPrefix = '[createOrUpdateDevice]:';
         try {
-            const i18n = name ? this.utils.I18n.getTranslatedObject(name) : name;
+            if (!_.isObject(name)) {
+                name = name ? this.utils.I18n.getTranslatedObject(name) : name;
+            }
             const common = {
-                name: name && Object.keys(i18n).length > 1 ? i18n : name,
+                name: name,
                 icon: icon,
             };
             if (onlineId) {
@@ -82,9 +84,11 @@ export class myIob {
     async createOrUpdateChannel(id, name, icon = undefined, updateObject = false, native = {}) {
         const logPrefix = '[createOrUpdateChannel]:';
         try {
-            const i18n = name ? this.utils.I18n.getTranslatedObject(name) : name;
+            if (!_.isObject(name)) {
+                name = name ? this.utils.I18n.getTranslatedObject(name) : name;
+            }
             const common = {
-                name: name && Object.keys(i18n).length > 1 ? i18n : name,
+                name: name,
                 icon: icon,
             };
             if (!(await this.adapter.objectExists(id))) {
@@ -116,10 +120,11 @@ export class myIob {
         }
     }
     async createOrUpdateStates(idChannel, treeDefinition, partialData, fullData, blacklistFilter = undefined, isWhiteList = false, logDeviceName = 'not defined', updateObject = false) {
-        await this._createOrUpdateStates(idChannel, this.getIdLastPart(idChannel), treeDefinition, partialData, blacklistFilter, isWhiteList, fullData, fullData, logDeviceName, updateObject);
+        return await this._createOrUpdateStates(idChannel, this.getIdLastPart(idChannel), treeDefinition, partialData, blacklistFilter, isWhiteList, fullData, fullData, logDeviceName, updateObject);
     }
     async _createOrUpdateStates(channel, deviceId, treeDefinition, treeData, blacklistFilter, isWhiteList, fullData, channelData, logDeviceName = 'not defined', updateObject = false, filterId = '', isChannelOnWhitelist = false) {
         const logPrefix = '[createOrUpdateStates]:';
+        let stateValueChanged = false;
         try {
             if (this.adapter.connected) {
                 for (const key in treeDefinition) {
@@ -134,20 +139,12 @@ export class myIob {
                                 valKey = treeDef.valFromProperty;
                             }
                             else {
-                                if (this.log.level === 'silly') {
-                                    this.log.silly(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''} key '${key}' has valFromProperty '${treeDef.valFromProperty}' not exist in data -> skipping!`);
-                                }
+                                this.log.silly(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''} key '${key}' has valFromProperty '${treeDef.valFromProperty}' not exist in data -> skipping!`);
                                 continue;
                             }
                         }
                         const cond1 = (Object.hasOwn(treeData, valKey) && treeData[valKey] !== undefined) || (Object.hasOwn(treeDef, 'id') && !Object.hasOwn(treeDef, 'valFromProperty'));
                         const cond2 = Object.hasOwn(treeDef, 'iobType') && !Object.hasOwn(treeDef, 'object') && !Object.hasOwn(treeDef, 'array');
-                        // if (channel === 'devices.f4:e2:c6:55:55:e2' && (key === 'satisfaction' || valKey === 'satisfaction')) {
-                        // 	this.log.warn(`cond 1: ${cond1}`);
-                        // 	this.log.warn(`cond 2: ${cond2}`);
-                        // 	this.log.warn(`cond 3: ${cond3}`)
-                        // 	this.log.warn(`val: ${treeData[valKey]}`);
-                        // }
                         if (key && cond1 && cond2) {
                             // if we have a 'iobType' property, then it's a state
                             let stateId = key;
@@ -203,6 +200,7 @@ export class myIob {
                                             changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true);
                                         }
                                         if (!updateObject && changedObj && Object.hasOwn(changedObj, 'notChanged') && !changedObj.notChanged) {
+                                            stateValueChanged = true;
                                             this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                                         }
                                     }
@@ -240,7 +238,8 @@ export class myIob {
                                 if ((Object.hasOwn(treeObjectDef, 'conditionToCreateState') && treeObjectDef.conditionToCreateState(fullData, channelData, this.adapter) === true) || !Object.hasOwn(treeObjectDef, 'conditionToCreateState')) {
                                     if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeObjectDef, 'required')) {
                                         await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeObjectDef, 'name') ? (typeof treeObjectDef.name === 'function' ? treeObjectDef.name(fullData, channelData[key], this.adapter) : treeObjectDef.name) : key, Object.hasOwn(treeObjectDef, 'icon') ? treeObjectDef.icon : undefined, updateObject);
-                                        await this._createOrUpdateStates(`${idChannel}`, deviceId, treeObjectDef.object, treeData[key], blacklistFilter, isWhiteList, fullData, channelData[key], logDeviceName, updateObject, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+                                        const result = await this._createOrUpdateStates(`${idChannel}`, deviceId, treeObjectDef.object, treeData[key], blacklistFilter, isWhiteList, fullData, channelData[key], logDeviceName, updateObject, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+                                        stateValueChanged = result ? result : stateValueChanged;
                                     }
                                     else {
                                         // channel is on blacklist
@@ -278,7 +277,8 @@ export class myIob {
                                                 }
                                                 if (idChannelArray !== undefined) {
                                                     await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty(fullData, channelData[key][i], this.adapter) : treeArrayDef.arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
-                                                    await this._createOrUpdateStates(`${idChannel}.${idChannelArray}`, deviceId, treeArrayDef.array, treeData[key][i], blacklistFilter, isWhiteList, fullData, channelData[key][i], logDeviceName, true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+                                                    const result = await this._createOrUpdateStates(`${idChannel}.${idChannelArray}`, deviceId, treeArrayDef.array, treeData[key][i], blacklistFilter, isWhiteList, fullData, channelData[key][i], logDeviceName, true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+                                                    stateValueChanged = result ? result : stateValueChanged;
                                                 }
                                             }
                                         }
@@ -306,6 +306,7 @@ export class myIob {
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
+        return stateValueChanged;
     }
     getCommonForState(id, treeDefinition, fullData, channelData, logMsgState, logDeviceName) {
         const logPrefix = '[getCommonForState]:';
@@ -321,7 +322,10 @@ export class myIob {
                 role: 'state'
             };
             if (treeDefinition[id].unit) {
-                common.unit = treeDefinition[id].unit;
+                const unitTmp = treeDefinition[id]?.unit;
+                const unit = (typeof unitTmp === 'function') ? unitTmp(fullData, channelData, this.adapter) : unitTmp;
+                const unitI18 = this.utils.I18n.getTranslatedObject(unit);
+                common.unit = Object.keys(unitI18).length > 1 && unitI18[this.adapter.language] ? unitI18[this.adapter.language] : unit;
             }
             if (treeDefinition[id].min || treeDefinition[id].min === 0) {
                 common.min = treeDefinition[id].min;
@@ -447,23 +451,26 @@ export class myIob {
                     if (id.toLocaleLowerCase().includes('firmware') || id.toLocaleLowerCase().includes('version')) {
                         return 'info.firmware';
                     }
-                    if (id.toLocaleLowerCase().includes('status')) {
+                    else if (id.toLocaleLowerCase().includes('status')) {
                         return 'info.status';
                     }
-                    if (id.toLocaleLowerCase().includes('model')) {
+                    else if (id.toLocaleLowerCase().includes('model')) {
                         return 'info.model';
                     }
-                    if (id.toLocaleLowerCase().includes('mac')) {
+                    else if (id.toLocaleLowerCase().includes('mac')) {
                         return 'info.mac';
                     }
-                    if (id.toLocaleLowerCase().includes('name')) {
+                    else if (id.toLocaleLowerCase().includes('name')) {
                         return 'info.name';
                     }
-                    if (id.toLocaleLowerCase().includes('hardware')) {
+                    else if (id.toLocaleLowerCase().includes('hardware')) {
                         return 'info.hardware';
                     }
-                    if (id.toLocaleLowerCase().includes('serial')) {
+                    else if (id.toLocaleLowerCase().includes('serial')) {
                         return 'info.serial';
+                    }
+                    else {
+                        return 'text';
                     }
                 }
             }
@@ -609,11 +616,28 @@ export class myIob {
     findMissingTranslation() {
         const logPrefix = '[findMissingTranslation]:';
         try {
-            for (const key in tree) {
-                if (_.isObject(tree[key]) && !key.includes('events')) {
-                    const result = this.tree2Translation(tree[key].get(), this.adapter, this.utils.I18n);
-                    if (result && Object.keys(result).length > 0) {
-                        this.log.warn(`${logPrefix} ${key} - missing translations ${JSON.stringify(result)}`);
+            this._findMissingTranslation(tree);
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    _findMissingTranslation(obj, logSuffix = undefined) {
+        const logPrefix = `[findMissingTranslation]:${logSuffix ? ` ${logSuffix}` : ''}`;
+        try {
+            for (const key in obj) {
+                if (_.isObject(obj[key]) && !key.includes('events')) {
+                    if (Object.hasOwn(obj[key], 'get')) {
+                        const result = this.tree2Translation(obj[key].get(), this.adapter, this.utils.I18n);
+                        if (result && Object.keys(result).length > 0) {
+                            this.log.warn(`${logPrefix} ${key} - missing translations ${JSON.stringify(result)}`);
+                        }
+                        if (Object.keys(obj[key]).length > 0) {
+                            this._findMissingTranslation(obj[key], logSuffix ? `${logSuffix}.${key}` : key);
+                        }
+                    }
+                    else {
+                        this._findMissingTranslation(obj[key], logSuffix ? `${logSuffix}.${key}` : key);
                     }
                 }
             }
