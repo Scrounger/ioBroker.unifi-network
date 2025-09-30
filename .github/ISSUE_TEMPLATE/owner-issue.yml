@@ -1,0 +1,14 @@
+name: Owner Issue
+description: This template is intended for the repository owner only. If this template is used by anyone other than the repository owner, the issue will be automatically closed.
+title: '[Owner]: '
+labels: []
+assignees:
+    - Scrounger
+body:
+    - type: textarea
+      id: description
+      attributes:
+          label: This template is intended for the repository owner only
+          description: If this template is used by anyone other than the repository owner, the issue will be automatically closed.
+      validations:
+          required: true

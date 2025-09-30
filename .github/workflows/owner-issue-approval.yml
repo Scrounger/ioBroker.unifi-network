@@ -1,0 +1,39 @@
+name: Close Unauthorized Owner Issues Template
+
+on:
+    issues:
+        types:
+            - opened
+
+jobs:
+    close-unauthorized-issue:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check if issue was created using the owner-issue template
+              id: check-template
+              run: |
+                  issue_body="${{ github.event.issue.body }}"
+                  if echo "$issue_body" | grep -q "This template is intended for the repository owner only"; then
+                    echo "is-owner-template=true" >> $GITHUB_ENV
+                  else
+                    echo "is-owner-template=false" >> $GITHUB_ENV
+                  fi
+
+            - name: Check if issue was created by the repository owner
+              id: check-owner
+              run: |
+                  if [[ "${{ github.event.issue.user.login }}" != "${{ github.repository_owner }}" ]]; then
+                    echo "not-owner=true" >> $GITHUB_ENV
+                  else
+                    echo "not-owner=false" >> $GITHUB_ENV
+                  fi
+
+            - name: Close issue if not created by the owner and uses the owner-issue template
+              if: env.is-owner-template == 'true' && env.not-owner == 'true'
+              run: |
+                  curl -X PATCH \
+                    -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    -H "Accept: application/vnd.github+json" \
+                    https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }} \
+                    -d '{"state": "closed", "body": "This issue template is reserved for the repository owner. Your issue has been closed automatically."}'

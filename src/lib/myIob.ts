@@ -94,7 +94,7 @@ export class myIob {
         const logPrefix = '[createOrUpdateDevice]:';
 
         try {
-            if (!_.isObject(name)) {
+            if (typeof name === 'string') {
                 name = name ? this.utils.I18n.getTranslatedObject(name) : name
             }
 
@@ -156,7 +156,7 @@ export class myIob {
         const logPrefix = '[createOrUpdateChannel]:';
 
         try {
-            if (!_.isObject(name)) {
+            if (typeof name === 'string') {
                 name = name ? this.utils.I18n.getTranslatedObject(name) : name
             }
 
@@ -756,7 +756,8 @@ export class myIob {
             for (const key in obj) {
                 if (_.isObject(obj[key]) && !key.includes('events')) {
                     if (Object.hasOwn(obj[key], 'get')) {
-                        const result = this.tree2Translation((obj[key] as any).get(), this.adapter, this.utils.I18n);
+                        //@ts-ignore
+                        const result = this.tree2Translation(obj[key].get(), this.adapter, this.utils.I18n);
 
                         if (result && Object.keys(result).length > 0) {
                             this.log.warn(`${logPrefix} ${key} - missing translations ${JSON.stringify(result)}`);
