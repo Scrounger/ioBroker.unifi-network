@@ -47,8 +47,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.1.2 (2025-10-02)
 
 - (Scrounger) login bug fix for self hosted controllers
 - (Scrounger) dependencies updated

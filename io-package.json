@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "news": {
+      "1.1.2": {
+        "en": "login bug fix for self hosted controllers\ndependencies updated\nbug fixes",
+        "de": "fehlerbehebung für selbstgehostete controller\naktualisierte abhängigkeiten\nfehlerbehebungen",
+        "ru": "login bug fix для самоуправляемых контроллеров\nобновленные зависимости\nисправление ошибок",
+        "pt": "correção de erros de login para controladores hospedados automaticamente\ndependências atualizadas\ncorreções de erros",
+        "nl": "login bug fix voor zelf gehoste controllers\nafhankelijkheden bijgewerkt\nfoutherstel",
+        "fr": "correction de bug de connexion pour les contrôleurs auto hébergés\ndépendances mises à jour\ncorrections des bogues",
+        "it": "correzione bug login per i controller self hosting\ndipendenze aggiornate\ncorrezioni di bug",
+        "es": "inicio de sesión bug fix para auto hospedado controladores\ndependencias actualizadas\nbug fixes",
+        "pl": "zaloguj błąd dla własnych sterowników\nzaktualizowane zależności\npoprawki błędów",
+        "uk": "виправлення помилок логіна для самореєстраторів\nоновлені залежності\nвиправлення помилок",
+        "zh-cn": "自主机控制器的登录错误修正\n更新依赖关系\n错误修正"
+      },
       "1.1.1": {
         "en": "bug fixes\nroles added\nreponsiv adapter config implemented",
         "de": "fehlerbehebungen\nrollen hinzugefügt\nreponsiv adapter config implementiert",
