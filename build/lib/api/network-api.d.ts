@@ -1,4 +1,4 @@
-import { type Dispatcher } from "undici";
+import { type Dispatcher } from 'undici';
 import { EventEmitter } from 'node:events';
 import type { NetworkLogging } from './network-logging.js';
 import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
@@ -19,7 +19,7 @@ export type RequestOptions = {
      * use cases.
      */
     dispatcher?: Dispatcher;
-} & Omit<Dispatcher.RequestOptions, "origin" | "path">;
+} & Omit<Dispatcher.RequestOptions, 'origin' | 'path'>;
 /**
  * Options to tailor the behavior
  */

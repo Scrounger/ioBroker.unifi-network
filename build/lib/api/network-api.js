@@ -1,8 +1,8 @@
 // Lib imports
-import { Pool, errors, interceptors, request } from "undici";
-import { STATUS_CODES } from "node:http";
+import { Pool, errors, interceptors, request } from 'undici';
+import { STATUS_CODES } from 'node:http';
 import { EventEmitter } from 'node:events';
-import util from "node:util";
+import util from 'node:util';
 import WebSocket from 'ws';
 // API imports
 import { API_TIMEOUT } from './network-settings.js';
@@ -86,7 +86,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.loginController]`;
         try {
             // If we're already logged in, we're done.
-            if (this.headers.cookie && this.headers["x-csrf-token"]) {
+            if (this.headers.cookie && this.headers['x-csrf-token']) {
                 return true;
             }
             // Utility to grab the headers we're interested in a normalized manner.
@@ -99,15 +99,15 @@ export class NetworkApi extends EventEmitter {
                 return Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
             };
             // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
-            if (!this.headers["x-csrf-token"]) {
+            if (!this.headers['x-csrf-token'] && this.adapter.config.isUnifiOs) {
                 // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
                 // controller and checking the headers for it.
-                const response = await this.retrieve(`https://${this.host}${this.port}`, { method: "GET" });
+                const response = await this.retrieve(`https://${this.host}${this.port}`, { method: 'GET' });
                 if (this.responseOk(response?.statusCode)) {
-                    const csrfToken = getHeader("X-CSRF-Token", response?.headers);
+                    const csrfToken = getHeader('X-CSRF-Token', response?.headers);
                     // Preserve the CSRF token, if found, for future API calls.
                     if (csrfToken) {
-                        this.headers["x-csrf-token"] = csrfToken;
+                        this.headers['x-csrf-token'] = csrfToken;
                     }
                 }
             }
@@ -122,15 +122,32 @@ export class NetworkApi extends EventEmitter {
                 return false;
             }
             // We're logged in. Let's configure our headers.
-            const csrfToken = getHeader("X-Updated-CSRF-Token", response?.headers) ?? getHeader("X-CSRF-Token", response?.headers);
-            const cookie = getHeader("Set-Cookie", response?.headers);
+            const csrfToken = getHeader('X-Updated-CSRF-Token', response?.headers) ?? getHeader('X-CSRF-Token', response?.headers);
+            const cookie = getHeader('Set-Cookie', response?.headers);
             // Save the refreshed cookie and CSRF token for future API calls and we're done.
-            if (csrfToken && cookie) {
+            if (cookie) {
                 // Only preserve the token element of the cookie and not the superfluous information that's been added to it.
-                this.headers.cookie = cookie.split(";")[0];
-                // Save the CSRF token.
-                this.headers["x-csrf-token"] = csrfToken;
-                return true;
+                this.headers.cookie = cookie.split(';')[0];
+                if (csrfToken) {
+                    // Unifi OS: Save the CSRF token.
+                    this.headers['x-csrf-token'] = csrfToken;
+                    return true;
+                }
+                else {
+                    // self hosted controller, extract from cookie
+                    const selfHostedCookie = response.headers['set-cookie'];
+                    const csrfCookie = selfHostedCookie.find(cookie => cookie.startsWith("csrf_token="));
+                    if (csrfCookie) {
+                        const extractCsrf = csrfCookie.split(';')[0].split('=')[1];
+                        this.headers['x-csrf-token'] = extractCsrf;
+                        return true;
+                    }
+                    else {
+                        this.log.error(`${logPrefix} cookie not have a csrf token!`);
+                        this.log.debug(`${logPrefix} headers: ${JSON.stringify(response?.headers)}`);
+                        return false;
+                    }
+                }
             }
             // Clear out our login credentials.
             this.logout();
@@ -149,13 +166,13 @@ export class NetworkApi extends EventEmitter {
             // Close any connection to the Network API.
             this.reset();
             // Save our CSRF token, if we have one.
-            const csrfToken = this.headers["x-csrf-token"];
+            const csrfToken = this.headers['x-csrf-token'];
             // Initialize the headers we need.
             this.headers = {};
-            this.headers["content-type"] = "application/json";
+            this.headers['content-type'] = 'application/json';
             // Restore the CSRF token if we have one.
             if (csrfToken) {
-                this.headers["x-csrf-token"] = csrfToken;
+                this.headers['x-csrf-token'] = csrfToken;
             }
         }
         catch (error) {
@@ -174,7 +191,7 @@ export class NetworkApi extends EventEmitter {
             // Create an interceptor that allows us to set the user agent to our liking.
             const ua = (dispatch) => (opts, handler) => {
                 opts.headers ??= {};
-                opts.headers["user-agent"] = "unifi-network";
+                opts.headers['user-agent'] = 'unifi-network';
                 return dispatch(opts, handler);
             };
             // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
@@ -182,7 +199,7 @@ export class NetworkApi extends EventEmitter {
             // 1500ms per retry, in factors of 2 starting from a 100ms delay.
             this.dispatcher = new Pool(`https://${this.host}${this.port}`, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
                 .compose(ua, interceptors.retry({
-                maxRetries: 5, maxTimeout: 1500, methods: ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"], minTimeout: 100,
+                maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'], minTimeout: 100,
                 statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
             }));
         }
@@ -198,7 +215,7 @@ export class NetworkApi extends EventEmitter {
      * @param retrieveOptions
      * @returns Returns a promise that will resolve to a Response object successful, and `null` otherwise.
      */
-    async retrieve(url, options = { method: "GET" }, retrieveOptions = {}) {
+    async retrieve(url, options = { method: 'GET' }, retrieveOptions = {}) {
         return this._retrieve(url, options, retrieveOptions);
     }
     /**
@@ -236,7 +253,7 @@ export class NetworkApi extends EventEmitter {
         return retry ? await this.retrievData(url, options, false) : undefined;
     }
     // Internal interface to communicating HTTP requests with a Network controller, with error handling.
-    async _retrieve(url, options = { method: "GET" }, retrieveOptions = {}, isRetry = false) {
+    async _retrieve(url, options = { method: 'GET' }, retrieveOptions = {}, isRetry = false) {
         const logPrefix = `[${this.logPrefix}._retrieve]`;
         retrieveOptions.timeout ??= API_TIMEOUT;
         // Catch Network controller server-side issues:
@@ -289,7 +306,7 @@ export class NetworkApi extends EventEmitter {
             // Increment our API error count.
             this.apiErrorCount++;
             // We aborted the connection.
-            if ((error instanceof DOMException) && (error.name === "AbortError")) {
+            if ((error instanceof DOMException) && (error.name === 'AbortError')) {
                 this.log.error(`${logPrefix} Network controller is taking too long to respond to a request. This error can usually be safely ignored.`);
                 return null;
             }
@@ -311,19 +328,19 @@ export class NetworkApi extends EventEmitter {
             if (error instanceof TypeError) {
                 cause = error.cause;
             }
-            if ((error instanceof Error) && ("code" in error) && (typeof error.code === "string")) {
+            if ((error instanceof Error) && ('code' in error) && (typeof error.code === 'string')) {
                 cause = error;
             }
             if (cause) {
                 switch (cause.code) {
-                    case "ECONNREFUSED":
-                    case "EHOSTDOWN":
+                    case 'ECONNREFUSED':
+                    case 'EHOSTDOWN':
                         this.log.error(`${logPrefix} Connection refused.`);
                         break;
-                    case "ECONNRESET":
+                    case 'ECONNRESET':
                         this.log.error(`${logPrefix} Network connection to Network controller has been reset.`);
                         break;
-                    case "ENOTFOUND":
+                    case 'ENOTFOUND':
                         if (this.host) {
                             this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct.`);
                         }
@@ -814,7 +831,7 @@ export class NetworkApi extends EventEmitter {
     //         return true;
     //     }
     //     const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
-    //     const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? "" } });
+    //     const ws = new WebSocket(url, { dispatcher: new Agent({ connect: { rejectUnauthorized: false } }), headers: { Cookie: this.headers.cookie ?? '' } });
     //     if (!ws) {
     //         this.log.error('Unable to connect to the realtime update events API. Will retry again later.');
     //         this._eventsWs = null;
@@ -840,12 +857,12 @@ export class NetworkApi extends EventEmitter {
     //         try {
     //             if (event.data) {
     //                 if (event.data.toLowerCase() === 'pong') {
-    //                     this.emit("pong");
+    //                     this.emit('pong');
     //                     this.log.level === 'silly' ? this.log.silly(`pong received`) : this.log.debug(`pong received`);
     //                 } else {
     //                     const data: NetworkEvent = JSON.parse(event.data);
     //                     if (data) {
-    //                         this.emit("message", data);
+    //                         this.emit('message', data);
     //                     }
     //                 }
     //             } else {
@@ -920,7 +937,7 @@ export class NetworkApi extends EventEmitter {
                     }
                     const event = JSON.parse(data.toString());
                     if (event) {
-                        this.emit("message", event);
+                        this.emit('message', event);
                     }
                 }
                 catch (error) {
@@ -929,7 +946,7 @@ export class NetworkApi extends EventEmitter {
             });
             ws.on('pong', messageHandler = (data) => {
                 try {
-                    this.emit("pong");
+                    this.emit('pong');
                     this.log.silly(`pong received`);
                 }
                 catch (error) {
