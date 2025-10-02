@@ -50,6 +50,10 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+
+- (Scrounger) login bug fix for self hosted controllers v9.x.x
+
 ### 1.1.2 (2025-10-02)
 
 - (Scrounger) login bug fix for self hosted controllers

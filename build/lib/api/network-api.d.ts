@@ -54,6 +54,8 @@ export declare class NetworkApi extends EventEmitter {
     private logPrefix;
     private adapter;
     private dispatcher;
+    private cookieUrl;
+    private cookieJar;
     private apiErrorCount;
     private apiLastSuccess;
     private headers;
@@ -66,6 +68,7 @@ export declare class NetworkApi extends EventEmitter {
     private username;
     private _eventsWs;
     connectionTimeout: ioBroker.Timeout | undefined;
+    private controllerUrl;
     constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter);
     login(): Promise<boolean>;
     private loginController;
