@@ -15,9 +15,17 @@
 
 Unifi Network uses the websocket interface to receive real-time information from the unifi-network application
 
-# Configuration
+## Important
 
-## Local user (UniFi OS)
+1. The adapter is developed exclusively on the basis of the UniFi OS. Compatibility with a self-hosted network controller should be given, but cannot be guaranteed.
+
+2. **This adapter can be very resource intensive!**<br>This depends on your environment, i.e. how many unifi-devices and clients are in your network. This can be influenced somewhat via the realtime api `debounce time [s]` parameter in the adapter settings. Real-time events are not affected by this setting, only the "cyclical" real time update of devices, clients, etc.
+
+3. **Not all states are directly available after the adapter has started**<br>States are only created and updated when the data is sent by the network controller, this can take some time until the data is sent for the first time
+
+## Configuration
+
+### Local user (UniFi OS)
 
 You will need a local user created in your UniFi OS Console to log in with. Ubiquiti SSO Cloud Users will not work. It is recommended you use the Administrator or a user with full read/write access to get the most out of the integration, but it is not required.
 
@@ -35,18 +43,13 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ![image info](./doc/config_local_user.png)
 
-## Important
-
-1. **This adapter can be very resource intensive!**<br>This depends on your environment, i.e. how many unifi-devices and clients are in your network. This can be influenced somewhat via the realtime api `debounce time [s]` parameter in the adapter settings. Real-time events are not affected by this setting, only the "cyclical" real time update of devices, clients, etc.
-
-2. **Not all states are directly available after the adapter has started**<br>States are only created and updated when the data is sent by the network controller, this can take some time until the data is sent for the first time
-
 ## Changelog
 
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
 ### 1.1.2 (2025-10-02)
 
 - (Scrounger) login bug fix for self hosted controllers
