@@ -39,7 +39,6 @@ export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
     adapter;
     dispatcher;
-    cookieUrl;
     cookieJar = new CookieJar();
     apiErrorCount;
     apiLastSuccess;

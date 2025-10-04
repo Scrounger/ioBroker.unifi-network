@@ -73,8 +73,6 @@ export class NetworkApi extends EventEmitter {
     private adapter: ioBroker.Adapter;
 
     private dispatcher!: Dispatcher;
-
-    private cookieUrl: string;
     private cookieJar: CookieJar = new CookieJar();
 
     private apiErrorCount: number;

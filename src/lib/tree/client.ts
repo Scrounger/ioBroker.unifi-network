@@ -86,10 +86,10 @@ export namespace client {
                     if (device.fingerprint && adapter.config.clientImageDownload) {
                         if (device.unifi_device_info && device.unifi_device_info.icon_filename) {
                             return `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`
-                        } else if (Object.prototype.hasOwnProperty.call(device.fingerprint, 'computed_engine')) {
-                            if (Object.prototype.hasOwnProperty.call(device.fingerprint, 'dev_id_override')) {
+                        } else if (Object.hasOwn(device.fingerprint, 'computed_engine')) {
+                            if (Object.hasOwn(device.fingerprint, 'dev_id_override')) {
                                 return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id_override}_257x257.png?q=100`
-                            } else if (Object.prototype.hasOwnProperty.call(device.fingerprint, 'dev_id')) {
+                            } else if (Object.hasOwn(device.fingerprint, 'dev_id')) {
                                 return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`
                             }
                         }

@@ -1322,7 +1322,7 @@ class UnifiNetwork extends utils.Adapter {
                         this.log.debug(`${logPrefix} event 'adopt' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }
                     else {
-                        this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key},` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+                        this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key}` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }
                 }
             }
