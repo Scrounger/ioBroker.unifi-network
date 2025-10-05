@@ -70,23 +70,25 @@ export var client;
                 required: true,
                 conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
-                    return objDevice?.type === undefined || objDevice?.type !== "VPN";
+                    return adapter.config.clientImageDownload && (objDevice?.type === undefined || objDevice?.type !== "VPN");
                 },
-                readVal(val, adapter, device, channel, id) {
+                async readVal(val, adapter, device, channel, id) {
+                    let url = null;
                     if (device.fingerprint && adapter.config.clientImageDownload) {
                         if (device.unifi_device_info && device.unifi_device_info.icon_filename) {
-                            return `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`;
+                            url = `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`;
                         }
                         else if (Object.hasOwn(device.fingerprint, 'computed_engine')) {
                             if (Object.hasOwn(device.fingerprint, 'dev_id_override')) {
-                                return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id_override}_257x257.png?q=100`;
+                                url = `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id_override}_257x257.png?q=100`;
                             }
                             else if (Object.hasOwn(device.fingerprint, 'dev_id')) {
-                                return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`;
+                                url = `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`;
                             }
                         }
+                        await adapter.checkImageDownload(id, url);
                     }
-                    return null;
+                    return url;
                 }
             },
             image: {

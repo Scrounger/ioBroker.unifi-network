@@ -41,7 +41,7 @@ export class NetworkApi extends EventEmitter {
     dispatcher;
     cookieJar = new CookieJar();
     apiErrorCount;
-    apiLastSuccess;
+    // private apiLastSuccess: number;
     headers;
     log;
     host;
@@ -60,7 +60,7 @@ export class NetworkApi extends EventEmitter {
         this.log = adapter.log;
         this._eventsWs = null;
         this.apiErrorCount = 0;
-        this.apiLastSuccess = 0;
+        // this.apiLastSuccess = 0;
         this.headers = {};
         this.host = host;
         this.port = isUnifiOs ? '' : `:${port}`;
@@ -300,7 +300,7 @@ export class NetworkApi extends EventEmitter {
                 return null;
             }
             // We're all good - return the response and we're done.
-            this.apiLastSuccess = Date.now();
+            // this.apiLastSuccess = Date.now();
             this.apiErrorCount = 0;
             const setCookie = response.headers['set-cookie'];
             if (setCookie) {

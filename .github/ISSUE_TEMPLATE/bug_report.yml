@@ -74,7 +74,7 @@ body:
 
     - type: input
       attributes:
-          label: js-controller version
+          label: ioBroker js-controller version
           description: determine this with "iobroker -v" on the console
       validations:
           required: true
@@ -88,7 +88,7 @@ body:
 
     - type: input
       attributes:
-          label: Operating system
+          label: ioBroker Operating system
       validations:
           required: true
 

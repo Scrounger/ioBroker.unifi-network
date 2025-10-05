@@ -56,7 +56,6 @@ export declare class NetworkApi extends EventEmitter {
     private dispatcher;
     private cookieJar;
     private apiErrorCount;
-    private apiLastSuccess;
     private headers;
     log: NetworkLogging;
     private host;
@@ -176,7 +175,7 @@ export declare class NetworkApi extends EventEmitter {
      * @param model
      * @returns
      */
-    getDeviceModels_V2(model?: string): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined>;
+    getDeviceModels_V2(model?: string): Promise<NetworkDeviceModels[] | undefined>;
     /**
      * List all LAN configurations
      *

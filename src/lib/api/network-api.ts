@@ -76,7 +76,7 @@ export class NetworkApi extends EventEmitter {
     private cookieJar: CookieJar = new CookieJar();
 
     private apiErrorCount: number;
-    private apiLastSuccess: number;
+    // private apiLastSuccess: number;
     private headers: Record<string, string>;
 
     public log: NetworkLogging;
@@ -104,7 +104,7 @@ export class NetworkApi extends EventEmitter {
         this._eventsWs = null;
 
         this.apiErrorCount = 0;
-        this.apiLastSuccess = 0;
+        // this.apiLastSuccess = 0;
         this.headers = {};
 
         this.host = host;
@@ -410,7 +410,7 @@ export class NetworkApi extends EventEmitter {
             }
 
             // We're all good - return the response and we're done.
-            this.apiLastSuccess = Date.now();
+            // this.apiLastSuccess = Date.now();
             this.apiErrorCount = 0;
 
             const setCookie = response.headers['set-cookie']
@@ -756,7 +756,7 @@ export class NetworkApi extends EventEmitter {
      * @param model
      * @returns 
      */
-    public async getDeviceModels_V2(model: string = undefined): Promise<NetworkDeviceModels[] | NetworkDeviceModels | undefined> {
+    public async getDeviceModels_V2(model: string = undefined): Promise<NetworkDeviceModels[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`
 
         try {

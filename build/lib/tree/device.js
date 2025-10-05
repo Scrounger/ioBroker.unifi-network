@@ -220,11 +220,17 @@ export var device;
                 subscribeMe: true,
                 valFromProperty: 'model',
                 required: true,
-                readVal(val, adapter, device, channel, id) {
+                conditionToCreateState(objDevice, objChannel, adapter) {
+                    return adapter.config.deviceImageDownload;
+                },
+                async readVal(val, adapter, device, channel, id) {
                     if (val && adapter.config.deviceImageDownload) {
-                        const find = _.find(adapter.cache.deviceModels, (x) => x.model_name.includes(val));
+                        const deviceModels = await adapter.ufn.getDeviceModels_V2();
+                        const find = _.find(deviceModels, (x) => x.model_name.includes(val));
                         if (find) {
-                            return `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.default_image_id}.png&w=256?q=100`;
+                            const url = `https://images.svc.ui.com/?u=https://static.ui.com/fingerprint/ui/images/${find.id}/default/${find.default_image_id}.png&w=256?q=100`;
+                            await adapter.checkImageDownload(id, url);
+                            return url;
                         }
                     }
                     return null;
@@ -233,7 +239,10 @@ export var device;
             image: {
                 id: 'image',
                 iobType: 'string',
-                name: 'base64 image'
+                name: 'base64 image',
+                conditionToCreateState(objDevice, objChannel, adapter) {
+                    return adapter.config.deviceImageDownload;
+                },
             },
             ip: {
                 iobType: 'string',

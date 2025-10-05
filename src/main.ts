@@ -15,13 +15,12 @@ import url from 'node:url';
 import { NetworkApi } from './lib/api/network-api.js';
 import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import type { NetworkDevice } from './lib/api/network-types-device.js';
-import type { NetworkDeviceModels } from './lib/api/network-types-device-models.js';
 import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
 import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
 import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
 
 // Adapter imports
-import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myImgCache, type myNetworkClient } from './lib/myTypes.js';
+import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myNetworkClient } from './lib/myTypes.js';
 import { eventHandler } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
@@ -38,13 +37,10 @@ class UnifiNetwork extends utils.Adapter {
 	pingTimeout: ioBroker.Timeout | undefined = undefined;
 	aliveTimestamp: number = moment().valueOf();
 
-	imageUpdateTimeout: ioBroker.Timeout
-
 	connectionRetries: number = 0;
 
 	cache: myCache = {
 		devices: {},
-		deviceModels: [],
 		clients: {},
 		vpn: {},
 		wlan: {},
@@ -146,8 +142,6 @@ class UnifiNetwork extends utils.Adapter {
 
 			this.clearTimeout(this.aliveTimeout);
 			this.clearTimeout(this.pingTimeout);
-
-			this.clearTimeout(this.imageUpdateTimeout);
 
 			if (this.ufn) {
 				this.ufn.logout();
@@ -500,8 +494,6 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateRealTimeApiData]:';
 
 		try {
-			this.cache.deviceModels = await this.ufn.getDeviceModels_V2() as NetworkDeviceModels[];
-
 			await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
 
 			await this.updateClients(null, true);
@@ -525,10 +517,6 @@ class UnifiNetwork extends utils.Adapter {
 			// }
 
 			// this.log.warn(JSON.stringify(list));
-
-			this.imageUpdateTimeout = this.setTimeout(async () => {
-				await this.updateImages();
-			}, this.config.realTimeApiDebounceTime * 2 * 1000);
 
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1292,58 +1280,6 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateImages(): Promise<void> {
-		const logPrefix = '[updateImages]:';
-
-		try {
-			if (this.config.deviceImageDownload) {
-				const clients = await this.getStatesAsync(`${tree.device.idChannel}.*.imageUrl`);
-				await this._updateClientsImages(clients)
-			}
-
-			if (this.config.clientImageDownload) {
-
-				if (this.config.clientsEnabled) {
-					const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.imageUrl`);
-					await this._updateClientsImages(clients)
-				}
-
-				if (this.config.guestsEnabled) {
-					const guests = await this.getStatesAsync(`${tree.client.idChannelGuests}.*.imageUrl`);
-					await this._updateClientsImages(guests)
-				}
-			}
-		} catch (error) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	async _updateClientsImages(objs: Record<string, ioBroker.State>): Promise<void> {
-		const logPrefix = '[_updateClientsImages]:';
-
-		try {
-			const imgCache: myImgCache = {}
-
-			for (const id in objs) {
-				const url = objs[id];
-
-				if (url && url.val) {
-					if (imgCache[url.val as string]) {
-						imgCache[url.val as string].push(this.myIob.getIdWithoutLastPart(id))
-					} else {
-						imgCache[url.val as string] = [this.myIob.getIdWithoutLastPart(id)]
-					}
-				}
-			}
-
-			for (const url in imgCache) {
-				await this.downloadImage(url, imgCache[url]);
-			}
-		} catch (error) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
 	/**
 	 * Download image from a given url and update Channel icon if needed
 	 * 
@@ -1391,6 +1327,36 @@ class UnifiNetwork extends utils.Adapter {
 			const mac = this.myIob.getIdLastPart(idChannelList[0]);
 
 			this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	public async checkImageDownload(idImageUrl: string, url: string): Promise<void> {
+		const logPrefix = '[checkImageDownload]:';
+
+		try {
+			const idChannel = this.myIob.getIdWithoutLastPart(idImageUrl);
+
+			if (url) {
+				if (await this.objectExists(idImageUrl)) {
+					const state = await this.getStateAsync(idImageUrl);
+					const image = await this.getStateAsync(`${idChannel}.image`);
+
+					if ((state && state.val !== url) || image === null || (image && image.val === null)) {
+						await this.downloadImage(url, [idChannel]);
+					}
+				} else {
+					if (await this.objectExists(`${idChannel}.image`)) {
+						await this.downloadImage(url, [idChannel]);
+					}
+				}
+			} else {
+				if (await this.objectExists(`${idChannel}.image`)) {
+					await this.setState(`${idChannel}.image`, null, true);
+					await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, null, true, false);
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
 

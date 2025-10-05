@@ -1,6 +1,5 @@
 import type { NetworkClient } from "./api/network-types-client.js";
 import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceSystemStats, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
-import type { NetworkDeviceModels } from './api/network-types-device-models.js'
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { FirewallGroup } from "./api/network-types-firewall-group.js";
@@ -59,7 +58,6 @@ export const WebSocketEvent = {
 
 export interface myCache {
     devices: { [key: string]: NetworkDevice; },
-    deviceModels: NetworkDeviceModels[],
     clients: { [key: string]: myNetworkClient; },
     vpn: { [key: string]: myNetworkClient; }
     wlan: { [key: string]: NetworkWlanConfig; },

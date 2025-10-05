@@ -14,7 +14,6 @@ declare class UnifiNetwork extends utils.Adapter {
     aliveTimeout: ioBroker.Timeout | undefined;
     pingTimeout: ioBroker.Timeout | undefined;
     aliveTimestamp: number;
-    imageUpdateTimeout: ioBroker.Timeout;
     connectionRetries: number;
     cache: myCache;
     subscribedList: string[];
@@ -81,8 +80,6 @@ declare class UnifiNetwork extends utils.Adapter {
      * @deprecated Download public data from ui with image url infos.
      */
     updateDevicesImages(): Promise<void>;
-    updateImages(): Promise<void>;
-    _updateClientsImages(objs: Record<string, ioBroker.State>): Promise<void>;
     /**
      * Download image from a given url and update Channel icon if needed
      *
@@ -90,6 +87,7 @@ declare class UnifiNetwork extends utils.Adapter {
      * @param idChannelList
      */
     downloadImage(url: string | null, idChannelList: string[]): Promise<void>;
+    checkImageDownload(idImageUrl: string, url: string): Promise<void>;
     /**
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */

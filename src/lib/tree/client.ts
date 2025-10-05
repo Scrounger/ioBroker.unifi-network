@@ -80,21 +80,25 @@ export namespace client {
                 required: true,
                 conditionToCreateState(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): boolean {
                     // only wired and wireless clients
-                    return objDevice?.type === undefined || objDevice?.type !== "VPN";
+                    return adapter.config.clientImageDownload && (objDevice?.type === undefined || objDevice?.type !== "VPN");
                 },
-                readVal(val: NetworkClientFingerprint, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
+                async readVal(val: NetworkClientFingerprint, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): Promise<ioBroker.StateValue> {
+                    let url = null;
+
                     if (device.fingerprint && adapter.config.clientImageDownload) {
                         if (device.unifi_device_info && device.unifi_device_info.icon_filename) {
-                            return `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`
+                            url = `https://static.ui.com/fingerprint/ui/icons/${device.unifi_device_info.icon_filename}_257x257.png?q=100`
                         } else if (Object.hasOwn(device.fingerprint, 'computed_engine')) {
                             if (Object.hasOwn(device.fingerprint, 'dev_id_override')) {
-                                return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id_override}_257x257.png?q=100`
+                                url = `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id_override}_257x257.png?q=100`
                             } else if (Object.hasOwn(device.fingerprint, 'dev_id')) {
-                                return `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`
+                                url = `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`
                             }
                         }
+
+                        await adapter.checkImageDownload(id, url);
                     }
-                    return null;
+                    return url;
                 }
             },
             image: {

@@ -64,6 +64,8 @@ declare global {
 			ufn: NetworkApi;
 			myIob: myIob;
 			cache: myCache;
+
+			checkImageDownload(idImageUrl: string, url: string): Promise<void>
 		}
 	}
 }

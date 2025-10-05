@@ -25,11 +25,9 @@ class UnifiNetwork extends utils.Adapter {
     aliveTimeout = undefined;
     pingTimeout = undefined;
     aliveTimestamp = moment().valueOf();
-    imageUpdateTimeout;
     connectionRetries = 0;
     cache = {
         devices: {},
-        deviceModels: [],
         clients: {},
         vpn: {},
         wlan: {},
@@ -114,7 +112,6 @@ class UnifiNetwork extends utils.Adapter {
             this.removeListener('pong', this.pongListener);
             this.clearTimeout(this.aliveTimeout);
             this.clearTimeout(this.pingTimeout);
-            this.clearTimeout(this.imageUpdateTimeout);
             if (this.ufn) {
                 this.ufn.logout();
                 await this.setConnectionStatus(false);
@@ -443,7 +440,6 @@ class UnifiNetwork extends utils.Adapter {
     async updateRealTimeApiData() {
         const logPrefix = '[updateRealTimeApiData]:';
         try {
-            this.cache.deviceModels = await this.ufn.getDeviceModels_V2();
             await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
             await this.updateClients(null, true);
             await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
@@ -459,9 +455,6 @@ class UnifiNetwork extends utils.Adapter {
             // 	list.push({ id: id });
             // }
             // this.log.warn(JSON.stringify(list));
-            this.imageUpdateTimeout = this.setTimeout(async () => {
-                await this.updateImages();
-            }, this.config.realTimeApiDebounceTime * 2 * 1000);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1115,51 +1108,6 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateImages() {
-        const logPrefix = '[updateImages]:';
-        try {
-            if (this.config.deviceImageDownload) {
-                const clients = await this.getStatesAsync(`${tree.device.idChannel}.*.imageUrl`);
-                await this._updateClientsImages(clients);
-            }
-            if (this.config.clientImageDownload) {
-                if (this.config.clientsEnabled) {
-                    const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.imageUrl`);
-                    await this._updateClientsImages(clients);
-                }
-                if (this.config.guestsEnabled) {
-                    const guests = await this.getStatesAsync(`${tree.client.idChannelGuests}.*.imageUrl`);
-                    await this._updateClientsImages(guests);
-                }
-            }
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-    }
-    async _updateClientsImages(objs) {
-        const logPrefix = '[_updateClientsImages]:';
-        try {
-            const imgCache = {};
-            for (const id in objs) {
-                const url = objs[id];
-                if (url && url.val) {
-                    if (imgCache[url.val]) {
-                        imgCache[url.val].push(this.myIob.getIdWithoutLastPart(id));
-                    }
-                    else {
-                        imgCache[url.val] = [this.myIob.getIdWithoutLastPart(id)];
-                    }
-                }
-            }
-            for (const url in imgCache) {
-                await this.downloadImage(url, imgCache[url]);
-            }
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-    }
     /**
      * Download image from a given url and update Channel icon if needed
      *
@@ -1201,6 +1149,35 @@ class UnifiNetwork extends utils.Adapter {
         catch (error) {
             const mac = this.myIob.getIdLastPart(idChannelList[0]);
             this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async checkImageDownload(idImageUrl, url) {
+        const logPrefix = '[checkImageDownload]:';
+        try {
+            const idChannel = this.myIob.getIdWithoutLastPart(idImageUrl);
+            if (url) {
+                if (await this.objectExists(idImageUrl)) {
+                    const state = await this.getStateAsync(idImageUrl);
+                    const image = await this.getStateAsync(`${idChannel}.image`);
+                    if ((state && state.val !== url) || image === null || (image && image.val === null)) {
+                        await this.downloadImage(url, [idChannel]);
+                    }
+                }
+                else {
+                    if (await this.objectExists(`${idChannel}.image`)) {
+                        await this.downloadImage(url, [idChannel]);
+                    }
+                }
+            }
+            else {
+                if (await this.objectExists(`${idChannel}.image`)) {
+                    await this.setState(`${idChannel}.image`, null, true);
+                    await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, null, true, false);
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
     //#endregion
