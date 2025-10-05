@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) auto translation bug fix
 - (Scrounger) image downloading improved
 
 ### 1.1.3 (2025-10-03)

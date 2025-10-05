@@ -95,7 +95,8 @@ export class myIob {
 
         try {
             if (typeof name === 'string') {
-                name = name ? this.utils.I18n.getTranslatedObject(name) : name
+                const translation = this.utils.I18n.getTranslatedObject(name);
+                name = translation && Object.keys(translation).length > 1 ? translation : name
             }
 
             const common: ioBroker.DeviceCommon = {
@@ -157,7 +158,8 @@ export class myIob {
 
         try {
             if (typeof name === 'string') {
-                name = name ? this.utils.I18n.getTranslatedObject(name) : name
+                const translation = this.utils.I18n.getTranslatedObject(name);
+                name = translation && Object.keys(translation).length > 1 ? translation : name
             }
 
             const common = {
