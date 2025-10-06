@@ -123,13 +123,15 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.login]`
 
         try {
+            this.log.warn('login test version');
+
+            this.logout();
+
             if (!this.isControllerDetected) {
                 await this.detectController();
             }
 
             if (this.isControllerDetected) {
-                this.logout();
-
                 // Let's attempt to login.
                 const loginSuccess = await this.loginController();
 
@@ -150,13 +152,11 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.detectUnifiOs]`
 
         try {
-            const agent = new Agent({ connect: { rejectUnauthorized: false } });
-
-            const response = await request(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: agent });
+            const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
 
             this.log.debug(`${logPrefix} detect self hosted controller repsonse: ${JSON.stringify(response)}`);
 
-            if (response.statusCode === 302 && response.headers.location === '/manage') {
+            if (response !== null && response.statusCode === 302 && response.headers.location === '/manage') {
                 this.controllerUrl = `https://${this.host}:${this.port}`;
                 this.isUnifiOs = false;
                 this.isControllerDetected = true;
@@ -164,7 +164,7 @@ export class NetworkApi extends EventEmitter {
                 this.log.debug(`${logPrefix} self hosted controller detected`);
             } else {
 
-                const response = await request(`https://${this.host}`, { method: 'GET', dispatcher: agent });
+                const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
 
                 this.log.debug(`${logPrefix} detect UniFi OS controller repsonse: ${JSON.stringify(response)}`);
 
@@ -330,7 +330,7 @@ export class NetworkApi extends EventEmitter {
             // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
             // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
             // 1500ms per retry, in factors of 2 starting from a 100ms delay.
-            this.dispatcher = new Pool(this.controllerUrl, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+            this.dispatcher = new Agent({ allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
                 .compose(ua, interceptors.retry({
                     maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'], minTimeout: 100,
                     statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
@@ -430,6 +430,10 @@ export class NetworkApi extends EventEmitter {
             // Preemptively increase the error count.
             this.apiErrorCount++;
 
+            if (response.statusCode === 302 && !this.isControllerDetected) {
+                return response
+            }
+
             // Bad username and password.
             if (response.statusCode === 401) {
                 this.logout();
@@ -475,6 +479,10 @@ export class NetworkApi extends EventEmitter {
 
             return response;
         } catch (error) {
+
+            if (!this.isControllerDetected) {
+                return null;
+            }
 
             // Increment our API error count.
             this.apiErrorCount++;
