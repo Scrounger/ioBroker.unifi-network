@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "news": {
+      "1.1.4": {
+        "en": "logging improved\nauto detect UniFi OS or self hosted controller\nauto translation bug fix\nimage downloading improved\nbug fixes",
+        "de": "protokollierung verbessert\nautodetektiv UniFi OS oder selbstgehostete Controller\nautomatische übersetzung fehler beheben\nbilddownload verbessert\nfehlerbehebungen",
+        "ru": "улучшение лесозаготовок\nавтоматическое обнаружение UniFi OS или автономный контроллер\nавтоматический перевод bug fix\nзагрузка изображений улучшилась\nисправление ошибок",
+        "pt": "registro melhorado\ndetectar automaticamente UniFi OS ou controlador self hosted\ncorreção de erro de tradução automática\na transferência da imagem melhorou\ncorreções de erros",
+        "nl": "loggen verbeterd\nautomatisch detecteren UniFi OS of self hosted controller\nauto vertaling fout fix\nafbeelding downloaden verbeterd\nfoutherstel",
+        "fr": "amélioration de l'exploitation forestière\ndétection automatique UniFi OS ou contrôleur auto-hébergé\ncorrection du bug de traduction automatique\ntéléchargement d'image amélioré\ncorrections des bogues",
+        "it": "logging migliorato\nrilevamento automatico UniFi OS o controller self hosting\ncorrezione di bug di traduzione automatica\nil download dell'immagine migliorato\ncorrezioni di bug",
+        "es": "mejora de la logística\ndetección automática Sistema operativo UniFi o controlador auto hospedado\ncorrección de error de traducción automática\ndescarga de imágenes mejorada\nbug fixes",
+        "pl": "poprawiono logowanie\nautomatyczne wykrywanie UniFi OS lub kontroler samoobsługowy\nautomatyczne tłumaczenie błąd naprawić\npoprawiono pobieranie obrazu\npoprawki błędów",
+        "uk": "каротаж покращений\nавтоматичного виявлення UniFi OS або самореєстратор\nавтоматичного виправлення помилок перекладу\nзавантаження зображень поліпшено\nвиправлення помилок",
+        "zh-cn": "伐木得到改善\n自动检测 UniFi OS 或自主机控制器\n自动翻译错误修正\n图像下载改进\n错误修正"
+      },
       "1.1.3": {
         "en": "login bug fix for self hosted controllers v9.x.x",
         "de": "fehlerbehebung für selbstgehostete controller v9.x.x",
