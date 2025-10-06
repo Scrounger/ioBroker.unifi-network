@@ -18,6 +18,7 @@ import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall-group.js';
+import { NetworkSite } from './network-types-sites.js';
 
 export type Nullable<T> = T | null;
 
@@ -52,7 +53,7 @@ export enum ApiEndpoints {
     wlanConfig = 'wlanConfig',
     lanConfig = 'lanConfig',
     firewallGroup = 'firewallGroup',
-
+    sites = 'sites',
 }
 
 export enum ApiEndpoints_V2 {
@@ -64,7 +65,7 @@ export enum ApiEndpoints_V2 {
     wanConfig = 'wanConfig',
     models = 'models',
     'network-members-group' = 'network-members-group',
-    'network-members-groups' = 'network-members-groups'
+    'network-members-groups' = 'network-members-groups',
 }
 
 export class NetworkApi extends EventEmitter {
@@ -123,8 +124,6 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.login]`
 
         try {
-            this.log.warn('login test version');
-
             this.logout();
 
             if (!this.isControllerDetected) {
@@ -162,8 +161,8 @@ export class NetworkApi extends EventEmitter {
                 this.isControllerDetected = true;
 
                 this.log.debug(`${logPrefix} self hosted controller detected`);
-            } else {
 
+            } else {
                 const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
 
                 this.log.debug(`${logPrefix} detect UniFi OS controller repsonse: ${JSON.stringify(response)}`);
@@ -257,8 +256,22 @@ export class NetworkApi extends EventEmitter {
                     return true;
                 } else {
                     if (cookie.includes('unifises') || cookie.includes('csrf_token')) {
+                        // self hosted controller
                         this.log.debug(`${logPrefix} login to self hosted UniFi controller successful.`);
-                        return true;
+
+                        const sites = await this.getSites();
+
+                        if (sites) {
+                            if (sites.find(site => site.name === this.site)) {
+                                return true;
+                            } else {
+                                this.log.error(`${logPrefix} site "${this.site}" not found on controller! (available sites: ${sites.map(site => site.name).join(', ')})`);
+                                return false;
+                            }
+                        } else {
+                            this.log.error(`${logPrefix} unable to retrieve sites from controller!`);
+                            return false;
+                        }
                     } else {
                         this.log.error(`${logPrefix} no cookies found`);
                         this.log.debug(`${logPrefix} headers: ${JSON.stringify(response?.headers)}`);
@@ -332,7 +345,7 @@ export class NetworkApi extends EventEmitter {
             // 1500ms per retry, in factors of 2 starting from a 100ms delay.
             this.dispatcher = new Agent({ allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
                 .compose(ua, interceptors.retry({
-                    maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT'], minTimeout: 100,
+                    maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
                     statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
                 }));
         }
@@ -368,24 +381,13 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.retrievData]`
 
         try {
-            // Log us in if needed.
-            if (!(await this.loginController())) {
-
-                return retry ? await this.retrievData(url, options, false) : undefined;
-            }
-
             const response = await this.retrieve(url, options);
 
-            if (response && response !== null) {
-                if (response.statusCode !== 200) {
-                    // Something went wrong. Retry the bootstrap attempt once, and then we're done.
-                    this.log.error(`${logPrefix} Unable to retrieve data. code: ${response?.statusCode}, text: ${STATUS_CODES[response.statusCode]}, url: ${url}`);
-                } else {
-                    const data = await response.body.json() as Record<string, string>;
+            if (this.responseOk(response?.statusCode)) {
+                const data = await response.body.json() as Record<string, string>;
 
-                    if (data) {
-                        return data;
-                    }
+                if (data) {
+                    return data;
                 }
             }
         } catch (error: any) {
@@ -513,7 +515,7 @@ export class NetworkApi extends EventEmitter {
                 return null;
             }
 
-            let cause;
+            let cause: NodeJS.ErrnoException | (Error & Record<"code", unknown>);
 
             if (error instanceof TypeError) {
                 cause = error.cause as NodeJS.ErrnoException;
@@ -978,6 +980,28 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    /**
+     * List all LAN configurations
+     * 
+     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
+     * @returns 
+     */
+    public async getSites(): Promise<NetworkSite[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getFirewallGroup]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.sites)}`);
+
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
@@ -1029,6 +1053,11 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints.firewallGroup:
                 endpointSuffix = `/api/s/${this.site}/rest/firewallgroup`;
+                break;
+
+            case ApiEndpoints.sites:
+                // only available on self hosted controller
+                endpointSuffix = `/api/self/sites`;
                 break;
 
             default:

@@ -9,6 +9,7 @@ import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall-group.js';
+import { NetworkSite } from './network-types-sites.js';
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -37,7 +38,8 @@ export declare enum ApiEndpoints {
     clientCommand = "clientCommand",
     wlanConfig = "wlanConfig",
     lanConfig = "lanConfig",
-    firewallGroup = "firewallGroup"
+    firewallGroup = "firewallGroup",
+    sites = "sites"
 }
 export declare enum ApiEndpoints_V2 {
     devices = "devices",
@@ -198,6 +200,13 @@ export declare class NetworkApi extends EventEmitter {
      */
     getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
     getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
+    /**
+     * List all LAN configurations
+     *
+     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
+     * @returns
+     */
+    getSites(): Promise<NetworkSite[] | undefined>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id?: string | undefined): Promise<void>;
