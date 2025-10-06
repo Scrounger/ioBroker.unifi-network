@@ -1,11 +1,7 @@
 import * as utils from '@iobroker/adapter-core';
 import { NetworkApi } from './lib/api/network-api.js';
-import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
-import type { NetworkDevice } from './lib/api/network-types-device.js';
-import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
-import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
-import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
-import { type myCache, type myNetworkClient } from './lib/myTypes.js';
+import type { NetworkEvent } from './lib/api/network-types.js';
+import { type myCache } from './lib/myTypes.js';
 import { myIob } from './lib/myIob.js';
 declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi;
@@ -65,41 +61,41 @@ declare class UnifiNetwork extends utils.Adapter {
      */
     sendPing(): void;
     updateRealTimeApiData(): Promise<void>;
-    updateApiData(): void;
-    updateDevices(data?: NetworkDevice[] | null, isAdapterStart?: boolean): Promise<void>;
-    updateClients(data?: myNetworkClient[] | null, isAdapterStart?: boolean, isOfflineClients?: boolean): Promise<void>;
-    updatClientsOffline(data: myNetworkClient[], isAdapterStart?: boolean): Promise<void>;
-    updateIsOnlineState(isAdapterStart?: boolean): Promise<void>;
-    _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number, typeOfClient: string, isAdapterStart?: boolean): Promise<void>;
-    updateWlanConfig(data: NetworkWlanConfig[] | NetworkWlanConfig_V2[], isAdapterStart?: boolean): Promise<void>;
-    updateWlanConnectedClients(isAdapterStart?: boolean): Promise<void>;
-    updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[], isAdapterStart?: boolean): Promise<void>;
-    updateLanConnectedClients(isAdapterStart?: boolean): Promise<void>;
-    updateFirewallGroup(data: FirewallGroup[], isAdapterStart?: boolean): Promise<void>;
+    private updateApiData;
+    private updateDevices;
+    private updateClients;
+    private updatClientsOffline;
+    private updateIsOnlineState;
+    private _updateIsOnlineState;
+    private updateWlanConfig;
+    private updateWlanConnectedClients;
+    private updateLanConfig;
+    private updateLanConnectedClients;
+    private updateFirewallGroup;
     /**
      * @deprecated Download public data from ui with image url infos.
      */
-    updateDevicesImages(): Promise<void>;
+    private updateDevicesImages;
     /**
      * Download image from a given url and update Channel icon if needed
      *
      * @param url
      * @param idChannelList
      */
-    downloadImage(url: string | null, idChannelList: string[]): Promise<void>;
+    private downloadImage;
     checkImageDownload(idImageUrl: string, url: string): Promise<void>;
     /**
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */
-    onPongMessage(): void;
-    onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest | NetworkEventFirewallGroup): Promise<void>;
-    onNetworkEvent(event: NetworkEvent): Promise<void>;
-    onNetworkClientEvent(events: NetworkEventClient): Promise<void>;
-    onNetworkUserEvent(events: NetworkEventClient): Promise<void>;
-    onNetworkWlanConfEvent(event: NetworkEventWlanConfig): Promise<void>;
-    onNetworkLanConfEvent(event: NetworkEventLanConfig): Promise<void>;
-    onNetworkFirewallGroupEvent(event: NetworkEventFirewallGroup): Promise<void>;
-    onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void>;
+    private onPongMessage;
+    private onNetworkMessage;
+    private onNetworkEvent;
+    private onNetworkClientEvent;
+    private onNetworkUserEvent;
+    private onNetworkWlanConfEvent;
+    private onNetworkLanConfEvent;
+    private onNetworkFirewallGroupEvent;
+    private onNetworkSpeedTestEvent;
 }
 export default function startAdapter(options: Partial<utils.AdapterOptions> | undefined): UnifiNetwork;
 export {};

@@ -433,14 +433,14 @@ export class NetworkApi extends EventEmitter {
             // Bad username and password.
             if (response.statusCode === 401) {
                 this.logout();
-                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password (code: ${response.statusCode}).`);
+                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password (code: ${response.statusCode}, url: ${url}).`);
 
                 return null;
             }
 
             // Insufficient privileges.
             if (response.statusCode === 403) {
-                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges (code: ${response.statusCode}).`)
+                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges (code: ${response.statusCode}, url: ${url}).`)
 
                 return null;
             }
@@ -448,13 +448,13 @@ export class NetworkApi extends EventEmitter {
             if (!this.responseOk(response.statusCode)) {
 
                 if (serverErrors.has(response.statusCode)) {
-                    this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots (code: ${response.statusCode}).`);
+                    this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots (code: ${response.statusCode}, url: ${url}).`);
 
                     return null;
                 }
 
                 // Some other unknown error occurred.
-                this.log.error(`${logPrefix} ${response.statusCode} - ${STATUS_CODES[response.statusCode]}`);
+                this.log.error(`${logPrefix} ${response.statusCode} - ${STATUS_CODES[response.statusCode]}, url: ${url}`);
                 return null;
             }
 
@@ -481,7 +481,7 @@ export class NetworkApi extends EventEmitter {
 
             // We aborted the connection.
             if ((error instanceof DOMException) && (error.name === 'AbortError')) {
-                this.log.error(`${logPrefix} Network controller is taking too long to respond to a request. This error can usually be safely ignored.`);
+                this.log.error(`${logPrefix} Network controller is taking too long to respond to a request. This error can usually be safely ignored (url: ${url})`);
 
                 return null;
             }
@@ -493,14 +493,14 @@ export class NetworkApi extends EventEmitter {
 
             // We destroyed the pool due to a reset event and our inflight connections are failing.
             if (error instanceof errors.RequestRetryError) {
-                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots.`);
+                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots (url: ${url})`);
 
                 return null;
             }
 
             // Connection timed out.
             if (error instanceof errors.ConnectTimeoutError) {
-                this.log.error(`${logPrefix} Connection timed out.`);
+                this.log.error(`${logPrefix} Connection timed out (url: ${url})`);
 
                 return null;
             }
@@ -521,20 +521,20 @@ export class NetworkApi extends EventEmitter {
 
                     case 'ECONNREFUSED':
                     case 'EHOSTDOWN':
-                        this.log.error(`${logPrefix} Connection refused.`);
+                        this.log.error(`${logPrefix} Connection refused (url: ${url})`);
 
                         break;
 
                     case 'ECONNRESET':
-                        this.log.error(`${logPrefix} Network connection to Network controller has been reset.`);
+                        this.log.error(`${logPrefix} Network connection to Network controller has been reset (url: ${url})`);
 
                         break;
 
                     case 'ENOTFOUND':
                         if (this.host) {
-                            this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct.`)
+                            this.log.error(`${logPrefix} Hostname or IP address not found: ${this.host}. Please ensure the address you configured for this UniFi Network controller is correct (url: ${url})`)
                         } else {
-                            this.log.error(`${logPrefix} No hostname or IP address provided.`);
+                            this.log.error(`${logPrefix} No hostname or IP address provided (url: ${url})`);
                         }
 
                         break;
@@ -549,7 +549,7 @@ export class NetworkApi extends EventEmitter {
                 return null;
             }
 
-            this.log.error(`${logPrefix} Error: ${util.inspect(error, { colors: true, depth: null, sorted: true })}`);
+            this.log.error(`${logPrefix} Error: ${util.inspect(error, { colors: true, depth: null, sorted: true })} (url: ${url})`);
 
             return null;
         } finally {
@@ -1273,6 +1273,8 @@ export class NetworkApi extends EventEmitter {
 
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+
+            return false;
         }
 
         return true;

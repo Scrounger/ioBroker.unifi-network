@@ -54,6 +54,7 @@ class UnifiNetwork extends utils.Adapter {
 	eventListener = async (event: NetworkEvent): Promise<void> => {
 		await this.onNetworkMessage(event);
 	};
+
 	pongListener = (): void => {
 		this.onPongMessage();
 	};
@@ -106,11 +107,10 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.host, this.config.user, this.config.password) {
 					this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
 
-					await this.establishConnection();
-
 					this.ufn.on('message', this.eventListener);
 					this.ufn.on('pong', this.pongListener);
-					this.log.info(`${logPrefix} WebSocket listener successfully started`);
+
+					await this.establishConnection();
 				} else {
 					this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 				}
@@ -337,7 +337,9 @@ class UnifiNetwork extends utils.Adapter {
 				await this.updateRealTimeApiData();
 				await this.updateIsOnlineState(true);
 
-				this.updateApiData();
+				await this.updateApiData();
+
+				this.sendPing();
 
 				this.pingTimeout = this.setTimeout(() => {
 					this.sendPing();
@@ -382,7 +384,7 @@ class UnifiNetwork extends utils.Adapter {
 						await this.setConnectionStatus(true);
 						return true;
 					} else {
-						this.log.error(`${logPrefix} unable to start ws listener`);
+						this.log.error(`${logPrefix} unable to establish WebSocket connection to realtime API`);
 					}
 				} else {
 					this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.ufn.controllerUrl}, site: ${this.config.site})`);
@@ -523,7 +525,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	updateApiData(): void {
+	private async updateApiData(): Promise<void> {
 		const logPrefix = '[updateApiData]:';
 
 		try {
@@ -534,7 +536,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateDevices(data: NetworkDevice[] | null = null, isAdapterStart: boolean = false): Promise<void> {
+	private async updateDevices(data: NetworkDevice[] | null = null, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateDevices]:';
 
 		try {
@@ -622,7 +624,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateClients(data: myNetworkClient[] | null = null, isAdapterStart: boolean = false, isOfflineClients: boolean = false): Promise<void> {
+	private async updateClients(data: myNetworkClient[] | null = null, isAdapterStart: boolean = false, isOfflineClients: boolean = false): Promise<void> {
 		const logPrefix = '[updateClients]:';
 
 		try {
@@ -851,7 +853,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updatClientsOffline(data: myNetworkClient[], isAdapterStart: boolean = false): Promise<void> {
+	private async updatClientsOffline(data: myNetworkClient[], isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updatClientsOffline]:';
 
 		try {
@@ -870,7 +872,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateIsOnlineState(isAdapterStart: boolean = false): Promise<void> {
+	private async updateIsOnlineState(isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateIsOnlineState]:';
 
 		try {
@@ -889,7 +891,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number, typeOfClient: string, isAdapterStart: boolean = false): Promise<void> {
+	private async _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number, typeOfClient: string, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[_updateIsOnlineState]:';
 
 		try {
@@ -921,7 +923,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateWlanConfig(data: NetworkWlanConfig[] | NetworkWlanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
+	private async updateWlanConfig(data: NetworkWlanConfig[] | NetworkWlanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateWlanConfig]:';
 
 		try {
@@ -998,7 +1000,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateWlanConnectedClients(isAdapterStart: boolean = false): Promise<void> {
+	private async updateWlanConnectedClients(isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateWlanConnectedClients]:';
 
 		try {
@@ -1042,7 +1044,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
+	private async updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateLanConfig]:';
 
 		try {
@@ -1121,7 +1123,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateLanConnectedClients(isAdapterStart: boolean = false): Promise<void> {
+	private async updateLanConnectedClients(isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateLanConnectedClients]:';
 
 		try {
@@ -1165,7 +1167,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async updateFirewallGroup(data: FirewallGroup[], isAdapterStart: boolean = false): Promise<void> {
+	private async updateFirewallGroup(data: FirewallGroup[], isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateFirewallGroup]:';
 
 		try {
@@ -1238,7 +1240,7 @@ class UnifiNetwork extends utils.Adapter {
 	/**
 	 * @deprecated Download public data from ui with image url infos.
 	 */
-	async updateDevicesImages(): Promise<void> {
+	private async updateDevicesImages(): Promise<void> {
 		const logPrefix = '[updateDevicesImages]:';
 
 		try {
@@ -1286,7 +1288,7 @@ class UnifiNetwork extends utils.Adapter {
 	 * @param url 
 	 * @param idChannelList 
 	 */
-	async downloadImage(url: string | null, idChannelList: string[]): Promise<void> {
+	private async downloadImage(url: string | null, idChannelList: string[]): Promise<void> {
 		const logPrefix = '[downloadImage]:';
 
 		try {
@@ -1367,18 +1369,20 @@ class UnifiNetwork extends utils.Adapter {
 	/**
 	 * Websocket pong received, sets the aliveTimestamp to the current timestamp
 	 */
-	onPongMessage(): void {
+	private onPongMessage(): void {
 		const logPrefix = '[onPongMessage]:';
 
 		try {
 			this.aliveTimestamp = moment().valueOf();
 			this.log.silly('ping pong');
+
+			this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
 
-	async onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest | NetworkEventFirewallGroup): Promise<void> {
+	private async onNetworkMessage(event: NetworkEventDevice | NetworkEventClient | NetworkEvent | NetworkEventSpeedTest | NetworkEventFirewallGroup): Promise<void> {
 		const logPrefix = '[onNetworkMessage]:';
 
 		try {
@@ -1421,7 +1425,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkEvent(event: NetworkEvent): Promise<void> {
+	private async onNetworkEvent(event: NetworkEvent): Promise<void> {
 		const logPrefix = '[onNetworkEvent]:';
 
 		try {
@@ -1497,7 +1501,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkClientEvent(events: NetworkEventClient): Promise<void> {
+	private async onNetworkClientEvent(events: NetworkEventClient): Promise<void> {
 		const logPrefix = '[onNetworkClientEvent]:';
 
 		try {
@@ -1521,7 +1525,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkUserEvent(events: NetworkEventClient): Promise<void> {
+	private async onNetworkUserEvent(events: NetworkEventClient): Promise<void> {
 		const logPrefix = '[onNetworkUserEvent]:';
 
 		try {
@@ -1555,7 +1559,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkWlanConfEvent(event: NetworkEventWlanConfig): Promise<void> {
+	private async onNetworkWlanConfEvent(event: NetworkEventWlanConfig): Promise<void> {
 		const logPrefix = '[onNetworkWlanConfEvent]:';
 
 		try {
@@ -1573,7 +1577,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkLanConfEvent(event: NetworkEventLanConfig): Promise<void> {
+	private async onNetworkLanConfEvent(event: NetworkEventLanConfig): Promise<void> {
 		const logPrefix = '[onNetworkLanConfEvent]:';
 
 		try {
@@ -1591,7 +1595,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkFirewallGroupEvent(event: NetworkEventFirewallGroup): Promise<void> {
+	private async onNetworkFirewallGroupEvent(event: NetworkEventFirewallGroup): Promise<void> {
 		const logPrefix = '[onNetworkFirewallGroupEvent]:';
 
 		try {
@@ -1609,7 +1613,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	async onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void> {
+	private async onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void> {
 		const logPrefix = '[onNetworkSpeedTestEvent]:';
 
 		try {

@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) logging improved
 - (Scrounger) auto detect UniFi OS or self hosted controller
 - (Scrounger) auto translation bug fix
 - (Scrounger) image downloading improved

@@ -80,10 +80,9 @@ class UnifiNetwork extends utils.Adapter {
                 this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
                 if (this.config.host, this.config.user, this.config.password) {
                     this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
-                    await this.establishConnection();
                     this.ufn.on('message', this.eventListener);
                     this.ufn.on('pong', this.pongListener);
-                    this.log.info(`${logPrefix} WebSocket listener successfully started`);
+                    await this.establishConnection();
                 }
                 else {
                     this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -307,7 +306,8 @@ class UnifiNetwork extends utils.Adapter {
             if (await this.login()) {
                 await this.updateRealTimeApiData();
                 await this.updateIsOnlineState(true);
-                this.updateApiData();
+                await this.updateApiData();
+                this.sendPing();
                 this.pingTimeout = this.setTimeout(() => {
                     this.sendPing();
                 }, ((this.config.expertAliveInterval || 30) / 2) * 1000);
@@ -346,7 +346,7 @@ class UnifiNetwork extends utils.Adapter {
                         return true;
                     }
                     else {
-                        this.log.error(`${logPrefix} unable to start ws listener`);
+                        this.log.error(`${logPrefix} unable to establish WebSocket connection to realtime API`);
                     }
                 }
                 else {
@@ -460,7 +460,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    updateApiData() {
+    async updateApiData() {
         const logPrefix = '[updateApiData]:';
         try {
             this.log.silly(`${logPrefix} placeholder`);
@@ -1190,6 +1190,7 @@ class UnifiNetwork extends utils.Adapter {
         try {
             this.aliveTimestamp = moment().valueOf();
             this.log.silly('ping pong');
+            this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
