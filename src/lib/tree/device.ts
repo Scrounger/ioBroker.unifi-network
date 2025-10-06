@@ -527,8 +527,11 @@ export namespace device {
                 },
                 array: {
                     channel: {
-                        iobType: 'number',
-                        name: 'channel'
+                        iobType: 'string',
+                        name: 'channel',
+                        readVal(val: any, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDeviceRadioTable, id: string): ioBroker.StateValue {
+                            return val.toString();
+                        }
                     },
                     channel_name: {
                         id: 'channel_frequency',
@@ -544,7 +547,10 @@ export namespace device {
                         iobType: 'number',
                         name: 'channel width / frequency',
                         valFromProperty: 'ht',
-                        unit: 'MHz'
+                        unit: 'MHz',
+                        readVal(val: any, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDeviceRadioTable, id: string): ioBroker.StateValue {
+                            return parseInt(val);
+                        }
                     },
                     tx_power_mode: {
                         iobType: 'string',

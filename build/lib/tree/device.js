@@ -496,8 +496,11 @@ export var device;
                 },
                 array: {
                     channel: {
-                        iobType: 'number',
-                        name: 'channel'
+                        iobType: 'string',
+                        name: 'channel',
+                        readVal(val, adapter, device, channel, id) {
+                            return val.toString();
+                        }
                     },
                     channel_name: {
                         id: 'channel_frequency',
@@ -513,7 +516,10 @@ export var device;
                         iobType: 'number',
                         name: 'channel width / frequency',
                         valFromProperty: 'ht',
-                        unit: 'MHz'
+                        unit: 'MHz',
+                        readVal(val, adapter, device, channel, id) {
+                            return parseInt(val);
+                        }
                     },
                     tx_power_mode: {
                         iobType: 'string',

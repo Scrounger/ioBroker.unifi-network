@@ -14,7 +14,7 @@ declare class UnifiNetwork extends utils.Adapter {
     cache: myCache;
     subscribedList: string[];
     eventListener: (event: NetworkEvent) => Promise<void>;
-    pongListener: () => void;
+    pongListener: () => Promise<void>;
     eventsToIgnore: string[];
     statesUsingValAsLastChanged: string[];
     constructor(options?: Partial<utils.AdapterOptions>);

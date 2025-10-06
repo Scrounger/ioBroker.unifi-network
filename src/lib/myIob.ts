@@ -568,6 +568,10 @@ export class myIob {
                     return `level${suffix}`;
                 }
 
+                if (common.read === false && common.write === true) {
+                    return `level${suffix}`;
+                }
+
                 if (common.read === true && common.write === false) {
                     return `value${suffix}`;
                 }
@@ -592,6 +596,8 @@ export class myIob {
                     } else {
                         return 'text';
                     }
+                } else {
+                    return 'text';
                 }
             }
         } catch (error) {

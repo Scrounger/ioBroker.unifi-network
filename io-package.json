@@ -447,7 +447,7 @@
       "_id": "info.lastRealTimeData",
       "type": "state",
       "common": {
-        "role": "state",
+        "role": "value",
         "name": "last real time data received",
         "type": "number",
         "read": true,

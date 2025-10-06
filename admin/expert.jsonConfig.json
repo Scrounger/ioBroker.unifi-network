@@ -28,7 +28,6 @@
             "type": "number",
             "label": "realtime api reconnection interval [s]",
             "help": "If no data is delivered by the realtime api during this period, the connection is re-established",
-            "disabled": "!data.expert",
             "min": 30,
             "max": 10000,
             "step": 1,
@@ -41,7 +40,6 @@
         "expertConnectionMaxRetries": {
             "type": "number",
             "label": "max. retries to restore the connection",
-            "disabled": "!data.expert",
             "min": 10,
             "max": 10000,
             "step": 1,

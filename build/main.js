@@ -39,8 +39,8 @@ class UnifiNetwork extends utils.Adapter {
     eventListener = async (event) => {
         await this.onNetworkMessage(event);
     };
-    pongListener = () => {
-        this.onPongMessage();
+    pongListener = async () => {
+        await this.onPongMessage();
     };
     eventsToIgnore = [
         'device:update',
@@ -306,7 +306,7 @@ class UnifiNetwork extends utils.Adapter {
             if (await this.login()) {
                 await this.updateRealTimeApiData();
                 await this.updateIsOnlineState(true);
-                await this.updateApiData();
+                this.updateApiData();
                 this.sendPing();
                 this.pingTimeout = this.setTimeout(() => {
                     this.sendPing();
@@ -460,7 +460,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    async updateApiData() {
+    updateApiData() {
         const logPrefix = '[updateApiData]:';
         try {
             this.log.silly(`${logPrefix} placeholder`);
@@ -1185,12 +1185,12 @@ class UnifiNetwork extends utils.Adapter {
     /**
      * Websocket pong received, sets the aliveTimestamp to the current timestamp
      */
-    onPongMessage() {
+    async onPongMessage() {
         const logPrefix = '[onPongMessage]:';
         try {
             this.aliveTimestamp = moment().valueOf();
             this.log.silly('ping pong');
-            this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
+            await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
