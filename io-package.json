@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "news": {
+      "1.1.5": {
+        "en": "check site exist on self hosted controller\nlogin bug fix #27",
+        "de": "check-website existiert auf selbst gehosteten controller\nfehler beheben #27",
+        "ru": "контрольный сайт существует на автономном контроллере\nремонт багов #27",
+        "pt": "o site de verificação existe no controlador hospedado automaticamente\ncorreção de erro de login # 27",
+        "nl": "controle site bestaan op zelf gehost controller\nlogin bug fix #27",
+        "fr": "vérifier que le site existe sur le contrôleur auto hébergé\ncorrection du bug de connexion #27",
+        "it": "il sito di controllo esiste su auto ospitato controller\nlogin bug fix #27",
+        "es": "sitio de verificación existen en el controlador auto hospedado\ninicio de sesión bug fix #27",
+        "pl": "strona kontrolna istnieje na kontrolerze samoobsługowym\nbłąd logowania naprawić # 27",
+        "uk": "перевірити сайт, що існує на самовмісті контролер\nвиправлення помилок входу #27",
+        "zh-cn": "检查站点存在于自主机控制器上\n登录错误修复 # 27"
+      },
       "1.1.4": {
         "en": "logging improved\nauto detect UniFi OS or self hosted controller\nauto translation bug fix\nimage downloading improved\nbug fixes",
         "de": "protokollierung verbessert\nautodetektiv UniFi OS oder selbstgehostete Controller\nautomatische übersetzung fehler beheben\nbilddownload verbessert\nfehlerbehebungen",
@@ -80,19 +93,6 @@
         "pl": "zastąpiony pobrać z undici\ngrupa firewall\ndodano więcej menedżerów zdarzeń sieciowych\npoprawki błędów",
         "uk": "заміщений фехт з ундиком\nгрупа брандмауера додано\nдодано більше мережевих заходів\nвиправлення помилок",
         "zh-cn": "替换为 undici 获取\n添加防火墙组\n添加更多网络事件处理器\n错误修正"
-      },
-      "1.0.0-beta.0": {
-        "en": "initial release",
-        "de": "erstausstrahlung",
-        "ru": "первоначальное освобождение",
-        "pt": "lançamento inicial",
-        "nl": "eerste release",
-        "fr": "libération initiale",
-        "it": "rilascio iniziale",
-        "es": "liberación inicial",
-        "pl": "początkowe zwolnienie",
-        "uk": "початковий реліз",
-        "zh-cn": "初步释放"
       }
     },
     "titleLang": {
