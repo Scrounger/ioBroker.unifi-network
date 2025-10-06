@@ -45,6 +45,7 @@ export const WebSocketEvent = {
         Upgrade: ['EVT_SW_UpgradeScheduled', 'EVT_SW_Upgraded'],
         Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted', 'EVT_AP_Adopted'],
         DhcpPool: ['EVT_GW_DhcpPoolExhausted'],
+        Alert: ['EVT_IPS_IpsAlert'],
     },
     client: {
         Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],
