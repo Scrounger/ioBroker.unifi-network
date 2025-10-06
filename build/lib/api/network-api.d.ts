@@ -1,4 +1,4 @@
-import { type Dispatcher } from 'undici';
+import { Dispatcher } from 'undici';
 import { EventEmitter } from 'node:events';
 import type { NetworkLogging } from './network-logging.js';
 import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
@@ -66,9 +66,11 @@ export declare class NetworkApi extends EventEmitter {
     private username;
     private _eventsWs;
     connectionTimeout: ioBroker.Timeout | undefined;
-    private controllerUrl;
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter);
+    controllerUrl: string;
+    private isControllerDetected;
+    constructor(host: string, port: number, site: string, username: string, password: string, adapter: ioBroker.myAdapter);
     login(): Promise<boolean>;
+    private detectController;
     private loginController;
     /**
      * Clear the login credentials and terminate any open connection to the UniFi Network API.

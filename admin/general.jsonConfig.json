@@ -35,27 +35,12 @@
         "port": {
             "type": "number",
             "label": "port",
-            "disabled": "data.isUnifiOs",
-            "onChange": {
-                "alsoDependsOn": [
-                    "isUnifiOs"
-                ],
-                "calculateFunc": "data.isUnifiOs ? 443 : data.port",
-                "ignoreOwnChanges": true
-            },
             "min": 0,
             "xl": 3,
             "lg": 3,
             "md": 3,
             "sm": 12,
             "xs": 12
-        },
-        "isUnifiOs": {
-            "type": "checkbox",
-            "label": "is Unifi OS",
-            "help": "enable this if you have a Unifi OS based network controller (e.g. UDM-Pro)",
-            "sm": 12,
-            "md": 6
         },
         "user": {
             "type": "text",

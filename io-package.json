@@ -161,7 +161,6 @@
   "native": {
     "host": "",
     "port": 8443,
-    "isUnifiOs": false,
     "site": "default",
     "user": "",
     "password": "",

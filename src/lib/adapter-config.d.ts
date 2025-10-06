@@ -12,7 +12,6 @@ declare global {
 			site: string;
 			user: string;
 			password: string;
-			isUnifiOs: boolean;
 			expertAliveInterval: number;
 			expertConnectionMaxRetries: number;
 			realTimeApiDebounceTime: number;

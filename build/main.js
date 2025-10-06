@@ -79,11 +79,11 @@ class UnifiNetwork extends utils.Adapter {
                 this.config.apiUpdateInterval >= 5 && this.config.apiUpdateInterval <= 10000 &&
                 this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
                 if (this.config.host, this.config.user, this.config.password) {
-                    this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.isUnifiOs, this.config.site, this.config.user, this.config.password, this);
+                    this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
                     await this.establishConnection();
                     this.ufn.on('message', this.eventListener);
                     this.ufn.on('pong', this.pongListener);
-                    this.log.info(`${logPrefix} WebSocket listener to realtime API successfully started`);
+                    this.log.info(`${logPrefix} WebSocket listener successfully started`);
                 }
                 else {
                     this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -339,7 +339,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.ufn) {
                 const loginSuccessful = await this.ufn.login();
                 if (loginSuccessful) {
-                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, isUnifiOs: ${this.config.isUnifiOs})`);
+                    this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, isUnifiOs: ${this.ufn.isUnifiOs})`);
                     if (await this.ufn.launchEventsWs()) {
                         this.log.info(`${logPrefix} WebSocket connection to realtime API successfully established`);
                         await this.setConnectionStatus(true);
@@ -350,7 +350,7 @@ class UnifiNetwork extends utils.Adapter {
                     }
                 }
                 else {
-                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.config.host}${this.config.isUnifiOs ? '' : `:${this.config.port}`}, site: ${this.config.site})`);
+                    this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.ufn.controllerUrl}, site: ${this.config.site})`);
                 }
             }
         }

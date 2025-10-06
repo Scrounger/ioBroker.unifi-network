@@ -1,5 +1,5 @@
 // Lib imports
-import { type Dispatcher, Pool, errors, interceptors, request } from 'undici';
+import { Dispatcher, Pool, errors, interceptors, request, Agent } from 'undici';
 import { STATUS_CODES } from 'node:http';
 import { EventEmitter } from 'node:events';
 import util from 'node:util';
@@ -82,8 +82,8 @@ export class NetworkApi extends EventEmitter {
     public log: NetworkLogging;
 
     private host: string;
-    private port: string;
-    isUnifiOs: boolean;
+    private port: number;
+    public isUnifiOs: boolean;
     public site: string;
     private password: string;
     private username: string;
@@ -92,9 +92,11 @@ export class NetworkApi extends EventEmitter {
 
     public connectionTimeout: ioBroker.Timeout | undefined = undefined;
 
-    private controllerUrl: string;
+    public controllerUrl: string;
 
-    constructor(host: string, port: number, isUnifiOs: boolean, site: string, username: string, password: string, adapter: ioBroker.myAdapter) {
+    private isControllerDetected = false;
+
+    constructor(host: string, port: number, site: string, username: string, password: string, adapter: ioBroker.myAdapter) {
         // Initialize our parent.
         super();
 
@@ -108,35 +110,82 @@ export class NetworkApi extends EventEmitter {
         this.headers = {};
 
         this.host = host;
-        this.port = isUnifiOs ? '' : `:${port}`;
-        this.isUnifiOs = isUnifiOs;
+        this.port = port;
+        this.isUnifiOs = false;
         this.site = site;
         this.username = username;
         this.password = password;
 
-        this.controllerUrl = `https://${this.host}${this.port}`;
+        this.controllerUrl = `https://${this.host}:${port}`;
     }
 
     public async login(): Promise<boolean> {
         const logPrefix = `[${this.logPrefix}.login]`
 
         try {
-            this.logout();
+            if (!this.isControllerDetected) {
+                await this.detectController();
+            }
 
-            // Let's attempt to login.
-            const loginSuccess = await this.loginController();
+            if (this.isControllerDetected) {
+                this.logout();
 
-            // Publish the result to our listeners
-            this.emit('login', loginSuccess);
+                // Let's attempt to login.
+                const loginSuccess = await this.loginController();
 
-            // Return the status of our login attempt.
-            return loginSuccess;
+                // Publish the result to our listeners
+                this.emit('login', loginSuccess);
 
+                // Return the status of our login attempt.
+                return loginSuccess;
+            }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
         return false;
+    }
+
+    private async detectController(): Promise<void> {
+        const logPrefix = `[${this.logPrefix}.detectUnifiOs]`
+
+        try {
+            const agent = new Agent({ connect: { rejectUnauthorized: false } });
+
+            const response = await request(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: agent });
+
+            this.log.debug(`${logPrefix} detect self hosted controller repsonse: ${JSON.stringify(response)}`);
+
+            if (response.statusCode === 302 && response.headers.location === '/manage') {
+                this.controllerUrl = `https://${this.host}:${this.port}`;
+                this.isUnifiOs = false;
+                this.isControllerDetected = true;
+
+                this.log.debug(`${logPrefix} self hosted controller detected`);
+            } else {
+
+                const response = await request(`https://${this.host}`, { method: 'GET', dispatcher: agent });
+
+                this.log.debug(`${logPrefix} detect UniFi OS controller repsonse: ${JSON.stringify(response)}`);
+
+                if (this.responseOk(response?.statusCode)) {
+                    this.controllerUrl = `https://${this.host}`;
+                    this.isUnifiOs = true;
+                    this.isControllerDetected = true;
+
+                    this.log.debug(`${logPrefix} UniFi OS controller detected`);
+                } else {
+                    this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller!`);
+
+                    this.logout();
+                }
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller! ${error}`);
+
+            this.logout();
+        }
     }
 
     private async loginController(): Promise<boolean> {
@@ -161,7 +210,7 @@ export class NetworkApi extends EventEmitter {
             };
 
             // Acquire a CSRF token, if needed. We only need to do this if we aren't already logged in, or we don't already have a token.
-            if (!this.headers['x-csrf-token'] && this.adapter.config.isUnifiOs) {
+            if (!this.headers['x-csrf-token'] && this.isUnifiOs) {
 
                 // UniFi OS has cross-site request forgery protection built into it's web management UI. We retrieve the CSRF token, if available, by connecting to the Network
                 // controller and checking the headers for it.
@@ -304,7 +353,7 @@ export class NetworkApi extends EventEmitter {
     public async retrieve(url: string, options: RequestOptions = { method: 'GET' }, retrieveOptions: RetrieveOptions = {}):
         Promise<Nullable<Dispatcher.ResponseData<unknown>>> {
 
-        return this._retrieve(url, options, retrieveOptions);
+        return await this._retrieve(url, options, retrieveOptions, false);
     }
 
     /**
@@ -384,14 +433,14 @@ export class NetworkApi extends EventEmitter {
             // Bad username and password.
             if (response.statusCode === 401) {
                 this.logout();
-                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password.`);
+                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password (code: ${response.statusCode}).`);
 
                 return null;
             }
 
             // Insufficient privileges.
             if (response.statusCode === 403) {
-                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges.`)
+                this.log.error(`${logPrefix} Insufficient privileges for this user. Please check the roles assigned to this user and ensure it has sufficient privileges (code: ${response.statusCode}).`)
 
                 return null;
             }
@@ -399,7 +448,7 @@ export class NetworkApi extends EventEmitter {
             if (!this.responseOk(response.statusCode)) {
 
                 if (serverErrors.has(response.statusCode)) {
-                    this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots.`);
+                    this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots (code: ${response.statusCode}).`);
 
                     return null;
                 }
@@ -513,7 +562,7 @@ export class NetworkApi extends EventEmitter {
     public async sendData(cmd: string, payload: any, method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH' = 'POST'): Promise<Nullable<Dispatcher.ResponseData<unknown>>> {
         const logPrefix = `[${this.logPrefix}.sendData]`
 
-        let url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}${cmd}`
+        let url = `${this.controllerUrl}${this.isUnifiOs ? '/proxy/network' : ''}${cmd}`
 
         if (cmd.startsWith('https://')) {
             url = cmd
@@ -809,7 +858,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getReportStats]`
 
         try {
-            const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/api/s/${this.site}/stat/report/${interval}.${type}`;
+            const url = `${this.controllerUrl}${this.isUnifiOs ? '/proxy/network' : ''}/api/s/${this.site}/stat/report/${interval}.${type}`;
 
             if (!end) {
                 end = Date.now()
@@ -866,7 +915,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getSystemLog]`
 
         try {
-            const url = `https://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/v2/api/site/${this.site}/system-log/${type}`;
+            const url = `${this.controllerUrl}${this.isUnifiOs ? '/proxy/network' : ''}/v2/api/site/${this.site}/system-log/${type}`;
             this.log.warn(url);
             if (!end) {
                 end = Date.now()
@@ -983,7 +1032,7 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
 
-        return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`
+        return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`
     }
 
     public getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string {
@@ -1028,7 +1077,7 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
 
-        return `https://${this.host}${this.port}${endpointPrefix}${endpointSuffix}`
+        return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`
     }
 
     public async checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id: string | undefined = undefined): Promise<void> {
@@ -1144,7 +1193,7 @@ export class NetworkApi extends EventEmitter {
 
             this.headers.cookie = await this.cookieJar.getCookieString(this.controllerUrl);
 
-            const url = `wss://${this.host}${this.port}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
+            const url = `${this.controllerUrl.replace('https', 'wss')}${this.isUnifiOs ? '/proxy/network' : ''}/wss/s/${this.site}/events?clients=v2&next_ai_notifications=true&critical_notifications=true`
 
             const ws = new WebSocket(url, {
                 headers: this.headers,
