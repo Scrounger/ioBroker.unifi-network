@@ -201,9 +201,8 @@ export declare class NetworkApi extends EventEmitter {
     getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
     getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
     /**
-     * List all LAN configurations
+     * List all sites of self hosted controller
      *
-     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
     getSites(): Promise<NetworkSite[] | undefined>;

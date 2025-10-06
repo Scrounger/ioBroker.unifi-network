@@ -787,13 +787,12 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
     /**
-     * List all LAN configurations
+     * List all sites of self hosted controller
      *
-     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
     async getSites() {
-        const logPrefix = `[${this.logPrefix}.getFirewallGroup]`;
+        const logPrefix = `[${this.logPrefix}.getSites]`;
         try {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.sites)}`);
             if (res && res.data && res.data.length > 0) {

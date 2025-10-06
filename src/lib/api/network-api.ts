@@ -515,7 +515,7 @@ export class NetworkApi extends EventEmitter {
                 return null;
             }
 
-            let cause: NodeJS.ErrnoException | (Error & Record<"code", unknown>);
+            let cause: any;
 
             if (error instanceof TypeError) {
                 cause = error.cause as NodeJS.ErrnoException;
@@ -981,13 +981,12 @@ export class NetworkApi extends EventEmitter {
     }
 
     /**
-     * List all LAN configurations
+     * List all sites of self hosted controller
      * 
-     * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns 
      */
     public async getSites(): Promise<NetworkSite[] | undefined> {
-        const logPrefix = `[${this.logPrefix}.getFirewallGroup]`
+        const logPrefix = `[${this.logPrefix}.getSites]`
 
         try {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.sites)}`);
