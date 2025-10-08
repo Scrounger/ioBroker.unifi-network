@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) dependencies updated #22
 - (Scrounger) firewall channel added #29
 - (Scrounger) bug fix #28
 
