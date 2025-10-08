@@ -2,7 +2,7 @@ import type { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "
 import { type myCache, type myNetworkClient } from "./myTypes.js";
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
-import type { FirewallGroup } from "./api/network-types-firewall-group.js";
+import type { FirewallGroup } from "./api/network-types-firewall.js";
 export declare const eventHandler: {
     device: {
         restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
@@ -29,7 +29,9 @@ export declare const eventHandler: {
     lanConf: {
         deleted(meta: NetworkEventMeta, data: NetworkLanConfig[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };
-    firewallGroup: {
-        deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+    firewall: {
+        group: {
+            deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+        };
     };
 };

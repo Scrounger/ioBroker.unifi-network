@@ -1,45 +1,42 @@
-import { ApiEndpoints } from "../api/network-api.js";
-import { FirewallGroup } from "../api/network-types-firewall-group.js";
-import * as myHelper from '../helper.js';
-import type { myTreeDefinition } from "../myIob.js";
-
-export namespace firewallGroup {
-    let keys: string[] = undefined;
-
-    export const idChannel = 'firewall.groups';
-
-    export function get(): { [key: string]: myTreeDefinition } {
+import { ApiEndpoints } from "../../api/network-api.js";
+import * as myHelper from '../../helper.js';
+export var group;
+(function (group) {
+    let keys = undefined;
+    group.idChannel = 'firewall.groups';
+    function get() {
         return {
             name: {
                 iobType: 'string',
                 name: 'name',
                 write: true,
                 required: true,
-                async writeVal(val: string, id: string, device: FirewallGroup, adapter: ioBroker.myAdapter): Promise<void> {
+                async writeVal(val, id, device, adapter) {
                     const logPrefix = `[firewallGroup.name]`;
-
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
-
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
+                    try {
+                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
+                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
+                    }
+                    catch (error) {
+                        adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                    }
                 },
             },
             group_members: {
                 iobType: 'string',
                 write: true,
                 name: 'group members',
-                readVal(val: string, adapter: ioBroker.myAdapter, device: FirewallGroup, channel: FirewallGroup, id: string): ioBroker.StateValue {
+                readVal(val, adapter, device, channel, id) {
                     return JSON.stringify(val);
                 },
-                async writeVal(val: string, id: string, device: FirewallGroup, adapter: ioBroker.myAdapter): Promise<void> {
+                async writeVal(val, id, device, adapter) {
                     const logPrefix = `[firewallGroup.group_members]`;
-
                     try {
                         const memObj = JSON.parse(val);
                         const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
-
                         await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
-
-                    } catch (error) {
+                    }
+                    catch (error) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                     }
                 },
@@ -53,18 +50,18 @@ export namespace firewallGroup {
                     "ipv6-address-group": 'IPv6'
                 }
             }
-        }
+        };
     }
-
-    export function getKeys(): string[] {
+    group.get = get;
+    function getKeys() {
         if (keys === undefined) {
             keys = myHelper.getAllKeysOfTreeDefinition(get());
         }
-
-        return keys
+        return keys;
     }
-
-    export function getStateIDs(): string[] {
+    group.getKeys = getKeys;
+    function getStateIDs() {
         return myHelper.getAllIdsOfTreeDefinition(get());
     }
-}
+    group.getStateIDs = getStateIDs;
+})(group || (group = {}));

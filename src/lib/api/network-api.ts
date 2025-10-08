@@ -17,7 +17,7 @@ import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wl
 import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
-import type { FirewallGroup } from './network-types-firewall-group.js';
+import type { FirewallGroup } from './network-types-firewall.js';
 import { NetworkSite } from './network-types-sites.js';
 
 export type Nullable<T> = T | null;

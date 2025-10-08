@@ -16,8 +16,10 @@ export declare const messageHandler: {
         list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void>;
         stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void;
     };
-    firewallGroup: {
-        list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void>;
-        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void;
+    firewall: {
+        group: {
+            list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void>;
+            stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void;
+        };
     };
 };

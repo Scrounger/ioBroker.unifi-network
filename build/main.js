@@ -33,7 +33,9 @@ class UnifiNetwork extends utils.Adapter {
         wlan: {},
         lan: {},
         isOnline: {},
-        firewallGroup: {}
+        firewall: {
+            groups: {}
+        }
     };
     subscribedList = [];
     eventListener = async (event) => {
@@ -82,7 +84,7 @@ class UnifiNetwork extends utils.Adapter {
                     this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
                     this.ufn.on('message', this.eventListener);
                     this.ufn.on('pong', this.pongListener);
-                    await this.establishConnection();
+                    await this.establishConnection(true);
                 }
                 else {
                     this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
@@ -220,11 +222,11 @@ class UnifiNetwork extends utils.Adapter {
                             this.log.debug(`${logPrefix} lan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
                         }
                     }
-                    else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
+                    else if (id.startsWith(`${this.namespace}.${tree.firewall.group.idChannel}.`)) {
                         const groupId = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
                         const writeValKey = id.replace(`.${groupId}.`, '.').replace(`${this.namespace}.`, '');
                         if (this.myIob.statesWithWriteFunction[writeValKey]) {
-                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewallGroup[groupId], this);
+                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewall.groups[groupId], this);
                         }
                         else {
                             this.log.debug(`${logPrefix} firewall group state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
@@ -280,10 +282,10 @@ class UnifiNetwork extends utils.Adapter {
                     messageHandler.lan.stateList(obj, this, this.ufn);
                 }
                 else if (obj.command === 'firewallGroupList') {
-                    await messageHandler.firewallGroup.list(obj, this, this.ufn);
+                    await messageHandler.firewall.group.list(obj, this, this.ufn);
                 }
                 else if (obj.command === 'firewallGroupStateList') {
-                    messageHandler.firewallGroup.stateList(obj, this, this.ufn);
+                    messageHandler.firewall.group.stateList(obj, this, this.ufn);
                 }
             }
         }
@@ -295,8 +297,10 @@ class UnifiNetwork extends utils.Adapter {
     //#region Establish Connection
     /**
      * Establish Connection to NVR and starting the alive checker
+     *
+     * @param isAdapterStart
      */
-    async establishConnection() {
+    async establishConnection(isAdapterStart = false) {
         const logPrefix = '[establishConnection]:';
         try {
             if (this.pingTimeout) {
@@ -304,9 +308,9 @@ class UnifiNetwork extends utils.Adapter {
                 this.pingTimeout = null;
             }
             if (await this.login()) {
-                await this.updateRealTimeApiData();
-                await this.updateIsOnlineState(true);
-                this.updateApiData();
+                await this.updateRealTimeApiData(isAdapterStart);
+                await this.updateIsOnlineState(isAdapterStart);
+                this.updateApiData(isAdapterStart);
                 this.sendPing();
                 this.pingTimeout = this.setTimeout(() => {
                     this.sendPing();
@@ -437,18 +441,29 @@ class UnifiNetwork extends utils.Adapter {
     }
     //#endregion
     //#region updateData
-    async updateRealTimeApiData() {
+    async updateRealTimeApiData(isAdapterStart = false) {
         const logPrefix = '[updateRealTimeApiData]:';
         try {
-            await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
-            await this.updateClients(null, true);
-            await this.updateClients(await this.ufn.getClientsHistory_V2(), true, true);
-            // await this.updatClientsOffline(await this.ufn.getClients(), true);
-            await this.updateLanConfig(null, true);
-            await this.updateLanConnectedClients(true);
-            await this.updateWlanConfig(null, true);
-            await this.updateWlanConnectedClients(true);
-            await this.updateFirewallGroup(null, true);
+            await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, isAdapterStart);
+            await this.updateClients(null, isAdapterStart);
+            await this.updateClients(await this.ufn.getClientsHistory_V2(), isAdapterStart, true);
+            // await this.updatClientsOffline(await this.ufn.getClients(), isAdapterStart);
+            await this.updateLanConfig(null, isAdapterStart);
+            await this.updateLanConnectedClients(isAdapterStart);
+            await this.updateWlanConfig(null, isAdapterStart);
+            await this.updateWlanConnectedClients(isAdapterStart);
+            if (this.config.firewallRuleConfigEnabled || this.config.firewallGroupConfigEnabled) {
+                if (isAdapterStart) {
+                    await this.myIob.createOrUpdateChannel(tree.firewall.idChannel, 'firewall', undefined, true);
+                }
+                await this.updateFirewallGroup(null, isAdapterStart);
+            }
+            else {
+                if (await this.objectExists(tree.firewall.idChannel)) {
+                    await this.delObjectAsync(tree.firewall.idChannel, { recursive: true });
+                    this.log.debug(`${logPrefix} '${tree.firewall.idChannel}' deleted`);
+                }
+            }
             // const tmp = tree.lan.getStateIDs();
             // let list = []
             // for (let id of tmp) {
@@ -460,7 +475,7 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    updateApiData() {
+    updateApiData(isAdapterStart = false) {
         const logPrefix = '[updateApiData]:';
         try {
             this.log.silly(`${logPrefix} placeholder`);
@@ -1009,7 +1024,7 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[updateFirewallGroup]:';
         try {
             if (this.connected && this.isConnected) {
-                const idChannel = tree.firewallGroup.idChannel;
+                const idChannel = tree.firewall.group.idChannel;
                 if (this.config.firewallGroupConfigEnabled) {
                     if (isAdapterStart) {
                         await this.myIob.createOrUpdateChannel(idChannel, 'firewall group', undefined, true);
@@ -1024,19 +1039,19 @@ class UnifiNetwork extends utils.Adapter {
                                 if (isAdapterStart) {
                                     countFirewallGroup++;
                                 }
-                                if (!this.cache.firewallGroup[firewallGroup._id]) {
+                                if (!this.cache.firewall.groups[firewallGroup._id]) {
                                     this.log.debug(`${logPrefix} Discovered Firewall Group '${firewallGroup.name}'`);
                                 }
                                 let dataToProcess = firewallGroup;
-                                if (this.cache.firewallGroup[firewallGroup._id]) {
+                                if (this.cache.firewall.groups[firewallGroup._id]) {
                                     // filter out unchanged properties
-                                    dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewallGroup[firewallGroup._id], this, tree.firewallGroup.getKeys());
+                                    dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewall.groups[firewallGroup._id], this, tree.firewall.group.getKeys());
                                 }
                                 if (!_.isEmpty(dataToProcess)) {
-                                    this.cache.firewallGroup[firewallGroup._id] = { ...this.cache.firewallGroup[firewallGroup._id], ...firewallGroup };
+                                    this.cache.firewall.groups[firewallGroup._id] = { ...this.cache.firewall.groups[firewallGroup._id], ...firewallGroup };
                                     dataToProcess._id = firewallGroup._id;
                                     await this.myIob.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${this.namespace}.${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
-                                    await this.myIob.createOrUpdateStates(idFirewallGroup, tree.firewallGroup.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
+                                    await this.myIob.createOrUpdateStates(idFirewallGroup, tree.firewall.group.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
                                 }
                             }
                             else {
@@ -1405,7 +1420,7 @@ class UnifiNetwork extends utils.Adapter {
             if (this.config.firewallGroupConfigEnabled) {
                 this.log.debug(`${logPrefix} firewall group event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
                 if (event.meta.message.endsWith(':delete')) {
-                    await eventHandler.firewallGroup.deleted(event.meta, event.data, this, this.cache);
+                    await eventHandler.firewall.group.deleted(event.meta, event.data, this, this.cache);
                 }
                 else {
                     await this.updateFirewallGroup(event.data);

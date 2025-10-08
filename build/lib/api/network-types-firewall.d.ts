@@ -1,3 +1,6 @@
+export interface Firewall {
+    hourly: Array<FirewallGroup>;
+}
 export interface FirewallGroup {
     group_members: string[];
     name: string;

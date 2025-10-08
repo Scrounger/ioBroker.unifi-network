@@ -349,22 +349,24 @@ export const eventHandler = {
             }
         }
     },
-    firewallGroup: {
-        async deleted(meta, data, adapter, cache) {
-            const logPrefix = '[eventHandler.firewallGroup.deleted]:';
-            try {
-                if (data && adapter.config.keepIobSynchron) {
-                    for (const firewallGroup of data) {
-                        const idChannel = `${tree.firewallGroup.idChannel}.${firewallGroup._id}`;
-                        if (await adapter.objectExists(idChannel)) {
-                            await adapter.delObjectAsync(idChannel, { recursive: true });
-                            adapter.log.debug(`${logPrefix} firewall group '${firewallGroup.name}' (channel: ${idChannel}) deleted`);
+    firewall: {
+        group: {
+            async deleted(meta, data, adapter, cache) {
+                const logPrefix = '[eventHandler.firewall.group.deleted]:';
+                try {
+                    if (data && adapter.config.keepIobSynchron) {
+                        for (const firewallGroup of data) {
+                            const idChannel = `${tree.firewall.group.idChannel}.${firewallGroup._id}`;
+                            if (await adapter.objectExists(idChannel)) {
+                                await adapter.delObjectAsync(idChannel, { recursive: true });
+                                adapter.log.debug(`${logPrefix} firewall group '${firewallGroup.name}' (channel: ${idChannel}) deleted`);
+                            }
                         }
                     }
                 }
-            }
-            catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
+                catch (error) {
+                    adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
+                }
             }
         }
     }

@@ -17,7 +17,7 @@ import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEvent
 import type { NetworkDevice } from './lib/api/network-types-device.js';
 import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
 import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
-import type { FirewallGroup } from './lib/api/network-types-firewall-group.js';
+import type { FirewallGroup } from './lib/api/network-types-firewall.js';
 
 // Adapter imports
 import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myNetworkClient } from './lib/myTypes.js';
@@ -46,7 +46,9 @@ class UnifiNetwork extends utils.Adapter {
 		wlan: {},
 		lan: {},
 		isOnline: {},
-		firewallGroup: {}
+		firewall: {
+			groups: {}
+		}
 	}
 
 	subscribedList: string[] = [];
@@ -110,7 +112,7 @@ class UnifiNetwork extends utils.Adapter {
 					this.ufn.on('message', this.eventListener);
 					this.ufn.on('pong', this.pongListener);
 
-					await this.establishConnection();
+					await this.establishConnection(true);
 				} else {
 					this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 				}
@@ -253,12 +255,12 @@ class UnifiNetwork extends utils.Adapter {
 						} else {
 							this.log.debug(`${logPrefix} lan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
-					} else if (id.startsWith(`${this.namespace}.${tree.firewallGroup.idChannel}.`)) {
+					} else if (id.startsWith(`${this.namespace}.${tree.firewall.group.idChannel}.`)) {
 						const groupId = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 						const writeValKey = id.replace(`.${groupId}.`, '.').replace(`${this.namespace}.`, '');
 						if (this.myIob.statesWithWriteFunction[writeValKey]) {
-							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewallGroup[groupId], this);
+							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewall.groups[groupId], this);
 						} else {
 							this.log.debug(`${logPrefix} firewall group state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
@@ -306,9 +308,9 @@ class UnifiNetwork extends utils.Adapter {
 				} else if (obj.command === 'lanStateList') {
 					messageHandler.lan.stateList(obj, this, this.ufn);
 				} else if (obj.command === 'firewallGroupList') {
-					await messageHandler.firewallGroup.list(obj, this, this.ufn);
+					await messageHandler.firewall.group.list(obj, this, this.ufn);
 				} else if (obj.command === 'firewallGroupStateList') {
-					messageHandler.firewallGroup.stateList(obj, this, this.ufn);
+					messageHandler.firewall.group.stateList(obj, this, this.ufn);
 				}
 			}
 		} catch (error) {
@@ -322,8 +324,10 @@ class UnifiNetwork extends utils.Adapter {
 
 	/**
 	 * Establish Connection to NVR and starting the alive checker
+	 * 
+	 * @param isAdapterStart
 	 */
-	async establishConnection(): Promise<void> {
+	async establishConnection(isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[establishConnection]:';
 
 		try {
@@ -334,10 +338,10 @@ class UnifiNetwork extends utils.Adapter {
 			}
 
 			if (await this.login()) {
-				await this.updateRealTimeApiData();
-				await this.updateIsOnlineState(true);
+				await this.updateRealTimeApiData(isAdapterStart);
+				await this.updateIsOnlineState(isAdapterStart);
 
-				this.updateApiData();
+				this.updateApiData(isAdapterStart);
 
 				this.sendPing();
 
@@ -492,24 +496,35 @@ class UnifiNetwork extends utils.Adapter {
 
 	//#region updateData
 
-	async updateRealTimeApiData(): Promise<void> {
+	async updateRealTimeApiData(isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateRealTimeApiData]:';
 
 		try {
-			await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, true);
+			await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, isAdapterStart);
 
-			await this.updateClients(null, true);
-			await this.updateClients(await this.ufn.getClientsHistory_V2() as myNetworkClient[], true, true);
-			// await this.updatClientsOffline(await this.ufn.getClients(), true);
+			await this.updateClients(null, isAdapterStart);
+			await this.updateClients(await this.ufn.getClientsHistory_V2() as myNetworkClient[], isAdapterStart, true);
+			// await this.updatClientsOffline(await this.ufn.getClients(), isAdapterStart);
 
-			await this.updateLanConfig(null, true);
-			await this.updateLanConnectedClients(true);
+			await this.updateLanConfig(null, isAdapterStart);
+			await this.updateLanConnectedClients(isAdapterStart);
 
-			await this.updateWlanConfig(null, true);
-			await this.updateWlanConnectedClients(true);
+			await this.updateWlanConfig(null, isAdapterStart);
+			await this.updateWlanConnectedClients(isAdapterStart);
 
-			await this.updateFirewallGroup(null, true);
+			if (this.config.firewallRuleConfigEnabled || this.config.firewallGroupConfigEnabled) {
 
+				if (isAdapterStart) {
+					await this.myIob.createOrUpdateChannel(tree.firewall.idChannel, 'firewall', undefined, true);
+				}
+
+				await this.updateFirewallGroup(null, isAdapterStart);
+			} else {
+				if (await this.objectExists(tree.firewall.idChannel)) {
+					await this.delObjectAsync(tree.firewall.idChannel, { recursive: true });
+					this.log.debug(`${logPrefix} '${tree.firewall.idChannel}' deleted`);
+				}
+			}
 
 			// const tmp = tree.lan.getStateIDs();
 			// let list = []
@@ -525,7 +540,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private updateApiData(): void {
+	private updateApiData(isAdapterStart: boolean = false): void {
 		const logPrefix = '[updateApiData]:';
 
 		try {
@@ -1172,7 +1187,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (this.connected && this.isConnected) {
-				const idChannel = tree.firewallGroup.idChannel;
+				const idChannel = tree.firewall.group.idChannel;
 
 				if (this.config.firewallGroupConfigEnabled) {
 					if (isAdapterStart) {
@@ -1193,22 +1208,22 @@ class UnifiNetwork extends utils.Adapter {
 									countFirewallGroup++
 								}
 
-								if (!this.cache.firewallGroup[firewallGroup._id]) {
+								if (!this.cache.firewall.groups[firewallGroup._id]) {
 									this.log.debug(`${logPrefix} Discovered Firewall Group '${firewallGroup.name}'`);
 								}
 
 								let dataToProcess = firewallGroup;
-								if (this.cache.firewallGroup[firewallGroup._id]) {
+								if (this.cache.firewall.groups[firewallGroup._id]) {
 									// filter out unchanged properties
-									dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewallGroup[firewallGroup._id], this, tree.firewallGroup.getKeys()) as FirewallGroup;
+									dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewall.groups[firewallGroup._id], this, tree.firewall.group.getKeys()) as FirewallGroup;
 								}
 
 								if (!_.isEmpty(dataToProcess)) {
-									this.cache.firewallGroup[firewallGroup._id] = { ...this.cache.firewallGroup[firewallGroup._id], ...firewallGroup };
+									this.cache.firewall.groups[firewallGroup._id] = { ...this.cache.firewall.groups[firewallGroup._id], ...firewallGroup };
 									dataToProcess._id = firewallGroup._id;
 
 									await this.myIob.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${this.namespace}.${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
-									await this.myIob.createOrUpdateStates(idFirewallGroup, tree.firewallGroup.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
+									await this.myIob.createOrUpdateStates(idFirewallGroup, tree.firewall.group.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1606,7 +1621,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.debug(`${logPrefix} firewall group event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
 
 				if (event.meta.message.endsWith(':delete')) {
-					await eventHandler.firewallGroup.deleted(event.meta, event.data, this, this.cache);
+					await eventHandler.firewall.group.deleted(event.meta, event.data, this, this.cache);
 				} else {
 					await this.updateFirewallGroup(event.data);
 				}

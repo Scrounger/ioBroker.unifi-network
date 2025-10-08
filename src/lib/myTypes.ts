@@ -2,14 +2,14 @@ import type { NetworkClient } from "./api/network-types-client.js";
 import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceSystemStats, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
-import type { FirewallGroup } from "./api/network-types-firewall-group.js";
+import type { Firewall, FirewallGroup } from "./api/network-types-firewall.js";
 
 export type myTreeData =
     NetworkDevice | NetworkDevicePortTable | NetworkDeviceRadioTable | NetworkDeviceRadioTableStat | NetworkDeviceVapTable | NetworkDeviceStorage | NetworkDeviceWan | NetworkDeviceWanUptimeStats | NetworkDeviceSystemStats |
     NetworkClient | myNetworkClient | ConnectedClients |
     NetworkLanConfig |
     NetworkWlanConfig |
-    FirewallGroup;
+    Firewall | FirewallGroup;
 
 export interface myNetworkClient extends NetworkClient {
     isOnline: boolean;
@@ -64,7 +64,9 @@ export interface myCache {
     wlan: { [key: string]: NetworkWlanConfig; },
     lan: { [key: string]: NetworkLanConfig; }
     isOnline: { [key: string]: myIsOnline; }
-    firewallGroup: { [key: string]: FirewallGroup; }
+    firewall: {
+        groups: { [key: string]: FirewallGroup };
+    }
 }
 
 export interface myImgCache {

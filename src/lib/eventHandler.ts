@@ -6,7 +6,7 @@ import * as myHelper from './helper.js';
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
-import type { FirewallGroup } from "./api/network-types-firewall-group.js";
+import type { FirewallGroup } from "./api/network-types-firewall.js";
 
 const disconnectDebounceList = {};
 
@@ -393,23 +393,25 @@ export const eventHandler = {
             }
         }
     },
-    firewallGroup: {
-        async deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
-            const logPrefix = '[eventHandler.firewallGroup.deleted]:'
+    firewall: {
+        group: {
+            async deleted(meta: NetworkEventMeta, data: FirewallGroup[] | any, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
+                const logPrefix = '[eventHandler.firewall.group.deleted]:'
 
-            try {
-                if (data && adapter.config.keepIobSynchron) {
-                    for (const firewallGroup of data) {
-                        const idChannel = `${tree.firewallGroup.idChannel}.${firewallGroup._id}`
+                try {
+                    if (data && adapter.config.keepIobSynchron) {
+                        for (const firewallGroup of data) {
+                            const idChannel = `${tree.firewall.group.idChannel}.${firewallGroup._id}`
 
-                        if (await adapter.objectExists(idChannel)) {
-                            await adapter.delObjectAsync(idChannel, { recursive: true });
-                            adapter.log.debug(`${logPrefix} firewall group '${firewallGroup.name}' (channel: ${idChannel}) deleted`);
+                            if (await adapter.objectExists(idChannel)) {
+                                await adapter.delObjectAsync(idChannel, { recursive: true });
+                                adapter.log.debug(`${logPrefix} firewall group '${firewallGroup.name}' (channel: ${idChannel}) deleted`);
+                            }
                         }
                     }
+                } catch (error) {
+                    adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
                 }
-            } catch (error) {
-                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
     }

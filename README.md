@@ -49,6 +49,12 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (Scrounger) firewall channel added #29
+- (Scrounger) bug fix #28
+
 ### 1.1.5 (2025-10-06)
 
 - (Scrounger) check site exist on self hosted controller

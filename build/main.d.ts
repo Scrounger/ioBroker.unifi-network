@@ -38,8 +38,10 @@ declare class UnifiNetwork extends utils.Adapter {
     private onMessage;
     /**
      * Establish Connection to NVR and starting the alive checker
+     *
+     * @param isAdapterStart
      */
-    establishConnection(): Promise<void>;
+    establishConnection(isAdapterStart?: boolean): Promise<void>;
     /**
      * Login into NVR and load bootstrap data
      *
@@ -60,7 +62,7 @@ declare class UnifiNetwork extends utils.Adapter {
      * send websocket ping
      */
     sendPing(): void;
-    updateRealTimeApiData(): Promise<void>;
+    updateRealTimeApiData(isAdapterStart?: boolean): Promise<void>;
     private updateApiData;
     private updateDevices;
     private updateClients;

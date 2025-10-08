@@ -1,6 +1,6 @@
 import type { NetworkClient } from "./network-types-client.js";
 import type { NetworkDevice } from "./network-types-device.js";
-import type { FirewallGroup } from "./network-types-firewall-group.js";
+import type { FirewallGroup } from "./network-types-firewall.js";
 import type { NetworkLanConfig } from "./network-types-lan-config.js";
 import type { NetworkWlanConfig } from "./network-types-wlan-config.js";
 

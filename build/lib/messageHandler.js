@@ -196,49 +196,51 @@ export const messageHandler = {
             }
         }
     },
-    firewallGroup: {
-        async list(message, adapter, ufn) {
-            if (firewallGroupList === undefined) {
-                const data = await ufn.getFirewallGroup();
-                firewallGroupList = [];
-                if (data && data !== null) {
-                    for (const firewallGroup of data) {
-                        firewallGroupList.push({
-                            label: `${firewallGroup.name}`,
-                            value: firewallGroup._id
-                        });
-                    }
-                }
-                firewallGroupList = _.orderBy(firewallGroupList, ['label'], ['asc']);
-            }
-            if (message.callback) {
-                adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
-            }
-        },
-        stateList(message, adapter, ufn) {
-            if (firewallGroupStateList === undefined) {
-                const states = tree.firewallGroup.getStateIDs();
-                firewallGroupStateList = [];
-                if (states) {
-                    for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
-                            firewallGroupStateList.push({
-                                label: `[Channel]\t ${states[i]}`,
-                                value: states[i],
-                            });
-                        }
-                        else {
-                            firewallGroupStateList.push({
-                                label: `[State]\t\t ${states[i]}`,
-                                value: states[i],
+    firewall: {
+        group: {
+            async list(message, adapter, ufn) {
+                if (firewallGroupList === undefined) {
+                    const data = await ufn.getFirewallGroup();
+                    firewallGroupList = [];
+                    if (data && data !== null) {
+                        for (const firewallGroup of data) {
+                            firewallGroupList.push({
+                                label: `${firewallGroup.name}`,
+                                value: firewallGroup._id
                             });
                         }
                     }
+                    firewallGroupList = _.orderBy(firewallGroupList, ['label'], ['asc']);
                 }
-                firewallGroupStateList = _.orderBy(firewallGroupStateList, ['value'], ['asc']);
-            }
-            if (message.callback) {
-                adapter.sendTo(message.from, message.command, firewallGroupStateList, message.callback);
+                if (message.callback) {
+                    adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
+                }
+            },
+            stateList(message, adapter, ufn) {
+                if (firewallGroupStateList === undefined) {
+                    const states = tree.firewall.group.getStateIDs();
+                    firewallGroupStateList = [];
+                    if (states) {
+                        for (let i = 0; i <= states.length - 1; i++) {
+                            if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                                firewallGroupStateList.push({
+                                    label: `[Channel]\t ${states[i]}`,
+                                    value: states[i],
+                                });
+                            }
+                            else {
+                                firewallGroupStateList.push({
+                                    label: `[State]\t\t ${states[i]}`,
+                                    value: states[i],
+                                });
+                            }
+                        }
+                    }
+                    firewallGroupStateList = _.orderBy(firewallGroupStateList, ['value'], ['asc']);
+                }
+                if (message.callback) {
+                    adapter.sendTo(message.from, message.command, firewallGroupStateList, message.callback);
+                }
             }
         }
     }
