@@ -238,7 +238,7 @@ export class myIob {
                                 const idChannelAppendix = Object.hasOwn(treeObjectDef, 'idChannel') ? treeObjectDef.idChannel : key;
                                 const idChannel = `${channel}.${idChannelAppendix}`;
                                 if ((Object.hasOwn(treeObjectDef, 'conditionToCreateState') && treeObjectDef.conditionToCreateState(fullData, channelData, this.adapter) === true) || !Object.hasOwn(treeObjectDef, 'conditionToCreateState')) {
-                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeObjectDef, 'required')) {
+                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id && x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeObjectDef, 'required')) {
                                         await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeObjectDef, 'name') ? (typeof treeObjectDef.name === 'function' ? treeObjectDef.name(fullData, channelData[key], this.adapter) : treeObjectDef.name) : key, Object.hasOwn(treeObjectDef, 'icon') ? treeObjectDef.icon : undefined, updateObject);
                                         const result = await this._createOrUpdateStates(`${idChannel}`, deviceId, treeObjectDef.object, treeData[key], blacklistFilter, isWhiteList, fullData, channelData[key], logDeviceName, updateObject, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
                                         stateValueChanged = result ? result : stateValueChanged;
@@ -264,7 +264,7 @@ export class myIob {
                                     const treeArrayDef = treeDefinition[key];
                                     const idChannelAppendix = Object.hasOwn(treeArrayDef, 'idChannel') ? treeArrayDef.idChannel : key;
                                     const idChannel = `${channel}.${idChannelAppendix}`;
-                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeArrayDef, 'required')) {
+                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id && x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeArrayDef, 'required')) {
                                         await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeArrayDef, 'name') ? treeArrayDef.name : key, Object.hasOwn(treeArrayDef, 'icon') ? treeArrayDef.icon : undefined, updateObject);
                                         const arrayNumberAdd = Object.hasOwn(treeArrayDef, 'arrayStartNumber') ? treeArrayDef.arrayStartNumber : 0;
                                         for (let i = 0; i <= treeData[key].length - 1; i++) {
