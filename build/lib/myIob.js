@@ -27,7 +27,7 @@ export class myIob {
      * @param native
      */
     async createOrUpdateDevice(id, name, onlineId, errorId = undefined, icon = undefined, updateObject = false, logChanges = true, native = {}) {
-        const logPrefix = '[createOrUpdateDevice]:';
+        const logPrefix = '[myIob.createOrUpdateDevice]:';
         try {
             if (typeof name === 'string') {
                 const translation = this.utils.I18n.getTranslatedObject(name);
@@ -83,7 +83,7 @@ export class myIob {
      * @param native
      */
     async createOrUpdateChannel(id, name, icon = undefined, updateObject = false, native = {}) {
-        const logPrefix = '[createOrUpdateChannel]:';
+        const logPrefix = '[myIob.createOrUpdateChannel]:';
         try {
             if (typeof name === 'string') {
                 const translation = this.utils.I18n.getTranslatedObject(name);
@@ -125,7 +125,7 @@ export class myIob {
         return await this._createOrUpdateStates(idChannel, this.getIdLastPart(idChannel), treeDefinition, partialData, blacklistFilter, isWhiteList, fullData, fullData, logDeviceName, updateObject);
     }
     async _createOrUpdateStates(channel, deviceId, treeDefinition, treeData, blacklistFilter, isWhiteList, fullData, channelData, logDeviceName = 'not defined', updateObject = false, filterId = '', isChannelOnWhitelist = false) {
-        const logPrefix = '[createOrUpdateStates]:';
+        const logPrefix = '[myIob.createOrUpdateStates]:';
         let stateValueChanged = false;
         try {
             if (this.adapter.connected) {
@@ -311,7 +311,7 @@ export class myIob {
         return stateValueChanged;
     }
     getCommonForState(id, treeDefinition, fullData, channelData, logMsgState, logDeviceName) {
-        const logPrefix = '[getCommonForState]:';
+        const logPrefix = '[myIob.getCommonForState]:';
         try {
             // i18x translation if exists
             const i18n = this.utils.I18n.getTranslatedObject(treeDefinition[id].name || id);
@@ -365,7 +365,7 @@ export class myIob {
     }
     assignPredefinedRoles(common, id) {
         //https://github.com/ioBroker/ioBroker.docs/blob/master/docs/en/dev/stateroles.md
-        const logPrefix = '[assignPredefinedRoles]:';
+        const logPrefix = '[myIob.assignPredefinedRoles]:';
         try {
             id = this.getIdLastPart(id);
             if (common.type === 'boolean') {
@@ -497,7 +497,7 @@ export class myIob {
      * @param onlyChanges
      */
     async setStateExists(id, val, adapter, onlyChanges = false) {
-        const logPrefix = '[setStateExists]:';
+        const logPrefix = '[myIob.setStateExists]:';
         try {
             if (await adapter.objectExists(id)) {
                 if (!onlyChanges) {
@@ -573,7 +573,7 @@ export class myIob {
      * @returns
      */
     deepDiffBetweenObjects = (object, base, adapter, allowedKeys = undefined, prefix = '') => {
-        const logPrefix = '[deepDiffBetweenObjects]:';
+        const logPrefix = '[myIob.deepDiffBetweenObjects]:';
         try {
             const changes = (object, base, prefixInner = '') => {
                 return _.transform(object, (result, value, key) => {
@@ -631,7 +631,7 @@ export class myIob {
         return object;
     };
     findMissingTranslation() {
-        const logPrefix = '[findMissingTranslation]:';
+        const logPrefix = '[myIob.findMissingTranslation]:';
         try {
             this._findMissingTranslation(tree);
         }
@@ -640,7 +640,7 @@ export class myIob {
         }
     }
     _findMissingTranslation(obj, logSuffix = undefined) {
-        const logPrefix = `[findMissingTranslation]:${logSuffix ? ` ${logSuffix}` : ''}`;
+        const logPrefix = `[myIob.findMissingTranslation]:${logSuffix ? ` ${logSuffix}` : ''}`;
         try {
             for (const key in obj) {
                 if (_.isObject(obj[key]) && !key.includes('events')) {
