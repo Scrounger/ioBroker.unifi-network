@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) event 'UpgradeScheduled' added to ignore list
 - (DEV2DEV-DE) german translation updated
 
 ### 1.1.6 (2025-10-08)

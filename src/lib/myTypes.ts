@@ -42,7 +42,7 @@ export const WebSocketEvent = {
         LostContact: ['EVT_SW_Lost_Contact', 'EVT_DM_Lost_Contact', 'EVT_AP_Lost_Contact'],
         PoeDisconnect: ['EVT_SW_PoeDisconnect'],
         WANTransition: ['EVT_GW_WANTransition'],
-        Upgrade: ['EVT_SW_UpgradeScheduled', 'EVT_SW_Upgraded'],
+        Upgrade: ['EVT_SW_UpgradeScheduled', 'EVT_SW_Upgraded', 'EVT_AP_UpgradeScheduled'],
         Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted', 'EVT_AP_Adopted'],
         DhcpPool: ['EVT_GW_DhcpPoolExhausted'],
         Alert: ['EVT_IPS_IpsAlert'],
