@@ -49,7 +49,8 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### 1.1.7 (2025-10-17)
+
+### **WORK IN PROGRESS**
 
 - (Scrounger) event 'UpgradeScheduled' added to ignore list
 - (DEV2DEV-DE) german translation updated
