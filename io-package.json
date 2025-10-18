@@ -1,21 +1,8 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.7",
+    "version": "1.1.6",
     "news": {
-      "1.1.7": {
-        "en": "event 'UpgradeScheduled' added to ignore list\ngerman translation updated",
-        "de": "veranstaltung 'UpgradeScheduled' hinzugefügt, um die Liste zu ignorieren\nenglische übersetzung aktualisiert",
-        "ru": "событие «UpgradeScheduled» добавлено, чтобы игнорировать список\nобновленный немецкий перевод",
-        "pt": "evento 'UpgradeScheduled' adicionado para ignorar lista\ntradução alemã atualizada",
-        "nl": "event 'UpgradeScheduled' toegevoegd om lijst te negeren\nduitse vertaling bijgewerkt",
-        "fr": "événement 'UpgradeScheduled' ajouté pour ignorer la liste\ntraduction allemande mise à jour",
-        "it": "evento 'UpgradeScheduled' aggiunto alla lista ignorare\ntraduzione tedesca aggiornata",
-        "es": "evento 'UpgradeScheduled' añadido a la lista\ntraducción al alemán actualizada",
-        "pl": "event 'UpgradeScheduled' dodany do listy ignorowania\ngerman tłumaczenie zaktualizowane",
-        "uk": "захід 'UpgradeScheduled' додано для ігнорування списку\nнімецький переклад оновлений",
-        "zh-cn": "事件“ 升级已排定” 添加到忽略列表\n更新德国翻译"
-      },
       "1.1.6": {
         "en": "dependencies updated #22\nfirewall channel added #29\nbug fix #28",
         "de": "abhängigkeiten aktualisiert #22\nfirewall kanal hinzugefügt #29\nfehlerbehebung #28",
@@ -93,6 +80,19 @@
         "pl": "poprawki błędów\nrole dodane\nreponsiv adapter konfiguracyjny zaimplementowany",
         "uk": "виправлення помилок\nдодано ролі\njavascript licenses api веб-сайт",
         "zh-cn": "错误修正\n增加的角色\n已执行适配器配置"
+      },
+      "1.1.0": {
+        "en": "dependencies updated\ncheck adapter settings for timeout and interval implemented\ntranslation optimized\nbug fixes",
+        "de": "aktualisierte abhängigkeiten\nüberprüfen sie die adaptereinstellungen für timeout und intervall implementiert\nübersetzung optimiert\nfehlerbehebungen",
+        "ru": "обновленные зависимости\nпроверить настройки адаптера для тайм-аута и интервала\nоптимизирован перевод\nисправление ошибок",
+        "pt": "dependências atualizadas\nverificar as configurações do adaptador para timeout e intervalo implementados\ntradução otimizada\ncorreções de erros",
+        "nl": "afhankelijkheden bijgewerkt\ncontroleer adapter instellingen voor timeout en interval geïmplementeerd\nvertaling geoptimaliseerd\nfoutherstel",
+        "fr": "dépendances mises à jour\nvérifier les paramètres de l'adaptateur pour le timeout et l'intervalle implémenté\ntraduction optimisée\ncorrections des bogues",
+        "it": "dipendenze aggiornate\ncontrollare le impostazioni dell'adattatore per il timeout e l'intervallo implementato\ntraduzione ottimizzata\ncorrezioni di bug",
+        "es": "dependencias actualizadas\nconfiguración del adaptador de verificación para el tiempo y el intervalo implementado\ntraducción optimizada\nbug fixes",
+        "pl": "zaktualizowane zależności\nsprawdź ustawienia adaptera dla timeout i interwał zaimplementowany\nzoptymalizowane tłumaczenie\npoprawki błędów",
+        "uk": "оновлені залежності\nперевірити налаштування адаптера для таймера та інтервалу\nоптимізація перекладу\nвиправлення помилок",
+        "zh-cn": "更新依赖关系\n检查适配器设置是否用于超时和间隔\n翻译优化\n错误修正"
       }
     },
     "titleLang": {
