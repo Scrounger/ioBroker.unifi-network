@@ -29,7 +29,7 @@ export interface myTreeState {
 }
 export interface myTreeObject {
     idChannel?: string;
-    name?: string | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string);
+    name?: string | ioBroker.Translated | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string | ioBroker.Translated);
     icon?: string;
     object: {
         [key: string]: myTreeDefinition;
@@ -44,16 +44,17 @@ export interface myTreeArray {
     arrayChannelIdZeroPad?: number;
     arrayChannelIdFromProperty?(objDevice: myTreeData, objChannel: myTreeData, i: number, adapter: ioBroker.Adapter | ioBroker.myAdapter): string;
     arrayChannelNamePrefix?: string;
-    arrayChannelNameFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): string;
+    arrayChannelNameFromProperty?(objDevice: myTreeData, objChannel: myTreeData, i: number, adapter: ioBroker.Adapter | ioBroker.myAdapter): string | ioBroker.Translated;
     arrayStartNumber?: number;
     array: {
         [key: string]: myTreeDefinition;
     };
+    conditionToCreateState?: ConditionToCreateStateFunction;
 }
 export declare class myIob {
     private adapter;
     private log;
-    private utils;
+    utils: typeof import("@iobroker/adapter-core");
     private statesUsingValAsLastChanged;
     private subscribedStates;
     statesWithWriteFunction: {

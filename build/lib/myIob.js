@@ -264,32 +264,40 @@ export class myIob {
                                     const treeArrayDef = treeDefinition[key];
                                     const idChannelAppendix = Object.hasOwn(treeArrayDef, 'idChannel') ? treeArrayDef.idChannel : key;
                                     const idChannel = `${channel}.${idChannelAppendix}`;
-                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id && x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeArrayDef, 'required')) {
-                                        await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeArrayDef, 'name') ? treeArrayDef.name : key, Object.hasOwn(treeArrayDef, 'icon') ? treeArrayDef.icon : undefined, updateObject);
-                                        const arrayNumberAdd = Object.hasOwn(treeArrayDef, 'arrayStartNumber') ? treeArrayDef.arrayStartNumber : 0;
-                                        for (let i = 0; i <= treeData[key].length - 1; i++) {
-                                            const nr = i + arrayNumberAdd;
-                                            if (treeData[key][i] !== null && treeData[key][i] !== undefined) {
-                                                let idChannelArray = myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
-                                                if (Object.hasOwn(treeArrayDef, 'arrayChannelIdFromProperty')) {
-                                                    idChannelArray = treeArrayDef.arrayChannelIdFromProperty(fullData, channelData[key][i], i, this.adapter);
+                                    if ((Object.hasOwn(treeArrayDef, 'conditionToCreateState') && treeArrayDef.conditionToCreateState(fullData, channelData, this.adapter) === true) || !Object.hasOwn(treeArrayDef, 'conditionToCreateState')) {
+                                        if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && _.some(blacklistFilter, x => x.id && x.id.startsWith(`${filterId}${idChannelAppendix}`))) || Object.hasOwn(treeArrayDef, 'required')) {
+                                            await this.createOrUpdateChannel(`${idChannel}`, Object.hasOwn(treeArrayDef, 'name') ? treeArrayDef.name : key, Object.hasOwn(treeArrayDef, 'icon') ? treeArrayDef.icon : undefined, updateObject);
+                                            const arrayNumberAdd = Object.hasOwn(treeArrayDef, 'arrayStartNumber') ? treeArrayDef.arrayStartNumber : 0;
+                                            for (let i = 0; i <= treeData[key].length - 1; i++) {
+                                                const nr = i + arrayNumberAdd;
+                                                if (treeData[key][i] !== null && treeData[key][i] !== undefined) {
+                                                    let idChannelArray = myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
+                                                    if (Object.hasOwn(treeArrayDef, 'arrayChannelIdFromProperty')) {
+                                                        idChannelArray = treeArrayDef.arrayChannelIdFromProperty(fullData, channelData[key][i], i, this.adapter);
+                                                    }
+                                                    else if (Object.hasOwn(treeArrayDef, 'arrayChannelIdPrefix')) {
+                                                        idChannelArray = treeArrayDef.arrayChannelIdPrefix + myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
+                                                    }
+                                                    if (idChannelArray !== undefined) {
+                                                        await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty(fullData, channelData[key][i], i, this.adapter) : treeArrayDef.arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
+                                                        const result = await this._createOrUpdateStates(`${idChannel}.${idChannelArray}`, deviceId, treeArrayDef.array, treeData[key][i], blacklistFilter, isWhiteList, fullData, channelData[key][i], logDeviceName, true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
+                                                        stateValueChanged = result ? result : stateValueChanged;
+                                                    }
                                                 }
-                                                else if (Object.hasOwn(treeArrayDef, 'arrayChannelIdPrefix')) {
-                                                    idChannelArray = treeArrayDef.arrayChannelIdPrefix + myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
-                                                }
-                                                if (idChannelArray !== undefined) {
-                                                    await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, Object.hasOwn(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty(fullData, channelData[key][i], this.adapter) : treeArrayDef.arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
-                                                    const result = await this._createOrUpdateStates(`${idChannel}.${idChannelArray}`, deviceId, treeArrayDef.array, treeData[key][i], blacklistFilter, isWhiteList, fullData, channelData[key][i], logDeviceName, true, `${filterId}${idChannelAppendix}.`, isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` }));
-                                                    stateValueChanged = result ? result : stateValueChanged;
-                                                }
+                                            }
+                                        }
+                                        else {
+                                            // channel is on blacklist, wlan is comming from realtime api
+                                            if (await this.adapter.objectExists(idChannel)) {
+                                                await this.adapter.delObjectAsync(idChannel, { recursive: true });
+                                                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`}`);
                                             }
                                         }
                                     }
                                     else {
-                                        // channel is on blacklist, wlan is comming from realtime api
                                         if (await this.adapter.objectExists(idChannel)) {
                                             await this.adapter.delObjectAsync(idChannel, { recursive: true });
-                                            this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`}`);
+                                            this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
                                         }
                                     }
                                 }
