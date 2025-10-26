@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "news": {
+      "1.1.8": {
+        "en": "stp info's added #35\ndependencies updated",
+        "de": "stp info's add #35\naktualisierte abhängigkeiten",
+        "ru": "stp infos добавлено #35\nобновленные зависимости",
+        "pt": "informação do 'stp' adicionada # 35\ndependências atualizadas",
+        "nl": "stp info is toegevoegd #35\nafhankelijkheden bijgewerkt",
+        "fr": "stp info a ajouté #35\ndépendances mises à jour",
+        "it": "stp info's aggiunto #35\ndipendenze aggiornate",
+        "es": "stp info's añadido #35\ndependencias actualizadas",
+        "pl": "stp info 's added # 35\nzaktualizowane zależności",
+        "uk": "javascript licenses api веб-сайт go1.13.8\nоновлені залежності",
+        "zh-cn": "stp 信息添加为 35\n更新依赖关系"
+      },
       "1.1.7": {
         "en": "event 'UpgradeScheduled' added to ignore list\ngerman translation updated",
         "de": "veranstaltung 'UpgradeScheduled' hinzugefügt, um die Liste zu ignorieren\nenglische übersetzung aktualisiert",
@@ -80,19 +93,6 @@
         "pl": "zaloguj błąd dla własnych sterowników\nzaktualizowane zależności\npoprawki błędów",
         "uk": "виправлення помилок логіна для самореєстраторів\nоновлені залежності\nвиправлення помилок",
         "zh-cn": "自主机控制器的登录错误修正\n更新依赖关系\n错误修正"
-      },
-      "1.1.1": {
-        "en": "bug fixes\nroles added\nreponsiv adapter config implemented",
-        "de": "fehlerbehebungen\nrollen hinzugefügt\nreponsiv adapter config implementiert",
-        "ru": "исправление ошибок\nдобавлены роли\nreponsiv adapter config реализован",
-        "pt": "correções de erros\nfunções adicionadas\nconfiguração do adaptador reponsiv implementada",
-        "nl": "foutherstel\nrol toegevoegd\nreponsiv-adapterconfiguratie geïmplementeerd",
-        "fr": "corrections des bogues\nrôles ajoutés\nreponsiv configuration de l'adaptateur implémenté",
-        "it": "correzioni di bug\nruoli aggiunti\nreponsiv adattatore config implementato",
-        "es": "bug fixes\nfunciones adicionales\nadaptador reponsiv config implementado",
-        "pl": "poprawki błędów\nrole dodane\nreponsiv adapter konfiguracyjny zaimplementowany",
-        "uk": "виправлення помилок\nдодано ролі\njavascript licenses api веб-сайт",
-        "zh-cn": "错误修正\n增加的角色\n已执行适配器配置"
       }
     },
     "titleLang": {
