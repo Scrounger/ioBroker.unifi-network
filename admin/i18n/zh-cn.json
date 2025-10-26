@@ -149,6 +149,8 @@
 	"speed test upload rate": "速度测试上传速率",
 	"states are deleted when they are deleted in the unifi-controller": "在unifi-controller中删除状态时也会被删除",
 	"storage": "贮存",
+	"stp_port_mode": "生成树协议模式",
+	"stp_state": "生成树协议状态",
 	"system statistics": "系统统计",
 	"temperature": "温度",
 	"temporary interruption of the power supply to the poe port of the switch": "交换机poe口供电暂时中断",

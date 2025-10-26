@@ -149,6 +149,8 @@
 	"speed test upload rate": "тест швидкості завантаження",
 	"states are deleted when they are deleted in the unifi-controller": "стани видаляються, коли вони видаляються в unifi-контролері",
 	"storage": "зберігання",
+	"stp_port_mode": "режим протоколу Spanning Tree",
+	"stp_state": "стан протоколу Spanning Tree",
 	"system statistics": "Статистика системи",
 	"temperature": "температура",
 	"temporary interruption of the power supply to the poe port of the switch": "тимчасове припинення живлення порту poe комутатора",

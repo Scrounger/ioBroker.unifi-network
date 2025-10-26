@@ -149,6 +149,8 @@
 	"speed test upload rate": "скорость загрузки теста скорости",
 	"states are deleted when they are deleted in the unifi-controller": "состояния удаляются при их удалении в unifi-контроллере",
 	"storage": "хранилище",
+	"stp_port_mode": "режим протокола связующего дерева",
+	"stp_state": "состояние протокола связующего дерева",
 	"system statistics": "Системная статистика",
 	"temperature": "температура",
 	"temporary interruption of the power supply to the poe port of the switch": "временное прекращение подачи питания на порт PoE коммутатора",

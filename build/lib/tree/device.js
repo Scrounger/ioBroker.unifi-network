@@ -330,7 +330,7 @@ export var device;
                 arrayChannelIdFromProperty(objDevice, objChannel, i, adapter) {
                     return `port_${myHelper.zeroPad(objChannel?.port_idx, 2)}`;
                 },
-                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                arrayChannelNameFromProperty(objDevice, objChannel, i, adapter) {
                     return objChannel.name;
                 },
                 array: {
@@ -478,6 +478,12 @@ export var device;
                         name: 'speed',
                         unit: 'mbps'
                     },
+                    stp_state: {
+                        iobType: 'string',
+                    },
+                    stp_port_mode: {
+                        iobType: 'boolean',
+                    },
                     tx_bytes: {
                         iobType: 'number',
                         name: 'TX Bytes',
@@ -491,7 +497,7 @@ export var device;
             radio_table: {
                 idChannel: 'radio',
                 name: 'WLAN Radio',
-                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                arrayChannelNameFromProperty(objDevice, objChannel, i, adapter) {
                     return myHelper.radio_nameToFrequency(objChannel.name, adapter);
                 },
                 array: {
@@ -544,7 +550,7 @@ export var device;
             radio_table_stats: {
                 idChannel: 'radio',
                 name: 'WLAN Radio',
-                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                arrayChannelNameFromProperty(objDevice, objChannel, i, adapter) {
                     return myHelper.radio_nameToFrequency(objChannel?.name, adapter);
                 },
                 array: {
@@ -613,7 +619,7 @@ export var device;
             },
             storage: {
                 name: 'storage',
-                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                arrayChannelNameFromProperty(objDevice, objChannel, i, adapter) {
                     return objChannel?.name;
                 },
                 array: {
@@ -672,7 +678,7 @@ export var device;
                 arrayChannelIdFromProperty(objDevice, objChannel, i, adapter) {
                     return objChannel?.name;
                 },
-                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                arrayChannelNameFromProperty(objDevice, objChannel, i, adapter) {
                     return objChannel?.name;
                 },
                 array: {
@@ -791,7 +797,7 @@ export var device;
                         return undefined;
                     }
                 },
-                arrayChannelNameFromProperty(objDevice, objChannel, adapter) {
+                arrayChannelNameFromProperty(objDevice, objChannel, i, adapter) {
                     return `${objChannel?.essid} - ${myHelper.radio_nameToFrequency(objChannel?.radio_name, adapter)}`;
                 },
                 array: {

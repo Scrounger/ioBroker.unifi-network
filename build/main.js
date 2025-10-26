@@ -1317,6 +1317,9 @@ class UnifiNetwork extends utils.Adapter {
                     else if (WebSocketEvent.device.Alert.includes(myEvent.key)) {
                         this.log.debug(`${logPrefix} event 'alert' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }
+                    else if (WebSocketEvent.device.STP.includes(myEvent.key)) {
+                        this.log.debug(`${logPrefix} event 'STP' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+                    }
                     else {
                         this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key}` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
                     }

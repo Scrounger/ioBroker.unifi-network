@@ -22,6 +22,7 @@ export const WebSocketEvent = {
         Adopt: ['EVT_AP_AutoReadopted', 'EVT_SW_AutoReadopted', 'EVT_AP_Adopted'],
         DhcpPool: ['EVT_GW_DhcpPoolExhausted'],
         Alert: ['EVT_IPS_IpsAlert'],
+        STP: ['EVT_SW_StpPortBlocking', 'EVT_GW_StpPortBlocking', 'EVT_AP_StpPortBlocking']
     },
     client: {
         Connected: ['EVT_WU_Connected', 'EVT_WG_Connected', 'EVT_LU_Connected', 'EVT_LG_Connected'],

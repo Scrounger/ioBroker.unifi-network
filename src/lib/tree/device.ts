@@ -353,7 +353,7 @@ export namespace device {
                 arrayChannelIdFromProperty(objDevice: NetworkDevice, objChannel: NetworkDevicePortTable, i: number, adapter: ioBroker.myAdapter): string {
                     return `port_${myHelper.zeroPad(objChannel?.port_idx, 2)}`
                 },
-                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDevicePortTable, adapter: ioBroker.myAdapter): string {
+                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDevicePortTable, i: number, adapter: ioBroker.myAdapter): string {
                     return objChannel.name
                 },
                 array: {
@@ -509,6 +509,12 @@ export namespace device {
                         name: 'speed',
                         unit: 'mbps'
                     },
+                    stp_state: {
+                        iobType: 'string',
+                    },
+                    stp_port_mode: {
+                        iobType: 'boolean',
+                    },
                     tx_bytes: {
                         iobType: 'number',
                         name: 'TX Bytes',
@@ -522,7 +528,7 @@ export namespace device {
             radio_table: {
                 idChannel: 'radio',
                 name: 'WLAN Radio',
-                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceRadioTable, adapter: ioBroker.myAdapter): string {
+                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceRadioTable, i: number, adapter: ioBroker.myAdapter): string {
                     return myHelper.radio_nameToFrequency(objChannel.name, adapter);
                 },
                 array: {
@@ -575,7 +581,7 @@ export namespace device {
             radio_table_stats: {
                 idChannel: 'radio',
                 name: 'WLAN Radio',
-                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceRadioTableStat, adapter: ioBroker.myAdapter): string {
+                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceRadioTableStat, i: number, adapter: ioBroker.myAdapter): string {
                     return myHelper.radio_nameToFrequency(objChannel?.name, adapter);
                 },
                 array: {
@@ -644,7 +650,7 @@ export namespace device {
             },
             storage: {
                 name: 'storage',
-                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceStorage, adapter: ioBroker.myAdapter) {
+                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceStorage, i: number, adapter: ioBroker.myAdapter) {
                     return objChannel?.name
                 },
                 array: {
@@ -704,7 +710,7 @@ export namespace device {
                 arrayChannelIdFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceTemperature, i: number, adapter: ioBroker.myAdapter): string {
                     return objChannel?.name
                 },
-                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceTemperature, adapter: ioBroker.myAdapter): string {
+                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceTemperature, i: number, adapter: ioBroker.myAdapter): string {
                     return objChannel?.name
                 },
                 array: {
@@ -824,7 +830,7 @@ export namespace device {
                         return undefined
                     }
                 },
-                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceVapTable, adapter: ioBroker.myAdapter): string {
+                arrayChannelNameFromProperty(objDevice: NetworkDevice, objChannel: NetworkDeviceVapTable, i: number, adapter: ioBroker.myAdapter): string {
                     return `${objChannel?.essid} - ${myHelper.radio_nameToFrequency(objChannel?.radio_name, adapter)}`
                 },
                 array: {

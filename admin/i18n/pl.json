@@ -149,6 +149,8 @@
 	"speed test upload rate": "szybkość przesyłania testu prędkości",
 	"states are deleted when they are deleted in the unifi-controller": "stany są usuwane, gdy są usuwane w kontrolerze unifi",
 	"storage": "składowanie",
+	"stp_port_mode": "tryb protokołu drzewa opinającego",
+	"stp_state": "stan protokołu drzewa opinającego",
 	"system statistics": "Statystyki systemu",
 	"temperature": "temperatura",
 	"temporary interruption of the power supply to the poe port of the switch": "chwilowa przerwa w zasilaniu portu poe switcha",
