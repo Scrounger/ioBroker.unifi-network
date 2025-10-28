@@ -661,7 +661,7 @@ export class NetworkApi extends EventEmitter {
      * @param includeUnifiDevices
      * @returns 
      */
-    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = false, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
+    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = true, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`
 
         try {

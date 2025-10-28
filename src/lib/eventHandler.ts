@@ -303,7 +303,7 @@ export const eventHandler = {
                 if (data.ip && data.network_id) {
                     const preparedIp = data.ip.replaceAll('.', '_');
 
-                    const id = `vpn.${data.network_id}.${preparedIp}.isOnline`;
+                    const id = `${tree.client.idChannelVpn}.${data.network_id}.${preparedIp}.isOnline`;
 
                     if (await adapter.objectExists(id)) {
                         await adapter.setState(id, false, true);

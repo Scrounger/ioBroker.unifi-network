@@ -501,7 +501,7 @@ export class NetworkApi extends EventEmitter {
      * @param includeUnifiDevices
      * @returns
      */
-    async getClientsActive_V2(mac = undefined, includeTrafficUsage = false, includeUnifiDevices = true) {
+    async getClientsActive_V2(mac = undefined, includeTrafficUsage = true, includeUnifiDevices = true) {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`;
         try {
             const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}${mac ? `/${mac}` : ''}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`;

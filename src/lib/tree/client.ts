@@ -207,6 +207,10 @@ export namespace client {
                 id: 'network_members_group',
                 iobType: 'string',
                 name: 'network member groups',
+                conditionToCreateState(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): boolean {
+                    // only wired and wireless clients
+                    return objDevice?.type !== "VPN";
+                },
                 readVal(val: any, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     return JSON.stringify(val);
                 },

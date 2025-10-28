@@ -196,6 +196,10 @@ export var client;
                 id: 'network_members_group',
                 iobType: 'string',
                 name: 'network member groups',
+                conditionToCreateState(objDevice, objChannel, adapter) {
+                    // only wired and wireless clients
+                    return objDevice?.type !== "VPN";
+                },
                 readVal(val, adapter, device, channel, id) {
                     return JSON.stringify(val);
                 },
