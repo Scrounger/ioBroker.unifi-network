@@ -52,7 +52,8 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
-- (Scrounger) state lastChange and timestamp bug fix
+- (Scrounger) isOnline fallback method bug fix
+- (Scrounger) states lastChange and timestamp bug fix
 - (Scrounger) websocket ping pong bug fix
 - (Scrounger) vpn client isOnline bug fix
 - (Scrounger) dispatcher bug fix

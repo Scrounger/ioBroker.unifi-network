@@ -307,7 +307,6 @@ class UnifiNetwork extends utils.Adapter {
             }
             if (await this.login()) {
                 await this.updateRealTimeApiData(isAdapterStart);
-                await this.updateIsOnlineState(isAdapterStart);
                 this.updateApiData(isAdapterStart);
                 this.sendPing(isAdapterStart);
             }
@@ -784,20 +783,17 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[_updateIsOnlineState]:';
         try {
             for (const id in clients) {
-                const lastSeen = clients[id];
-                const isOnline = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`);
+                const lastSeenState = clients[id];
+                const isOnlineState = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`);
                 const mac = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.mac`);
                 const ip = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.ip`);
                 const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val] : this.cache.vpn[ip.val];
-                const t = moment(isOnline.lc);
-                const before = moment(lastSeen.val * 1000);
-                const now = moment();
-                if (!t.isBetween(before, now) || t.diff(before, 'seconds') <= 2) {
-                    // isOnline not changed between now an last reported last_seen val
-                    const diff = now.diff(before, 'seconds');
-                    await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, diff <= offlineTimeout, true);
-                    if (!isAdapterStart && diff > offlineTimeout && (isOnline.val !== diff <= offlineTimeout)) {
-                        this.log.info(`${logPrefix} fallback detection - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${before.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
+                const lastSeen = moment(lastSeenState.val * 1000);
+                const diff = moment().diff(lastSeen, 'seconds');
+                if (diff > offlineTimeout && isOnlineState.val) {
+                    await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
+                    if (!isAdapterStart) {
+                        this.log.info(`${logPrefix} ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
                     }
                 }
             }
