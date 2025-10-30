@@ -205,6 +205,10 @@ export class myIob {
                                             stateValueChanged = true;
                                             this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                                         }
+                                        if (!stateValueChanged && Object.hasOwn(treeDef, 'updateTs') && treeDef.updateTs === true) {
+                                            this.log.debug(`${logPrefix} timestamp of state '${logMsgState}' updated`);
+                                            await this.adapter.setState(`${channel}.${stateId}`, val, true);
+                                        }
                                     }
                                     else {
                                         if (!Object.hasOwn(treeDef, 'id')) {

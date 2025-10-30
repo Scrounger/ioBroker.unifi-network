@@ -120,6 +120,7 @@ export var client;
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
                 required: true,
+                updateTs: true,
                 readVal(val, adapter, device, channel, id) {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (device.type !== 'VPN') {

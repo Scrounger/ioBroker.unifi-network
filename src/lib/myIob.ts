@@ -37,6 +37,7 @@ export interface myTreeState {
 
     subscribeMe?: true; // subscribe
     required?: true; // required, can not be blacklisted
+    updateTs?: true; // always update state, so that timestamp is updated
 }
 
 export interface myTreeObject {
@@ -302,6 +303,12 @@ export class myIob {
                                             stateValueChanged = true;
                                             this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                                         }
+
+                                        if (!stateValueChanged && Object.hasOwn(treeDef, 'updateTs') && treeDef.updateTs === true) {
+                                            this.log.silly(`${logPrefix} timestamp of state '${logMsgState}' updated`);
+                                            await this.adapter.setState(`${channel}.${stateId}`, val, true)
+                                        }
+
                                     } else {
                                         if (!Object.hasOwn(treeDef, 'id')) {
                                             // only report it if it's not a custom defined state

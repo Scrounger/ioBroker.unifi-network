@@ -130,6 +130,7 @@ export namespace client {
                 valFromProperty: 'last_seen',
                 subscribeMe: true,
                 required: true,
+                updateTs: true,
                 readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
                     const diff = moment().diff(val * 1000, 'seconds');
                     if (device.type !== 'VPN') {

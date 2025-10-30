@@ -76,6 +76,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.login]`;
         try {
             if (!this.isControllerDetected) {
+                // let us check if we have Unifi OS or self hosted controller
                 await this.detectController();
             }
             this.logout();
@@ -96,6 +97,7 @@ export class NetworkApi extends EventEmitter {
     async detectController() {
         const logPrefix = `[${this.logPrefix}.detectUnifiOs]`;
         try {
+            // for detection we need a diffrent dispatcher, because pool is bind to server address
             const tmpDispatcher = this.detectControllerDispatcher();
             const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: tmpDispatcher });
             this.log.debug(`${logPrefix} detect self hosted controller repsonse: ${JSON.stringify(response)}`);

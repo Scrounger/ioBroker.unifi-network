@@ -68,8 +68,6 @@ class UnifiNetwork extends utils.Adapter {
 	]
 
 	statesUsingValAsLastChanged = [          // id of states where lc is taken from the value
-		'last_seen',
-		'first_seen',
 		'rundate',
 	];
 

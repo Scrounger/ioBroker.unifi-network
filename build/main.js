@@ -50,8 +50,6 @@ class UnifiNetwork extends utils.Adapter {
         'session-metadata:sync'
     ];
     statesUsingValAsLastChanged = [
-        'last_seen',
-        'first_seen',
         'rundate',
     ];
     constructor(options = {}) {

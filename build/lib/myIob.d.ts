@@ -26,6 +26,7 @@ export interface myTreeState {
     conditionToCreateState?: ConditionToCreateStateFunction;
     subscribeMe?: true;
     required?: true;
+    updateTs?: true;
 }
 export interface myTreeObject {
     idChannel?: string;
