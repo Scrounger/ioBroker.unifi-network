@@ -61,7 +61,7 @@ declare class UnifiNetwork extends utils.Adapter {
     /**
      * send websocket ping
      */
-    sendPing(): void;
+    sendPing(isAdapterStart?: boolean): void;
     updateRealTimeApiData(isAdapterStart?: boolean): Promise<void>;
     private updateApiData;
     private updateDevices;

@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) websocket ping pong bug fix
 - (Scrounger) vpn client isOnline bug fix
 - (Scrounger) dispatcher bug fix
 

@@ -343,11 +343,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				this.updateApiData(isAdapterStart);
 
-				this.sendPing();
-
-				this.pingTimeout = this.setTimeout(() => {
-					this.sendPing();
-				}, ((this.config.expertAliveInterval || 30) / 2) * 1000);
+				this.sendPing(isAdapterStart);
 			} else {
 				await this.setConnectionStatus(false);
 			}
@@ -472,11 +468,13 @@ class UnifiNetwork extends utils.Adapter {
 	/**
 	 * send websocket ping
 	 */
-	sendPing(): void {
+	sendPing(isAdapterStart: boolean = false): void {
 		const logPrefix = '[sendPing]:';
 
 		try {
-			this.ufn.wsSendPing();
+			if (!isAdapterStart) {
+				this.ufn.wsSendPing();
+			}
 
 			if (this.pingTimeout) {
 				this.clearTimeout(this.pingTimeout)
