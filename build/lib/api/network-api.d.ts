@@ -83,6 +83,7 @@ export declare class NetworkApi extends EventEmitter {
      */
     reset(): void;
     responseOk(code?: number): boolean;
+    private detectControllerDispatcher;
     /**
      * Execute an HTTP fetch request to the Network controller.
      *
@@ -132,7 +133,7 @@ export declare class NetworkApi extends EventEmitter {
      * @param includeUnifiDevices
      * @returns
      */
-    getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean): Promise<NetworkClient[] | undefined>;
+    getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean, filterKey?: string | undefined, filterVal?: string | number | boolean | undefined): Promise<NetworkClient[] | undefined>;
     /**
      * List of all configured / known clients on the site
      *

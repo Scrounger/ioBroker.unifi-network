@@ -124,11 +124,12 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.login]`
 
         try {
-            this.logout();
-
             if (!this.isControllerDetected) {
+                // let us check if we have Unifi OS or self hosted controller
                 await this.detectController();
             }
+
+            this.logout();
 
             if (this.isControllerDetected) {
                 // Let's attempt to login.
@@ -151,7 +152,10 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.detectUnifiOs]`
 
         try {
-            const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
+            // for detection we need a diffrent dispatcher, because pool is bind to server address
+            const tmpDispatcher = this.detectControllerDispatcher();
+
+            const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: tmpDispatcher });
 
             this.log.debug(`${logPrefix} detect self hosted controller repsonse: ${JSON.stringify(response)}`);
 
@@ -163,7 +167,7 @@ export class NetworkApi extends EventEmitter {
                 this.log.debug(`${logPrefix} self hosted controller detected`);
 
             } else {
-                const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
+                const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: tmpDispatcher });
 
                 this.log.debug(`${logPrefix} detect UniFi OS controller repsonse: ${JSON.stringify(response)}`);
 
@@ -180,6 +184,7 @@ export class NetworkApi extends EventEmitter {
                 }
             }
 
+            void tmpDispatcher?.destroy();
         } catch (error: any) {
             this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller! ${error}`);
 
@@ -323,36 +328,59 @@ export class NetworkApi extends EventEmitter {
      * Terminate any open connection to the UniFi Network API.
      */
     public reset(): void {
-        this._eventsWs?.close();
-        this._eventsWs = null;
+        const logPrefix = `[${this.logPrefix}.reset]`
 
-        if (this.host) {
+        try {
+            this._eventsWs?.close();
+            this._eventsWs = null;
 
-            // Cleanup any prior pool.
-            void this.dispatcher?.destroy();
+            if (this.host) {
 
-            // Create an interceptor that allows us to set the user agent to our liking.
-            const ua: Dispatcher.DispatcherComposeInterceptor = (dispatch) => (opts: Dispatcher.DispatchOptions, handler: Dispatcher.DispatchHandler) => {
+                // Cleanup any prior pool.
+                void this.dispatcher?.destroy();
 
-                opts.headers ??= {};
-                (opts.headers as Record<string, string>)['user-agent'] = 'unifi-network';
+                // Create an interceptor that allows us to set the user agent to our liking.
+                const ua: Dispatcher.DispatcherComposeInterceptor = (dispatch) => (opts: Dispatcher.DispatchOptions, handler: Dispatcher.DispatchHandler) => {
 
-                return dispatch(opts, handler);
-            };
+                    opts.headers ??= {};
+                    (opts.headers as Record<string, string>)['user-agent'] = 'unifi-network';
 
-            // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
-            // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
-            // 1500ms per retry, in factors of 2 starting from a 100ms delay.
-            this.dispatcher = new Agent({ allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
-                .compose(ua, interceptors.retry({
-                    maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
-                    statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
-                }));
+                    return dispatch(opts, handler);
+                };
+
+                // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
+                // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
+                // 1500ms per retry, in factors of 2 starting from a 100ms delay.
+                this.dispatcher = new Pool(this.isUnifiOs ? `https://${this.host}` : `https://${this.host}:${this.port}`, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+                    .compose(ua, interceptors.retry({
+                        maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
+                        statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
+                    }));
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
 
     public responseOk(code?: number): boolean {
         return (code !== undefined) && (code >= 200) && (code < 300);
+    }
+
+    private detectControllerDispatcher(): Dispatcher.ComposedDispatcher {
+        const ua: Dispatcher.DispatcherComposeInterceptor = (dispatch) => (opts: Dispatcher.DispatchOptions, handler: Dispatcher.DispatchHandler) => {
+
+            opts.headers ??= {};
+            (opts.headers as Record<string, string>)['user-agent'] = 'unifi-network';
+
+            return dispatch(opts, handler);
+        };
+
+        return new Agent({ allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+            .compose(ua, interceptors.retry({
+                maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
+                statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
+            }))
+            .compose(interceptors.redirect({ maxRedirections: 0 }));
     }
 
     /**
@@ -421,7 +449,7 @@ export class NetworkApi extends EventEmitter {
 
         this.headers.cookie = await this.cookieJar.getCookieString(this.controllerUrl);
 
-        options.dispatcher = this.dispatcher;
+        options.dispatcher = options.dispatcher || this.dispatcher;
         options.headers = this.headers;
         options.signal = controller.signal;
 
@@ -661,7 +689,7 @@ export class NetworkApi extends EventEmitter {
      * @param includeUnifiDevices
      * @returns 
      */
-    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = true, includeUnifiDevices: boolean = true): Promise<NetworkClient[] | undefined> {
+    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = true, includeUnifiDevices: boolean = true, filterKey: string | undefined = undefined, filterVal: string | number | boolean | undefined = undefined): Promise<NetworkClient[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`
 
         try {
@@ -669,7 +697,11 @@ export class NetworkApi extends EventEmitter {
             const res = await this.retrievData(url);
 
             if (res && res.length > 0) {
-                return res as NetworkClient[];
+                if (!filterKey) {
+                    return res as NetworkClient[];
+                } else {
+                    return (res as NetworkClient[]).filter(x => x[filterKey] === filterVal);
+                }
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

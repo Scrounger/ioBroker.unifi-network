@@ -1,5 +1,5 @@
 // Lib imports
-import { errors, interceptors, request, Agent } from 'undici';
+import { Pool, errors, interceptors, request, Agent } from 'undici';
 import { STATUS_CODES } from 'node:http';
 import { EventEmitter } from 'node:events';
 import util from 'node:util';
@@ -75,10 +75,10 @@ export class NetworkApi extends EventEmitter {
     async login() {
         const logPrefix = `[${this.logPrefix}.login]`;
         try {
-            this.logout();
             if (!this.isControllerDetected) {
                 await this.detectController();
             }
+            this.logout();
             if (this.isControllerDetected) {
                 // Let's attempt to login.
                 const loginSuccess = await this.loginController();
@@ -96,7 +96,8 @@ export class NetworkApi extends EventEmitter {
     async detectController() {
         const logPrefix = `[${this.logPrefix}.detectUnifiOs]`;
         try {
-            const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
+            const tmpDispatcher = this.detectControllerDispatcher();
+            const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: tmpDispatcher });
             this.log.debug(`${logPrefix} detect self hosted controller repsonse: ${JSON.stringify(response)}`);
             if (response !== null && response.statusCode === 302 && response.headers.location === '/manage') {
                 this.controllerUrl = `https://${this.host}:${this.port}`;
@@ -105,7 +106,7 @@ export class NetworkApi extends EventEmitter {
                 this.log.debug(`${logPrefix} self hosted controller detected`);
             }
             else {
-                const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: this.dispatcher.compose(interceptors.redirect({ maxRedirections: 0 })) });
+                const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: tmpDispatcher });
                 this.log.debug(`${logPrefix} detect UniFi OS controller repsonse: ${JSON.stringify(response)}`);
                 if (this.responseOk(response?.statusCode)) {
                     this.controllerUrl = `https://${this.host}`;
@@ -118,6 +119,7 @@ export class NetworkApi extends EventEmitter {
                     this.logout();
                 }
             }
+            void tmpDispatcher?.destroy();
         }
         catch (error) {
             this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller! ${error}`);
@@ -236,29 +238,48 @@ export class NetworkApi extends EventEmitter {
      * Terminate any open connection to the UniFi Network API.
      */
     reset() {
-        this._eventsWs?.close();
-        this._eventsWs = null;
-        if (this.host) {
-            // Cleanup any prior pool.
-            void this.dispatcher?.destroy();
-            // Create an interceptor that allows us to set the user agent to our liking.
-            const ua = (dispatch) => (opts, handler) => {
-                opts.headers ??= {};
-                opts.headers['user-agent'] = 'unifi-network';
-                return dispatch(opts, handler);
-            };
-            // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
-            // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
-            // 1500ms per retry, in factors of 2 starting from a 100ms delay.
-            this.dispatcher = new Agent({ allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
-                .compose(ua, interceptors.retry({
-                maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
-                statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
-            }));
+        const logPrefix = `[${this.logPrefix}.reset]`;
+        try {
+            this._eventsWs?.close();
+            this._eventsWs = null;
+            if (this.host) {
+                // Cleanup any prior pool.
+                void this.dispatcher?.destroy();
+                // Create an interceptor that allows us to set the user agent to our liking.
+                const ua = (dispatch) => (opts, handler) => {
+                    opts.headers ??= {};
+                    opts.headers['user-agent'] = 'unifi-network';
+                    return dispatch(opts, handler);
+                };
+                // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
+                // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
+                // 1500ms per retry, in factors of 2 starting from a 100ms delay.
+                this.dispatcher = new Pool(this.isUnifiOs ? `https://${this.host}` : `https://${this.host}:${this.port}`, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+                    .compose(ua, interceptors.retry({
+                    maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
+                    statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
+                }));
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
     responseOk(code) {
         return (code !== undefined) && (code >= 200) && (code < 300);
+    }
+    detectControllerDispatcher() {
+        const ua = (dispatch) => (opts, handler) => {
+            opts.headers ??= {};
+            opts.headers['user-agent'] = 'unifi-network';
+            return dispatch(opts, handler);
+        };
+        return new Agent({ allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+            .compose(ua, interceptors.retry({
+            maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
+            statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
+        }))
+            .compose(interceptors.redirect({ maxRedirections: 0 }));
     }
     /**
      * Execute an HTTP fetch request to the Network controller.
@@ -313,7 +334,7 @@ export class NetworkApi extends EventEmitter {
         const controller = new AbortController();
         this.connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
         this.headers.cookie = await this.cookieJar.getCookieString(this.controllerUrl);
-        options.dispatcher = this.dispatcher;
+        options.dispatcher = options.dispatcher || this.dispatcher;
         options.headers = this.headers;
         options.signal = controller.signal;
         try {
@@ -501,13 +522,18 @@ export class NetworkApi extends EventEmitter {
      * @param includeUnifiDevices
      * @returns
      */
-    async getClientsActive_V2(mac = undefined, includeTrafficUsage = true, includeUnifiDevices = true) {
+    async getClientsActive_V2(mac = undefined, includeTrafficUsage = true, includeUnifiDevices = true, filterKey = undefined, filterVal = undefined) {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`;
         try {
             const url = `${this.getApiEndpoint_V2(ApiEndpoints_V2.clientsActive)}${mac ? `/${mac}` : ''}?includeTrafficUsage=${includeTrafficUsage}&includeUnifiDevices=${includeUnifiDevices}`;
             const res = await this.retrievData(url);
             if (res && res.length > 0) {
-                return res;
+                if (!filterKey) {
+                    return res;
+                }
+                else {
+                    return res.filter(x => x[filterKey] === filterVal);
+                }
             }
         }
         catch (error) {

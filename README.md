@@ -53,6 +53,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 ### **WORK IN PROGRESS**
 
 - (Scrounger) vpn client isOnline bug fix
+- (Scrounger) dispatcher bug fix
 
 ### 1.1.8 (2025-10-26)
 
