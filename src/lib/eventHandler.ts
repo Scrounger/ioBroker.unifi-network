@@ -165,7 +165,7 @@ export const eventHandler = {
                                 adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
                             }
 
-                            if (delete disconnectDebounceList[mac]) {
+                            if (disconnectDebounceList[mac]) {
                                 delete disconnectDebounceList[mac];
                             }
 
@@ -180,7 +180,7 @@ export const eventHandler = {
                                 logMsg = `${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`;
                             }
 
-                            adapter.log.debug(`${logMsg} -> debounce disconnection for ${adapter.config.clientRealtimeDisconnectDebounceTime}s`);
+                            adapter.log.info(`${logMsg} -> debounce disconnection for ${adapter.config.clientRealtimeDisconnectDebounceTime}s`);
 
                             // debounce disconnection if it's configured
                             setTimeout(async () => {
@@ -194,7 +194,7 @@ export const eventHandler = {
                                     adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' 're-connected' in the debounce time, nothing to do`);
                                 }
 
-                                if (delete disconnectDebounceList[mac]) {
+                                if (disconnectDebounceList[mac]) {
                                     delete disconnectDebounceList[mac];
                                 }
 
