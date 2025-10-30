@@ -107,10 +107,13 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.host, this.config.user, this.config.password) {
 					this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
 
+					await this.establishConnection(true);
+
 					this.ufn.on('message', this.eventListener);
 					this.ufn.on('pong', this.pongListener);
 
-					await this.establishConnection(true);
+					this.log.info(`${logPrefix} Listening to WebSocket realtime API events started`);
+
 				} else {
 					this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 				}
@@ -365,7 +368,7 @@ class UnifiNetwork extends utils.Adapter {
 	 *
 	 * @returns Connection status
 	 */
-	async login(): Promise<boolean> {
+	async login(isAdapterStart: boolean = false): Promise<boolean> {
 		const logPrefix = '[login]:';
 
 		try {
@@ -395,6 +398,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		return false;
 	}
+
 
 
 	/** 
@@ -456,6 +460,8 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			this.isConnected = isConnected;
+			this.connected = isConnected;
+
 			await this.setState('info.connection', isConnected, true);
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

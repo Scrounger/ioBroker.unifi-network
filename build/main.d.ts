@@ -47,7 +47,7 @@ declare class UnifiNetwork extends utils.Adapter {
      *
      * @returns Connection status
      */
-    login(): Promise<boolean>;
+    login(isAdapterStart?: boolean): Promise<boolean>;
     /**
      * Check whether the connection to the controller exists, if not try to establish a new connection
      */
