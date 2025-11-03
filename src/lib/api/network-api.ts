@@ -687,6 +687,8 @@ export class NetworkApi extends EventEmitter {
      * @param mac
      * @param includeTrafficUsage
      * @param includeUnifiDevices
+     * @param filterKey
+     * @param filterVal
      * @returns 
      */
     public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = true, includeUnifiDevices: boolean = true, filterKey: string | undefined = undefined, filterVal: string | number | boolean | undefined = undefined): Promise<NetworkClient[] | undefined> {

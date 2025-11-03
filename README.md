@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) client and devices IPv6 states added
 - (Scrounger) start realtime api listener after adapter initialization finished
 - (Scrounger) isOnline fallback method bug fix
 - (Scrounger) states lastChange and timestamp bug fix

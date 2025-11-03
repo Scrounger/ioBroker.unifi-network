@@ -46,6 +46,7 @@ export interface NetworkClient {
     id: string;
     idletime?: number;
     ip: string;
+    ipv6_address: string[];
     is_11r?: boolean;
     is_allowed_in_visual_programming?: boolean;
     is_guest: boolean;
@@ -54,6 +55,7 @@ export interface NetworkClient {
     last_connection_network_id?: string;
     last_connection_network_name?: string;
     last_ip?: string;
+    last_ipv6?: string[];
     last_radio?: string;
     last_seen: number;
     last_uplink_mac: string;

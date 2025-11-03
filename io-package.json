@@ -319,6 +319,9 @@
         "id": "model"
       },
       {
+        "id": "last_ipv6"
+      },
+      {
         "id": "name"
       },
       {

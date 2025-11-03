@@ -249,6 +249,17 @@ export var device;
                 name: 'ip address',
                 required: true
             },
+            ipv6: {
+                iobType: 'string',
+                name: 'IPv6 address',
+                conditionToCreateState(objDevice, objChannel, adapter) {
+                    // only wired and wireless clients
+                    return objDevice?.ipv6 && objDevice?.ipv6.length > 0;
+                },
+                readVal(val, adapter, device, channel, id) {
+                    return JSON.stringify(val);
+                },
+            },
             isOnline: {
                 id: 'isOnline',
                 iobType: 'boolean',

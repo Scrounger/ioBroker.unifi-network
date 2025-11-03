@@ -123,6 +123,18 @@ export namespace client {
                 name: 'ip address',
                 required: true
             },
+            ipv6_address: {
+                id: 'ipv6',
+                iobType: 'string',
+                name: 'IPv6 address',
+                conditionToCreateState(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): boolean {
+                    // only wired and wireless clients
+                    return objDevice?.ipv6_address && objDevice?.ipv6_address.length > 0;
+                },
+                readVal(val: any, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
+                    return JSON.stringify(val);
+                },
+            },
             isOnline: {
                 id: 'isOnline',
                 iobType: 'boolean',
@@ -139,6 +151,17 @@ export namespace client {
                         return diff <= adapter.config.vpnOfflineTimeout;
                     }
                 }
+            },
+            last_ipv6: {
+                iobType: 'string',
+                name: 'last IPv6 address',
+                conditionToCreateState(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): boolean {
+                    // only wired and wireless clients
+                    return objDevice?.last_ipv6 && objDevice?.last_ipv6.length > 0;
+                },
+                readVal(val: any, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
+                    return JSON.stringify(val);
+                },
             },
             last_seen: {
                 iobType: 'number',

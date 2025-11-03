@@ -268,6 +268,17 @@ export namespace device {
                 name: 'ip address',
                 required: true
             },
+            ipv6: {
+                iobType: 'string',
+                name: 'IPv6 address',
+                conditionToCreateState(objDevice: NetworkDevice, objChannel: NetworkDevice, adapter: ioBroker.myAdapter): boolean {
+                    // only wired and wireless clients
+                    return objDevice?.ipv6 && objDevice?.ipv6.length > 0;
+                },
+                readVal(val: any, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevice, id: string): ioBroker.StateValue {
+                    return JSON.stringify(val);
+                },
+            },
             isOnline: {
                 id: 'isOnline',
                 iobType: 'boolean',

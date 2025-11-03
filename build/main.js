@@ -330,6 +330,7 @@ class UnifiNetwork extends utils.Adapter {
     /**
      * Login into NVR and load bootstrap data
      *
+     * @param isAdapterStart
      * @returns Connection status
      */
     async login(isAdapterStart = false) {
@@ -418,6 +419,8 @@ class UnifiNetwork extends utils.Adapter {
     }
     /**
      * send websocket ping
+     *
+     * @param isAdapterStart
      */
     sendPing(isAdapterStart = false) {
         const logPrefix = '[sendPing]:';
@@ -795,7 +798,7 @@ class UnifiNetwork extends utils.Adapter {
                 if (diff > offlineTimeout && isOnlineState.val) {
                     await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
                     if (!isAdapterStart) {
-                        this.log.info(`${logPrefix} ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
+                        this.log.info(`${logPrefix} Fallback method - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
                     }
                 }
             }

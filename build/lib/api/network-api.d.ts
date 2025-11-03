@@ -131,6 +131,8 @@ export declare class NetworkApi extends EventEmitter {
      * @param mac
      * @param includeTrafficUsage
      * @param includeUnifiDevices
+     * @param filterKey
+     * @param filterVal
      * @returns
      */
     getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean, filterKey?: string | undefined, filterVal?: string | number | boolean | undefined): Promise<NetworkClient[] | undefined>;

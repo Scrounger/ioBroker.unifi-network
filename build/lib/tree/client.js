@@ -113,6 +113,18 @@ export var client;
                 name: 'ip address',
                 required: true
             },
+            ipv6_address: {
+                id: 'ipv6',
+                iobType: 'string',
+                name: 'IPv6 address',
+                conditionToCreateState(objDevice, objChannel, adapter) {
+                    // only wired and wireless clients
+                    return objDevice?.ipv6_address && objDevice?.ipv6_address.length > 0;
+                },
+                readVal(val, adapter, device, channel, id) {
+                    return JSON.stringify(val);
+                },
+            },
             isOnline: {
                 id: 'isOnline',
                 iobType: 'boolean',
@@ -130,6 +142,17 @@ export var client;
                         return diff <= adapter.config.vpnOfflineTimeout;
                     }
                 }
+            },
+            last_ipv6: {
+                iobType: 'string',
+                name: 'last IPv6 address',
+                conditionToCreateState(objDevice, objChannel, adapter) {
+                    // only wired and wireless clients
+                    return objDevice?.last_ipv6 && objDevice?.last_ipv6.length > 0;
+                },
+                readVal(val, adapter, device, channel, id) {
+                    return JSON.stringify(val);
+                },
             },
             last_seen: {
                 iobType: 'number',

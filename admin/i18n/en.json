@@ -177,5 +177,7 @@
 	"WLAN Network Statistics": "WLAN Network Statistics",
 	"WAN 1": "WAN 1",
 	"stp_state": "spanning tree protocol state",
-	"stp_port_mode": "spanning tree protocol mode"
+	"stp_port_mode": "spanning tree protocol mode",
+	"IPv6 address": "IPv6 address",
+	"last IPv6 address": "last IPv6 address"
 }

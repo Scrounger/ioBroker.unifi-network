@@ -45,6 +45,7 @@ declare class UnifiNetwork extends utils.Adapter {
     /**
      * Login into NVR and load bootstrap data
      *
+     * @param isAdapterStart
      * @returns Connection status
      */
     login(isAdapterStart?: boolean): Promise<boolean>;
@@ -60,6 +61,8 @@ declare class UnifiNetwork extends utils.Adapter {
     setConnectionStatus(isConnected: boolean): Promise<void>;
     /**
      * send websocket ping
+     *
+     * @param isAdapterStart
      */
     sendPing(isAdapterStart?: boolean): void;
     updateRealTimeApiData(isAdapterStart?: boolean): Promise<void>;
