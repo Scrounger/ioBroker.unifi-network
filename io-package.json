@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "news": {
+      "1.1.9": {
+        "en": "client and devices IPv6 states added\nstart realtime api listener after adapter initialization finished\nisOnline fallback method bug fix\nstates lastChange and timestamp bug fix\nwebsocket ping pong bug fix\nvpn client isOnline bug fix\ndispatcher bug fix",
+        "de": "client und Geräte IPv6 Zustände hinzugefügt\nstart realtime api listener nach adapter initialisierung beendet\nistOnline Fallback Methode Fehler beheben\ndie letzten Ändern und Zeitstempel Fehler beheben\nwebsocket ping pong bug fix\nvpn client isOnline Fehler beheben\nfehler beheben",
+        "ru": "клиенты и устройства IPv6 добавлены\nначать прослушивание в режиме реального времени после завершения инициализации адаптера\nонлайн метод Fallback bug fix\nпоследний Изменение и исправление ошибки Timesamp\nwebsocket ping pong исправление ошибок\nvpn-клиент - Онлайн исправление ошибок\nисправлять ошибки диспетчера",
+        "pt": "estados de cliente e dispositivos IPv6 adicionados\niniciar o api listener em tempo real após a inicialização do adaptador terminar\ncorreção de erro do método de retorno do isOnline\nestados último Alterar e corrigir o erro da hora\ncorreção do bug do ping pong do websocket\nvpn client isOnline bug fix\ncorreção de erro do expedidor",
+        "nl": "client en apparaten IPv6 staat toegevoegd\nstart real-time api luisteraar na adapter initialisatie voltooid\nisOnline terugval methode bug fix\ntoestanden laatst Verandering en tijdstempel bug fix\nwebsocket ping pong bug fix\nvpn client isOnline bug fix\ndispatcher bug fix",
+        "fr": "les états IPv6 ajoutés\ndémarrer en temps réel api auditeur après initialisation de l'adaptateur terminé\ncorrection du bug de la méthode de retour en ligne isOnline\nétats Correction des bugs de modification et d'horodatage\nwebsocket ping pong bug fix\nvpn client isOnline bug fix\ncorrection du bug du régulateur",
+        "it": "client e dispositivi IPv6 stati aggiunti\navviare in tempo reale api listener dopo l'inizializzazione adattatore finito\nisOnline errore metodo bug fix\nstati ultimi Modifica e correzione di bug timestamp\nwebsocket ping pong bug fix\nvpn client isOnline bug fix\ncorrezione bug del dispacciatore",
+        "es": "cliente y dispositivos IPv6 estados añadidos\nempezar en tiempo real api oyente después de la inicialización del adaptador terminado\nesOnline método error solución\nestados Unidos Cambio y corrección de fallos de timetamp\njuego de errores de ping pong\nvpn client isOnline bug fix\ndespacho de error",
+        "pl": "klient i urządzenia IPv6 stany dodane\nuruchom słuchacza api w czasie rzeczywistym po zakończeniu inicjalizacji adaptera\nbłąd metody asfaltowej isOnline\nstates last Błąd zmiany i znacznika czasu\nbłąd ping pong websocket\nvpn klient isOnline błąd naprawić\nbłąd dyspozytora naprawić",
+        "uk": "клієнт і пристрої IPv6 додано\nпочаток в режимі реального часу слухач після ініціалізації адаптера завершено\nєОнлайн метод усунення помилок\nостанні роки Зміна та виправлення помилок\nwebsocket ping pong fix\ncyberGhost VPN купони\nвиправлення помилок диспетчера",
+        "zh-cn": "添加客户端和设备 IPv6 状态\n适配器初始化完成后启动实时 api 听器\n在线倒置方法错误修正\n最后一个状态 更改和时间戳错误修正\n网锁乒乓球虫修复\nvpn 客户端是 Online 错误修复\n调度器错误修正"
+      },
       "1.1.8": {
         "en": "stp info's added #35\ndependencies updated",
         "de": "stp info's add #35\naktualisierte abhängigkeiten",
@@ -80,19 +93,6 @@
         "pl": "błąd logowania dla własnych sterowników v9.x.x",
         "uk": "виправлення помилок входу для самовстановлених контролерів v9.x.x",
         "zh-cn": "自动主机控制器的登录错误修复 v9.x.x"
-      },
-      "1.1.2": {
-        "en": "login bug fix for self hosted controllers\ndependencies updated\nbug fixes",
-        "de": "fehlerbehebung für selbstgehostete controller\naktualisierte abhängigkeiten\nfehlerbehebungen",
-        "ru": "login bug fix для самоуправляемых контроллеров\nобновленные зависимости\nисправление ошибок",
-        "pt": "correção de erros de login para controladores hospedados automaticamente\ndependências atualizadas\ncorreções de erros",
-        "nl": "login bug fix voor zelf gehoste controllers\nafhankelijkheden bijgewerkt\nfoutherstel",
-        "fr": "correction de bug de connexion pour les contrôleurs auto hébergés\ndépendances mises à jour\ncorrections des bogues",
-        "it": "correzione bug login per i controller self hosting\ndipendenze aggiornate\ncorrezioni di bug",
-        "es": "inicio de sesión bug fix para auto hospedado controladores\ndependencias actualizadas\nbug fixes",
-        "pl": "zaloguj błąd dla własnych sterowników\nzaktualizowane zależności\npoprawki błędów",
-        "uk": "виправлення помилок логіна для самореєстраторів\nоновлені залежності\nвиправлення помилок",
-        "zh-cn": "自主机控制器的登录错误修正\n更新依赖关系\n错误修正"
       }
     },
     "titleLang": {
