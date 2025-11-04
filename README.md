@@ -53,6 +53,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 ### **WORK IN PROGRESS**
 
 - (Scrounger) option to set offline debounce time for single client added
+- (Scrounger) dependencies updated
 
 ### 1.1.9 (2025-11-03)
 
