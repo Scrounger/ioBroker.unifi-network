@@ -49,6 +49,11 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (Scrounger) option to set offline debounce time for single client added
+
 ### 1.1.9 (2025-11-03)
 
 - (Scrounger) client and devices IPv6 states added

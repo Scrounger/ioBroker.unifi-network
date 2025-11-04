@@ -44,23 +44,6 @@
 			"sm": 12,
 			"xs": 12
 		},
-		"clientRealtimeDisconnectDebounceTime": {
-			"type": "number",
-			"label": "debounce time [s] on disconnection",
-			"disabled": "!data.clientsEnabled && !data.guestsEnabled",
-			"help": "short-term connection interruptions will be ignored",
-			"validator": "data.clientRealtimeDisconnectDebounceTime < data.clientOfflineTimeout",
-			"tooltip": "must be two times bigger than 'debounce time' on tab general!",
-			"validatorNoSaveOnError": true,
-			"min": 0,
-			"max": 10000,
-			"step": 1,
-			"xl": 3,
-			"lg": 3,
-			"md": 3,
-			"sm": 12,
-			"xs": 12
-		},
 		"clientOfflineTimeout": {
 			"type": "number",
 			"label": "time [s] after a device is set to offline",
@@ -138,6 +121,81 @@
 			"md": 2,
 			"sm": 12,
 			"xs": 12
+		},
+		"dividerDisconnectDebounceTime": {
+			"newLine": true,
+			"type": "header",
+			"text": "clients / guests debounce time on disconnection",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"size": 2
+		},
+		"clientDebouncingHint": {
+			"type": "staticText",
+			"text": "The debounce time is used to ignore short-term connection interruptions. If a client disconnects and reconnects within this time, the disconnection event will be ignored.",
+			"xl": 12,
+			"lg": 12,
+			"md": 12,
+			"sm": 12,
+			"xs": 12
+		},
+		"clientRealtimeDisconnectDebounceTime": {
+			"newLine": true,
+			"type": "number",
+			"label": "debounce time [s] for all (0 = deactivated)",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"validator": "data.clientRealtimeDisconnectDebounceTime < data.clientOfflineTimeout",
+			"validatorErrorText": "must be smaller than 'time [s] after a device is set to offline'",
+			"validatorNoSaveOnError": true,
+			"min": 0,
+			"max": 10000,
+			"step": 1,
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
+			"sm": 12,
+			"xs": 12
+		},
+		"clientDebouncingList": {
+			"type": "table",
+			"xl": 6,
+			"lg": 6,
+			"md": 6,
+			"sm": 12,
+			"xs": 12,
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
+			"uniqueColumns": [
+				"mac"
+			],
+			"confirm": {
+				"condition": "!_alive",
+				"title": "Attention!",
+				"text": "This selection is only possible with a running instance!",
+				"ok": "Got it!",
+				"cancel": "cancel",
+				"type": "warning"
+			},
+			"items": [
+				{
+					"type": "autocompleteSendTo",
+					"title": "client / guest",
+					"attr": "mac",
+					"filter": true,
+					"sort": true,
+					"noMultiEdit": true,
+					"jsonData": "{\"instanceID\": \"${globalData.instanceID}\",\"adapter\": \"${globalData.adapter}\"}",
+					"command": "clientList"
+				},
+				{
+					"type": "number",
+					"title": "debounce time",
+					"attr": "debounceTime",
+					"min": 0,
+					"step": 1,
+					"default": 30,
+					"width": "150px",
+					"unit": "s"
+				}
+			]
 		},
 		"dividerClientBlackList": {
 			"newLine": true,

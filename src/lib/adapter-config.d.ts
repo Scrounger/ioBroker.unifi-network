@@ -18,6 +18,7 @@ declare global {
 			apiUpdateInterval: number;
 			deviceImageDownload: boolean;
 			clientRealtimeDisconnectDebounceTime: number;
+			clientDebouncingList: { mac: string, debounceTime: number }[];
 			clientOfflineTimeout: number;
 			vpnOfflineTimeout: number;
 			clientImageDownload: boolean;

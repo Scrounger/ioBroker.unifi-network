@@ -126,7 +126,7 @@
 	"average client signal": "average client signal",
 	"channel frequency": "channel frequency",
 	"is guest wlan": "is guest wlan",
-	"debounce time [s] on disconnection": "debounce time [s] on disconnection",
+	"debounce time [s] for all (0 = deactivated)": "debounce time [s] for all (0 = deactivated)",
 	"short-term connection interruptions will be ignored": "short-term connection interruptions will be ignored",
 	"hostname": "hostname",
 	"Is client online": "Is client online",
@@ -179,5 +179,10 @@
 	"stp_state": "spanning tree protocol state",
 	"stp_port_mode": "spanning tree protocol mode",
 	"IPv6 address": "IPv6 address",
-	"last IPv6 address": "last IPv6 address"
+	"last IPv6 address": "last IPv6 address",
+	"clients / guests debounce time on disconnection": "clients / guests debounce time on disconnection",
+	"The debounce time is used to ignore short-term connection interruptions. If a client disconnects and reconnects within this time, the disconnection event will be ignored.": "The debounce time is used to ignore short-term connection interruptions. If a client disconnects and reconnects within this time, the disconnection event will be ignored.",
+	"client / guest": "clients / guests",
+	"debounce time": "debounce time",
+	"must be smaller than 'time [s] after a device is set to offline'": "must be smaller than 'time [s] after a device is set to offline'"
 }

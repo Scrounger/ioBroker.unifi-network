@@ -183,6 +183,7 @@
     "apiUpdateInterval": 60,
     "deviceImageDownload": false,
     "clientRealtimeDisconnectDebounceTime": 0,
+    "clientDebouncingList": [],
     "clientOfflineTimeout": 200,
     "vpnOfflineTimeout": 300,
     "clientImageDownload": false,
