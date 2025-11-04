@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.1.9",
+    "version": "1.2.0",
     "news": {
+      "1.2.0": {
+        "en": "option to set offline debounce time for single client added\ndependencies updated",
+        "de": "möglichkeit, offline-debounce-zeit für einzelne client hinzugefügt\naktualisierte abhängigkeiten",
+        "ru": "возможность настроить офлайн-время отключения для одного клиента\nобновленные зависимости",
+        "pt": "opção para definir o tempo de defloramento offline para um único cliente adicionado\ndependências atualizadas",
+        "nl": "optie om offline debounce tijd in te stellen voor single client toegevoegd\nafhankelijkheden bijgewerkt",
+        "fr": "option pour définir l'heure de débonflement hors ligne pour un seul client ajouté\ndépendances mises à jour",
+        "it": "opzione per impostare offline debounce time per singolo client aggiunto\ndipendenze aggiornate",
+        "es": "opción para establecer el tiempo de devolución fuera de línea para un cliente único\ndependencias actualizadas",
+        "pl": "opcja ustawienia czasu debuuncji offline dla jednego klienta dodanego\nzaktualizowane zależności",
+        "uk": "опція в автономному режимі\nоновлені залежності",
+        "zh-cn": "选项为添加单个客户端设定下线解禁时间\n更新依赖关系"
+      },
       "1.1.9": {
         "en": "client and devices IPv6 states added\nstart realtime api listener after adapter initialization finished\nisOnline fallback method bug fix\nstates lastChange and timestamp bug fix\nwebsocket ping pong bug fix\nvpn client isOnline bug fix\ndispatcher bug fix",
         "de": "client und Geräte IPv6 Zustände hinzugefügt\nstart realtime api listener nach adapter initialisierung beendet\nistOnline Fallback Methode Fehler beheben\ndie letzten Ändern und Zeitstempel Fehler beheben\nwebsocket ping pong bug fix\nvpn client isOnline Fehler beheben\nfehler beheben",
@@ -80,19 +93,6 @@
         "pl": "poprawiono logowanie\nautomatyczne wykrywanie UniFi OS lub kontroler samoobsługowy\nautomatyczne tłumaczenie błąd naprawić\npoprawiono pobieranie obrazu\npoprawki błędów",
         "uk": "каротаж покращений\nавтоматичного виявлення UniFi OS або самореєстратор\nавтоматичного виправлення помилок перекладу\nзавантаження зображень поліпшено\nвиправлення помилок",
         "zh-cn": "伐木得到改善\n自动检测 UniFi OS 或自主机控制器\n自动翻译错误修正\n图像下载改进\n错误修正"
-      },
-      "1.1.3": {
-        "en": "login bug fix for self hosted controllers v9.x.x",
-        "de": "fehlerbehebung für selbstgehostete controller v9.x.x",
-        "ru": "исправление ошибок входа для самоорганизующихся контроллеров v9.x.x",
-        "pt": "correção de bug de login para controladores auto hospedados v9.x.x",
-        "nl": "login bug fix voor zelf gehoste controllers v9.x.x",
-        "fr": "correction de bug de connexion pour les contrôleurs auto hébergés v9.x.x",
-        "it": "correzione bug login per i controller self hosting v9.x.x",
-        "es": "inicio de sesión bug fix for self hosted controladors v9.x.x",
-        "pl": "błąd logowania dla własnych sterowników v9.x.x",
-        "uk": "виправлення помилок входу для самовстановлених контролерів v9.x.x",
-        "zh-cn": "自动主机控制器的登录错误修复 v9.x.x"
       }
     },
     "titleLang": {
