@@ -101,6 +101,9 @@ export function radio_nameToFrequency(radio_nameVal, adapter) {
     else if (radio_nameVal === 'wifi1' || radio_nameVal === 'rai0') {
         return '5 GHz';
     }
+    else if (radio_nameVal === 'wifi2') {
+        return '6 GHz';
+    }
     else {
         adapter.log.warn(`[myHelper.radio_nameToFrequency] radio ${radio_nameVal} interpreter not implemented! Please create an issue on github.`);
         return 'n/a';
