@@ -8,7 +8,7 @@ import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
 import type { FirewallGroup } from "./api/network-types-firewall.js";
 
-const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioBroker.Timeout } } = {};
+export const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioBroker.Timeout } } = {};
 
 export const eventHandler = {
     device: {

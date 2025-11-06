@@ -13,7 +13,7 @@ import url from 'node:url';
 import { NetworkApi } from './lib/api/network-api.js';
 // Adapter imports
 import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
-import { eventHandler } from './lib/eventHandler.js';
+import { eventHandler, disconnectDebounceList } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js';
 import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
@@ -112,6 +112,9 @@ class UnifiNetwork extends utils.Adapter {
             this.removeListener('pong', this.pongListener);
             this.clearTimeout(this.aliveTimeout);
             this.clearTimeout(this.pingTimeout);
+            for (const item in disconnectDebounceList) {
+                this.clearTimeout(disconnectDebounceList[item].timeout);
+            }
             if (this.ufn) {
                 this.ufn.logout();
                 await this.setConnectionStatus(false);

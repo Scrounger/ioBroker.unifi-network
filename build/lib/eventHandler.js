@@ -2,7 +2,7 @@ import moment from "moment";
 import { WebSocketEvent } from "./myTypes.js";
 import * as myHelper from './helper.js';
 import * as tree from './tree/index.js';
-const disconnectDebounceList = {};
+export const disconnectDebounceList = {};
 export const eventHandler = {
     device: {
         async restarted(meta, data, adapter, cache) {

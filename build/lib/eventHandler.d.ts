@@ -3,6 +3,12 @@ import { type myCache, type myNetworkClient } from "./myTypes.js";
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { FirewallGroup } from "./api/network-types-firewall.js";
+export declare const disconnectDebounceList: {
+    [mac: string]: {
+        lc: number;
+        timeout: ioBroker.Timeout;
+    };
+};
 export declare const eventHandler: {
     device: {
         restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;

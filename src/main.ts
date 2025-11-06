@@ -21,7 +21,7 @@ import type { FirewallGroup } from './lib/api/network-types-firewall.js';
 
 // Adapter imports
 import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myNetworkClient } from './lib/myTypes.js';
-import { eventHandler } from './lib/eventHandler.js';
+import { eventHandler, disconnectDebounceList } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
@@ -145,6 +145,10 @@ class UnifiNetwork extends utils.Adapter {
 
 			this.clearTimeout(this.aliveTimeout);
 			this.clearTimeout(this.pingTimeout);
+
+			for (const item in disconnectDebounceList) {
+				this.clearTimeout(disconnectDebounceList[item].timeout);
+			}
 
 			if (this.ufn) {
 				this.ufn.logout();
