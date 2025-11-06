@@ -39,11 +39,11 @@ export class myIob {
             };
             if (onlineId) {
                 common.statusStates = {
-                    onlineId: onlineId,
+                    onlineId: onlineId.startsWith(this.adapter.namespace) ? onlineId : `${this.adapter.namespace}.${onlineId}`,
                 };
             }
             if (errorId) {
-                common.statusStates.errorId = errorId;
+                common.statusStates.errorId = errorId.startsWith(this.adapter.namespace) ? errorId : `${this.adapter.namespace}.${errorId}`;
             }
             if (!(await this.adapter.objectExists(id))) {
                 this.log.debug(`${logPrefix} creating device '${id}'`);
