@@ -53,6 +53,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 ### **WORK IN PROGRESS**
 
 - (Scrounger) 6 GHz interpreter bug fix #37
+- (Scrounger) isOnline state icon bug fix
 
 ### 1.2.0 (2025-11-04)
 

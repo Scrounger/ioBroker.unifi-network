@@ -1334,7 +1334,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 
 					if (await this.objectExists(`${idChannel}`)) {
-						await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+						await this.myIob.createOrUpdateDevice(idChannel, undefined, `${this.namespace}.${idChannel}.isOnline`, undefined, base64ImgString, true, false);
 					}
 				}
 			}
@@ -1367,7 +1367,7 @@ class UnifiNetwork extends utils.Adapter {
 			} else {
 				if (await this.objectExists(`${idChannel}.image`)) {
 					await this.setState(`${idChannel}.image`, null, true);
-					await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, null, true, false);
+					await this.myIob.createOrUpdateDevice(idChannel, undefined, `${this.namespace}.${idChannel}.isOnline`, undefined, null, true, false);
 				}
 			}
 		} catch (error) {
