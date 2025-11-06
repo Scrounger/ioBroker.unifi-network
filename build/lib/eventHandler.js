@@ -167,7 +167,12 @@ export const eventHandler = {
                                 if (disconnectDebounceList[mac]) {
                                     adapter.log.info(`${logMsg} -> debounce time expired`);
                                     if (await adapter.objectExists(id)) {
-                                        await adapter.setState(id, { val: connected, lc: disconnectDebounceList[mac].lc }, true);
+                                        if (disconnectDebounceList[mac]?.lc) {
+                                            await adapter.setState(id, { val: connected, lc: disconnectDebounceList[mac].lc }, true);
+                                        }
+                                        else {
+                                            await adapter.setState(id, connected, true);
+                                        }
                                     }
                                 }
                                 else {

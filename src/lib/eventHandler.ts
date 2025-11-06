@@ -196,7 +196,11 @@ export const eventHandler = {
                                     adapter.log.info(`${logMsg} -> debounce time expired`);
 
                                     if (await adapter.objectExists(id)) {
-                                        await adapter.setState(id, { val: connected, lc: disconnectDebounceList[mac].lc }, true);
+                                        if (disconnectDebounceList[mac]?.lc) {
+                                            await adapter.setState(id, { val: connected, lc: disconnectDebounceList[mac].lc }, true);
+                                        } else {
+                                            await adapter.setState(id, connected, true);
+                                        }
                                     }
                                 } else {
                                     adapter.log.debug(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' reconnected in the debounce time, nothing to do`);
