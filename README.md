@@ -49,8 +49,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.2.1 (2025-11-10)
 
 - (Scrounger) 6 GHz interpreter bug fix #37
 - (Scrounger) isOnline state icon bug fix

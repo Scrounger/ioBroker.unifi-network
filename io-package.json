@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "news": {
+      "1.2.1": {
+        "en": "6 GHz interpreter bug fix #37\nisOnline state icon bug fix\nbug fixes",
+        "de": "6 GHz Dolmetscher Bugfix #37\nisOnline State icon bug fix\nfehlerbehebungen",
+        "ru": "6 ГГц интерпретатор исправление ошибки #37\nонлайн исправление багов State icon\nисправление ошибок",
+        "pt": "Correção de bug de intérprete de 6 GHz #37\ncorreção de bug do ícone do estado isOnline\ncorreções de erros",
+        "nl": "6 GHz interpreter bug fix #37\nisOnline status pictogram bug fix\nfoutherstel",
+        "fr": "Correction du bug d'interprète 6 GHz #37\ncorrection du bug de l'icône d'état isOnline\ncorrections des bogues",
+        "it": "Correzione di bug dell'interprete 6 GHz #37\nisOnline stato icon bug fix\ncorrezioni di bug",
+        "es": "6 GHz intérprete error solución #37\nisOnline State icono bug fix\nbug fixes",
+        "pl": "Błąd tłumacza 6 GHz # 37\nbłąd ikony ikony isOnline\npoprawki błędów",
+        "uk": "Виправлення помилок перекладача 6 ГГц #37\nisOnline державної іконки виправлення помилок\nвиправлення помилок",
+        "zh-cn": "6 GHz 解释器错误修正 # 37\nis 在线状态图标错误修正\n错误修正"
+      },
       "1.2.0": {
         "en": "option to set offline debounce time for single client added\ndependencies updated",
         "de": "möglichkeit, offline-debounce-zeit für einzelne client hinzugefügt\naktualisierte abhängigkeiten",
@@ -80,19 +93,6 @@
         "pl": "strona kontrolna istnieje na kontrolerze samoobsługowym\nlogin poprawki błędów # 27",
         "uk": "перевірити сайт, що існує на самовмісті контролер\nвиправлення помилок входу #27",
         "zh-cn": "检查站点存在于自主机控制器上\n登录错误修正 # 27"
-      },
-      "1.1.4": {
-        "en": "logging improved\nauto detect UniFi OS or self hosted controller\nauto translation bug fix\nimage downloading improved\nbug fixes",
-        "de": "protokollierung verbessert\nautodetektiv UniFi OS oder selbstgehostete Controller\nautomatische übersetzung fehler beheben\nbilddownload verbessert\nfehlerbehebungen",
-        "ru": "улучшение лесозаготовок\nавтоматическое обнаружение UniFi OS или автономный контроллер\nавтоматический перевод bug fix\nзагрузка изображений улучшилась\nисправление ошибок",
-        "pt": "registro melhorado\ndetectar automaticamente UniFi OS ou controlador self hosted\ncorreção de erro de tradução automática\na transferência da imagem melhorou\ncorreções de erros",
-        "nl": "loggen verbeterd\nautomatisch detecteren UniFi OS of self hosted controller\nauto vertaling fout fix\nafbeelding downloaden verbeterd\nfoutherstel",
-        "fr": "amélioration de l'exploitation forestière\ndétection automatique UniFi OS ou contrôleur auto-hébergé\ncorrection du bug de traduction automatique\ntéléchargement d'image amélioré\ncorrections des bogues",
-        "it": "logging migliorato\nrilevamento automatico UniFi OS o controller self hosting\ncorrezione di bug di traduzione automatica\nil download dell'immagine migliorato\ncorrezioni di bug",
-        "es": "mejora de la logística\ndetección automática Sistema operativo UniFi o controlador auto hospedado\ncorrección de error de traducción automática\ndescarga de imágenes mejorada\nbug fixes",
-        "pl": "poprawiono logowanie\nautomatyczne wykrywanie UniFi OS lub kontroler samoobsługowy\nautomatyczne tłumaczenie błąd naprawić\npoprawiono pobieranie obrazu\npoprawki błędów",
-        "uk": "каротаж покращений\nавтоматичного виявлення UniFi OS або самореєстратор\nавтоматичного виправлення помилок перекладу\nзавантаження зображень поліпшено\nвиправлення помилок",
-        "zh-cn": "伐木得到改善\n自动检测 UniFi OS 或自主机控制器\n自动翻译错误修正\n图像下载改进\n错误修正"
       }
     },
     "titleLang": {
