@@ -46,6 +46,28 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
+        async deleted(meta, data, adapter, cache) {
+            const logPrefix = '[eventHandler.device.deleted]:';
+            try {
+                const mac = data.sw || data.ap || data.gw;
+                if (mac) {
+                    if (adapter.config.keepIobSynchron) {
+                        const idDevice = `${tree.device.idChannel}.${mac}`;
+                        if (await adapter.objectExists(idDevice)) {
+                            await adapter.delObjectAsync(idDevice, { recursive: true });
+                            adapter.log.info(`${logPrefix} device '${cache.devices[mac].name}' (mac: ${mac}) delete, because it's removed by the unifi-controller`);
+                            delete cache.devices[mac];
+                        }
+                    }
+                }
+                else {
+                    adapter.log.warn(`${logPrefix} event 'deleted' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
+                }
+            }
+            catch (error) {
+                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
+            }
+        },
         async speedTest(event, adapter, cache) {
             const logPrefix = '[eventHandler.device.speedTest]:';
             try {
@@ -304,6 +326,7 @@ export const eventHandler = {
                     if (await adapter.objectExists(idChannel)) {
                         await adapter.delObjectAsync(idChannel, { recursive: true });
                         adapter.log.info(`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache.clients[mac].name}' deleted, because it's removed by the unifi-controller`);
+                        delete cache.clients[mac];
                     }
                 }
             }

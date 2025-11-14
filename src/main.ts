@@ -1495,6 +1495,11 @@ class UnifiNetwork extends utils.Adapter {
 						this.log.debug(`${logPrefix} event 'wan transition' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						await eventHandler.device.wanTransition(event.meta, myEvent, this, this.cache);
+					} else if (WebSocketEvent.device.Deleted.includes(myEvent.key)) {
+						// Device deleted
+						this.log.debug(`${logPrefix} event 'device deleted' (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+						await eventHandler.device.deleted(event.meta, myEvent, this, this.cache);
 
 					} else if (WebSocketEvent.device.ChannelChanged.includes(myEvent.key)) {
 						this.log.debug(`${logPrefix} event 'AP channel changed' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
