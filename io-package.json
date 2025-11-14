@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "news": {
+      "1.2.2": {
+        "en": "delete device event added\nevent messages improved #43",
+        "de": "löschen gerät ereignis hinzugefügt\nevent-nachrichten verbessert #43",
+        "ru": "добавлено событие удаленного устройства\nсообщения о событиях улучшились #43",
+        "pt": "apagar o evento do dispositivo adicionado\nmensagens de eventos melhoradas # 43",
+        "nl": "apparaat-gebeurtenis toegevoegd verwijderen\ngebeurtenisberichten verbeterd #43",
+        "fr": "supprimer événement périphérique ajouté\nmessages d'événements améliorés #43",
+        "it": "cancellare evento dispositivo aggiunto\nmessaggi evento migliorato #43",
+        "es": "eliminar el evento del dispositivo añadido\nmensajes del evento mejorado #43",
+        "pl": "usuń zdarzenie urządzenia dodane\nwiadomości eventowe poprawione # 43",
+        "uk": "видалення події пристрою додано\nповідомлення про події покращено #43",
+        "zh-cn": "删除设备事件已添加\n事件消息改进 # 43"
+      },
       "1.2.1": {
         "en": "6 GHz interpreter bug fix #37\nisOnline state icon bug fix\nbug fixes",
         "de": "6 GHz Dolmetscher Bugfix #37\nisOnline State icon bug fix\nfehlerbehebungen",
@@ -80,19 +93,6 @@
         "pl": "uaktualnione zależności # 22\nfirewall kanał dodany # 29\nbłąd poprawki # 28",
         "uk": "залежностей оновлено #22\nканал брандмауера додано #29\nвиправлення помилок #28",
         "zh-cn": "更新的依赖性# 22\n防火墙频道已添加 # 29\n错误修复 # 28"
-      },
-      "1.1.5": {
-        "en": "check site exist on self hosted controller\nlogin bug fixes #27",
-        "de": "check-website existiert auf selbst gehosteten controller\nfehlerbehebungen #27",
-        "ru": "контрольный сайт существует на автономном контроллере\nлогин баг исправить #27",
-        "pt": "o site de verificação existe no controlador hospedado automaticamente\ncorreções de erros de login # 27",
-        "nl": "controle site bestaan op zelf gehost controller\nlogin bug fixes #27",
-        "fr": "vérifier que le site existe sur le contrôleur auto hébergé\ncorrection du bug de connexion #27",
-        "it": "il sito di controllo esiste su auto ospitato controller\ncorrezioni di bug di login #27",
-        "es": "sitio de verificación existen en el controlador auto hospedado\ninicio de sesión bug fixes #27",
-        "pl": "strona kontrolna istnieje na kontrolerze samoobsługowym\nlogin poprawki błędów # 27",
-        "uk": "перевірити сайт, що існує на самовмісті контролер\nвиправлення помилок входу #27",
-        "zh-cn": "检查站点存在于自主机控制器上\n登录错误修正 # 27"
       }
     },
     "titleLang": {
