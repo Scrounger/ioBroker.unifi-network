@@ -37,6 +37,7 @@ export declare const WebSocketEvent: {
         DhcpPool: string[];
         Alert: string[];
         STP: string[];
+        Deleted: string[];
     };
     client: {
         Connected: string[];
