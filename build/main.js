@@ -799,10 +799,10 @@ class UnifiNetwork extends utils.Adapter {
                 const lastSeen = moment(lastSeenState.val * 1000);
                 const diff = moment().diff(lastSeen, 'seconds');
                 if (diff > offlineTimeout && isOnlineState.val) {
-                    await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
                     if (!isAdapterStart) {
                         this.log.info(`${logPrefix} Fallback method - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
                     }
+                    await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
                 }
             }
         }
