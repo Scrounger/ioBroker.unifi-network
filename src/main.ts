@@ -896,26 +896,11 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateIsOnlineState]:';
 
 		try {
-			//ToDo: vpn and perhaps device to include
-			const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.last_seen`);
-			await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout, 'client', isAdapterStart);
+			const clients = await this.getStatesAsync(`${tree.client.idChannel}.*.last_seen`);
 
-			const guests = await this.getStatesAsync(`${tree.client.idChannelGuests}.*.last_seen`);
-			await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout, 'guest', isAdapterStart);
-
-			const vpn = await this.getStatesAsync(`${tree.client.idChannelVpn}.*.last_seen`);
-			await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout, 'vpn', isAdapterStart);
-
-		} catch (error) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	private async _updateIsOnlineState(clients: Record<string, ioBroker.State>, offlineTimeout: number, typeOfClient: string, isAdapterStart: boolean = false): Promise<void> {
-		const logPrefix = '[_updateIsOnlineState]:';
-
-		try {
 			for (const id in clients) {
+				const typeOfClient = id.includes('.users.') ? 'client' : id.includes('.guests.') ? 'guest' : 'vpn';
+				const offlineTimeout = typeOfClient === 'vpn' ? this.config.vpnOfflineTimeout : this.config.clientOfflineTimeout;
 
 				const lastSeenState = clients[id];
 				const isOnlineState = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`);

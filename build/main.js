@@ -775,22 +775,10 @@ class UnifiNetwork extends utils.Adapter {
     async updateIsOnlineState(isAdapterStart = false) {
         const logPrefix = '[updateIsOnlineState]:';
         try {
-            //ToDo: vpn and perhaps device to include
-            const clients = await this.getStatesAsync(`${tree.client.idChannelUsers}.*.last_seen`);
-            await this._updateIsOnlineState(clients, this.config.clientOfflineTimeout, 'client', isAdapterStart);
-            const guests = await this.getStatesAsync(`${tree.client.idChannelGuests}.*.last_seen`);
-            await this._updateIsOnlineState(guests, this.config.clientOfflineTimeout, 'guest', isAdapterStart);
-            const vpn = await this.getStatesAsync(`${tree.client.idChannelVpn}.*.last_seen`);
-            await this._updateIsOnlineState(vpn, this.config.vpnOfflineTimeout, 'vpn', isAdapterStart);
-        }
-        catch (error) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-        }
-    }
-    async _updateIsOnlineState(clients, offlineTimeout, typeOfClient, isAdapterStart = false) {
-        const logPrefix = '[_updateIsOnlineState]:';
-        try {
+            const clients = await this.getStatesAsync(`${tree.client.idChannel}.*.last_seen`);
             for (const id in clients) {
+                const typeOfClient = id.includes('.users.') ? 'client' : id.includes('.guests.') ? 'guest' : 'vpn';
+                const offlineTimeout = typeOfClient === 'vpn' ? this.config.vpnOfflineTimeout : this.config.clientOfflineTimeout;
                 const lastSeenState = clients[id];
                 const isOnlineState = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`);
                 const mac = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.mac`);

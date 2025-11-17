@@ -71,7 +71,6 @@ declare class UnifiNetwork extends utils.Adapter {
     private updateClients;
     private updatClientsOffline;
     private updateIsOnlineState;
-    private _updateIsOnlineState;
     private updateWlanConfig;
     private updateWlanConnectedClients;
     private updateLanConfig;
