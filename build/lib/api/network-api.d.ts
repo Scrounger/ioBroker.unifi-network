@@ -10,6 +10,7 @@ import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType 
 import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall.js';
 import { NetworkSite } from './network-types-sites.js';
+import { NetworkMembersGroup } from './network-types-network-members-groups.js';
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -49,8 +50,8 @@ export declare enum ApiEndpoints_V2 {
     lanConfig = "lanConfig",
     wanConfig = "wanConfig",
     models = "models",
-    'network-members-group' = "network-members-group",
-    'network-members-groups' = "network-members-groups"
+    networkMembersGroups = "networkMemberGroups",
+    networkMembersGroup = "networkMemberGroup"
 }
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
@@ -190,6 +191,12 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getFirewallGroup(firewallGroup_id?: any): Promise<FirewallGroup[] | undefined>;
+    /**
+     * List all network member groups
+     *
+     * @returns
+     */
+    getNetworkMemberGroups(): Promise<NetworkMembersGroup[] | undefined>;
     /**
      * get statistics for site, gateway, switches or access points
      *

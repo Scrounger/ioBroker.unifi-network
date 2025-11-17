@@ -19,6 +19,7 @@ import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType 
 import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall.js';
 import { NetworkSite } from './network-types-sites.js';
+import { NetworkMembersGroup } from './network-types-network-members-groups.js';
 
 export type Nullable<T> = T | null;
 
@@ -64,8 +65,8 @@ export enum ApiEndpoints_V2 {
     lanConfig = 'lanConfig',
     wanConfig = 'wanConfig',
     models = 'models',
-    'network-members-group' = 'network-members-group',
-    'network-members-groups' = 'network-members-groups',
+    networkMembersGroups = 'networkMemberGroups',
+    networkMembersGroup = 'networkMemberGroup',
 }
 
 export class NetworkApi extends EventEmitter {
@@ -888,6 +889,27 @@ export class NetworkApi extends EventEmitter {
     }
 
     /**
+     * List all network member groups
+     * 
+     * @returns 
+     */
+    public async getNetworkMemberGroups(): Promise<NetworkMembersGroup[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getNetworkMemberGroups]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.networkMembersGroups)}`);
+
+            if (res && res.length > 0) {
+                return res as NetworkMembersGroup[];
+            }
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    /**
      * get statistics for site, gateway, switches or access points
      * 
      * @param type report type @see reportType
@@ -1136,6 +1158,14 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints_V2.models:
                 endpointSuffix = `/v2/api/site/${this.site}/models`;
+                break;
+
+            case ApiEndpoints_V2.networkMembersGroups:
+                endpointSuffix = `/v2/api/site/${this.site}/network-members-groups`;
+                break;
+
+            case ApiEndpoints_V2.networkMembersGroup:
+                endpointSuffix = `/v2/api/site/${this.site}/network-members-group`;
                 break;
 
             default:

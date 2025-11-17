@@ -33,8 +33,8 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["lanConfig"] = "lanConfig";
     ApiEndpoints_V2["wanConfig"] = "wanConfig";
     ApiEndpoints_V2["models"] = "models";
-    ApiEndpoints_V2["network-members-group"] = "network-members-group";
-    ApiEndpoints_V2["network-members-groups"] = "network-members-groups";
+    ApiEndpoints_V2["networkMembersGroups"] = "networkMemberGroups";
+    ApiEndpoints_V2["networkMembersGroup"] = "networkMemberGroup";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
@@ -697,6 +697,24 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
     /**
+     * List all network member groups
+     *
+     * @returns
+     */
+    async getNetworkMemberGroups() {
+        const logPrefix = `[${this.logPrefix}.getNetworkMemberGroups]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint_V2(ApiEndpoints_V2.networkMembersGroups)}`);
+            if (res && res.length > 0) {
+                return res;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    /**
      * get statistics for site, gateway, switches or access points
      *
      * @param type report type @see reportType
@@ -910,6 +928,12 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints_V2.models:
                 endpointSuffix = `/v2/api/site/${this.site}/models`;
+                break;
+            case ApiEndpoints_V2.networkMembersGroups:
+                endpointSuffix = `/v2/api/site/${this.site}/network-members-groups`;
+                break;
+            case ApiEndpoints_V2.networkMembersGroup:
+                endpointSuffix = `/v2/api/site/${this.site}/network-members-group`;
                 break;
             default:
                 endpointSuffix = '';
