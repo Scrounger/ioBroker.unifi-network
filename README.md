@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) option to change tx power mode of access point channels
 - (Scrounger) dependencies updated
 - (Scrounger) code optimized
 - (Scrounger) logging optimized

@@ -212,7 +212,7 @@ export namespace device {
 
                     const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { disabled: val }, 'PUT');
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `{state.val ? 'disable' : 'enable'} access point '${device.name}' (mac: ${device.mac})`);
+                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'disable' : 'enable'} access point '${device.name}' (mac: ${device.mac})`);
                 },
             },
             fan_level: {
@@ -571,7 +571,32 @@ export namespace device {
                     },
                     tx_power_mode: {
                         iobType: 'string',
-                        name: 'transmit power'
+                        name: 'transmit power',
+                        write: true,
+                        states: ['low', 'medium', 'high', 'auto', 'disabled', 'custom'],
+                        async writeVal(val: string, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
+                            const channelNr = adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id));
+                            const logPrefix = `[tree.device.radio_table.${channelNr}.tx_power_mode]:`;
+
+                            try {
+                                if (device.state === 1) {
+                                    const txPowerModes = device.radio_table.map(item => ({
+                                        name: item.name,            // is the id of channel, so we need to send it also
+                                        tx_power_mode: item.tx_power_mode,
+                                    }));
+
+                                    txPowerModes[channelNr].tx_power_mode = val;
+
+                                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { radio_table: txPowerModes }, 'PUT');
+
+                                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `changed power mode to '${val}' of channel '${txPowerModes[channelNr].name}' for access point '${device.name}' (mac: ${device.mac})`);
+                                } else {
+                                    adapter.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): changing value not possible, device is in state '${device.state}'`);
+                                }
+                            } catch (error) {
+                                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+                            }
+                        },
                     },
                     // tx_power_max: {
                     //     id: 'tx_power_max',
