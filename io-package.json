@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.2.2",
+    "version": "1.3.0",
     "news": {
+      "1.3.0": {
+        "en": "event messages improved #46\noption to change tx power mode of access point channels\ndependencies updated\ncode optimized\nlogging optimized",
+        "de": "event-nachrichten verbessert #46\nmöglichkeit, tx-leistungsmodus der zugangspunktkanäle zu ändern\naktualisierte abhängigkeiten\ncode optimiert\nprotokollierung optimiert",
+        "ru": "сообщения об улучшении #46\nвозможность изменения режима питания tx каналов точки доступа\nобновленные зависимости\nоптимизированный код\nоптимизация лесозаготовок",
+        "pt": "mensagens de eventos melhoradas # 46\nopção para alterar o modo de potência tx dos canais de ponto de acesso\ndependências atualizadas\ncódigo otimizado\nregistro otimizado",
+        "nl": "event berichten verbeterd #46\noptie om tx stroommodus van toegangspuntkanalen te wijzigen\nafhankelijkheden bijgewerkt\ncode geoptimaliseerd\nlogging geoptimaliseerd",
+        "fr": "messages d'événements améliorés #46\noption pour changer le mode d'alimentation tx des canaux point d'accès\ndépendances mises à jour\ncode optimisé\nenregistrement optimisé",
+        "it": "messaggi evento migliorato #46\nopzione per modificare la modalità di alimentazione tx dei canali di accesso\ndipendenze aggiornate\ncodice ottimizzato\nlogging ottimizzato",
+        "es": "mensajes del evento mejorado #46\nopción para cambiar el modo de potencia tx de canales de punto de acceso\ndependencias actualizadas\ncódigo optimizado\nlogging optimizado",
+        "pl": "wiadomości eventowe poprawione # 46\nopcja zmiany trybu zasilania tx kanałów punktów dostępu\nzaktualizowane zależności\nzoptymalizowany kod\nzoptymalizowane logowanie",
+        "uk": "повідомлення про захід покращено #46\nможливість змінити режим живлення tx каналів доступу\nоновлені залежності\nоптимізований код\nоптимізоване завантаження",
+        "zh-cn": "事件消息得到改进# 46\n选项以更改 tx 访问点频道的电源模式\n更新依赖关系\n代码优化\n记录优化"
+      },
       "1.2.2": {
         "en": "delete device event added\nevent messages improved #43",
         "de": "löschen gerät ereignis hinzugefügt\nevent-nachrichten verbessert #43",
@@ -80,19 +93,6 @@
         "pl": "event 'UpgradeScheduled' dodany do listy ignorowania\ngerman tłumaczenie zaktualizowane",
         "uk": "захід 'UpgradeScheduled' додано для ігнорування списку\nнімецький переклад оновлений",
         "zh-cn": "事件“ 升级已排定” 添加到忽略列表\n更新德国翻译"
-      },
-      "1.1.6": {
-        "en": "dependencies updated #22\nfirewall channel added #29\nbug fix #28",
-        "de": "abhängigkeiten aktualisiert #22\nfirewall kanal hinzugefügt #29\nfehlerbehebung #28",
-        "ru": "обновленные зависимости #22\nбрандмауэр-канал #29\nобновление #28",
-        "pt": "dependências atualizadas # 22\ncanal de firewall adicionado # 29\ncorreção de erros # 28",
-        "nl": "afhankelijkheden bijgewerkt #22\nfirewall kanaal toegevoegd #29\nbug fix #28",
-        "fr": "dépendances mises à jour #22\ncanal pare-feu ajouté #29\ncorrection du bug #28",
-        "it": "dipendenze aggiornate #22\ncanale firewall aggiunto #29\ncorrezione bug #28",
-        "es": "dependencias actualizadas #22\ncanal de firewall añadido #29\nbug fix #28",
-        "pl": "uaktualnione zależności # 22\nfirewall kanał dodany # 29\nbłąd poprawki # 28",
-        "uk": "залежностей оновлено #22\nканал брандмауера додано #29\nвиправлення помилок #28",
-        "zh-cn": "更新的依赖性# 22\n防火墙频道已添加 # 29\n错误修复 # 28"
       }
     },
     "titleLang": {
