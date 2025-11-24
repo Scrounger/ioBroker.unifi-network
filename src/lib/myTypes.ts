@@ -49,6 +49,7 @@ export const WebSocketEvent = {
         Alert: ['EVT_IPS_IpsAlert'],
         STP: ['EVT_SW_StpPortBlocking'],
         Deleted: ['EVT_AP_Deleted', 'EVT_BB_Deleted', 'EVT_GW_Deleted', 'EVT_LTE_Deleted', 'EVT_SW_Deleted', 'EVT_XG_Deleted'],
+        RougeDetected: ['EVT_AP_DetectRogueAP', 'EVT_SW_DetectRogueDHCP'],
     },
     client: {
         Connected: ['EVT_LG_Connected', 'EVT_LU_Connected', 'EVT_WG_Connected', 'EVT_WU_Connected'],
