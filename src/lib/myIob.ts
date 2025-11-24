@@ -113,6 +113,10 @@ export class myIob {
             }
 
             if (errorId) {
+                if (!common.statusStates) {
+                    common.statusStates = {};
+                }
+
                 common.statusStates.errorId = errorId.startsWith(this.adapter.namespace) ? errorId : `${this.adapter.namespace}.${errorId}`;
             }
 

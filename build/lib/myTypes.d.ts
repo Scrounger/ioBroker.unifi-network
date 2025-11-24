@@ -38,6 +38,7 @@ export declare const WebSocketEvent: {
         Alert: string[];
         STP: string[];
         Deleted: string[];
+        RougeDetected: string[];
     };
     client: {
         Connected: string[];
