@@ -39,6 +39,7 @@ export declare const WebSocketEvent: {
         STP: string[];
         Deleted: string[];
         RougeDetected: string[];
+        Authorization: string[];
     };
     client: {
         Connected: string[];
@@ -47,6 +48,7 @@ export declare const WebSocketEvent: {
         RoamedRadio: string[];
         Blocked: string[];
         Unblocked: string[];
+        Authorization: string[];
     };
 };
 export interface myCache {

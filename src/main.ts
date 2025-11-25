@@ -64,7 +64,8 @@ class UnifiNetwork extends utils.Adapter {
 	eventsToIgnore = [
 		'device:update',
 		'unifi-device:sync',
-		'session-metadata:sync'
+		'session-metadata:sync',
+		'radio-ai:plan',			// Channel AI events
 	]
 
 	statesUsingValAsLastChanged = [          // id of states where lc is taken from the value
@@ -1412,12 +1413,8 @@ class UnifiNetwork extends utils.Adapter {
 				await this.onNetworkFirewallGroupEvent(event as NetworkEventFirewallGroup);
 			} else {
 				if (!this.eventsToIgnore.includes(event.meta.message)) {
-					this.log.debug(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
+					this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
 				}
-
-				// if (!event.meta.message.includes('unifi-device:sync') && !event.meta.message.includes('session-metadata:sync')) {
-
-				// }
 			}
 
 			await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
@@ -1486,26 +1483,19 @@ class UnifiNetwork extends utils.Adapter {
 
 						await eventHandler.device.deleted(event.meta, myEvent, this, this.cache);
 
-					} else if (WebSocketEvent.device.ChannelChanged.includes(myEvent.key)) {
-						this.log.debug(`${logPrefix} event 'AP channel changed' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-
-					} else if (WebSocketEvent.device.PoeDisconnect.includes(myEvent.key)) {
-						this.log.debug(`${logPrefix} event 'poe disconnect' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-
-					} else if (WebSocketEvent.device.Upgrade.includes(myEvent.key)) {
-						this.log.debug(`${logPrefix} event 'upgrade' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-
-					} else if (WebSocketEvent.device.Adopt.includes(myEvent.key)) {
-						this.log.debug(`${logPrefix} event 'adopt' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-
-					} else if (WebSocketEvent.device.Alert.includes(myEvent.key)) {
-						this.log.debug(`${logPrefix} event 'alert' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-
-					} else if (WebSocketEvent.device.STP.includes(myEvent.key)) {
-						this.log.debug(`${logPrefix} event 'STP' - not implemented (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
-
 					} else {
-						this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key}` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+						const deviceEvent = Object.entries(WebSocketEvent.device).find(([key, arr]) => arr.includes(myEvent.key));
+						const clientEvent = Object.entries(WebSocketEvent.client).find(([key, arr]) => arr.includes(myEvent.key));
+
+						if (deviceEvent) {
+							this.log.debug(`${logPrefix} device event '${deviceEvent[0]}' not implemented (key: ${myEvent.key}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+						} else if (clientEvent) {
+							this.log.debug(`${logPrefix} client event '${clientEvent[0]}' not implemented (key: ${myEvent.key}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+
+						} else {
+							this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key}` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+						}
 					}
 				}
 			}
