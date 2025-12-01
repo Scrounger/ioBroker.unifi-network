@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.3.0",
+    "version": "1.3.1",
     "news": {
+      "1.3.1": {
+        "en": "null bug fix #48\ndependencies updated\nevent messages improved #46\nbug fixes",
+        "de": "null fehler beheben #48\naktualisierte abhängigkeiten\nevent-nachrichten verbessert #46\nfehlerbehebungen",
+        "ru": "нулевое исправление ошибок #48\nобновленные зависимости\nсообщения об улучшении #46\nисправление ошибок",
+        "pt": "correção de erro nula # 48\ndependências atualizadas\nmensagens de eventos melhoradas # 46\ncorreções de erros",
+        "nl": "null bug fix #48\nafhankelijkheden bijgewerkt\nevent berichten verbeterd #46\nfoutherstel",
+        "fr": "correction du bug null #48\ndépendances mises à jour\nmessages d'événements améliorés #46\ncorrections des bogues",
+        "it": "null bug fix #48\ndipendenze aggiornate\nmessaggi evento migliorato #46\ncorrezioni di bug",
+        "es": "null bug fix #48\ndependencias actualizadas\nmensajes del evento mejorado #46\nbug fixes",
+        "pl": "null bug fix # 48\nzaktualizowane zależności\nwiadomości eventowe poprawione # 46\npoprawki błędów",
+        "uk": "нулі виправлення помилок #48\nоновлені залежності\nповідомлення про захід покращено #46\nвиправлення помилок",
+        "zh-cn": "无错误修正# 48\n更新依赖关系\n事件消息得到改进# 46\n错误修正"
+      },
       "1.3.0": {
         "en": "event messages improved #46\noption to change tx power mode of access point channels\ndependencies updated\ncode optimized\nlogging optimized",
         "de": "event-nachrichten verbessert #46\nmöglichkeit, tx-leistungsmodus der zugangspunktkanäle zu ändern\naktualisierte abhängigkeiten\ncode optimiert\nprotokollierung optimiert",
@@ -80,19 +93,6 @@
         "pl": "stp info 's added # 35\nzaktualizowane zależności",
         "uk": "javascript licenses api веб-сайт go1.13.8\nоновлені залежності",
         "zh-cn": "stp 信息添加为 35\n更新依赖关系"
-      },
-      "1.1.7": {
-        "en": "event 'UpgradeScheduled' added to ignore list\ngerman translation updated",
-        "de": "veranstaltung 'UpgradeScheduled' hinzugefügt, um die Liste zu ignorieren\nenglische übersetzung aktualisiert",
-        "ru": "событие «UpgradeScheduled» добавлено, чтобы игнорировать список\nобновленный немецкий перевод",
-        "pt": "evento 'UpgradeScheduled' adicionado para ignorar lista\ntradução alemã atualizada",
-        "nl": "event 'UpgradeScheduled' toegevoegd om lijst te negeren\nduitse vertaling bijgewerkt",
-        "fr": "événement 'UpgradeScheduled' ajouté pour ignorer la liste\ntraduction allemande mise à jour",
-        "it": "evento 'UpgradeScheduled' aggiunto alla lista ignorare\ntraduzione tedesca aggiornata",
-        "es": "evento 'UpgradeScheduled' añadido a la lista\ntraducción al alemán actualizada",
-        "pl": "event 'UpgradeScheduled' dodany do listy ignorowania\ngerman tłumaczenie zaktualizowane",
-        "uk": "захід 'UpgradeScheduled' додано для ігнорування списку\nнімецький переклад оновлений",
-        "zh-cn": "事件“ 升级已排定” 添加到忽略列表\n更新德国翻译"
       }
     },
     "titleLang": {
