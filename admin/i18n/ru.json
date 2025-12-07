@@ -76,7 +76,6 @@
     "debounce time": "время устранения дребезга",
     "debounce time [s]": "время устранения дребезга [с]",
     "debounce time [s] for all (0 = deactivated)": "время устранения дребезга [с] для всех (0 = деактивировано)",
-    "debounce time for single clients / guests": "время устранения неполадок для одиночных клиентов/гостей",
     "delete clients who have not been online for x days (0 = deactivated)": "удалять клиентов, которые не были онлайн в течение x дней (0 = деактивировано)",
     "delete guests who have not been online for x days (0 = deactivated)": "удалить гостей, которые не были в сети x дней (0 = деактивировано)",
     "device name": "Имя устройства",
