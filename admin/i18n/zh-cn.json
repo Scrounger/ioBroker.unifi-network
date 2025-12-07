@@ -76,7 +76,6 @@
     "debounce time": "去抖时间",
     "debounce time [s]": "去抖时间 [s]",
     "debounce time [s] for all (0 = deactivated)": "所有去抖时间 [s]（0 = 禁用）",
-    "debounce time for single clients / guests": "单个客户/客人的去抖时间",
     "delete clients who have not been online for x days (0 = deactivated)": "删除 x 天未在线的客户（0 = 已停用）",
     "delete guests who have not been online for x days (0 = deactivated)": "删除 x 天未在线的访客（0 = 已停用）",
     "device name": "设备名称",
