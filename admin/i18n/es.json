@@ -76,7 +76,6 @@
     "debounce time": "tiempo de rebote",
     "debounce time [s]": "tiempo de rebote [s]",
     "debounce time [s] for all (0 = deactivated)": "tiempo de rebote [s] para todos (0 = desactivado)",
-    "debounce time for single clients / guests": "tiempo de rebote para clientes individuales/invitados",
     "delete clients who have not been online for x days (0 = deactivated)": "eliminar clientes que no han estado en línea durante x días (0 = desactivado)",
     "delete guests who have not been online for x days (0 = deactivated)": "eliminar invitados que no han estado en línea durante x días (0 = desactivado)",
     "device name": "Nombre del dispositivo",
