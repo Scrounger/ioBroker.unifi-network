@@ -76,7 +76,6 @@
     "debounce time": "czas odbicia",
     "debounce time [s]": "czas odbicia [s]",
     "debounce time [s] for all (0 = deactivated)": "czas odbicia [s] dla wszystkich (0 = wyłączony)",
-    "debounce time for single clients / guests": "czas odbicia dla pojedynczych klientów/gości",
     "delete clients who have not been online for x days (0 = deactivated)": "usuń klientów, którzy nie byli online przez x dni (0 = dezaktywowane)",
     "delete guests who have not been online for x days (0 = deactivated)": "usuń gości, którzy nie byli online przez x dni (0 = dezaktywowane)",
     "device name": "Nazwa urządzenia",
