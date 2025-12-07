@@ -76,7 +76,6 @@
     "debounce time": "tempo de rejeição",
     "debounce time [s]": "tempo de desbloqueio [s]",
     "debounce time [s] for all (0 = deactivated)": "tempo de debounce [s] para todos (0 = desativado)",
-    "debounce time for single clients / guests": "tempo de debounce para clientes/convidados individuais",
     "delete clients who have not been online for x days (0 = deactivated)": "excluir clientes que não estão online há x dias (0 = desativado)",
     "delete guests who have not been online for x days (0 = deactivated)": "excluir convidados que não estão online há x dias (0 = desativado)",
     "device name": "Nome do dispositivo",
