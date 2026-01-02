@@ -577,7 +577,8 @@ class UnifiNetwork extends utils.Adapter {
 
 						for (const device of data) {
 							const idDevice = `${tree.device.idChannel}.${device.mac}`;
-
+							
+	
 							if ((!this.config.deviceIsWhiteList && !_.some(this.config.deviceBlackList, { mac: device.mac })) || (this.config.deviceIsWhiteList && _.some(this.config.deviceBlackList, { mac: device.mac }))) {
 								if (isAdapterStart) {
 									countDevices++
@@ -586,6 +587,8 @@ class UnifiNetwork extends utils.Adapter {
 										// API V2 has no id for wlan, so we remove this and wait for real-time data
 										delete device.vap_table;
 									}
+									device.version = device.version;
+                                    device.upgradable = device.upgradable;
 								}
 
 								if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && this.cache.devices[device.mac]) {
@@ -610,6 +613,8 @@ class UnifiNetwork extends utils.Adapter {
 								if (!_.isEmpty(dataToProcess)) {
 									this.cache.devices[device.mac] = { ...this.cache.devices[device.mac], ...device };
 									this.cache.devices[device.mac].iobTimestamp = moment().unix();
+									device.version = device.version;
+									device.upgradable = device.upgradable;
 
 									dataToProcess.mac = device.mac;
 
