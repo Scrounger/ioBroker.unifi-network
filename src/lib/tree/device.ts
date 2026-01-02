@@ -285,9 +285,24 @@ export namespace device {
                 name: 'is device online',
                 valFromProperty: 'state',
                 required: true,
-                readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevice, id: string): ioBroker.StateValue {
+                readVal(val: number, adapter: ioBroker.Adapter, device: NetworkDevice, channel: NetworkDevice, tree: TreeDefinition): ioBroker.StateValue {
                     return val !== 0 && val !== 6 && val !== 9
-                },
+                }
+            },
+            update_available: {
+                id: 'update_available',
+                iobType: 'boolean',
+                name: 'firmware update available',
+                valFromProperty: 'upgradable',
+                readVal(val: any): ioBroker.StateValue {
+                    return !!val;
+                }
+            },
+            version: {
+                id: 'version',
+                iobType: 'string',
+                name: 'firmware version',
+                valFromProperty: 'version'
             },
             led_override: {
                 iobType: 'string',
