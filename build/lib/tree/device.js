@@ -478,9 +478,8 @@ export var device;
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objDevice, objChannel, adapter) {
-                            // only create state if it's a poe port
-                            return objChannel?.satisfaction >= 0 ? true : false;
+                        readVal(val, adapter, device, channel, id) {
+                            return val >= 0 ? val : null;
                         },
                         unit: '%'
                     },
@@ -621,9 +620,8 @@ export var device;
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objDevice, objChannel, adapter) {
-                            // only create state if it's a poe port
-                            return objChannel?.satisfaction >= 0 ? true : false;
+                        readVal(val, adapter, device, channel, id) {
+                            return val >= 0 ? val : null;
                         },
                         unit: '%'
                     },
@@ -645,9 +643,8 @@ export var device;
             satisfaction: {
                 iobType: 'number',
                 name: 'satisfaction',
-                conditionToCreateState(objDevice, objChannel, adapter) {
-                    // only create state if it's a poe port
-                    return objDevice?.satisfaction >= 0 ? true : false;
+                readVal(val, adapter, device, channel, id) {
+                    return val >= 0 ? val : null;
                 },
                 unit: '%'
             },
@@ -898,7 +895,7 @@ export var device;
                         name: 'satisfaction',
                         unit: '%',
                         readVal(val, adapter, device, channel, id) {
-                            return val >= 0 ? val : 0;
+                            return val >= 0 ? val : null;
                         },
                     },
                     tx_bytes: {

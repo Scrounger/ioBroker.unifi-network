@@ -509,9 +509,8 @@ export namespace device {
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objDevice: NetworkDevice, objChannel: NetworkDevicePortTable, adapter: ioBroker.myAdapter): boolean {
-                            // only create state if it's a poe port
-                            return objChannel?.satisfaction >= 0 ? true : false;
+                        readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevicePortTable, id: string): ioBroker.StateValue {
+                            return val >= 0 ? val : null
                         },
                         unit: '%'
                     },
@@ -654,9 +653,8 @@ export namespace device {
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
-                        conditionToCreateState(objDevice: NetworkDevice, objChannel: NetworkDeviceRadioTableStat, adapter: ioBroker.myAdapter): boolean {
-                            // only create state if it's a poe port
-                            return objChannel?.satisfaction >= 0 ? true : false;
+                        readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDeviceRadioTableStat, id: string): ioBroker.StateValue {
+                            return val >= 0 ? val : null
                         },
                         unit: '%'
                     },
@@ -678,9 +676,8 @@ export namespace device {
             satisfaction: {
                 iobType: 'number',
                 name: 'satisfaction',
-                conditionToCreateState(objDevice: NetworkDevice, objChannel: NetworkDevice, adapter: ioBroker.myAdapter): boolean {
-                    // only create state if it's a poe port
-                    return objDevice?.satisfaction >= 0 ? true : false;
+                readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevicePortTable, id: string): ioBroker.StateValue {
+                    return val >= 0 ? val : null
                 },
                 unit: '%'
             },
@@ -933,7 +930,7 @@ export namespace device {
                         name: 'satisfaction',
                         unit: '%',
                         readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDeviceVapTable, id: string): ioBroker.StateValue {
-                            return val >= 0 ? val : 0
+                            return val >= 0 ? val : null
                         },
                     },
                     tx_bytes: {

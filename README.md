@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) satisfaction object create condition removed to prevent create and deletion of object
 - (Scrounger) event messages for dream machines compatibility < v10.x added
 - (Scrounger) weblate translation added
 - (Scrounger) downgrade @iobroker/adapter-core to v3.2.1 to prevent conflicts with js-controller < v7.1.0 in rare cases #56
