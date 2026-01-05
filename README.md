@@ -49,6 +49,11 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (Scrounger) downgrade @iobroker/adapter-core to v3.2.1 to prevent conflicts with js-controller < v7.1.0 in rare cases #56
+
 ### 1.3.1 (2025-12-01)
 
 - (Scrounger) null bug fix #48
