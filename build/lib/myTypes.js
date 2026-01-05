@@ -12,8 +12,8 @@ export var WebSocketEventMessages;
 export const WebSocketEvent = {
     // defined in web-socket-manager.xxxxxxx.js
     device: {
-        Connected: ['EVT_AP_Connected', 'EVT_BB_Connected', 'EVT_GW_Connected', 'EVT_LG_Connected', 'EVT_SW_Connected', 'EVT_XG_Connected'],
-        Disconnected: ['EVT_AP_Disconnected', 'EVT_BB_Disconnected', 'EVT_GW_Disconnected', 'EVT_SW_Disconnected', 'EVT_XG_Disconnected'],
+        Connected: ['EVT_AP_Connected', 'EVT_BB_Connected', 'EVT_GW_Connected', 'EVT_DM_Connected', 'EVT_LG_Connected', 'EVT_SW_Connected', 'EVT_XG_Connected'],
+        Disconnected: ['EVT_AP_Disconnected', 'EVT_BB_Disconnected', 'EVT_GW_Disconnected', 'EVT_DM_Disconnected', 'EVT_SW_Disconnected', 'EVT_XG_Disconnected'],
         Restarted: ['EVT_AP_Restarted', 'EVT_BB_Restarted', 'EVT_GW_Restarted', 'EVT_SW_Restarted', 'EVT_XG_Restarted', 'EVT_AP_RestartedUnknown', 'EVT_BB_RestartedUnknown', 'EVT_GW_RestartedUnknown', 'EVT_SW_RestartedUnknown', 'EVT_XG_RestartedUnknown'],
         ChannelChanged: ['EVT_AP_ChannelChanged', 'EVT_BB_ChannelChanged'],
         LostContact: ['EVT_AP_Lost_Contact', 'EVT_BB_Lost_Contact', 'EVT_DEV_Lost_Contact', 'EVT_GW_Lost_Contact', 'EVT_SW_Lost_Contact', 'EVT_XG_Lost_Contact'],
