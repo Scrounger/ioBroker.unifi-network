@@ -184,5 +184,6 @@
 	"The debounce time is used to ignore short-term connection interruptions. If a client disconnects and reconnects within this time, the disconnection event will be ignored.": "The debounce time is used to ignore short-term connection interruptions. If a client disconnects and reconnects within this time, the disconnection event will be ignored.",
 	"client / guest": "clients / guests",
 	"debounce time": "debounce time",
-	"must be smaller than 'time [s] after a device is set to offline'": "must be smaller than 'time [s] after a device is set to offline'"
+	"must be smaller than 'time [s] after a device is set to offline'": "must be smaller than 'time [s] after a device is set to offline'",
+	"firmware version": "firmware version"
 }
