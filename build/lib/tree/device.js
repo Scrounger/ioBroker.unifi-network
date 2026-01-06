@@ -908,6 +908,10 @@ export var device;
                     },
                 }
             },
+            version: {
+                iobType: 'string',
+                name: 'firmware version',
+            },
             active_geo_info: {
                 idChannel: 'isp',
                 name: 'internet service provider',

@@ -943,6 +943,10 @@ export namespace device {
                     },
                 }
             },
+            version: {
+                iobType: 'string',
+                name: 'firmware version',
+            },
             active_geo_info: {
                 idChannel: 'isp',
                 name: 'internet service provider',
