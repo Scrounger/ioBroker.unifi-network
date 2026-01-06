@@ -76,6 +76,7 @@
 	"debounce time": "tempo di rimbalzo",
 	"debounce time [s]": "tempo di rimbalzo [s]",
 	"debounce time [s] for all (0 = deactivated)": "tempo di antirimbalzo [s] per tutti (0 = disattivato)",
+	"debug level for client connection events": "livello di debug per gli eventi di connessione client",
 	"delete clients who have not been online for x days (0 = deactivated)": "elimina i clienti che non sono stati online per x giorni (0 = disattivato)",
 	"delete guests who have not been online for x days (0 = deactivated)": "elimina gli ospiti che non sono stati online per x giorni (0 = disattivato)",
 	"device name": "Nome del dispositivo",

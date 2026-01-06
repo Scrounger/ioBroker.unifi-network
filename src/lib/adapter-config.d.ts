@@ -22,6 +22,7 @@ declare global {
 			clientOfflineTimeout: number;
 			vpnOfflineTimeout: number;
 			clientImageDownload: boolean;
+			clientDebugLevel: string;
 			keepIobSynchron: boolean;
 			deleteClientsOlderThan: number;
 			deleteGuestsOlderThan: number;

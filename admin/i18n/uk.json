@@ -76,6 +76,7 @@
 	"debounce time": "час усунення дребезгу",
 	"debounce time [s]": "час усунення дребезгу [с]",
 	"debounce time [s] for all (0 = deactivated)": "час усунення дребезгу [с] для всіх (0 = вимкнено)",
+	"debug level for client connection events": "рівень налагодження для подій підключення клієнта",
 	"delete clients who have not been online for x days (0 = deactivated)": "видалити клієнтів, які не були онлайн протягом x днів (0 = вимкнено)",
 	"delete guests who have not been online for x days (0 = deactivated)": "видалити гостей, які не були онлайн протягом x днів (0 = дезактивовано)",
 	"device name": "Назва пристрою",

@@ -122,6 +122,27 @@
 			"sm": 12,
 			"xs": 12
 		},
+		"clientDebugLevel": {
+			"type": "select",
+			"label": "debug level for client connection events",
+			"newLine": true,
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled && !data.vpnEnabled",
+			"options": [
+				{
+					"value": "info",
+					"label": "info"
+				},
+				{
+					"value": "debug",
+					"label": "debug"
+				}
+			],
+			"xl": 2,
+			"lg": 2,
+			"md": 2,
+			"sm": 12,
+			"xs": 12
+		},
 		"dividerDisconnectDebounceTime": {
 			"newLine": true,
 			"type": "header",
@@ -132,6 +153,7 @@
 		"clientDebouncingHint": {
 			"type": "staticText",
 			"text": "The debounce time is used to ignore short-term connection interruptions. If a client disconnects and reconnects within this time, the disconnection event will be ignored.",
+			"hidden": "!data.clientsEnabled && !data.guestsEnabled",
 			"xl": 12,
 			"lg": 12,
 			"md": 12,

@@ -789,7 +789,7 @@ class UnifiNetwork extends utils.Adapter {
                 const diff = moment().diff(lastSeen, 'seconds');
                 if (diff > offlineTimeout && isOnlineState.val) {
                     if (!isAdapterStart) {
-                        this.log.info(`${logPrefix} Fallback method - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
+                        this.log[this.config.clientDebugLevel || this.log.level](`${logPrefix} Fallback method - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
                     }
                     await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
                 }

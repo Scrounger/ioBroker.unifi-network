@@ -76,6 +76,7 @@
 	"debounce time": "debounce tijd",
 	"debounce time [s]": "debouncetijd [s]",
 	"debounce time [s] for all (0 = deactivated)": "debouncetijd [s] voor iedereen (0 = gedeactiveerd)",
+	"debug level for client connection events": "debug-niveau voor clientverbindingsgebeurtenissen",
 	"delete clients who have not been online for x days (0 = deactivated)": "verwijder klanten die x dagen niet online zijn geweest (0 = gedeactiveerd)",
 	"delete guests who have not been online for x days (0 = deactivated)": "verwijder gasten die x dagen niet online zijn geweest (0 = gedeactiveerd)",
 	"device name": "Apparaatnaam",

@@ -76,6 +76,7 @@
 	"debounce time": "temps anti-rebond",
 	"debounce time [s]": "temps anti-rebond [s]",
 	"debounce time [s] for all (0 = deactivated)": "temps anti-rebond [s] pour tous (0 = désactivé)",
+	"debug level for client connection events": "niveau de débogage pour les événements de connexion client",
 	"delete clients who have not been online for x days (0 = deactivated)": "supprimer les clients qui ne sont pas connectés depuis x jours (0 = désactivé)",
 	"delete guests who have not been online for x days (0 = deactivated)": "supprimer les invités qui ne sont pas en ligne depuis x jours (0 = désactivé)",
 	"device name": "Nom de l'appareil",

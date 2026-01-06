@@ -76,6 +76,7 @@
 	"debounce time": "Entprellzeit",
 	"debounce time [s]": "Entprellzeit [s]",
 	"debounce time [s] for all (0 = deactivated)": "Entprellzeit [s] für alle (0 = deaktiviert)",
+	"debug level for client connection events": "Debug-Level für Client-Verbindungsereignisse",
 	"delete clients who have not been online for x days (0 = deactivated)": "Clients löschen, die x Tage nicht online waren (0 = deaktiviert)",
 	"delete guests who have not been online for x days (0 = deactivated)": "Gäste löschen, die x Tage nicht online waren (0 = deaktiviert)",
 	"device name": "Gerätename",

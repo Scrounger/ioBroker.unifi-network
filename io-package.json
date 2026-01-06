@@ -187,6 +187,7 @@
     "clientOfflineTimeout": 200,
     "vpnOfflineTimeout": 300,
     "clientImageDownload": false,
+    "clientDebugLevel": "info",
     "keepIobSynchron": false,
     "deleteClientsOlderThan": 60,
     "deleteGuestsOlderThan": 60,
