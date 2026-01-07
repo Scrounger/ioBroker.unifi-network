@@ -33,6 +33,8 @@ class UnifiNetwork extends utils.Adapter {
 
 	isConnected: boolean = false;
 
+	controllerVersion: string = '';
+
 	aliveTimeout: ioBroker.Timeout | undefined = undefined;
 	pingTimeout: ioBroker.Timeout | undefined = undefined;
 	aliveTimestamp: number = moment().valueOf();
@@ -382,12 +384,15 @@ class UnifiNetwork extends utils.Adapter {
 				const loginSuccessful = await this.ufn.login();
 
 				if (loginSuccessful) {
-					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, isUnifiOs: ${this.ufn.isUnifiOs})`);
+					this.controllerVersion = await this.ufn.getControllerVersion();
+
+					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, version: ${this.controllerVersion}, isUnifiOs: ${this.ufn.isUnifiOs})`);
 
 					if (await this.ufn.launchEventsWs()) {
 						this.log.info(`${logPrefix} WebSocket connection to realtime API successfully established`);
 
 						await this.setConnectionStatus(true);
+
 						return true;
 					} else {
 						this.log.error(`${logPrefix} unable to establish WebSocket connection to realtime API`);
@@ -631,7 +636,7 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						if (isAdapterStart) {
-							this.log.info(`${logPrefix} Discovered ${data.length} devices (devices: ${countDevices}, blacklisted: ${countBlacklisted})`);
+							this.log.info(`${logPrefix} Discovered ${data.length} devices (devices: ${countDevices}, blacklisted: ${countBlacklisted}, states ${!this.config.deviceStatesIsWhiteList ? 'blacklisted' : 'whitelisted'}: ${this.config.deviceStatesBlackList.length})`);
 						}
 					}
 				} else {
@@ -847,7 +852,7 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						if (isAdapterStart) {
-							this.log.info(`${logPrefix} Discovered ${data.length} ${!isOfflineClients ? 'connected' : 'disconnected'} clients (clients: ${countClients}, guests: ${countGuests}, vpn: ${countVpn}, blacklisted: ${countBlacklisted})`);
+							this.log.info(`${logPrefix} Discovered ${data.length} ${!isOfflineClients ? 'connected' : 'disconnected'} clients (clients: ${countClients}, guests: ${countGuests}, vpn: ${countVpn}, blacklisted: ${countBlacklisted}, states ${!this.config.clientStatesIsWhiteList ? 'blacklisted' : 'whitelisted'}: ${this.config.clientStatesBlackList.length})`);
 						}
 					}
 				}
@@ -985,7 +990,7 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						if (isAdapterStart) {
-							this.log.info(`${logPrefix} Discovered ${data.length} WLAN's (WLAN's: ${countWlan}, blacklisted: ${countBlacklisted})`);
+							this.log.info(`${logPrefix} Discovered ${data.length} WLAN's (WLAN's: ${countWlan}, blacklisted: ${countBlacklisted}, states ${!this.config.wlanStatesIsWhiteList ? 'blacklisted' : 'whitelisted'}: ${this.config.wlanStatesBlackList.length})`);
 						}
 					}
 				} else {
@@ -1109,7 +1114,7 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						if (isAdapterStart) {
-							this.log.info(`${logPrefix} Discovered ${data.length} LAN's (LAN's: ${countLan}, blacklisted: ${countBlacklisted})`);
+							this.log.info(`${logPrefix} Discovered ${data.length} LAN's (LAN's: ${countLan}, blacklisted: ${countBlacklisted}, states ${!this.config.lanStatesIsWhiteList ? 'blacklisted' : 'whitelisted'}: ${this.config.lanStatesBlackList.length})`);
 						}
 					}
 				} else {
@@ -1223,7 +1228,7 @@ class UnifiNetwork extends utils.Adapter {
 						}
 
 						if (isAdapterStart) {
-							this.log.info(`${logPrefix} Discovered ${data.length} Firewall Group's (Firewall Group's: ${countFirewallGroup}, blacklisted: ${countBlacklisted})`);
+							this.log.info(`${logPrefix} Discovered ${data.length} Firewall Group's (Firewall Group's: ${countFirewallGroup}, blacklisted: ${countBlacklisted}, states ${!this.config.firewallGroupStatesIsWhiteList ? 'blacklisted' : 'whitelisted'}: ${this.config.firewallGroupStatesBlackList.length})`);
 						}
 					}
 				} else {
@@ -1411,7 +1416,7 @@ class UnifiNetwork extends utils.Adapter {
 				await this.onNetworkFirewallGroupEvent(event as NetworkEventFirewallGroup);
 			} else {
 				if (!this.eventsToIgnore.includes(event.meta.message)) {
-					this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! data: ${JSON.stringify(event.data)}`);
+					this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! version: ${this.controllerVersion}, data: ${JSON.stringify(event.data)}`);
 				}
 			}
 
@@ -1492,7 +1497,7 @@ class UnifiNetwork extends utils.Adapter {
 							this.log.debug(`${logPrefix} client event '${clientEvent[0]}' not implemented (key: ${myEvent.key}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 
 						} else {
-							this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key}` : ''}) - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
+							this.log.warn(`${logPrefix} not implemented event (${myEvent.key ? `key: ${myEvent.key}` : ''}) - Please report this to the developer and creating an issue on github! (version: ${this.controllerVersion}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(myEvent)})`);
 						}
 					}
 				}
@@ -1514,11 +1519,11 @@ class UnifiNetwork extends utils.Adapter {
 
 						await eventHandler.client.vpnDisconnect(events.meta, event as myNetworkClient, this, this.cache);
 					} else {
-						this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
+						this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (version: ${this.controllerVersion}, meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
 					}
 				}
 			} else {
-				this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
+				this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (version: ${this.controllerVersion}, meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
 			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

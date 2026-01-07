@@ -22,6 +22,7 @@ export var ApiEndpoints;
     ApiEndpoints["wlanConfig"] = "wlanConfig";
     ApiEndpoints["lanConfig"] = "lanConfig";
     ApiEndpoints["firewallGroup"] = "firewallGroup";
+    ApiEndpoints["sysinfo"] = "sysinfo";
     ApiEndpoints["sites"] = "sites";
 })(ApiEndpoints || (ApiEndpoints = {}));
 export var ApiEndpoints_V2;
@@ -834,6 +835,35 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    async getSysInfo() {
+        const logPrefix = `[${this.logPrefix}.getSites]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.sysinfo)}`);
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
+    async getControllerVersion() {
+        const logPrefix = `[${this.logPrefix}.getSites]`;
+        try {
+            const res = await this.getSysInfo();
+            if (res && res.length > 0 && res[0].version) {
+                return res[0].version;
+            }
+            else {
+                this.log.warn(`${logPrefix} unable to retrieve controller version!`);
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return undefined;
+    }
     /**
      * List all sites of self hosted controller
      *
@@ -891,6 +921,9 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints.firewallGroup:
                 endpointSuffix = `/api/s/${this.site}/rest/firewallgroup`;
+                break;
+            case ApiEndpoints.sysinfo:
+                endpointSuffix = `/api/s/${this.site}/stat/sysinfo`;
                 break;
             case ApiEndpoints.sites:
                 // only available on self hosted controller

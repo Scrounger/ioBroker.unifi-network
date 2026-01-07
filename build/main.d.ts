@@ -7,6 +7,7 @@ declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi;
     myIob: myIob;
     isConnected: boolean;
+    controllerVersion: string;
     aliveTimeout: ioBroker.Timeout | undefined;
     pingTimeout: ioBroker.Timeout | undefined;
     aliveTimestamp: number;

@@ -20,6 +20,7 @@ import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall.js';
 import { NetworkSite } from './network-types-sites.js';
 import { NetworkMembersGroup } from './network-types-network-members-groups.js';
+import { NetworkSysInfo } from './network-types-sysinfo.js';
 
 export type Nullable<T> = T | null;
 
@@ -54,6 +55,7 @@ export enum ApiEndpoints {
     wlanConfig = 'wlanConfig',
     lanConfig = 'lanConfig',
     firewallGroup = 'firewallGroup',
+    sysinfo = 'sysinfo',
     sites = 'sites',
 }
 
@@ -1036,6 +1038,42 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    public async getSysInfo(): Promise<NetworkSysInfo[] | undefined> {
+        const logPrefix = `[${this.logPrefix}.getSites]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.sysinfo)}`);
+
+            if (res && res.data && res.data.length > 0) {
+                return res.data;
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
+    public async getControllerVersion(): Promise<string | undefined> {
+        const logPrefix = `[${this.logPrefix}.getSites]`
+
+        try {
+            const res = await this.getSysInfo();
+
+            if (res && res.length > 0 && res[0].version) {
+                return res[0].version;
+            } else {
+                this.log.warn(`${logPrefix} unable to retrieve controller version!`);
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return undefined;
+    }
+
     /**
      * List all sites of self hosted controller
      * 
@@ -1108,6 +1146,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints.firewallGroup:
                 endpointSuffix = `/api/s/${this.site}/rest/firewallgroup`;
+                break;
+
+            case ApiEndpoints.sysinfo:
+                endpointSuffix = `/api/s/${this.site}/stat/sysinfo`;
                 break;
 
             case ApiEndpoints.sites:

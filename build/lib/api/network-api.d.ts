@@ -11,6 +11,7 @@ import { SystemLogType } from './network-types-system-log.js';
 import type { FirewallGroup } from './network-types-firewall.js';
 import { NetworkSite } from './network-types-sites.js';
 import { NetworkMembersGroup } from './network-types-network-members-groups.js';
+import { NetworkSysInfo } from './network-types-sysinfo.js';
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -40,6 +41,7 @@ export declare enum ApiEndpoints {
     wlanConfig = "wlanConfig",
     lanConfig = "lanConfig",
     firewallGroup = "firewallGroup",
+    sysinfo = "sysinfo",
     sites = "sites"
 }
 export declare enum ApiEndpoints_V2 {
@@ -210,6 +212,8 @@ export declare class NetworkApi extends EventEmitter {
      */
     getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
     getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
+    getSysInfo(): Promise<NetworkSysInfo[] | undefined>;
+    getControllerVersion(): Promise<string | undefined>;
     /**
      * List all sites of self hosted controller
      *
