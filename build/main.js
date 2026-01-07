@@ -519,13 +519,14 @@ class UnifiNetwork extends utils.Adapter {
                                     }
                                 }
                                 if (!this.cache.devices[device.mac]) {
-                                    this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+                                    this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname}, version: ${device.version})`);
                                 }
                                 let dataToProcess = device;
                                 if (this.cache.devices[device.mac]) {
                                     // filter out unchanged properties
                                     dataToProcess = this.myIob.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys());
                                 }
+                                this.log.debug(`${logPrefix} device '${device.name}' (mac: ${device.mac}) dataToProcess: ${JSON.stringify(dataToProcess)}`);
                                 if (!_.isEmpty(dataToProcess)) {
                                     this.cache.devices[device.mac] = { ...this.cache.devices[device.mac], ...device };
                                     this.cache.devices[device.mac].iobTimestamp = moment().unix();

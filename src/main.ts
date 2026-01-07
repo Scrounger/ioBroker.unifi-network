@@ -598,7 +598,7 @@ class UnifiNetwork extends utils.Adapter {
 								}
 
 								if (!this.cache.devices[device.mac]) {
-									this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname})`);
+									this.log.debug(`${logPrefix} Discovered device '${device.name}' (IP: ${device.ip}, mac: ${device.mac}, state: ${device.state}, model: ${device.model || device.shortname}, version: ${device.version})`);
 								}
 
 								let dataToProcess = device;
@@ -613,9 +613,7 @@ class UnifiNetwork extends utils.Adapter {
 
 									dataToProcess.mac = device.mac;
 
-									if (!isAdapterStart) {
-										this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-									}
+									this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 
 									await this.myIob.createOrUpdateDevice(idDevice, device.name, `${idDevice}.isOnline`, `${idDevice}.hasError`, undefined, isAdapterStart, true);
 									await this.myIob.createOrUpdateStates(idDevice, tree.device.get(), dataToProcess, device, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device.name, isAdapterStart);
