@@ -506,6 +506,14 @@ export namespace device {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
                     },
+                    rx_dropped: {
+                        iobType: 'number',
+                        name: 'RX dropped',
+                    },
+                    rx_errors: {
+                        iobType: 'number',
+                        name: 'RX errors',
+                    },
                     satisfaction: {
                         iobType: 'number',
                         name: 'satisfaction',
@@ -532,7 +540,19 @@ export namespace device {
                         readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevicePortTable, id: string): ioBroker.StateValue {
                             return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
                         }
-                    }
+                    },
+                    tx_dropped: {
+                        iobType: 'number',
+                        name: 'TX dropped',
+                    },
+                    tx_errors: {
+                        iobType: 'number',
+                        name: 'TX errors',
+                    },
+                    up: {
+                        iobType: 'boolean',
+                        name: 'port is up'
+                    },
                 },
             },
             radio_table: {

@@ -186,5 +186,10 @@
 	"debounce time": "debounce time",
 	"must be smaller than 'time [s] after a device is set to offline'": "must be smaller than 'time [s] after a device is set to offline'",
 	"firmware version": "firmware version",
-	"debug level for client connection events": "debug level for client connection events"
+	"debug level for client connection events": "debug level for client connection events",
+	"port is up": "port is up",
+	"RX dropped": "RX dropped",
+	"TX dropped": "TX dropped",
+	"RX errors": "RX errors",
+	"TX errors": "TX errors"
 }

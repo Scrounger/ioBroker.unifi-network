@@ -31,6 +31,7 @@ export declare const WebSocketEvent: {
         ChannelChanged: string[];
         LostContact: string[];
         PoeDisconnect: string[];
+        PoeOverload: string[];
         WANTransition: string[];
         Upgrade: string[];
         Adopt: string[];

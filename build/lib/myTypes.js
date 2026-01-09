@@ -18,6 +18,7 @@ export const WebSocketEvent = {
         ChannelChanged: ['EVT_AP_ChannelChanged', 'EVT_BB_ChannelChanged'],
         LostContact: ['EVT_AP_Lost_Contact', 'EVT_BB_Lost_Contact', 'EVT_DEV_Lost_Contact', 'EVT_GW_Lost_Contact', 'EVT_SW_Lost_Contact', 'EVT_XG_Lost_Contact'],
         PoeDisconnect: ['EVT_SW_PoeDisconnect'],
+        PoeOverload: ['EVT_SW_PoeOverload'],
         WANTransition: ['EVT_GW_WANTransition'],
         Upgrade: ['EVT_AP_Upgraded', 'EVT_BB_Upgraded', 'EVT_GW_Upgraded', 'EVT_SW_Upgraded', 'EVT_AP_UpgradeScheduled', 'EVT_BB_UpgradeScheduled', 'EVT_GW_UpgradeScheduled', 'EVT_SW_UpgradeScheduled', 'EVT_XG_UpgradeScheduled',],
         Adopt: ['EVT_AP_Adopted', 'EVT_BB_Adopted', 'EVT_GW_Adopted', 'EVT_LTE_Adopted', 'EVT_SW_Adopted', 'EVT_XG_Adopted', 'EVT_AP_AutoReadopted', 'EVT_BB_AutoReadopted', 'EVT_GW_AutoReadopted', 'EVT_LTE_AutoReadopted', 'EVT_SW_AutoReadopted', 'EVT_XG_AutoReadopted'],
