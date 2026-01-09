@@ -69,6 +69,7 @@ export enum ApiEndpoints_V2 {
     models = 'models',
     networkMembersGroups = 'networkMemberGroups',
     networkMembersGroup = 'networkMemberGroup',
+    info = 'info',
 }
 
 export class NetworkApi extends EventEmitter {
@@ -1208,6 +1209,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints_V2.networkMembersGroup:
                 endpointSuffix = `/v2/api/site/${this.site}/network-members-group`;
+                break;
+
+            case ApiEndpoints_V2.info:
+                endpointSuffix = `/v2/api/site/${this.site}/info`;
                 break;
 
             default:

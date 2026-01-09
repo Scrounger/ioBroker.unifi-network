@@ -53,7 +53,8 @@ export declare enum ApiEndpoints_V2 {
     wanConfig = "wanConfig",
     models = "models",
     networkMembersGroups = "networkMemberGroups",
-    networkMembersGroup = "networkMemberGroup"
+    networkMembersGroup = "networkMemberGroup",
+    info = "info"
 }
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;
