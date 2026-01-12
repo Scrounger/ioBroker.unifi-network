@@ -317,7 +317,9 @@ export class myIob {
                 }
             }
             else {
-                this.log.warn(`${logPrefix} adapter has no connection!`);
+                if (this.log.level === 'debug') {
+                    this.log.warn(`${logPrefix} adapter has no connection!`);
+                }
             }
         }
         catch (error) {

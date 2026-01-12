@@ -3,13 +3,15 @@ import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, Ne
 import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { Firewall, FirewallGroup } from "./api/network-types-firewall.js";
+import { NetworkSysInfo } from "./api/network-types-sysinfo.js";
 
 export type myTreeData =
     NetworkDevice | NetworkDevicePortTable | NetworkDeviceRadioTable | NetworkDeviceRadioTableStat | NetworkDeviceVapTable | NetworkDeviceStorage | NetworkDeviceWan | NetworkDeviceWanUptimeStats | NetworkDeviceSystemStats |
     NetworkClient | myNetworkClient | ConnectedClients |
     NetworkLanConfig |
     NetworkWlanConfig |
-    Firewall | FirewallGroup;
+    Firewall | FirewallGroup |
+    NetworkSysInfo;
 
 export interface myNetworkClient extends NetworkClient {
     isOnline: boolean;

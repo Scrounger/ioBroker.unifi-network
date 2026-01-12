@@ -11,6 +11,7 @@ declare class UnifiNetwork extends utils.Adapter {
     aliveTimeout: ioBroker.Timeout | undefined;
     pingTimeout: ioBroker.Timeout | undefined;
     aliveTimestamp: number;
+    apiPollingTimeout: ioBroker.Timeout | undefined;
     connectionRetries: number;
     cache: myCache;
     subscribedList: string[];
@@ -77,6 +78,7 @@ declare class UnifiNetwork extends utils.Adapter {
     private updateLanConfig;
     private updateLanConnectedClients;
     private updateFirewallGroup;
+    private updateSysInfo;
     /**
      * @deprecated Download public data from ui with image url infos.
      */

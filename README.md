@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) system informations added #63
 - (Scrounger) port states up, rx/tx error and rx/tx dropped added
 - (Scrounger) event messages improved #64
 - (Scrounger) read controller version added #59

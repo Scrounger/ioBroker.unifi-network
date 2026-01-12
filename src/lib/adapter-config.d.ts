@@ -58,6 +58,7 @@ declare global {
 			firewallGroupBlackList: { id: string }[];
 			firewallGroupStatesIsWhiteList: boolean;
 			firewallGroupStatesBlackList: { id: string }[];
+			systemInformationEnabled: boolean;
 		}
 
 		interface myAdapter extends ioBroker.Adapter {

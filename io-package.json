@@ -436,7 +436,8 @@
     "firewallGroupIsWhiteList": false,
     "firewallGroupBlackList": [],
     "firewallGroupStatesIsWhiteList": false,
-    "firewallGroupStatesBlackList": []
+    "firewallGroupStatesBlackList": [],
+    "systemInformationEnabled": false
   },
   "objects": [],
   "instanceObjects": [
@@ -466,7 +467,43 @@
       "type": "state",
       "common": {
         "role": "value",
-        "name": "last real time data received",
+        "name": {
+          "en": "last real time data received",
+          "de": "letzte Echtzeitdaten empfangen",
+          "ru": "последние данные в реальном времени",
+          "pt": "últimos dados em tempo real recebidos",
+          "nl": "laatst ontvangen realtimegegevens",
+          "fr": "dernières données en temps réel reçues",
+          "it": "ultimi dati in tempo reale ricevuti",
+          "es": "datos recibidos en tiempo real",
+          "pl": "otrzymane dane w czasie rzeczywistym",
+          "uk": "отримано останні дані",
+          "zh-cn": "最后一次实时数据"
+        },
+        "type": "number",
+        "read": true,
+        "write": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.lastApiPoll",
+      "type": "state",
+      "common": {
+        "role": "value",
+        "name": {
+          "en": "last api polling",
+          "de": "letzte API Abfrage",
+          "ru": "последний опрос api",
+          "pt": "última sondagem api",
+          "nl": "laatste bijentelling",
+          "fr": "dernier sondage api",
+          "it": "ultimo api polling",
+          "es": "última encuesta api",
+          "pl": "ostatnie sondaże api",
+          "uk": "останнє опитування апі",
+          "zh-cn": "上次投票"
+        },
         "type": "number",
         "read": true,
         "write": false

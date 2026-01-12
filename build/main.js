@@ -26,6 +26,7 @@ class UnifiNetwork extends utils.Adapter {
     aliveTimeout = undefined;
     pingTimeout = undefined;
     aliveTimestamp = moment().valueOf();
+    apiPollingTimeout = undefined;
     connectionRetries = 0;
     cache = {
         devices: {},
@@ -78,7 +79,7 @@ class UnifiNetwork extends utils.Adapter {
             this.myIob = new myIob(this, utils, this.statesUsingValAsLastChanged);
             if (this.config.expertAliveInterval >= 30 && this.config.expertAliveInterval <= 10000 &&
                 this.config.realTimeApiDebounceTime >= 0 && this.config.realTimeApiDebounceTime <= 10000 &&
-                this.config.apiUpdateInterval >= 5 && this.config.apiUpdateInterval <= 10000 &&
+                this.config.apiUpdateInterval >= 30 && this.config.apiUpdateInterval <= 10000 &&
                 this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
                 if (this.config.host, this.config.user, this.config.password) {
                     this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
@@ -114,6 +115,7 @@ class UnifiNetwork extends utils.Adapter {
             this.removeListener('pong', this.pongListener);
             this.clearTimeout(this.aliveTimeout);
             this.clearTimeout(this.pingTimeout);
+            this.clearTimeout(this.apiPollingTimeout);
             for (const item in disconnectDebounceList) {
                 this.clearTimeout(disconnectDebounceList[item].timeout);
             }
@@ -313,7 +315,7 @@ class UnifiNetwork extends utils.Adapter {
             }
             if (await this.login()) {
                 await this.updateRealTimeApiData(isAdapterStart);
-                this.updateApiData(isAdapterStart);
+                await this.updateApiData(isAdapterStart);
                 this.sendPing(isAdapterStart);
             }
             else {
@@ -482,10 +484,24 @@ class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
-    updateApiData(isAdapterStart = false) {
+    async updateApiData(isAdapterStart = false) {
         const logPrefix = '[updateApiData]:';
         try {
-            this.log.silly(`${logPrefix} placeholder`);
+            await this.updateSysInfo(await this.ufn.getSysInfo(), isAdapterStart);
+            // only poll if api calls are enabled, that are not covered by the real-time api
+            if (this.config.systemInformationEnabled) {
+                if (this.apiPollingTimeout) {
+                    this.clearTimeout(this.apiPollingTimeout);
+                    this.apiPollingTimeout = undefined;
+                }
+                this.apiPollingTimeout = this.setTimeout(async () => {
+                    await this.updateApiData();
+                }, this.config.apiUpdateInterval * 1000);
+                await this.setState('info.lastApiPoll', moment().valueOf(), true);
+            }
+            else {
+                await this.setState('info.lastApiPoll', null, true);
+            }
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1060,6 +1076,39 @@ class UnifiNetwork extends utils.Adapter {
                     if (await this.objectExists(idChannel)) {
                         await this.delObjectAsync(idChannel, { recursive: true });
                         this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+                    }
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async updateSysInfo(data, isAdapterStart = false) {
+        const logPrefix = '[updateSysInfo]:';
+        try {
+            if (this.connected && this.isConnected) {
+                if (this.config.systemInformationEnabled) {
+                    if (isAdapterStart) {
+                        await this.myIob.createOrUpdateChannel(tree.sysInfo.idChannel, undefined, undefined, true);
+                    }
+                    if (data && data !== null) {
+                        await this.myIob.createOrUpdateStates(tree.sysInfo.idChannel, tree.sysInfo.get(), data, data, undefined, undefined, 'sysInfo', isAdapterStart);
+                        if (isAdapterStart) {
+                            this.log.info(`${logPrefix} System Information updated`);
+                        }
+                        else {
+                            this.log.silly(`${logPrefix} System Information updated`);
+                        }
+                    }
+                }
+                else {
+                    if (await this.objectExists(tree.sysInfo.idChannel)) {
+                        for (const key of Object.keys(tree.sysInfo.get())) {
+                            const id = `${tree.sysInfo.idChannel}.${tree.sysInfo.get()[key]?.id || key}`;
+                            await this.delObjectAsync(id);
+                            this.log.debug(`${logPrefix} '${id}' deleted`);
+                        }
                     }
                 }
             }

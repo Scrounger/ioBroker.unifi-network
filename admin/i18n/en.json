@@ -191,5 +191,9 @@
 	"RX dropped": "RX dropped",
 	"TX dropped": "TX dropped",
 	"RX errors": "RX errors",
-	"TX errors": "TX errors"
+	"TX errors": "TX errors",
+	"interval based API": "interval based API",
+	"version": "version",
+	"new network controller version available": "new network controller version available",
+	"system information": "system information"
 }

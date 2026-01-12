@@ -108,15 +108,24 @@
         "dividerApi": {
             "newLine": true,
             "type": "header",
-            "text": "api",
+            "text": "interval based API",
             "size": 2
         },
         "apiUpdateInterval": {
             "type": "number",
             "label": "api poll interval [s]",
             "newLine": true,
-            "min": 5,
+            "min": 30,
             "max": 10000,
+            "xl": 3,
+            "lg": 3,
+            "md": 3,
+            "sm": 12,
+            "xs": 12
+        },
+        "systemInformationEnabled": {
+            "type": "checkbox",
+            "label": "system information",
             "xl": 3,
             "lg": 3,
             "md": 3,

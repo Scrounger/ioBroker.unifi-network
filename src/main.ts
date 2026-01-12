@@ -25,7 +25,8 @@ import { eventHandler, disconnectDebounceList } from './lib/eventHandler.js';
 import * as tree from './lib/tree/index.js'
 import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
-import { myIob } from './lib/myIob.js';
+import { myIob, myTreeState } from './lib/myIob.js';
+import { NetworkSysInfo } from './lib/api/network-types-sysinfo.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -38,6 +39,7 @@ class UnifiNetwork extends utils.Adapter {
 	aliveTimeout: ioBroker.Timeout | undefined = undefined;
 	pingTimeout: ioBroker.Timeout | undefined = undefined;
 	aliveTimestamp: number = moment().valueOf();
+	apiPollingTimeout: ioBroker.Timeout | undefined = undefined;
 
 	connectionRetries: number = 0;
 
@@ -104,7 +106,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			if (this.config.expertAliveInterval >= 30 && this.config.expertAliveInterval <= 10000 &&
 				this.config.realTimeApiDebounceTime >= 0 && this.config.realTimeApiDebounceTime <= 10000 &&
-				this.config.apiUpdateInterval >= 5 && this.config.apiUpdateInterval <= 10000 &&
+				this.config.apiUpdateInterval >= 30 && this.config.apiUpdateInterval <= 10000 &&
 				this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
 
 				if (this.config.host, this.config.user, this.config.password) {
@@ -148,6 +150,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			this.clearTimeout(this.aliveTimeout);
 			this.clearTimeout(this.pingTimeout);
+			this.clearTimeout(this.apiPollingTimeout);
 
 			for (const item in disconnectDebounceList) {
 				this.clearTimeout(disconnectDebounceList[item].timeout);
@@ -348,7 +351,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (await this.login()) {
 				await this.updateRealTimeApiData(isAdapterStart);
 
-				this.updateApiData(isAdapterStart);
+				await this.updateApiData(isAdapterStart);
 
 				this.sendPing(isAdapterStart);
 			} else {
@@ -554,12 +557,27 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private updateApiData(isAdapterStart: boolean = false): void {
+	private async updateApiData(isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateApiData]:';
 
 		try {
-			this.log.silly(`${logPrefix} placeholder`);
+			await this.updateSysInfo(await this.ufn.getSysInfo(), isAdapterStart);
 
+			// only poll if api calls are enabled, that are not covered by the real-time api
+			if (this.config.systemInformationEnabled) {
+				if (this.apiPollingTimeout) {
+					this.clearTimeout(this.apiPollingTimeout);
+					this.apiPollingTimeout = undefined;
+				}
+
+				this.apiPollingTimeout = this.setTimeout(async () => {
+					await this.updateApiData();
+				}, this.config.apiUpdateInterval * 1000);
+
+				await this.setState('info.lastApiPoll', moment().valueOf(), true);
+			} else {
+				await this.setState('info.lastApiPoll', null, true);
+			}
 		} catch (error) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
@@ -1235,6 +1253,41 @@ class UnifiNetwork extends utils.Adapter {
 					if (await this.objectExists(idChannel)) {
 						await this.delObjectAsync(idChannel, { recursive: true });
 						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+					}
+				}
+			}
+		} catch (error) {
+			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		}
+	}
+
+	private async updateSysInfo(data: NetworkSysInfo, isAdapterStart: boolean = false): Promise<void> {
+		const logPrefix = '[updateSysInfo]:';
+
+		try {
+			if (this.connected && this.isConnected) {
+
+				if (this.config.systemInformationEnabled) {
+					if (isAdapterStart) {
+						await this.myIob.createOrUpdateChannel(tree.sysInfo.idChannel, undefined, undefined, true);
+					}
+
+					if (data && data !== null) {
+						await this.myIob.createOrUpdateStates(tree.sysInfo.idChannel, tree.sysInfo.get(), data, data, undefined, undefined, 'sysInfo', isAdapterStart);
+
+						if (isAdapterStart) {
+							this.log.info(`${logPrefix} System Information updated`);
+						} else {
+							this.log.silly(`${logPrefix} System Information updated`);
+						}
+					}
+				} else {
+					if (await this.objectExists(tree.sysInfo.idChannel)) {
+						for (const key of Object.keys(tree.sysInfo.get())) {
+							const id = `${tree.sysInfo.idChannel}.${(tree.sysInfo.get()[key] as myTreeState)?.id || key}`;
+							await this.delObjectAsync(id);
+							this.log.debug(`${logPrefix} '${id}' deleted`);
+						}
 					}
 				}
 			}

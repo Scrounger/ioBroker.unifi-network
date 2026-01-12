@@ -1039,14 +1039,14 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
-    public async getSysInfo(): Promise<NetworkSysInfo[] | undefined> {
+    public async getSysInfo(): Promise<NetworkSysInfo | undefined> {
         const logPrefix = `[${this.logPrefix}.getSites]`
 
         try {
             const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.sysinfo)}`);
 
             if (res && res.data && res.data.length > 0) {
-                return res.data;
+                return res.data[0];
             }
 
         } catch (error: any) {
@@ -1062,8 +1062,8 @@ export class NetworkApi extends EventEmitter {
         try {
             const res = await this.getSysInfo();
 
-            if (res && res.length > 0 && res[0].version) {
-                return res[0].version;
+            if (res && res.version) {
+                return res.version;
             } else {
                 this.log.warn(`${logPrefix} unable to retrieve controller version!`);
             }
