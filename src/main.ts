@@ -1645,7 +1645,15 @@ class UnifiNetwork extends utils.Adapter {
 				if (event.meta.message.endsWith(':delete')) {
 					await eventHandler.lanConf.deleted(event.meta, event.data, this, this.cache);
 				} else {
-					await this.updateLanConfig(event.data);
+					if (event.data.length > 0) {
+						// seperate events for lan's and vpn
+						const noVPN = event.data.filter(lan => !lan.purpose.includes('vpn'));
+						await this.updateLanConfig(noVPN);
+
+						// ToDo: Handling of VPN
+						const vpnLans = event.data.filter(lan => lan.purpose.includes('vpn'));
+						this.log.warn(`${logPrefix} VPN conf are not yet supported! (version: ${this.controllerVersion}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(vpnLans)})`);
+					}
 				}
 			}
 		} catch (error) {
