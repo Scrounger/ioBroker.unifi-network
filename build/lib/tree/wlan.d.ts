@@ -1,6 +1,7 @@
 import type { myTreeDefinition } from "../myIob.js";
 export declare namespace wlan {
     const idChannel = "wlan";
+    const nameChannel = "WLAN";
     function get(): {
         [key: string]: myTreeDefinition;
     };

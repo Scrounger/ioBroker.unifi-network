@@ -4,6 +4,7 @@ export var lan;
 (function (lan) {
     let keys = undefined;
     lan.idChannel = 'lan';
+    lan.nameChannel = 'LAN';
     function get() {
         return {
             connected_clients: {

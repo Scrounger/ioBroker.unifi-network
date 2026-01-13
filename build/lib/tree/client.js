@@ -5,9 +5,13 @@ export var client;
 (function (client) {
     let keys = undefined;
     client.idChannel = 'clients';
+    client.nameChannel = 'client devices';
     client.idChannelUsers = `${client.idChannel}.users`;
+    client.nameChannelUsers = 'users';
     client.idChannelGuests = `${client.idChannel}.guests`;
+    client.nameChannelGuests = 'guests';
     client.idChannelVpn = `${client.idChannel}.vpn`;
+    client.nameChannelVpn = 'vpn clients';
     function get() {
         return {
             // authorized: {                                //-- > just kicks the client, use case ???

@@ -9,10 +9,16 @@ export namespace client {
     let keys: string[] = undefined;
 
     export const idChannel = 'clients';
+    export const nameChannel = 'client devices';
 
     export const idChannelUsers = `${idChannel}.users`;
+    export const nameChannelUsers = 'users';
+
     export const idChannelGuests = `${idChannel}.guests`;
+    export const nameChannelGuests = 'guests';
+
     export const idChannelVpn = `${idChannel}.vpn`;
+    export const nameChannelVpn = 'vpn clients';
 
     export function get(): { [key: string]: myTreeDefinition } {
         return {

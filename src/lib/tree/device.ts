@@ -8,7 +8,8 @@ import { ApiEndpoints } from '../api/network-api.js';
 export namespace device {
     let keys: string[] = undefined;
 
-    export const idChannel = 'devices'
+    export const idChannel = 'devices';
+    export const nameChannel = 'unifi devices';
 
     const _WAN_PROPERTIES: { [key: string]: myTreeState } = {
         current_download: {

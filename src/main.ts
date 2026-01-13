@@ -594,7 +594,7 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.devicesEnabled) {
 
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(tree.device.idChannel, 'unifi devices', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.device.idChannel, tree.device.nameChannel, undefined, true);
 					}
 
 					if (data && data !== null) {
@@ -680,19 +680,19 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (isAdapterStart && !isOfflineClients) {
 					if (this.config.clientsEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannelUsers, 'users', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.client.idChannelUsers, tree.client.nameChannelUsers, undefined, true);
 					}
 
 					if (this.config.guestsEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannelGuests, 'guests', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.client.idChannelGuests, tree.client.nameChannelGuests, undefined, true);
 					}
 
 					if (this.config.vpnEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannelVpn, 'vpn users', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.client.idChannelVpn, tree.client.nameChannelVpn, undefined, true);
 					}
 
 					if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannel, 'client devices', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.client.idChannel, tree.client.nameChannel, undefined, true);
 						data = await this.ufn.getClientsActive_V2() as myNetworkClient[];
 					} else {
 						if (await this.objectExists(tree.client.idChannel)) {
@@ -955,11 +955,10 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (this.connected && this.isConnected) {
-				const idChannel = tree.wlan.idChannel;
 
 				if (this.config.wlanConfigEnabled) {
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(idChannel, 'wlan', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.wlan.idChannel, tree.wlan.nameChannel, undefined, true);
 						data = await this.ufn.getWlanConfig_V2();
 					}
 
@@ -975,7 +974,7 @@ class UnifiNetwork extends utils.Adapter {
 
 							wlan = (wlan as NetworkWlanConfig);
 
-							const idWlan = `${idChannel}.${wlan._id}`;
+							const idWlan = `${tree.wlan.idChannel}.${wlan._id}`;
 
 							if ((!this.config.wlanIsWhiteList && !_.some(this.config.wlanBlackList, { id: wlan._id })) || (this.config.wlanIsWhiteList && _.some(this.config.wlanBlackList, { id: wlan._id }))) {
 								if (isAdapterStart) {
@@ -996,7 +995,7 @@ class UnifiNetwork extends utils.Adapter {
 									this.cache.wlan[wlan._id] = { ... this.cache.wlan[wlan._id], ...wlan };
 									dataToProcess._id = wlan._id;
 
-									await this.myIob.createOrUpdateDevice(idWlan, wlan.name, `${idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob.createOrUpdateDevice(idWlan, wlan.name, `${tree.wlan.idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
 									await this.myIob.createOrUpdateStates(idWlan, tree.wlan.get(), dataToProcess, wlan, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan.name, isAdapterStart);
 								}
 							} else {
@@ -1015,9 +1014,9 @@ class UnifiNetwork extends utils.Adapter {
 						}
 					}
 				} else {
-					if (await this.objectExists(idChannel)) {
-						await this.delObjectAsync(idChannel, { recursive: true });
-						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+					if (await this.objectExists(tree.wlan.idChannel)) {
+						await this.delObjectAsync(tree.wlan.idChannel, { recursive: true });
+						this.log.debug(`${logPrefix} '${tree.wlan.idChannel}' deleted`);
 					}
 				}
 			}
@@ -1077,11 +1076,10 @@ class UnifiNetwork extends utils.Adapter {
 		try {
 
 			if (this.connected && this.isConnected) {
-				const idChannel = tree.lan.idChannel;
 
 				if (this.config.lanConfigEnabled) {
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(idChannel, 'lan', undefined, true);
+						await this.myIob.createOrUpdateChannel(tree.lan.idChannel, tree.lan.nameChannel, undefined, true);
 						data = await this.ufn.getLanConfig_V2();
 					}
 
@@ -1098,7 +1096,7 @@ class UnifiNetwork extends utils.Adapter {
 
 							lan = (lan as NetworkLanConfig);
 
-							const idLan = `${idChannel}.${lan._id}`;
+							const idLan = `${tree.lan.idChannel}.${lan._id}`;
 
 							if ((!this.config.lanIsWhiteList && !_.some(this.config.lanBlackList, { id: lan._id })) || (this.config.lanIsWhiteList && _.some(this.config.lanBlackList, { id: lan._id }))) {
 								if (isAdapterStart) {
@@ -1120,7 +1118,7 @@ class UnifiNetwork extends utils.Adapter {
 
 									dataToProcess._id = lan._id;
 
-									await this.myIob.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${idChannel}.${lan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${tree.lan.idChannel}.${lan._id}.enabled`, undefined, base64[lan.vpn_type], isAdapterStart, true);
 									await this.myIob.createOrUpdateStates(idLan, tree.lan.get(), dataToProcess, lan, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan.name, isAdapterStart);
 								}
 							} else {
@@ -1139,9 +1137,9 @@ class UnifiNetwork extends utils.Adapter {
 						}
 					}
 				} else {
-					if (await this.objectExists(idChannel)) {
-						await this.delObjectAsync(idChannel, { recursive: true });
-						this.log.debug(`${logPrefix} '${idChannel}' deleted`);
+					if (await this.objectExists(tree.lan.idChannel)) {
+						await this.delObjectAsync(tree.lan.idChannel, { recursive: true });
+						this.log.debug(`${logPrefix} '${tree.lan.idChannel}' deleted`);
 					}
 				}
 			}
@@ -1643,7 +1641,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (this.config.lanConfigEnabled) {
-				this.log.debug(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+				this.log.silly(`${logPrefix} lan conf event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
 
 				if (event.meta.message.endsWith(':delete')) {
 					await eventHandler.lanConf.deleted(event.meta, event.data, this, this.cache);

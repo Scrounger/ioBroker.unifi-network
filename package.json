@@ -1,6 +1,6 @@
 {
   "name": "iobroker.unifi-network",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Unifi Network uses the websocket interface to receive real-time information from the unifi-network application",
   "author": {
     "name": "Scrounger",

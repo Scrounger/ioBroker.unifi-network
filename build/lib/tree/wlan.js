@@ -4,6 +4,7 @@ export var wlan;
 (function (wlan) {
     let keys = undefined;
     wlan.idChannel = 'wlan';
+    wlan.nameChannel = 'WLAN';
     function get() {
         return {
             current_access_point_count: {

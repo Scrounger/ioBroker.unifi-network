@@ -7,6 +7,7 @@ export namespace wlan {
     let keys: string[] = undefined;
 
     export const idChannel = 'wlan';
+    export const nameChannel = 'WLAN';
 
     export function get(): { [key: string]: myTreeDefinition } {
         return {

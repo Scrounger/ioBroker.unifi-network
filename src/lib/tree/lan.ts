@@ -7,6 +7,7 @@ export namespace lan {
     let keys: string[] = undefined;
 
     export const idChannel = 'lan';
+    export const nameChannel = 'LAN';
 
     export function get(): { [key: string]: myTreeDefinition } {
         return {

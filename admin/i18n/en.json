@@ -195,5 +195,8 @@
 	"interval based API": "interval based API",
 	"version": "version",
 	"new network controller version available": "new network controller version available",
-	"system information": "system information"
+	"system information": "system information",
+	"unifi devices": "unifi devices",
+	"users": "users",
+	"client devices": "client devices"
 }

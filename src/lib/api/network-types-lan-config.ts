@@ -60,6 +60,7 @@ export interface NetworkLanConfig {
     upnp_lan_enabled?: boolean
     vlan?: string
     vlan_enabled?: boolean
+    vpn_type?: string
 }
 
 interface NetworkLanConfigDetails {

@@ -5,6 +5,7 @@ export var device;
 (function (device_1) {
     let keys = undefined;
     device_1.idChannel = 'devices';
+    device_1.nameChannel = 'unifi devices';
     const _WAN_PROPERTIES = {
         current_download: {
             iobType: 'number',
