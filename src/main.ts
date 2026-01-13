@@ -27,6 +27,7 @@ import { base64 } from './lib/base64.js';
 import { messageHandler } from './lib/messageHandler.js';
 import { myIob, myTreeState } from './lib/myIob.js';
 import { NetworkSysInfo } from './lib/api/network-types-sysinfo.js';
+import { migration } from './lib/migration.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi = undefined;
@@ -111,6 +112,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.host, this.config.user, this.config.password) {
 					this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
+
+					await migration(this);
 
 					await this.establishConnection(true);
 
@@ -1031,7 +1034,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.wlanConfigEnabled) {
 				if (isAdapterStart) {
 					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'wlan' };
-					await this.myIob.createOrUpdateStates('wlan', tree.wlan.getGlobal(), obj, obj, undefined, false, obj.name, true);
+					await this.myIob.createOrUpdateStates(tree.wlan.idChannel, tree.wlan.getGlobal(), obj, obj, undefined, false, obj.name, true);
 				}
 
 				let sumClients = 0;
@@ -1047,18 +1050,18 @@ class UnifiNetwork extends utils.Adapter {
 						sumGuests = sumGuests + connectedClients.length;
 					}
 
-					const id = `wlan.${wlan_id}.connected_${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}`
+					const id = `${tree.wlan.idChannel}.${wlan_id}.connected_${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}`
 					if (await this.objectExists(id)) {
 						this.setStateChanged(id, connectedClients.length, true);
 					}
 				}
 
-				const idSumClients = 'wlan.connected_clients';
+				const idSumClients = `${tree.wlan.idChannel}.connected_clients`;
 				if (await this.objectExists(idSumClients)) {
 					this.setStateChanged(idSumClients, sumClients, true);
 				}
 
-				const idSumGuests = 'wlan.connected_guests';
+				const idSumGuests = `${tree.wlan.idChannel}.connected_guests`;
 				if (await this.objectExists(idSumGuests)) {
 					this.setStateChanged(idSumGuests, sumGuests, true);
 				}
@@ -1154,7 +1157,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.lanConfigEnabled) {
 				if (isAdapterStart) {
 					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'lan' };
-					await this.myIob.createOrUpdateStates('lan', tree.lan.getGlobal(), obj, obj, undefined, false, obj.name, true);
+					await this.myIob.createOrUpdateStates(tree.lan.idChannel, tree.lan.getGlobal(), obj, obj, undefined, false, obj.name, true);
 				}
 
 				let sumClients = 0;
@@ -1170,18 +1173,18 @@ class UnifiNetwork extends utils.Adapter {
 						sumGuests = sumGuests + connectedClients.length;
 					}
 
-					const id = `lan.${lan_id}.connected_${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}`
+					const id = `${tree.lan.idChannel}.${lan_id}.connected_${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}`
 					if (await this.objectExists(id)) {
 						this.setStateChanged(id, connectedClients.length, true);
 					}
 				}
 
-				const idSumClients = 'lan.connected_clients';
+				const idSumClients = `${tree.lan.idChannel}.connected_clients`;
 				if (await this.objectExists(idSumClients)) {
 					this.setStateChanged(idSumClients, sumClients, true);
 				}
 
-				const idSumGuests = 'lan.connected_guests';
+				const idSumGuests = `${tree.lan.idChannel}.connected_guests`;
 				if (await this.objectExists(idSumGuests)) {
 					this.setStateChanged(idSumGuests, sumGuests, true);
 				}
