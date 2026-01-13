@@ -172,6 +172,7 @@ export class NetworkApi extends EventEmitter {
                 this.log.debug(`${logPrefix} self hosted controller detected`);
 
             } else {
+                // Unifi OS controller on port 443 (e.g. UDM/UDM-Pro/UDR)
                 const response = await this.retrieve(`https://${this.host}`, { method: 'GET', dispatcher: tmpDispatcher });
 
                 this.log.debug(`${logPrefix} detect UniFi OS controller repsonse: ${JSON.stringify(response)}`);
@@ -183,9 +184,22 @@ export class NetworkApi extends EventEmitter {
 
                     this.log.debug(`${logPrefix} UniFi OS controller detected`);
                 } else {
-                    this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller!`);
+                    // Unifi OS controller on custom port (e.g. UniFi OS Server)
+                    const response = await this.retrieve(`https://${this.host}:${this.port}`, { method: 'GET', dispatcher: tmpDispatcher });
 
-                    this.logout();
+                    this.log.debug(`${logPrefix} detect UniFi OS controller on port ${this.port} repsonse: ${JSON.stringify(response)}`);
+
+                    if (this.responseOk(response?.statusCode)) {
+                        this.controllerUrl = `https://${this.host}:${this.port}`;
+                        this.isUnifiOs = true;
+                        this.isControllerDetected = true;
+
+                        this.log.debug(`${logPrefix} UniFi OS controller on port ${this.port} detected`);
+                    } else {
+                        this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller!`);
+
+                        this.logout();
+                    }
                 }
             }
 
