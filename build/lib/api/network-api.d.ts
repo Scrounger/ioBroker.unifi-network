@@ -79,6 +79,7 @@ export declare class NetworkApi extends EventEmitter {
     login(): Promise<boolean>;
     private detectController;
     private loginController;
+    private checkSites;
     /**
      * Clear the login credentials and terminate any open connection to the UniFi Network API.
      */

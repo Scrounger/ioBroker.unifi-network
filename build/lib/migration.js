@@ -1,4 +1,4 @@
-export async function migration(adapter) {
+export function migration(adapter) {
     const logPrefix = '[migration]:';
     try {
         // if (isVersionGreaterThan(adapter.version, '1.3.1')) {

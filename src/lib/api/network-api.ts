@@ -241,7 +241,7 @@ export class NetworkApi extends EventEmitter {
 
                 if (this.responseOk(response?.statusCode)) {
 
-                    const csrfToken = getHeader('X-CSRF-Token', response?.headers);
+                    const csrfToken = getHeader('X-Csrf-Token', response?.headers);
 
                     // Preserve the CSRF token, if found, for future API calls.
                     if (csrfToken) {
@@ -253,7 +253,7 @@ export class NetworkApi extends EventEmitter {
 
             // Log us in.
             const response = await this.retrieve(this.getApiEndpoint(ApiEndpoints.login), {
-                body: JSON.stringify({ password: this.password, rememberMe: true, token: "", username: this.username }),
+                body: JSON.stringify({ username: this.username, password: this.password, rememberMe: true }),
                 method: "POST"
             });
 
@@ -266,7 +266,7 @@ export class NetworkApi extends EventEmitter {
             }
 
             // We're logged in. Let's configure our headers.
-            const csrfToken = getHeader('X-Updated-CSRF-Token', response?.headers) ?? getHeader('X-CSRF-Token', response?.headers);
+            const csrfToken = getHeader('X-Updated-Csrf-Token', response?.headers) ?? getHeader('X-Csrf-Token', response?.headers);
             const cookie = await this.cookieJar.getCookieString(this.controllerUrl);
 
             if (cookie) {
@@ -277,25 +277,13 @@ export class NetworkApi extends EventEmitter {
                     this.headers['x-csrf-token'] = csrfToken;
                     this.log.debug(`${logPrefix} login to UniFi OS controller successful.`);
 
-                    return true;
+                    return await this.checkSites();
                 } else {
                     if (cookie.includes('unifises') || cookie.includes('csrf_token')) {
                         // self hosted controller
                         this.log.debug(`${logPrefix} login to self hosted UniFi controller successful.`);
 
-                        const sites = await this.getSites();
-
-                        if (sites) {
-                            if (sites.find(site => site.name === this.site)) {
-                                return true;
-                            } else {
-                                this.log.error(`${logPrefix} site "${this.site}" not found on controller! (available sites: ${sites.map(site => site.name).join(', ')})`);
-                                return false;
-                            }
-                        } else {
-                            this.log.error(`${logPrefix} unable to retrieve sites from controller!`);
-                            return false;
-                        }
+                        return await this.checkSites();
                     } else {
                         this.log.error(`${logPrefix} no cookies found`);
                         this.log.debug(`${logPrefix} headers: ${JSON.stringify(response?.headers)}`);
@@ -307,6 +295,30 @@ export class NetworkApi extends EventEmitter {
 
             // Clear out our login credentials.
             this.logout();
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return false;
+    }
+
+    private async checkSites(): Promise<boolean> {
+        const logPrefix = `[${this.logPrefix}.checkSites]`
+
+        try {
+            const sites = await this.getSites();
+
+            if (sites) {
+                if (sites.find(site => site.name === this.site)) {
+
+                    return true;
+                } else {
+                    this.log.error(`${logPrefix} site "${this.site}" not found on controller! (available sites: ${sites.map(site => site.name).join(', ')})`);
+                }
+            } else {
+                this.log.error(`${logPrefix} unable to retrieve sites from controller!`);
+            }
+
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }

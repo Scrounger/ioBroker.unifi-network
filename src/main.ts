@@ -113,7 +113,7 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.host, this.config.user, this.config.password) {
 					this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
 
-					await migration(this);
+					migration(this);
 
 					await this.establishConnection(true);
 

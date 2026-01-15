@@ -1,5 +1,5 @@
 
-export async function migration(adapter: ioBroker.myAdapter) {
+export function migration(adapter: ioBroker.myAdapter): void {
     const logPrefix = '[migration]:';
 
     try {

@@ -84,7 +84,7 @@ class UnifiNetwork extends utils.Adapter {
                 this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
                 if (this.config.host, this.config.user, this.config.password) {
                     this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
-                    await migration(this);
+                    migration(this);
                     await this.establishConnection(true);
                     this.ufn.on('message', this.eventListener);
                     this.ufn.on('pong', this.pongListener);
