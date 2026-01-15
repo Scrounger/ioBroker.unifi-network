@@ -949,6 +949,7 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
+        this.log.debug(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`;
     }
     getApiEndpoint_V2(endpoint) {
@@ -995,6 +996,7 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
+        this.log.debug(`getApiEndpoint_V2: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`;
     }
     async checkCommandSuccessful(result, logPrefix, message, id = undefined) {

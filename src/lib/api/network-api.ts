@@ -1182,6 +1182,9 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
 
+        // ToDo: set to silly
+        this.log.debug(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
+
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`
     }
 
@@ -1242,6 +1245,9 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
+
+        // ToDo: set to silly
+        this.log.debug(`getApiEndpoint_V2: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
 
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`
     }
