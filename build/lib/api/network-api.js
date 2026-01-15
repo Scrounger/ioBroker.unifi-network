@@ -279,7 +279,7 @@ export class NetworkApi extends EventEmitter {
                 // Create a dispatcher using a new pool. We want to explicitly allow self-signed SSL certificates, enabled HTTP2 connections, and allow up to five connections at a
                 // time and provide some robust retry handling - we retry each request up to three times, with backoff. We allow for up to five retries, with a maximum wait time of
                 // 1500ms per retry, in factors of 2 starting from a 100ms delay.
-                this.dispatcher = new Pool(this.isUnifiOs ? `https://${this.host}` : `https://${this.host}:${this.port}`, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
+                this.dispatcher = new Pool(this.controllerUrl, { allowH2: true, clientTtl: 60 * 1000, connect: { rejectUnauthorized: false }, connections: 5 })
                     .compose(ua, interceptors.retry({
                     maxRetries: 5, maxTimeout: 1500, methods: ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'], minTimeout: 100,
                     statusCodes: [400, 404, 429, 500, 502, 503, 504], timeoutFactor: 2
