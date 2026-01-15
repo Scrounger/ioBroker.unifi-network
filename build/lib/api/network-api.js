@@ -73,7 +73,7 @@ export class NetworkApi extends EventEmitter {
         this.site = site;
         this.username = username;
         this.password = password;
-        this.controllerUrl = `https://${this.host}:${port}`;
+        this.controllerUrl = `https://${this.host}:${this.port}`;
     }
     async login() {
         const logPrefix = `[${this.logPrefix}.login]`;
@@ -220,6 +220,7 @@ export class NetworkApi extends EventEmitter {
         try {
             const sites = await this.getSites();
             if (sites) {
+                this.log.debug(`${logPrefix} available sites: ${JSON.stringify(sites.map(site => site.name))}`);
                 if (sites.find(site => site.name === this.site)) {
                     return true;
                 }
@@ -957,8 +958,7 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
-        // ToDo: set to silly
-        this.log.debug(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
+        this.log.silly(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`;
     }
     getApiEndpoint_V2(endpoint) {
@@ -1005,7 +1005,6 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
-        // ToDo: set to silly
         this.log.debug(`getApiEndpoint_V2: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`;
     }
