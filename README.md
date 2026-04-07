@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) dependencies updated
 - (Scrounger) support for Unifi OS on custom port added (e.g. UniFi OS Server) #65
 - (Scrounger) bug fix: vpn is wrongly shown as lan
 - (Scrounger) system informations added #63
