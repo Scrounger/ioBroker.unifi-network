@@ -71,6 +71,7 @@ class UnifiNetwork extends utils.Adapter {
 		'unifi-device:sync',
 		'session-metadata:sync',
 		'radio-ai:plan',			// Channel AI events
+		'setting:sync',
 	]
 
 	statesUsingValAsLastChanged = [          // id of states where lc is taken from the value
