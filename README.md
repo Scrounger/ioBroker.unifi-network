@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) bug fix for speed test event spamming since v.10.2.105
 - (Scrounger) event messages improved #68 #54
 - (Scrounger) dependencies updated
 - (Scrounger) support for Unifi OS on custom port added (e.g. UniFi OS Server) #65

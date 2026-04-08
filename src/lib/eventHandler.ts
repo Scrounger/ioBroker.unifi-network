@@ -10,6 +10,8 @@ import type { FirewallGroup } from "./api/network-types-firewall.js";
 
 export const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioBroker.Timeout } } = {};
 
+const speedTestRunning: { [wan: string]: boolean } = {};
+
 export const eventHandler = {
     device: {
         async restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
@@ -86,23 +88,51 @@ export const eventHandler = {
                 const mac = event.meta.mac;
 
                 for (const data of event.data) {
-                    if (!Object.hasOwn(data, 'upload-progress') && !Object.hasOwn(data, 'download-progress')) {
-                        const wan = cache.devices[mac]?.wan1?.ifname === data.interface_name ? 'wan1' : cache.devices[mac]?.wan2?.ifname === data.interface_name ? 'wan2' : 'wan1';
+                    const wan = cache.devices[mac]?.wan1?.ifname === data.interface_name ? 'wan1' : cache.devices[mac]?.wan2?.ifname === data.interface_name ? 'wan2' : 'wan1';
 
-                        adapter.log.debug(`${logPrefix} speedtest event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
-
+                    if (Object.hasOwn(data, 'upload-progress') || Object.hasOwn(data, 'download-progress')) {
+                        // speed test is running
                         if (wan) {
+                            if (!Object.hasOwn(speedTestRunning, wan)) {
+                                adapter.log.info(`${logPrefix} speedtest for '${wan}' (mac: ${mac}, wan: ${wan}) started`);
+                            }
+
                             const idChannel = `${tree.device.idChannel}.${mac}.${wan}`;
 
-
                             if (await adapter.objectExists(`${idChannel}.speedtest_download`)) {
-                                await adapter.setState(`${idChannel}.speedtest_download`, { val: data.xput_download, lc: data.rundate * 1000 }, true);
+                                await adapter.setState(`${idChannel}.speedtest_download`, null, true);
                             }
                             if (await adapter.objectExists(`${idChannel}.speedtest_upload`)) {
-                                await adapter.setState(`${idChannel}.speedtest_upload`, { val: data.xput_upload, lc: data.rundate * 1000 }, true);
+                                await adapter.setState(`${idChannel}.speedtest_upload`, null, true);
                             }
                             if (await adapter.objectExists(`${idChannel}.latency`)) {
-                                await adapter.setState(`${idChannel}.latency`, { val: data.latency, lc: data.rundate * 1000 }, true);
+                                await adapter.setState(`${idChannel}.latency`, null, true);
+                            }
+
+                            speedTestRunning[wan] = true;
+
+                            adapter.log.debug(`${logPrefix} speedtest for '${wan}' in progress (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
+                        }
+                    } else {
+                        if (speedTestRunning[wan] && data.rundate > 0 && data.runtime > 0) {
+                            // speed test finished
+                            adapter.log.info(`${logPrefix} speedtest for '${wan}' (mac: ${mac}, wan: ${wan}, runtime: ${data.runtime}s) finished`);
+                            adapter.log.debug(`${logPrefix} speedtest for '${wan}' finished (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(data)})`);
+
+                            delete speedTestRunning[wan];
+
+                            if (wan) {
+                                const idChannel = `${tree.device.idChannel}.${mac}.${wan}`;
+
+                                if (await adapter.objectExists(`${idChannel}.speedtest_download`)) {
+                                    await adapter.setState(`${idChannel}.speedtest_download`, { val: data.xput_download, lc: data.rundate * 1000 }, true);
+                                }
+                                if (await adapter.objectExists(`${idChannel}.speedtest_upload`)) {
+                                    await adapter.setState(`${idChannel}.speedtest_upload`, { val: data.xput_upload, lc: data.rundate * 1000 }, true);
+                                }
+                                if (await adapter.objectExists(`${idChannel}.latency`)) {
+                                    await adapter.setState(`${idChannel}.latency`, { val: data.latency, lc: data.rundate * 1000 }, true);
+                                }
                             }
                         }
                     }
