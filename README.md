@@ -49,8 +49,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.4.0 (2026-04-08)
 
 - (Scrounger) bug fix for speed test event spamming since v.10.2.105
 - (Scrounger) event messages improved #68 #54
