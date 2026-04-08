@@ -70,8 +70,9 @@ class UnifiNetwork extends utils.Adapter {
 		'device:update',
 		'unifi-device:sync',
 		'session-metadata:sync',
-		'radio-ai:plan',			// Channel AI events
+		'radio-ai:plan',						// Channel AI events
 		'setting:sync',
+		'vpn-connection:sync'					// ToDo: Handling of Gateway VPN Client Connection
 	]
 
 	statesUsingValAsLastChanged = [          // id of states where lc is taken from the value
@@ -1652,9 +1653,9 @@ class UnifiNetwork extends utils.Adapter {
 						const noVPN = event.data.filter(lan => !lan.purpose.includes('vpn'));
 						await this.updateLanConfig(noVPN);
 
-						// ToDo: Handling of VPN
+						// ToDo: Handling of Gateway VPN Client Connection
 						const vpnLans = event.data.filter(lan => lan.purpose.includes('vpn'));
-						this.log.warn(`${logPrefix} VPN conf are not yet supported! (version: ${this.controllerVersion}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(vpnLans)})`);
+						this.log.debug(`${logPrefix} VPN conf are not yet supported! (version: ${this.controllerVersion}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(vpnLans)})`);
 					}
 				}
 			}
