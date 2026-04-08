@@ -1,1 +1,0 @@
-/mnt/sata/development/iobroker/adapter/shared/myIob.ts
