@@ -57,6 +57,7 @@ export enum ApiEndpoints {
     firewallGroup = 'firewallGroup',
     sysinfo = 'sysinfo',
     sites = 'sites',
+    backup = 'backup',
 }
 
 export enum ApiEndpoints_V2 {
@@ -1125,6 +1126,30 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
+    /**
+     * Retrieve backup file from the controller - ToDo: not fully implemented yet
+     * needs Super Admin permissions
+     * 
+     * @param type 
+     * @returns 
+     */
+    public async getBackup(type: 'full' | 'network' | 'users' | 'protect' | 'uos'): Promise<any> {
+        const logPrefix = `[${this.logPrefix}.getSites]`
+
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.backup)}${type === 'full' ? '' : `?target=${type}`}`);
+
+            if (res) {
+                return null;
+            }
+
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return null;
+    }
+
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
@@ -1140,6 +1165,11 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.self:
                 endpointPrefix = '/api/';
                 endpointSuffix = this.isUnifiOs ? 'users/self' : 'self';
+                break;
+
+            case ApiEndpoints.backup:
+                endpointPrefix = '/api/';
+                endpointSuffix = 'backup/download';
                 break;
 
             case ApiEndpoints.devices:

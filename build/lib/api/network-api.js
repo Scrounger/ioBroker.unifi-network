@@ -24,6 +24,7 @@ export var ApiEndpoints;
     ApiEndpoints["firewallGroup"] = "firewallGroup";
     ApiEndpoints["sysinfo"] = "sysinfo";
     ApiEndpoints["sites"] = "sites";
+    ApiEndpoints["backup"] = "backup";
 })(ApiEndpoints || (ApiEndpoints = {}));
 export var ApiEndpoints_V2;
 (function (ApiEndpoints_V2) {
@@ -905,6 +906,26 @@ export class NetworkApi extends EventEmitter {
         }
         return undefined;
     }
+    /**
+     * Retrieve backup file from the controller - ToDo: not fully implemented yet
+     * needs Super Admin permissions
+     *
+     * @param type
+     * @returns
+     */
+    async getBackup(type) {
+        const logPrefix = `[${this.logPrefix}.getSites]`;
+        try {
+            const res = await this.retrievData(`${this.getApiEndpoint(ApiEndpoints.backup)}${type === 'full' ? '' : `?target=${type}`}`);
+            if (res) {
+                return null;
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+        return null;
+    }
     getApiEndpoint(endpoint) {
         //https://ubntwiki.com/products/software/unifi-controller/api
         let endpointSuffix;
@@ -917,6 +938,10 @@ export class NetworkApi extends EventEmitter {
             case ApiEndpoints.self:
                 endpointPrefix = '/api/';
                 endpointSuffix = this.isUnifiOs ? 'users/self' : 'self';
+                break;
+            case ApiEndpoints.backup:
+                endpointPrefix = '/api/';
+                endpointSuffix = 'backup/download';
                 break;
             case ApiEndpoints.devices:
                 endpointSuffix = `/api/s/${this.site}/stat/device`;

@@ -42,7 +42,8 @@ export declare enum ApiEndpoints {
     lanConfig = "lanConfig",
     firewallGroup = "firewallGroup",
     sysinfo = "sysinfo",
-    sites = "sites"
+    sites = "sites",
+    backup = "backup"
 }
 export declare enum ApiEndpoints_V2 {
     devices = "devices",
@@ -223,6 +224,14 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getSites(): Promise<NetworkSite[] | undefined>;
+    /**
+     * Retrieve backup file from the controller - ToDo: not fully implemented yet
+     * needs Super Admin permissions
+     *
+     * @param type
+     * @returns
+     */
+    getBackup(type: 'full' | 'network' | 'users' | 'protect' | 'uos'): Promise<any>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
     checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id?: string | undefined): Promise<void>;
