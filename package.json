@@ -28,7 +28,7 @@
     "lodash": "^4.18.1",
     "moment": "^2.30.1",
     "tough-cookie": "^6.0.1",
-    "undici": "^7.16.0",
+    "undici": "^8.0.2",
     "ws": "^8.20.0"
   },
   "devDependencies": {
