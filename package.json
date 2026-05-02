@@ -21,7 +21,7 @@
     "url": "https://github.com/Scrounger/ioBroker.unifi-network.git"
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">= 22"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.3.1",

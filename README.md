@@ -49,6 +49,9 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 1.4.0 (2026-04-08)
 
 - (Scrounger) bug fix for speed test event spamming since v.10.2.105
