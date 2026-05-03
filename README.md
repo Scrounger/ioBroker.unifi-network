@@ -171,6 +171,8 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 - (Scrounger) initial release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 
 MIT License
