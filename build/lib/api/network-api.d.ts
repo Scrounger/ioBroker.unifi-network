@@ -57,7 +57,8 @@ export declare enum ApiEndpoints_V2 {
     networkMembersGroups = "networkMemberGroups",
     networkMembersGroup = "networkMemberGroup",
     info = "info",
-    vpnConnections = "vpnConnections"
+    vpnConnections = "vpnConnections",
+    vpnUsers = "vpnUsers"
 }
 export declare class NetworkApi extends EventEmitter {
     private logPrefix;

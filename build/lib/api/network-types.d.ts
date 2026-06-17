@@ -31,6 +31,10 @@ export interface NetworkEventFirewallGroup {
     meta: NetworkEventMeta;
     data: FirewallGroup[];
 }
+export interface NetworkEventVpnUsers {
+    meta: NetworkEventMeta;
+    data: NetworkClient[];
+}
 export interface NetworkEventMeta {
     message: string;
     rc: string;

@@ -23,6 +23,9 @@ export declare const eventHandler: {
         roamed(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         roamedRadio(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         block(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
+        /**
+         * @deprecated deprecated since 10.4.57, handle by onNetworkVpnUsersEvent in main.ts now
+         */
         vpnDisconnect(meta: NetworkEventMeta, data: myNetworkClient, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };
     user: {

@@ -32,7 +32,8 @@ export enum WebSocketEventMessages {
     speedTest = 'speed-test:update',
     wlanConf = 'wlanconf:',
     lanConf = 'networkconf',
-    firewallGroup = 'firewallgroup:'
+    firewallGroup = 'firewallgroup:',
+    vpnUsers = 'vpn-users:'
 }
 
 export const WebSocketEvent = {
@@ -55,6 +56,7 @@ export const WebSocketEvent = {
         RougeDetected: ['EVT_AP_DetectRogueAP', 'EVT_SW_DetectRogueDHCP'],
         Authorization: ['EVT_HS_AuthedByNoAuth', 'EVT_HS_AuthedByPassword'],
         RadarDetected: ['EVT_AP_RadarDetected'],
+        PossibleInterference: ['EVT_AP_PossibleInterference', 'EVT_BB_POSSIBLE_INTERFERENCE'],
     },
     client: {
         Connected: ['EVT_LG_Connected', 'EVT_LU_Connected', 'EVT_WG_Connected', 'EVT_WU_Connected'],

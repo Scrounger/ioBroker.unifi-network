@@ -52,11 +52,13 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) vpn event handler for network >= 10.3.x added #89
+- (Scrounger) event messages improved #109, #91
+- (Scrounger) typescript 6.x bug fixes
 - (Scrounger) dependencies updated
 - (ioBrokerTranslator) spanish language added (#98)
-- (Scrounger) bug fix for expired token after 24h since v10.4.57 (#108)
+- (Scrounger) bug fix for expired token after 24h since v10.4.57 #108
 - (copilot) Adapter requires node.js >= 22 now
-
 
 ### 1.4.0 (2026-04-08)
 

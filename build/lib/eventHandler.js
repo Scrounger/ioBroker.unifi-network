@@ -321,6 +321,9 @@ export const eventHandler = {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
+        /**
+         * @deprecated deprecated since 10.4.57, handle by onNetworkVpnUsersEvent in main.ts now
+         */
         async vpnDisconnect(meta, data, adapter, cache) {
             const logPrefix = '[eventHandler.client.vpnDisconnect]:';
             try {

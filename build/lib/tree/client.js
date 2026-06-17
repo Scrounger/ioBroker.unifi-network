@@ -311,9 +311,21 @@ export var client;
             rx_bytes: {
                 iobType: 'number',
                 name: 'RX Bytes',
-                unit: 'GB',
+                unit(objDevice, objChannel, adapter) {
+                    if (objDevice?.type === 'VPN') {
+                        return 'MB';
+                    }
+                    else {
+                        return 'GB';
+                    }
+                },
                 readVal(val, adapter, device, channel, id) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    if (device?.type === 'VPN') {
+                        return Math.round(val / 1000 / 1000 * 1000) / 1000;
+                    }
+                    else {
+                        return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    }
                 }
             },
             rx_rate: {
@@ -332,9 +344,21 @@ export var client;
             tx_bytes: {
                 iobType: 'number',
                 name: 'TX Bytes',
-                unit: 'GB',
+                unit(objDevice, objChannel, adapter) {
+                    if (objDevice?.type === 'VPN') {
+                        return 'MB';
+                    }
+                    else {
+                        return 'GB';
+                    }
+                },
                 readVal(val, adapter, device, channel, id) {
-                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    if (device?.type === 'VPN') {
+                        return Math.round(val / 1000 / 1000 * 1000) / 1000;
+                    }
+                    else {
+                        return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    }
                 }
             },
             tx_rate: {

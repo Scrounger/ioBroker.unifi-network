@@ -3,6 +3,7 @@ type ReadValFunction<Type extends ioBroker.StateValue = ioBroker.StateValue, Dev
 export type WriteValFunction<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = (val: Type, id: string, device: Device, adapter: Adapter) => any | Promise<any>;
 type ConditionToCreateStateFunction<Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = (objDevice: Device, objChannel: Device, adapter: Adapter) => boolean;
 export type myTreeDefinition<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = myTreeState<Type, Device, Adapter> | myTreeObject<Type, Device, Adapter> | myTreeArray<Type, Device, Adapter>;
+export type unitDefinition<Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = string | ((objDevice: Device, objChannel: Device, adapter: Adapter) => string);
 export interface myTreeState<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> {
     id?: string;
     iobType: ioBroker.CommonType;
@@ -10,7 +11,7 @@ export interface myTreeState<Type extends ioBroker.StateValue = ioBroker.StateVa
     role?: string;
     read?: boolean;
     write?: boolean;
-    unit?: string | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string);
+    unit?: unitDefinition<Device, Adapter>;
     min?: number;
     max?: number;
     step?: number;

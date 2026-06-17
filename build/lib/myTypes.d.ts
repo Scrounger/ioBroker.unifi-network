@@ -22,7 +22,8 @@ export declare enum WebSocketEventMessages {
     speedTest = "speed-test:update",
     wlanConf = "wlanconf:",
     lanConf = "networkconf",
-    firewallGroup = "firewallgroup:"
+    firewallGroup = "firewallgroup:",
+    vpnUsers = "vpn-users:"
 }
 export declare const WebSocketEvent: {
     device: {
@@ -43,6 +44,7 @@ export declare const WebSocketEvent: {
         RougeDetected: string[];
         Authorization: string[];
         RadarDetected: string[];
+        PossibleInterference: string[];
     };
     client: {
         Connected: string[];

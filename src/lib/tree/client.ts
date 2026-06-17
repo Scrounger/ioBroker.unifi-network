@@ -327,9 +327,19 @@ export namespace client {
             rx_bytes: {
                 iobType: 'number',
                 name: 'RX Bytes',
-                unit: 'GB',
+                unit(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): string {
+                    if (objDevice?.type === 'VPN') {
+                        return 'MB';
+                    } else {
+                        return 'GB';
+                    }
+                },
                 readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
-                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    if (device?.type === 'VPN') {
+                        return Math.round(val / 1000 / 1000 * 1000) / 1000;
+                    } else {
+                        return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    }
                 }
             },
             rx_rate: {
@@ -348,9 +358,19 @@ export namespace client {
             tx_bytes: {
                 iobType: 'number',
                 name: 'TX Bytes',
-                unit: 'GB',
+                unit(objDevice: myNetworkClient, objChannel: myNetworkClient, adapter: ioBroker.myAdapter): string {
+                    if (objDevice?.type === 'VPN') {
+                        return 'MB';
+                    } else {
+                        return 'GB';
+                    }
+                },
                 readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
-                    return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    if (device?.type === 'VPN') {
+                        return Math.round(val / 1000 / 1000 * 1000) / 1000;
+                    } else {
+                        return Math.round(val / 1000 / 1000 / 1000 * 1000) / 1000;
+                    }
                 }
             },
             tx_rate: {

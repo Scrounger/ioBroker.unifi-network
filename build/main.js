@@ -708,6 +708,7 @@ class UnifiNetwork extends utils.Adapter {
                                     }
                                 }
                                 else {
+                                    //ToDo: is now handled by the vpnUsers API (since 10.4.57), vpnUsers API implementation tbd
                                     if (this.config.vpnEnabled && client.type === 'VPN' && client.ip) {
                                         // VPN Clients
                                         if (isAdapterStart) {
@@ -729,7 +730,6 @@ class UnifiNetwork extends utils.Adapter {
                                             this.cache.vpn[client.ip] = { ...this.cache.vpn[client.ip], ...client };
                                             this.cache.vpn[client.ip].name = name;
                                             this.cache.vpn[client.ip].timestamp = moment().unix();
-                                            this.cache.isOnline[client.ip].wlan_id = client.wlanconf_id;
                                             this.cache.isOnline[client.ip].network_id = client.network_id;
                                             dataToProcess.ip = client.ip;
                                             dataToProcess.name = name;
@@ -1286,6 +1286,9 @@ class UnifiNetwork extends utils.Adapter {
             else if (event.meta.message.startsWith(WebSocketEventMessages.firewallGroup)) {
                 await this.onNetworkFirewallGroupEvent(event);
             }
+            else if (event.meta.message.startsWith(WebSocketEventMessages.vpnUsers)) {
+                await this.onNetworkVpnUsersEvent(event);
+            }
             else {
                 if (!this.eventsToIgnore.includes(event.meta.message)) {
                     this.log.warn(`${logPrefix} meta: ${JSON.stringify(event.meta)} not implemented! version: ${this.controllerVersion}, data: ${JSON.stringify(event.data)}`);
@@ -1373,7 +1376,7 @@ class UnifiNetwork extends utils.Adapter {
             if (events.meta.message.endsWith(':disconnected')) {
                 for (const event of events.data) {
                     if (event.type === 'VPN') {
-                        // VPN disconnect
+                        // ToDo: VPN disconnect (deprecated since 10.4.57)
                         this.log.debug(`${logPrefix} event 'vpn disconnected' (meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(event)})`);
                         await eventHandler.client.vpnDisconnect(events.meta, event, this, this.cache);
                     }
@@ -1471,6 +1474,50 @@ class UnifiNetwork extends utils.Adapter {
                 }
                 else {
                     await this.updateFirewallGroup(event.data);
+                }
+            }
+        }
+        catch (error) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+    async onNetworkVpnUsersEvent(event) {
+        const logPrefix = '[onNetworkVpnUsersEvent]:';
+        try {
+            if (this.config.vpnEnabled) {
+                this.log.debug(`${logPrefix} vpn users event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+                if (event.data && event.data.length > 0) {
+                    for (const client of event.data) {
+                        this.log.debug(`${logPrefix} Discovered vpn client '${client.display_name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
+                        let updateObjects = false;
+                        if (!this.cache.vpn[client.ip]) {
+                            this.log.debug(`${logPrefix} Discovered vpn client '${client.display_name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
+                            this.cache.isOnline[client.ip] = { val: client.status === 'online' };
+                            updateObjects = true;
+                        }
+                        const idChannel = client.network_id;
+                        // ToDo: name of channel must be taken from vpnUsers api
+                        await this.myIob?.createOrUpdateChannel(`${tree.client.idChannelVpn}.${idChannel}`, client.vpn_type, client.vpn_type ? base64[client.vpn_type] : undefined);
+                        let dataToProcess = client;
+                        if (this.cache.vpn[client.ip]) {
+                            // filter out unchanged properties
+                            dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys());
+                        }
+                        const preparedIp = client.ip.replaceAll('.', '_');
+                        if (!_.isEmpty(dataToProcess)) {
+                            this.cache.vpn[client.ip] = { ...this.cache.vpn[client.ip], ...client };
+                            this.cache.vpn[client.ip].name = client.display_name;
+                            this.cache.vpn[client.ip].timestamp = moment().unix();
+                            this.cache.isOnline[client.ip].network_id = client.network_id;
+                            dataToProcess.ip = client.ip;
+                            dataToProcess.name = client.display_name;
+                            if (!updateObjects) {
+                                this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                            }
+                            await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelVpn}.${idChannel}.${preparedIp}`, client.display_name || client.ip, `${tree.client.idChannelVpn}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, updateObjects, true);
+                            await this.myIob?.createOrUpdateStates(`${tree.client.idChannelVpn}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, updateObjects);
+                        }
+                    }
                 }
             }
         }

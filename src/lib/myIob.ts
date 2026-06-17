@@ -36,6 +36,11 @@ export type myTreeDefinition<
     | myTreeObject<Type, Device, Adapter>
     | myTreeArray<Type, Device, Adapter>;
 
+export type unitDefinition<
+    Device extends myTreeData = myTreeData,
+    Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter
+> = string | ((objDevice: Device, objChannel: Device, adapter: Adapter) => string);
+
 export interface myTreeState<
     Type extends ioBroker.StateValue = ioBroker.StateValue,
     Device extends myTreeData = myTreeData,
@@ -47,7 +52,7 @@ export interface myTreeState<
     role?: string;
     read?: boolean;
     write?: boolean;
-    unit?: string | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string);
+    unit?: unitDefinition<Device, Adapter>;
     min?: number;
     max?: number;
     step?: number;
@@ -481,7 +486,7 @@ export class myIob {
         return stateValueChanged
     }
 
-    private getCommonForState(id: string, treeDefinition: { [key: string]: myTreeState<any, any, ioBroker.myAdapter> }, fullData: myTreeData, channelData: any, logMsgState: string, logDeviceName: string): ioBroker.StateCommon | undefined {
+    private getCommonForState(id: string, treeDefinition: { [key: string]: myTreeState<any, any, any> }, fullData: myTreeData, channelData: any, logMsgState: string, logDeviceName: string): ioBroker.StateCommon | undefined {
         const logPrefix = '[myIob.getCommonForState]:';
 
         try {

@@ -74,6 +74,7 @@ export enum ApiEndpoints_V2 {
     networkMembersGroup = 'networkMemberGroup',
     info = 'info',
     vpnConnections = 'vpnConnections',
+    vpnUsers = 'vpnUsers',
 }
 
 export class NetworkApi extends EventEmitter {
@@ -1289,6 +1290,10 @@ export class NetworkApi extends EventEmitter {
 
             case ApiEndpoints_V2.vpnConnections:
                 endpointSuffix = `/v2/api/site/${this.site}/vpn/connections`;
+                break;
+
+            case ApiEndpoints_V2.vpnUsers:
+                endpointSuffix = `/v2/api/site/${this.site}/vpn/users`;
                 break;
 
             default:

@@ -102,6 +102,7 @@ declare class UnifiNetwork extends utils.Adapter {
     private onNetworkWlanConfEvent;
     private onNetworkLanConfEvent;
     private onNetworkFirewallGroupEvent;
+    private onNetworkVpnUsersEvent;
     private onNetworkSpeedTestEvent;
 }
 export default function startAdapter(options: Partial<utils.AdapterOptions> | undefined): UnifiNetwork;

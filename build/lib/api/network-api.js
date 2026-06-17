@@ -40,6 +40,7 @@ export var ApiEndpoints_V2;
     ApiEndpoints_V2["networkMembersGroup"] = "networkMemberGroup";
     ApiEndpoints_V2["info"] = "info";
     ApiEndpoints_V2["vpnConnections"] = "vpnConnections";
+    ApiEndpoints_V2["vpnUsers"] = "vpnUsers";
 })(ApiEndpoints_V2 || (ApiEndpoints_V2 = {}));
 export class NetworkApi extends EventEmitter {
     logPrefix = 'NetworkApi';
@@ -1032,6 +1033,9 @@ export class NetworkApi extends EventEmitter {
                 break;
             case ApiEndpoints_V2.vpnConnections:
                 endpointSuffix = `/v2/api/site/${this.site}/vpn/connections`;
+                break;
+            case ApiEndpoints_V2.vpnUsers:
+                endpointSuffix = `/v2/api/site/${this.site}/vpn/users`;
                 break;
             default:
                 endpointSuffix = '';
