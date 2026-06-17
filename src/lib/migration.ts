@@ -10,7 +10,7 @@ export function migration(adapter: ioBroker.myAdapter): void {
         //         adapter.log.warn(`${logPrefix} Breaking Change !!! Adapter Migration successful: 'lan' channel deleted.`);
         //     }
         // }
-    } catch (error) {
+    } catch (error: any) {
         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
     }
 }

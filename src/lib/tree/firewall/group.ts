@@ -22,7 +22,7 @@ export namespace group {
                         const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
 
                         await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
-                    } catch (error) {
+                    } catch (error: any) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                     }
                 },
@@ -43,7 +43,7 @@ export namespace group {
 
                         await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
 
-                    } catch (error) {
+                    } catch (error: any) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                     }
                 },

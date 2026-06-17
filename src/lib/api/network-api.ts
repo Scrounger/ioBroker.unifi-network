@@ -542,7 +542,7 @@ export class NetworkApi extends EventEmitter {
             }
 
             return response;
-        } catch (error) {
+        } catch (error: any) {
 
             if (!this.isControllerDetected) {
                 return null;

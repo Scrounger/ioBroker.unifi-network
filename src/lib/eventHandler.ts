@@ -31,7 +31,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'restarted' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -53,7 +53,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -77,7 +77,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'deleted' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -137,7 +137,7 @@ export const eventHandler = {
                         }
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, event: ${JSON.stringify(event)}`);
             }
         },
@@ -165,7 +165,7 @@ export const eventHandler = {
                     adapter.log.warn(`${logPrefix} event 'lost contact' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
 
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -194,7 +194,7 @@ export const eventHandler = {
                     adapter.log.warn(`${logPrefix} event 'lost contact' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
 
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -270,7 +270,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -300,7 +300,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'roam' has no mac or ap information! (data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -332,7 +332,7 @@ export const eventHandler = {
                     adapter.log.warn(`${logPrefix} event 'roam radio' has no mac or ap information! (data: ${JSON.stringify(data)})`);
                 }
 
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -358,7 +358,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'connected / disconnected' has no mac address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -379,7 +379,7 @@ export const eventHandler = {
                 } else {
                     adapter.log.warn(`${logPrefix} event 'vpn disconnected' has no ip address! (meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)})`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
@@ -401,7 +401,7 @@ export const eventHandler = {
                         delete cache.clients[mac];
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         },
@@ -436,7 +436,7 @@ export const eventHandler = {
                         }
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
@@ -456,7 +456,7 @@ export const eventHandler = {
                         }
                     }
                 }
-            } catch (error) {
+            } catch (error: any) {
                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
             }
         }
@@ -477,7 +477,7 @@ export const eventHandler = {
                             }
                         }
                     }
-                } catch (error) {
+                } catch (error: any) {
                     adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, meta: ${JSON.stringify(meta)}, data: ${JSON.stringify(data)}`);
                 }
             }

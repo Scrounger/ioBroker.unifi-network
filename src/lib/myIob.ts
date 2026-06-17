@@ -414,7 +414,7 @@ export class myIob {
                                 }
                             }
                         }
-                    } catch (error) {
+                    } catch (error: any) {
                         this.log.error(`${logPrefix} [id: ${key}, ${logDetails ? `${logDetails}, ` : ''}key: ${key}] error: ${error}, stack: ${error.stack}, data: ${JSON.stringify(treeData[key])}`);
                     }
                 }
@@ -423,7 +423,7 @@ export class myIob {
                     this.log.warn(`${logPrefix} adapter has no connection!`);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
@@ -491,7 +491,7 @@ export class myIob {
             }
 
             return common;
-        } catch (error) {
+        } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
@@ -621,7 +621,7 @@ export class myIob {
                     return 'text';
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
@@ -647,7 +647,7 @@ export class myIob {
                     await adapter.setStateChangedAsync(id, val, true);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
@@ -764,14 +764,14 @@ export class myIob {
                                 result[key] = value;
                             }
                         }
-                    } catch (error) {
+                    } catch (error: any) {
                         adapter.log.error(`${logPrefix} transform error: ${error}, stack: ${error.stack}, fullKey: ${fullKey}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
                     }
                 });
             };
 
             return changes(object, base, prefix);
-        } catch (error) {
+        } catch (error: any) {
             adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}, object: ${JSON.stringify(object)}, base: ${JSON.stringify(base)}`);
         }
 
@@ -783,7 +783,7 @@ export class myIob {
 
         try {
             this._findMissingTranslation(tree);
-        } catch (error) {
+        } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
@@ -810,7 +810,7 @@ export class myIob {
                     }
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
