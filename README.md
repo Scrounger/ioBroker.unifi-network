@@ -53,6 +53,8 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 ### **WORK IN PROGRESS**
 
 - (Scrounger) bug fix for expired token after 24h since v10.4.57 (#108)
+- (copilot) Adapter requires node.js >= 22 now
+
 
 ### 1.4.0 (2026-04-08)
 
