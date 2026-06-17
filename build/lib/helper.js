@@ -91,7 +91,7 @@ export function radioToFrequency(radioVal, adapter) {
     }
     else {
         adapter.log.warn(`[myHelper.radioToFrequency] radio ${radioVal} interpreter not implemented! Please create an issue on github.`);
-        return radioVal;
+        return radioVal ? radioVal : null;
     }
 }
 export function radio_nameToFrequency(radio_nameVal, adapter) {

@@ -8,7 +8,7 @@ import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import * as tree from './tree/index.js'
 import type { FirewallGroup } from "./api/network-types-firewall.js";
 
-export const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioBroker.Timeout } } = {};
+export const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioBroker.Timeout | null | undefined } } = {};
 
 const speedTestRunning: { [wan: string]: boolean } = {};
 
@@ -18,7 +18,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.restarted]:'
 
             try {
-                const mac: string = data.sw || data.ap || data.gw;
+                const mac: string = (data.sw || data.ap || data.gw) as string;
 
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
@@ -39,7 +39,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.connected]:'
 
             try {
-                const mac: string = data.sw || data.ap || data.gw
+                const mac: string = (data.sw || data.ap || data.gw) as string;
                 const connected = WebSocketEvent.device.Connected.includes(data.key);
 
                 if (mac) {
@@ -61,7 +61,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.deleted]:'
 
             try {
-                const mac: string = data.sw || data.ap || data.gw
+                const mac: string = (data.sw || data.ap || data.gw) as string;
 
                 if (mac) {
                     if (adapter.config.keepIobSynchron) {
@@ -85,7 +85,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.speedTest]:'
 
             try {
-                const mac = event.meta.mac;
+                const mac = event.meta.mac as string;
 
                 for (const data of event.data) {
                     const wan = cache.devices[mac]?.wan1?.ifname === data.interface_name ? 'wan1' : cache.devices[mac]?.wan2?.ifname === data.interface_name ? 'wan2' : 'wan1';
@@ -145,7 +145,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.lostContact]:'
 
             try {
-                const mac: string = data.sw || data.ap || data.gw
+                const mac: string = (data.sw || data.ap || data.gw) as string;
 
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
@@ -173,8 +173,8 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.device.wanTransition]:'
 
             try {
-                const mac: string = data.gw || data.dm
-                const ifname: string = data.iface
+                const mac: string = (data.gw || data.dm) as string;
+                const ifname: string = data.iface as string;
 
                 if (mac) {
                     if (adapter.config.devicesEnabled) {
@@ -204,7 +204,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.client.connected]:'
 
             try {
-                const mac: string = data.user || data.guest;
+                const mac: string = (data.user || data.guest) as string;
                 const connected = WebSocketEvent.client.Connected.includes(data.key);
                 const isGuest = data.guest ? true : false;
 
@@ -215,9 +215,9 @@ export const eventHandler = {
 
                         if (connected || (adapter.config.clientRealtimeDisconnectDebounceTime === 0 && !clientWithDebounceTime)) {
                             if (data.subsystem === 'wlan') {
-                                adapter.log[adapter.config.clientDebugLevel || adapter.log.level](`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`);
+                                adapter.log[(adapter.config.clientDebugLevel || adapter.log.level) as ioBroker.LogLevel](`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`);
                             } else {
-                                adapter.log[adapter.config.clientDebugLevel || adapter.log.level](`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
+                                adapter.log[(adapter.config.clientDebugLevel || adapter.log.level) as ioBroker.LogLevel](`${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`);
                             }
 
                             if (disconnectDebounceList[mac]) {
@@ -242,12 +242,12 @@ export const eventHandler = {
                                 logMsg = `${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''}) ${connected ? 'to' : 'from'} '${data.ssid}' on '${data.ap_displayName || data.ap_name}'`;
                             }
 
-                            adapter.log[adapter.config.clientDebugLevel || adapter.log.level](`${logMsg} -> debounce disconnection for ${clientWithDebounceTime?.debounceTime || adapter.config.clientRealtimeDisconnectDebounceTime}s ${clientWithDebounceTime ? `(client specific)` : ''}`);
+                            adapter.log[(adapter.config.clientDebugLevel || adapter.log.level) as ioBroker.LogLevel](`${logMsg} -> debounce disconnection for ${clientWithDebounceTime?.debounceTime || adapter.config.clientRealtimeDisconnectDebounceTime}s ${clientWithDebounceTime ? `(client specific)` : ''}`);
 
                             // debounce disconnection if it's configured
                             disconnectDebounceList[mac].timeout = adapter.setTimeout(async () => {
                                 if (disconnectDebounceList[mac]) {
-                                    adapter.log[adapter.config.clientDebugLevel || adapter.log.level](`${logMsg} -> debounce time expired`);
+                                    adapter.log[(adapter.config.clientDebugLevel || adapter.log.level) as ioBroker.LogLevel](`${logMsg} -> debounce time expired`);
 
                                     if (await adapter.objectExists(id)) {
                                         if (disconnectDebounceList[mac]?.lc) {
@@ -264,7 +264,7 @@ export const eventHandler = {
                                     delete disconnectDebounceList[mac];
                                 }
 
-                            }, clientWithDebounceTime?.debounceTime * 1000 || adapter.config.clientRealtimeDisconnectDebounceTime * 1000);
+                            }, (clientWithDebounceTime?.debounceTime || adapter.config.clientRealtimeDisconnectDebounceTime) * 1000);
                         }
                     }
                 } else {
@@ -278,7 +278,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.client.roamed]:'
 
             try {
-                const mac: string = data.user || data.guest;
+                const mac: string = (data.user || data.guest) as string;
                 const isGuest = data.guest ? true : false;
 
                 if (mac && data.ap_from && data.ap_to) {
@@ -287,13 +287,13 @@ export const eventHandler = {
 
                         const idApName = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.uplink_name`;
                         if (await adapter.objectExists(idApName)) {
-                            cache.clients[mac].last_uplink_name = cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null;
+                            cache.clients[mac].last_uplink_name = cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : undefined;
                             await adapter.setState(idApName, cache?.devices[data.ap_to]?.name ? cache?.devices[data.ap_to]?.name : null, true);
                         }
 
                         const idApMac = `${isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers}.${mac}.uplink_mac`;
                         if (await adapter.objectExists(idApMac)) {
-                            cache.clients[mac].last_uplink_mac = (data.ap_to) ? (data.ap_to) : null;
+                            cache.clients[mac].last_uplink_mac = (data.ap_to) ? (data.ap_to) : undefined;
                             await adapter.setState(idApMac, (data.ap_to) ? (data.ap_to) : null, true);
                         }
                     }
@@ -308,7 +308,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.client.roamedRadio]:'
 
             try {
-                const mac: string = data.user || data.guest;
+                const mac: string = (data.user || data.guest) as string;
                 const isGuest = data.guest ? true : false;
 
                 if (mac && data.channel_from && data.channel_to && data.ap) {
@@ -340,7 +340,7 @@ export const eventHandler = {
             const logPrefix = '[eventHandler.client.block]:'
 
             try {
-                const mac: string = data.client;
+                const mac: string = data.client as string;
 
                 if (mac) {
                     if (cache && cache.clients && cache.clients[mac]) {
@@ -425,9 +425,9 @@ export const eventHandler = {
 
                             for (const id in devices) {
                                 if (devices[id].val === wlan._id) {
-                                    const idChannel = adapter.myIob.getIdWithoutLastPart(id);
+                                    const idChannel = adapter.myIob?.getIdWithoutLastPart(id);
 
-                                    if (await adapter.objectExists(idChannel)) {
+                                    if (idChannel && await adapter.objectExists(idChannel)) {
                                         await adapter.delObjectAsync(idChannel, { recursive: true });
                                         adapter.log.debug(`${logPrefix} wlan '${wlan.name}' deleted from device (channel: ${idChannel})`);
                                     }

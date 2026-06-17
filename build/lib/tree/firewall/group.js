@@ -14,8 +14,8 @@ export var group;
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[firewallGroup.name]`;
                     try {
-                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
-                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
+                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
+                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
                     }
                     catch (error) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -33,8 +33,8 @@ export var group;
                     const logPrefix = `[firewallGroup.group_members]`;
                     try {
                         const memObj = JSON.parse(val);
-                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
-                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
+                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
+                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
                     }
                     catch (error) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

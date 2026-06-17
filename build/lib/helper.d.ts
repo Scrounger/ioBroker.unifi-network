@@ -9,10 +9,10 @@ export declare function zeroPad(source: any, places: number): string;
  * @returns
  */
 export declare function getAllKeysOfTreeDefinition(treefDefintion: {
-    [key: string]: myTreeDefinition;
+    [key: string]: myTreeDefinition<any, any, any>;
 }): string[];
 export declare function getAllIdsOfTreeDefinition(treefDefintion: {
-    [key: string]: myTreeDefinition;
+    [key: string]: myTreeDefinition<any, any, any>;
 }): string[];
-export declare function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string;
+export declare function radioToFrequency(radioVal: string | undefined, adapter: ioBroker.Adapter): string | null;
 export declare function radio_nameToFrequency(radio_nameVal: string, adapter: ioBroker.Adapter): string;

@@ -1,9 +1,9 @@
 import type { myTreeData } from './myTypes.js';
-type ReadValFunction = (val: any, adapter: ioBroker.Adapter | ioBroker.myAdapter, device: myTreeData, channel: myTreeData, id: string) => ioBroker.StateValue | Promise<ioBroker.StateValue>;
-export type WriteValFunction = (val: ioBroker.StateValue, id: string, device: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => any | Promise<any>;
-type ConditionToCreateStateFunction = (objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => boolean;
-export type myTreeDefinition = myTreeState | myTreeObject | myTreeArray;
-export interface myTreeState {
+type ReadValFunction<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = (val: Type, adapter: Adapter, device: Device, channel: Device, id: string) => ioBroker.StateValue | Promise<ioBroker.StateValue>;
+export type WriteValFunction<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = (val: Type, id: string, device: Device, adapter: Adapter) => any | Promise<any>;
+type ConditionToCreateStateFunction<Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = (objDevice: Device, objChannel: Device, adapter: Adapter) => boolean;
+export type myTreeDefinition<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = myTreeState<Type, Device, Adapter> | myTreeObject<Type, Device, Adapter> | myTreeArray<Type, Device, Adapter>;
+export interface myTreeState<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> {
     id?: string;
     iobType: ioBroker.CommonType;
     name?: string;
@@ -19,38 +19,40 @@ export interface myTreeState {
     icon?: string;
     def?: ioBroker.StateValue;
     desc?: string;
-    readVal?: ReadValFunction;
-    writeVal?: WriteValFunction;
+    readVal?: ReadValFunction<Type, Device, Adapter>;
+    writeVal?: WriteValFunction<Type, Device, Adapter>;
     valFromProperty?: string;
     statesFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): Record<string, string> | string[] | string;
-    conditionToCreateState?: ConditionToCreateStateFunction;
+    conditionToCreateState?: ConditionToCreateStateFunction<Device, Adapter>;
     subscribeMe?: true;
     required?: true;
     updateTs?: true;
 }
-export interface myTreeObject {
+export type nameDefinition<Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = string | ((objDevice: Device, objChannel: Device, adapter: Adapter) => string | ioBroker.Translated);
+export interface myTreeObject<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> {
     idChannel?: string;
-    name?: string | ioBroker.Translated | ((objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter) => string | ioBroker.Translated);
+    name?: nameDefinition<Device, Adapter>;
     icon?: string;
     object: {
-        [key: string]: myTreeDefinition;
+        [key: string]: myTreeDefinition<Type, Device, Adapter>;
     };
-    conditionToCreateState?: ConditionToCreateStateFunction;
+    conditionToCreateState?: ConditionToCreateStateFunction<Device, Adapter>;
 }
-export interface myTreeArray {
+export type arrayChannelIdFromPropertyFunction<Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> = (objDevice: Device, objChannel: Device, i: number, adapter: Adapter) => string | undefined;
+export interface myTreeArray<Type extends ioBroker.StateValue = ioBroker.StateValue, Device extends myTreeData = myTreeData, Adapter extends ioBroker.Adapter | ioBroker.myAdapter = ioBroker.Adapter | ioBroker.myAdapter> {
     idChannel?: string;
     name?: string;
     icon?: string;
     arrayChannelIdPrefix?: string;
     arrayChannelIdZeroPad?: number;
-    arrayChannelIdFromProperty?(objDevice: myTreeData, objChannel: myTreeData, i: number, adapter: ioBroker.Adapter | ioBroker.myAdapter): string;
+    arrayChannelIdFromProperty?: arrayChannelIdFromPropertyFunction<Device, Adapter>;
     arrayChannelNamePrefix?: string;
     arrayChannelNameFromProperty?(objDevice: myTreeData, objChannel: myTreeData, i: number, adapter: ioBroker.Adapter | ioBroker.myAdapter): string | ioBroker.Translated;
     arrayStartNumber?: number;
     array: {
-        [key: string]: myTreeDefinition;
+        [key: string]: myTreeDefinition<Type, Device, Adapter>;
     };
-    conditionToCreateState?: ConditionToCreateStateFunction;
+    conditionToCreateState?: ConditionToCreateStateFunction<Device, Adapter>;
 }
 export declare class myIob {
     private adapter;
@@ -74,7 +76,7 @@ export declare class myIob {
      * @param logChanges
      * @param native
      */
-    createOrUpdateDevice(id: string, name: string | ioBroker.Translated, onlineId: string, errorId?: string, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
+    createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId: string, errorId?: string | undefined, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
     /**
      * create or update a channel object, update will only be done on adapter start
      *
@@ -84,9 +86,9 @@ export declare class myIob {
      * @param updateObject
      * @param native
      */
-    createOrUpdateChannel(id: string, name: string | ioBroker.Translated, icon?: string, updateObject?: boolean, native?: Record<string, any>): Promise<void>;
+    createOrUpdateChannel(id: string, name: string | ioBroker.Translated | undefined, icon?: string | undefined, updateObject?: boolean, native?: Record<string, any>): Promise<void>;
     createOrUpdateStates(idChannel: string, treeDefinition: {
-        [key: string]: myTreeDefinition;
+        [key: string]: myTreeDefinition<any, any, ioBroker.myAdapter>;
     }, partialData: myTreeData, fullData: myTreeData, blacklistFilter?: {
         id: string;
     }[] | undefined, isWhiteList?: boolean, logDeviceName?: string, updateObject?: boolean): Promise<boolean>;
@@ -152,7 +154,7 @@ export declare class myIob {
      */
     deepDiffBetweenObjects: (object: any, base: any, adapter: ioBroker.Adapter, allowedKeys?: any, prefix?: string) => any;
     findMissingTranslation(): void;
-    _findMissingTranslation(obj: any, logSuffix?: any): void;
+    _findMissingTranslation(obj: any, logSuffix?: string | undefined): void;
     /**
      * generate a list with all defined names, that can be used for translation
      *
@@ -162,5 +164,6 @@ export declare class myIob {
      */
     private tree2Translation;
     private getTreeNameOrKey;
+    hasKey<T extends object>(obj: T, key: PropertyKey | undefined): key is keyof T;
 }
 export {};

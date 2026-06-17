@@ -32,8 +32,8 @@ export var lan;
                 write: true,
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.lan.enable]`;
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id.trim()}`, { enabled: val }, 'PUT');
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id?.trim()}`, { enabled: val }, 'PUT');
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
                 }
             },
             ip_subnet: {
@@ -49,8 +49,8 @@ export var lan;
                 valFromProperty: 'internet_access_enabled',
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.lan.internet_enabled]`;
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id.trim()}`, { internet_access_enabled: val }, 'PUT');
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `internet access of lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id?.trim()}`, { internet_access_enabled: val }, 'PUT');
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `internet access of lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
                 }
             },
             name: {

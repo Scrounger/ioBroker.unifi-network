@@ -36,8 +36,8 @@ export var client;
                 write: true,
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.client.blocked]`;
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: val ? 'block-sta' : 'unblock-sta', mac: device.mac.toLowerCase() });
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'block' : 'unblock'} - '${device.name}' (mac: ${device.mac})`);
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: val ? 'block-sta' : 'unblock-sta', mac: device.mac.toLowerCase() });
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `${val ? 'block' : 'unblock'} - '${device.name}' (mac: ${device.mac})`);
                 },
             },
             channel: {
@@ -90,7 +90,9 @@ export var client;
                                 url = `https://static.ui.com/fingerprint/${device.fingerprint.computed_engine}/${device.fingerprint.dev_id}_257x257.png?q=100`;
                             }
                         }
-                        await adapter.checkImageDownload(id, url);
+                        if (url) {
+                            await adapter.checkImageDownload(id, url);
+                        }
                     }
                     return url;
                 }
@@ -152,7 +154,7 @@ export var client;
                 name: 'last IPv6 address',
                 conditionToCreateState(objDevice, objChannel, adapter) {
                     // only wired and wireless clients
-                    return objDevice?.last_ipv6 && objDevice?.last_ipv6.length > 0;
+                    return objDevice?.last_ipv6 && objDevice?.last_ipv6.length > 0 || false;
                 },
                 readVal(val, adapter, device, channel, id) {
                     return JSON.stringify(val);
@@ -211,8 +213,8 @@ export var client;
                 write: true,
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.client.name]`;
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clients)}/${device.user_id.trim()}`, { name: val }, 'PUT');
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `set name - '${device.name}' (mac: ${device.mac}, new name: ${val})`);
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clients)}/${device.user_id.trim()}`, { name: val }, 'PUT');
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `set name - '${device.name}' (mac: ${device.mac}, new name: ${val})`);
                 }
             },
             network_id: {
@@ -286,8 +288,8 @@ export var client;
                 role: 'button',
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.client.reconnect]`;
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'kick-sta', mac: device.mac.toLowerCase() });
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `reconnect - '${device.name}' (mac: ${device.mac})`, id);
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.clientCommand)}`, { cmd: 'kick-sta', mac: device.mac.toLowerCase() });
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `reconnect - '${device.name}' (mac: ${device.mac})`, id);
                 },
             },
             remote_ip: {

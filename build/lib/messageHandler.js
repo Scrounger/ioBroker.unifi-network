@@ -14,7 +14,7 @@ export const messageHandler = {
     device: {
         async list(message, adapter, ufn) {
             if (deviceList === undefined) {
-                const data = (await ufn.getDevices_V2())?.network_devices;
+                const data = (await ufn?.getDevices_V2())?.network_devices;
                 deviceList = [];
                 if (data && data !== null) {
                     for (const device of data) {
@@ -36,7 +36,7 @@ export const messageHandler = {
                 deviceStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             deviceStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -60,7 +60,7 @@ export const messageHandler = {
     client: {
         async list(message, adapter, ufn) {
             if (clientList === undefined) {
-                const data = await ufn.getClients();
+                const data = await ufn?.getClients();
                 clientList = [];
                 if (data && data !== null) {
                     for (const client of data) {
@@ -83,7 +83,7 @@ export const messageHandler = {
                 clientStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             clientStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -107,7 +107,7 @@ export const messageHandler = {
     wlan: {
         async list(message, adapter, ufn) {
             if (wlanList === undefined) {
-                const data = await ufn.getWlanConfig_V2();
+                const data = await ufn?.getWlanConfig_V2();
                 wlanList = [];
                 if (data && data !== null) {
                     for (const wlan of data) {
@@ -129,7 +129,7 @@ export const messageHandler = {
                 wlanStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             wlanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -153,7 +153,7 @@ export const messageHandler = {
     lan: {
         async list(message, adapter, ufn) {
             if (lanList === undefined) {
-                const data = await ufn.getLanConfig_V2();
+                const data = await ufn?.getLanConfig_V2();
                 lanList = [];
                 if (data && data !== null) {
                     for (const lan of data) {
@@ -175,7 +175,7 @@ export const messageHandler = {
                 lanStateList = [];
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             lanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -200,7 +200,7 @@ export const messageHandler = {
         group: {
             async list(message, adapter, ufn) {
                 if (firewallGroupList === undefined) {
-                    const data = await ufn.getFirewallGroup();
+                    const data = await ufn?.getFirewallGroup();
                     firewallGroupList = [];
                     if (data && data !== null) {
                         for (const firewallGroup of data) {
@@ -222,7 +222,7 @@ export const messageHandler = {
                     firewallGroupStateList = [];
                     if (states) {
                         for (let i = 0; i <= states.length - 1; i++) {
-                            if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                            if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                                 firewallGroupStateList.push({
                                     label: `[Channel]\t ${states[i]}`,
                                     value: states[i],

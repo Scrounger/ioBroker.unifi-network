@@ -3,26 +3,26 @@ import type { NetworkApi } from "./api/network-api.js";
 import * as tree from './tree/index.js'
 import type { JsonConfigAutocompleteSendTo } from "./myTypes.js";
 
-let deviceList: JsonConfigAutocompleteSendTo[] = undefined;
-let deviceStateList: JsonConfigAutocompleteSendTo[] = undefined;
+let deviceList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
+let deviceStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 
-let clientList: JsonConfigAutocompleteSendTo[] = undefined;
-let clientStateList: JsonConfigAutocompleteSendTo[] = undefined;
+let clientList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
+let clientStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 
-let wlanList: JsonConfigAutocompleteSendTo[] = undefined;
-let wlanStateList: JsonConfigAutocompleteSendTo[] = undefined;
+let wlanList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
+let wlanStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 
-let lanList: JsonConfigAutocompleteSendTo[] = undefined;
-let lanStateList: JsonConfigAutocompleteSendTo[] = undefined;
+let lanList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
+let lanStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 
-let firewallGroupList: JsonConfigAutocompleteSendTo[] = undefined;
-let firewallGroupStateList: JsonConfigAutocompleteSendTo[] = undefined;
+let firewallGroupList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
+let firewallGroupStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 
 export const messageHandler = {
     device: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi | undefined): Promise<void> {
             if (deviceList === undefined) {
-                const data = (await ufn.getDevices_V2())?.network_devices;
+                const data = (await ufn?.getDevices_V2())?.network_devices;
 
                 deviceList = [];
 
@@ -42,7 +42,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, deviceList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi | undefined): void {
             if (deviceStateList === undefined) {
                 const states = tree.device.getStateIDs();
 
@@ -51,7 +51,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             deviceStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -74,9 +74,9 @@ export const messageHandler = {
         }
     },
     client: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi | undefined): Promise<void> {
             if (clientList === undefined) {
-                const data = await ufn.getClients();
+                const data = await ufn?.getClients();
 
                 clientList = [];
 
@@ -98,7 +98,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, clientList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi | undefined): void {
             if (clientStateList === undefined) {
                 const states = tree.client.getStateIDs();
 
@@ -107,7 +107,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             clientStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -130,9 +130,9 @@ export const messageHandler = {
         }
     },
     wlan: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi | undefined): Promise<void> {
             if (wlanList === undefined) {
-                const data = await ufn.getWlanConfig_V2();
+                const data = await ufn?.getWlanConfig_V2();
 
                 wlanList = [];
 
@@ -140,7 +140,7 @@ export const messageHandler = {
                     for (const wlan of data) {
                         wlanList.push({
                             label: wlan.configuration.name,
-                            value: wlan.configuration._id
+                            value: wlan.configuration._id as string
                         });
                     }
                 }
@@ -152,7 +152,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, wlanList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi | undefined): void {
             if (wlanStateList === undefined) {
                 const states = tree.wlan.getStateIDs();
 
@@ -161,7 +161,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             wlanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -184,9 +184,9 @@ export const messageHandler = {
         }
     },
     lan: {
-        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
+        async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi | undefined): Promise<void> {
             if (lanList === undefined) {
-                const data = await ufn.getLanConfig_V2();
+                const data = await ufn?.getLanConfig_V2();
 
                 lanList = [];
 
@@ -194,7 +194,7 @@ export const messageHandler = {
                     for (const lan of data) {
                         lanList.push({
                             label: `${lan.configuration.name}${lan.configuration.vlan ? ` (VLAN: ${lan.configuration.vlan})` : ''}`,
-                            value: lan.configuration._id
+                            value: lan.configuration._id as string
                         });
                     }
                 }
@@ -206,7 +206,7 @@ export const messageHandler = {
                 adapter.sendTo(message.from, message.command, lanList, message.callback);
             }
         },
-        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
+        stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi | undefined): void {
             if (lanStateList === undefined) {
                 const states = tree.lan.getStateIDs();
 
@@ -215,7 +215,7 @@ export const messageHandler = {
                 if (states) {
                     for (let i = 0; i <= states.length - 1; i++) {
 
-                        if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                        if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                             lanStateList.push({
                                 label: `[Channel]\t ${states[i]}`,
                                 value: states[i],
@@ -239,9 +239,9 @@ export const messageHandler = {
     },
     firewall: {
         group: {
-            async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi): Promise<void> {
+            async list(message: ioBroker.Message, adapter: ioBroker.Adapter, ufn: NetworkApi | undefined): Promise<void> {
                 if (firewallGroupList === undefined) {
-                    const data = await ufn.getFirewallGroup();
+                    const data = await ufn?.getFirewallGroup();
 
                     firewallGroupList = [];
 
@@ -261,7 +261,7 @@ export const messageHandler = {
                     adapter.sendTo(message.from, message.command, firewallGroupList, message.callback);
                 }
             },
-            stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi): void {
+            stateList(message: ioBroker.Message, adapter: ioBroker.myAdapter, ufn: NetworkApi | undefined): void {
                 if (firewallGroupStateList === undefined) {
                     const states = tree.firewall.group.getStateIDs();
 
@@ -270,7 +270,7 @@ export const messageHandler = {
                     if (states) {
                         for (let i = 0; i <= states.length - 1; i++) {
 
-                            if (states[i + 1] && states[i] === adapter.myIob.getIdWithoutLastPart(states[i + 1])) {
+                            if (states[i + 1] && states[i] === adapter.myIob?.getIdWithoutLastPart(states[i + 1])) {
                                 firewallGroupStateList.push({
                                     label: `[Channel]\t ${states[i]}`,
                                     value: states[i],

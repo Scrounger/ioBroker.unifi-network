@@ -19,8 +19,8 @@ export var wlan;
                 write: true,
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.wlan.enable]`;
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.wlanConfig)}/${device._id.trim()}`, { enabled: val }, 'PUT');
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `wlan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.wlanConfig)}/${device._id?.trim()}`, { enabled: val }, 'PUT');
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `wlan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
                 }
             },
             is_guest: {
@@ -46,7 +46,7 @@ export var wlan;
                 iobType: 'number',
                 name: 'peak of connected clients',
                 conditionToCreateState(objDevice, objChannel, adapter) {
-                    return !objDevice?.is_guest;
+                    return !objDevice.is_guest;
                 },
             },
             connected_guests: {
@@ -54,7 +54,7 @@ export var wlan;
                 iobType: 'number',
                 name: 'connected guests',
                 conditionToCreateState(objDevice, objChannel, adapter) {
-                    return objDevice?.is_guest;
+                    return objDevice.is_guest || false;
                 },
                 valFromProperty: 'current_client_count',
             },

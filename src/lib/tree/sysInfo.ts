@@ -2,7 +2,7 @@ import { myTreeDefinition } from "../myIob";
 import * as myHelper from '../helper.js';
 
 export namespace sysInfo {
-    let keys: string[] = undefined;
+    let keys: string[] | undefined = undefined;
 
     export const idChannel = 'info';
 

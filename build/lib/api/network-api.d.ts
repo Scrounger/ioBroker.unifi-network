@@ -12,6 +12,7 @@ import type { FirewallGroup } from './network-types-firewall.js';
 import { NetworkSite } from './network-types-sites.js';
 import { NetworkMembersGroup } from './network-types-network-members-groups.js';
 import { NetworkSysInfo } from './network-types-sysinfo.js';
+import { myNetworkClient } from '../myTypes.js';
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -143,7 +144,7 @@ export declare class NetworkApi extends EventEmitter {
      * @param filterVal
      * @returns
      */
-    getClientsActive_V2(mac?: string, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean, filterKey?: string | undefined, filterVal?: string | number | boolean | undefined): Promise<NetworkClient[] | undefined>;
+    getClientsActive_V2(mac?: string | undefined, includeTrafficUsage?: boolean, includeUnifiDevices?: boolean, filterKey?: string | undefined, filterVal?: string | number | boolean | undefined): Promise<myNetworkClient[] | undefined>;
     /**
      * List of all configured / known clients on the site
      *
@@ -164,7 +165,7 @@ export declare class NetworkApi extends EventEmitter {
      * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns
      */
-    getWlanConfig(wlan_id?: any): Promise<NetworkWlanConfig[] | undefined>;
+    getWlanConfig(wlan_id?: string | undefined): Promise<NetworkWlanConfig[] | undefined>;
     /**
      * API V2 - List all WLan configurations
      *
@@ -177,7 +178,7 @@ export declare class NetworkApi extends EventEmitter {
      * @param network_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
-    getLanConfig(network_id?: any): Promise<NetworkWlanConfig[] | undefined>;
+    getLanConfig(network_id?: string | undefined): Promise<NetworkWlanConfig[] | undefined>;
     /**
      * API V2 - List all Lan configurations
      *
@@ -190,14 +191,14 @@ export declare class NetworkApi extends EventEmitter {
      * @param model
      * @returns
      */
-    getDeviceModels_V2(model?: string): Promise<NetworkDeviceModels[] | undefined>;
+    getDeviceModels_V2(model?: string | undefined): Promise<NetworkDeviceModels[] | undefined>;
     /**
      * List all LAN configurations
      *
      * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
-    getFirewallGroup(firewallGroup_id?: any): Promise<FirewallGroup[] | undefined>;
+    getFirewallGroup(firewallGroup_id?: string | undefined): Promise<FirewallGroup[] | undefined>;
     /**
      * List all network member groups
      *
@@ -215,8 +216,8 @@ export declare class NetworkApi extends EventEmitter {
      * @param end report end timestamp
      * @returns
      */
-    getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL', mac?: string, start?: number, end?: number): Promise<NetworkReportStats[] | undefined>;
-    getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number, end?: number, macs?: string[]): Promise<Record<string, any>>;
+    getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs?: (keyof NetworkReportStats)[] | 'ALL' | undefined, mac?: string | undefined, start?: number | undefined, end?: number | undefined): Promise<NetworkReportStats[] | undefined>;
+    getSystemLog(type: SystemLogType, page_number?: number, pages_size?: number, start?: number | undefined, end?: number | undefined, macs?: string[] | undefined): Promise<Record<string, any> | undefined>;
     getSysInfo(): Promise<NetworkSysInfo | undefined>;
     getControllerVersion(): Promise<string | undefined>;
     /**
@@ -235,7 +236,7 @@ export declare class NetworkApi extends EventEmitter {
     getBackup(type: 'full' | 'network' | 'users' | 'protect' | 'uos'): Promise<any>;
     getApiEndpoint(endpoint: ApiEndpoints): string;
     getApiEndpoint_V2(endpoint: ApiEndpoints_V2): string;
-    checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id?: string | undefined): Promise<void>;
+    checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>> | undefined, logPrefix: string, message: string, id?: string | undefined): Promise<void>;
     launchEventsWs(): Promise<boolean>;
     wsSendPing(): void;
 }

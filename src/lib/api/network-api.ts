@@ -22,6 +22,7 @@ import { NetworkSite } from './network-types-sites.js';
 import { NetworkMembersGroup } from './network-types-network-members-groups.js';
 import { NetworkSysInfo } from './network-types-sysinfo.js';
 import moment from 'moment';
+import { myNetworkClient } from '../myTypes.js';
 
 export type Nullable<T> = T | null;
 
@@ -455,7 +456,7 @@ export class NetworkApi extends EventEmitter {
         try {
             const response = await this.retrieve(url, options);
 
-            if (this.responseOk(response?.statusCode)) {
+            if (response && this.responseOk(response?.statusCode)) {
                 const data = await response.body.json() as Record<string, string>;
 
                 if (data) {
@@ -735,7 +736,7 @@ export class NetworkApi extends EventEmitter {
      * @param filterVal
      * @returns 
      */
-    public async getClientsActive_V2(mac: string = undefined, includeTrafficUsage: boolean = true, includeUnifiDevices: boolean = true, filterKey: string | undefined = undefined, filterVal: string | number | boolean | undefined = undefined): Promise<NetworkClient[] | undefined> {
+    public async getClientsActive_V2(mac: string | undefined = undefined, includeTrafficUsage: boolean = true, includeUnifiDevices: boolean = true, filterKey: string | undefined = undefined, filterVal: string | number | boolean | undefined = undefined): Promise<myNetworkClient[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getClientsActive_V2]`
 
         try {
@@ -744,9 +745,9 @@ export class NetworkApi extends EventEmitter {
 
             if (res && res.length > 0) {
                 if (!filterKey) {
-                    return res as NetworkClient[];
+                    return res as myNetworkClient[];
                 } else {
-                    return (res as NetworkClient[]).filter(x => x[filterKey] === filterVal);
+                    return (res as myNetworkClient[]).filter((x: myNetworkClient) => x[filterKey as keyof myNetworkClient] === filterVal);
                 }
             }
         } catch (error: any) {
@@ -807,7 +808,7 @@ export class NetworkApi extends EventEmitter {
      * @param wlan_id optional: wlan id to receive only the configuration for this wlan
      * @returns 
      */
-    public async getWlanConfig(wlan_id = undefined): Promise<NetworkWlanConfig[] | undefined> {
+    public async getWlanConfig(wlan_id: string | undefined = undefined): Promise<NetworkWlanConfig[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`
 
         try {
@@ -850,7 +851,7 @@ export class NetworkApi extends EventEmitter {
      * @param network_id optional: network id to receive only the configuration for this wlan
      * @returns 
      */
-    public async getLanConfig(network_id = undefined): Promise<NetworkWlanConfig[] | undefined> {
+    public async getLanConfig(network_id: string | undefined = undefined): Promise<NetworkWlanConfig[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getLanConfig]`
 
         try {
@@ -893,7 +894,7 @@ export class NetworkApi extends EventEmitter {
      * @param model
      * @returns 
      */
-    public async getDeviceModels_V2(model: string = undefined): Promise<NetworkDeviceModels[] | undefined> {
+    public async getDeviceModels_V2(model: string | undefined = undefined): Promise<NetworkDeviceModels[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getWlanConfig]`
 
         try {
@@ -915,7 +916,7 @@ export class NetworkApi extends EventEmitter {
      * @param firewallGroup_id optional: network id to receive only the configuration for this wlan
      * @returns 
      */
-    public async getFirewallGroup(firewallGroup_id = undefined): Promise<FirewallGroup[] | undefined> {
+    public async getFirewallGroup(firewallGroup_id: string | undefined = undefined): Promise<FirewallGroup[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getFirewallGroup]`
 
         try {
@@ -963,7 +964,7 @@ export class NetworkApi extends EventEmitter {
      * @param end report end timestamp
      * @returns 
      */
-    public async getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs: (keyof NetworkReportStats)[] | 'ALL' = undefined, mac: string = undefined, start: number = undefined, end: number = undefined): Promise<NetworkReportStats[] | undefined> {
+    public async getReportStats(type: NetworkReportType, interval: NetworkReportInterval, attrs: (keyof NetworkReportStats)[] | 'ALL' | undefined = undefined, mac: string | undefined = undefined, start: number | undefined = undefined, end: number | undefined = undefined): Promise<NetworkReportStats[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getReportStats]`
 
         try {
@@ -1020,7 +1021,7 @@ export class NetworkApi extends EventEmitter {
         return undefined;
     }
 
-    public async getSystemLog(type: SystemLogType, page_number: number = 0, pages_size: number = 10, start: number = undefined, end: number = undefined, macs: string[] = undefined): Promise<Record<string, any>> {
+    public async getSystemLog(type: SystemLogType, page_number: number = 0, pages_size: number = 10, start: number | undefined = undefined, end: number | undefined = undefined, macs: string[] | undefined = undefined): Promise<Record<string, any> | undefined> {
         const logPrefix = `[${this.logPrefix}.getSystemLog]`
 
         try {
@@ -1163,7 +1164,7 @@ export class NetworkApi extends EventEmitter {
     public getApiEndpoint(endpoint: ApiEndpoints): string {
         //https://ubntwiki.com/products/software/unifi-controller/api
 
-        let endpointSuffix: string;
+        let endpointSuffix: string | undefined;
         let endpointPrefix: string = this.isUnifiOs ? '/proxy/network' : '';
 
         switch (endpoint) {
@@ -1236,7 +1237,7 @@ export class NetworkApi extends EventEmitter {
             return '';
         }
 
-        this.log.silly(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
+        this.log.silly?.(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
 
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`
     }
@@ -1304,7 +1305,7 @@ export class NetworkApi extends EventEmitter {
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`
     }
 
-    public async checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>>, logPrefix: string, message: string, id: string | undefined = undefined): Promise<void> {
+    public async checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>> | undefined, logPrefix: string, message: string, id: string | undefined = undefined): Promise<void> {
         if (result) {
             if (id) {
                 await this.adapter.setState(id, { ack: true });
@@ -1460,7 +1461,10 @@ export class NetworkApi extends EventEmitter {
                     }
                 }
 
-                ws.removeListener('message', messageHandler);
+                if (messageHandler) {
+                    ws.removeListener('message', messageHandler);
+                }
+
                 ws.terminate();
             });
 
@@ -1486,7 +1490,7 @@ export class NetworkApi extends EventEmitter {
             ws.on('pong', messageHandler = (data: string): void => {
                 try {
                     this.emit('pong');
-                    this.log.silly(`pong received`);
+                    this.log.silly?.(`pong received`);
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
@@ -1510,7 +1514,7 @@ export class NetworkApi extends EventEmitter {
         try {
             if (this._eventsWs && this._eventsWs !== null) {
                 this._eventsWs.ping();
-                this.log.silly(`ping sent`);
+                this.log.silly?.(`ping sent`);
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

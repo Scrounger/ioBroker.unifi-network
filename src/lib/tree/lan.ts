@@ -4,12 +4,12 @@ import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from "../myIob.js";
 
 export namespace lan {
-    let keys: string[] = undefined;
+    let keys: string[] | undefined = undefined;
 
     export const idChannel = 'lan';
     export const nameChannel = 'LAN';
 
-    export function get(): { [key: string]: myTreeDefinition } {
+    export function get(): { [key: string]: myTreeDefinition<any, NetworkLanConfig, ioBroker.myAdapter> } {
         return {
             connected_clients: {
                 id: 'connected_clients',
@@ -37,9 +37,9 @@ export namespace lan {
                 async writeVal(val: boolean, id: string, device: NetworkLanConfig, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.lan.enable]`;
 
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id.trim()}`, { enabled: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id?.trim()}`, { enabled: val }, 'PUT');
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
                 }
             },
             ip_subnet: {
@@ -56,9 +56,9 @@ export namespace lan {
                 async writeVal(val: boolean, id: string, device: NetworkLanConfig, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.lan.internet_enabled]`;
 
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id.trim()}`, { internet_access_enabled: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.lanConfig)}/${device._id?.trim()}`, { internet_access_enabled: val }, 'PUT');
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `internet access of lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `internet access of lan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
                 }
             },
             name: {

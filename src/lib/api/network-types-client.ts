@@ -58,8 +58,8 @@ export interface NetworkClient {
     last_ipv6?: string[]
     last_radio?: string
     last_seen: number
-    last_uplink_mac: string
-    last_uplink_name: string
+    last_uplink_mac?: string
+    last_uplink_name?: string
     latest_assoc_time: number
     local_dns_record: string
     local_dns_record_enabled: boolean

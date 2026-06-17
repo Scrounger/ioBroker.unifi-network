@@ -42,6 +42,7 @@ export declare const WebSocketEvent: {
         Deleted: string[];
         RougeDetected: string[];
         Authorization: string[];
+        RadarDetected: string[];
     };
     client: {
         Connected: string[];

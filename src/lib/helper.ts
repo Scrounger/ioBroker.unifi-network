@@ -8,7 +8,7 @@ export function getObjectByString(path: string, obj: any, separator = '.'): any 
 
 export function getAllowedCommonStates(path: string, obj: any, separator = '.'): any {
     const objByString = getObjectByString(path, obj, separator);
-    const states = {};
+    const states: any = {};
 
     if (objByString) {
         for (const str of objByString) {
@@ -32,11 +32,11 @@ export function zeroPad(source: any, places: number): string {
  * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
  * @returns
  */
-export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myTreeDefinition }): string[] {
-    const keys = [];
+export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myTreeDefinition<any, any, any> }): string[] {
+    const keys: any = [];
 
     // Hilfsfunktion für rekursive Durchsuchung des Objekts
-    function recurse(currentObj, prefix = ''): void {
+    function recurse(currentObj: any, prefix = ''): void {
         _.forOwn(currentObj, (value, key) => {
             const fullKey = (prefix ? `${prefix}.${key}` : key).replace('.array', '').replace('.object', '');
 
@@ -65,11 +65,11 @@ export function getAllKeysOfTreeDefinition(treefDefintion: { [key: string]: myTr
     return _.uniq(keys);
 }
 
-export function getAllIdsOfTreeDefinition(treefDefintion: { [key: string]: myTreeDefinition }): string[] {
-    const keys = [];
+export function getAllIdsOfTreeDefinition(treefDefintion: { [key: string]: myTreeDefinition<any, any, any> }): string[] {
+    const keys: any = [];
 
     // Hilfsfunktion für rekursive Durchsuchung des Objekts
-    function recurse(currentObj, prefix = ''): void {
+    function recurse(currentObj: any, prefix = ''): void {
         _.forOwn(currentObj, (value, key) => {
             let fullKey = prefix ? `${prefix}.${key}` : key;
 
@@ -102,14 +102,14 @@ export function getAllIdsOfTreeDefinition(treefDefintion: { [key: string]: myTre
     return _.uniq(keys);
 }
 
-export function radioToFrequency(radioVal: string, adapter: ioBroker.Adapter): string {
+export function radioToFrequency(radioVal: string | undefined, adapter: ioBroker.Adapter): string | null {
     if (radioVal === 'ng') {
         return '2.4 GHz'
     } else if (radioVal === 'na') {
         return '5 GHz'
     } else {
         adapter.log.warn(`[myHelper.radioToFrequency] radio ${radioVal} interpreter not implemented! Please create an issue on github.`);
-        return radioVal
+        return radioVal ? radioVal : null;
     }
 }
 

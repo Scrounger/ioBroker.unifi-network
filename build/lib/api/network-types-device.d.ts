@@ -811,7 +811,7 @@ interface NetworkDeviceMonitor {
     target: string;
     type: string;
 }
-interface NetworkDeviceWanStats {
+export interface NetworkDeviceWanStats {
     autoneg: boolean;
     availability: number;
     "bytes-r": number;

@@ -1,17 +1,18 @@
 import _ from 'lodash';
-import type { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable, NetworkDeviceRadioTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats, NetworkDeviceSystemStats } from '../api/network-types-device.js';
+import type { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable, NetworkDeviceRadioTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats, NetworkDeviceSystemStats, NetworkDeviceWanStats } from '../api/network-types-device.js';
 import * as myHelper from '../helper.js';
 import { myTreeDefinition, myTreeState } from '../myIob.js';
 import { ApiEndpoints } from '../api/network-api.js';
+import { AnyARecord } from 'node:dns';
 
 
 export namespace device {
-    let keys: string[] = undefined;
+    let keys: string[] | undefined = undefined;
 
     export const idChannel = 'devices';
     export const nameChannel = 'unifi devices';
 
-    const _WAN_PROPERTIES: { [key: string]: myTreeState } = {
+    const _WAN_PROPERTIES: { [key: string]: myTreeDefinition<any, NetworkDevice, ioBroker.myAdapter> } = {
         current_download: {
             iobType: 'number',
             name: 'current download rate',
@@ -85,19 +86,21 @@ export namespace device {
                 const logPrefix = `[tree.device.speedtest_run]:`;
 
                 try {
-                    const wan_interface = adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id));
-                    const interface_name = device[wan_interface].ifname;
+                    const wan_interface = adapter.myIob?.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id));
 
-                    const payload: any = { cmd: 'speedtest' }
+                    if (wan_interface && adapter.myIob?.hasKey(device, wan_interface)) {
+                        const interface_name = (device[wan_interface] as NetworkDeviceWanStats).ifname;
 
-                    if (interface_name) {
-                        payload.interface_name = interface_name
+                        const payload: any = { cmd: 'speedtest' }
+
+                        if (interface_name) {
+                            payload.interface_name = interface_name
+                        }
+
+                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, payload);
+
+                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `run speedtest (mac: ${device.mac}, wan: ${wan_interface}, interface: ${interface_name})`, id);
                     }
-
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, payload);
-
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `run speedtest (mac: ${device.mac}, wan: ${wan_interface}, interface: ${interface_name})`, id);
-
                 } catch (error: any) {
                     adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                 }
@@ -108,7 +111,7 @@ export namespace device {
         }
     }
 
-    const _ISP_UPTIME_PROPERTIES: { [key: string]: myTreeState } = {
+    const _ISP_UPTIME_PROPERTIES: { [key: string]: myTreeDefinition<any, NetworkDevice, ioBroker.myAdapter> } = {
         availability: {
             iobType: 'number',
             name: 'availability',
@@ -125,7 +128,7 @@ export namespace device {
             def: 0,
             async readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
                 // if downtime increase, isp connection is down
-                const isOnlineId = `${adapter.myIob.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                const isOnlineId = `${adapter.myIob?.getIdWithoutLastPart(id)}.isOnline`;
                 if (await adapter.objectExists(isOnlineId)) {
                     await adapter.setStateChangedAsync(isOnlineId, false, true);
                 }
@@ -146,7 +149,7 @@ export namespace device {
             def: 0,
             async readVal(val: number, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
                 // if uptime increase, isp connection is up
-                const isOnlineId = `${adapter.myIob.getIdWithoutLastPart(id)}.${_ISP_UPTIME_PROPERTIES.isOnline.id}`;
+                const isOnlineId = `${adapter.myIob?.getIdWithoutLastPart(id)}.isOnline`;
                 if (await adapter.objectExists(isOnlineId)) {
                     await adapter.setStateChangedAsync(isOnlineId, true, true);
                 }
@@ -156,7 +159,7 @@ export namespace device {
         },
     }
 
-    const _ISP_GEO_INFO_PROPERTIES: { [key: string]: myTreeState } = {
+    const _ISP_GEO_INFO_PROPERTIES: { [key: string]: myTreeDefinition<any, NetworkDevice, ioBroker.myAdapter> } = {
         address: {
             id: 'ip',
             iobType: 'string',
@@ -183,7 +186,7 @@ export namespace device {
         }
     }
 
-    export function get(): { [key: string]: myTreeDefinition } {
+    export function get(): { [key: string]: myTreeDefinition<any, any, ioBroker.myAdapter> } {
         return {
             connected_clients: {
                 id: 'connected_clients',
@@ -211,9 +214,9 @@ export namespace device {
                 async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.device.disabled]:`;
 
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { disabled: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { disabled: val }, 'PUT');
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `${val ? 'disable' : 'enable'} access point '${device.name}' (mac: ${device.mac})`);
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `${val ? 'disable' : 'enable'} access point '${device.name}' (mac: ${device.mac})`);
                 },
             },
             fan_level: {
@@ -243,7 +246,7 @@ export namespace device {
                 },
                 async readVal(val: string, adapter: ioBroker.myAdapter, device: NetworkDevice, channel: NetworkDevice, id: string): Promise<ioBroker.StateValue> {
                     if (val && adapter.config.deviceImageDownload) {
-                        const deviceModels = await adapter.ufn.getDeviceModels_V2();
+                        const deviceModels = await adapter.ufn?.getDeviceModels_V2();
                         const find = _.find(deviceModels, (x) => x.model_name.includes(val));
 
                         if (find) {
@@ -302,9 +305,9 @@ export namespace device {
                 async writeVal(val: string, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.device.led_override]:`;
 
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `LED override to '${val}' - '${device.name}' (mac: ${device.mac})`);
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `LED override to '${val}' - '${device.name}' (mac: ${device.mac})`);
                 },
             },
             last_seen: {
@@ -331,9 +334,9 @@ export namespace device {
                 async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.device.restart]:`;
 
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'restart', mac: device.mac.toLowerCase() });
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `'${device.name}' (mac: ${device.mac})`, id);
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `'${device.name}' (mac: ${device.mac})`, id);
                 },
             },
             rx_bytes: {
@@ -399,34 +402,36 @@ export namespace device {
                             const logPrefix = `[tree.devices.port.port_switchPoe]`;
 
                             try {
-                                const port_idx: number = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
-                                const port_overrides = device.port_overrides;
+                                if (adapter.myIob) {
+                                    const port_idx: number = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
+                                    const port_overrides = device.port_overrides;
 
-                                if (port_overrides && port_overrides.length > 0) {
-                                    const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
+                                    if (port_overrides && port_overrides.length > 0) {
+                                        const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
 
-                                    if (indexOfPort !== -1) {
+                                        if (indexOfPort !== -1) {
 
-                                        // port_overrides has settings for this port
-                                        if (port_overrides[indexOfPort].portconf_id) {
-                                            // ethernet profil is configured, change poe not possible
-                                            adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
-                                            return;
+                                            // port_overrides has settings for this port
+                                            if (port_overrides[indexOfPort].portconf_id) {
+                                                // ethernet profil is configured, change poe not possible
+                                                adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
+                                                return;
+                                            } else {
+                                                port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
+                                            }
                                         } else {
+                                            // port_overrides has no settings for this port
+                                            adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
                                             port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
                                         }
+
+                                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
+
+                                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `command sent: switch poe power - '${val ? 'on' : 'off'}' '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`);
+
                                     } else {
-                                        // port_overrides has no settings for this port
-                                        adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
-                                        port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
+                                        adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
                                     }
-
-                                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
-
-                                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `command sent: switch poe power - '${val ? 'on' : 'off'}' '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`);
-
-                                } else {
-                                    adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
                                 }
                             } catch (error: any) {
                                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -448,24 +453,25 @@ export namespace device {
                             const logPrefix = `[tree.device.port.cyclePoePower]`;
 
                             try {
-                                const port_idx: number = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
-                                const port_table = device.port_table;
+                                if (adapter.myIob) {
+                                    const port_idx: number = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
+                                    const port_table = device.port_table;
 
-                                if (port_table && port_table.length > 0) {
-                                    const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
+                                    if (port_table && port_table.length > 0) {
+                                        const indexOfPort = port_table.findIndex(x => x.port_idx === port_idx);
 
-                                    if (indexOfPort !== -1) {
-                                        if (!port_table[indexOfPort].poe_enable) {
-                                            adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: cycle poe power not possible, because poe is not enabled for this port!`);
-                                            return;
+                                        if (indexOfPort !== -1) {
+                                            if (!port_table[indexOfPort].poe_enable) {
+                                                adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: cycle poe power not possible, because poe is not enabled for this port!`);
+                                                return;
+                                            }
                                         }
                                     }
+
+                                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'power-cycle', port_idx: port_idx, mac: device.mac.toLowerCase() });
+
+                                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `cycle poe power - '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`, id);
                                 }
-
-                                const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}`, { cmd: 'power-cycle', port_idx: port_idx, mac: device.mac.toLowerCase() });
-
-                                await adapter.ufn.checkCommandSuccessful(result, logPrefix, `cycle poe power - '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`, id);
-
                             } catch (error: any) {
                                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                             }
@@ -595,26 +601,31 @@ export namespace device {
                         write: true,
                         states: ['low', 'medium', 'high', 'auto', 'disabled', 'custom'],
                         async writeVal(val: string, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
-                            const channelNr = adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id));
-                            const logPrefix = `[tree.device.radio_table.${channelNr}.tx_power_mode]:`;
 
-                            try {
-                                if (device.state === 1) {
-                                    const txPowerModes = device.radio_table.map(item => ({
-                                        name: item.name,            // is the id of channel, so we need to send it also
-                                        tx_power_mode: item.tx_power_mode,
-                                    }));
+                            if (adapter.myIob) {
+                                const channelNr = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)));
+                                const logPrefix = `[tree.device.radio_table.${channelNr}.tx_power_mode]:`;
 
-                                    txPowerModes[channelNr].tx_power_mode = val;
+                                try {
+                                    if (device.state === 1) {
+                                        const txPowerModes = device.radio_table?.map(item => ({
+                                            name: item.name,            // is the id of channel, so we need to send it also
+                                            tx_power_mode: item.tx_power_mode,
+                                        }));
 
-                                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { radio_table: txPowerModes }, 'PUT');
+                                        if (txPowerModes) {
+                                            txPowerModes[channelNr].tx_power_mode = val;
 
-                                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `changed power mode to '${val}' of channel '${txPowerModes[channelNr].name}' for access point '${device.name}' (mac: ${device.mac})`);
-                                } else {
-                                    adapter.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): changing value not possible, device is in state '${device.state}'`);
+                                            const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { radio_table: txPowerModes }, 'PUT');
+
+                                            await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `changed power mode to '${val}' of channel '${txPowerModes[channelNr].name}' for access point '${device.name}' (mac: ${device.mac})`);
+                                        }
+                                    } else {
+                                        adapter.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): changing value not possible, device is in state '${device.state}'`);
+                                    }
+                                } catch (error: any) {
+                                    adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                                 }
-                            } catch (error: any) {
-                                adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                             }
                         },
                     },
@@ -822,9 +833,9 @@ export namespace device {
                     const logPrefix = `[tree.device.upgrade]:`;
 
                     if (device.upgradable) {
-                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}/upgrade`, { mac: device.mac.toLowerCase() });
+                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceCommand)}/upgrade`, { mac: device.mac.toLowerCase() });
 
-                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `upgrade to new firmware version - '${device.name}' (mac: ${device.mac})`, id);
+                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `upgrade to new firmware version - '${device.name}' (mac: ${device.mac})`, id);
 
                     } else {
                         adapter.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): upgrade not possible, no new firmware avaiable`);
@@ -995,14 +1006,14 @@ export namespace device {
                     WAN: {
                         idChannel: 'wan1',
                         name(objDevice: NetworkDevice, objChannel: NetworkDeviceWanUptimeStats, adapter: ioBroker.myAdapter): string {
-                            return objDevice.active_geo_info.WAN.isp_name
+                            return objDevice.active_geo_info?.WAN.isp_name || ''
                         },
                         object: _ISP_UPTIME_PROPERTIES
                     },
                     WAN2: {
                         idChannel: 'wan2',
                         name(objDevice: NetworkDevice, objChannel: NetworkDeviceWanUptimeStats, adapter: ioBroker.myAdapter): string {
-                            return objDevice.active_geo_info.WAN2.isp_name
+                            return objDevice.active_geo_info?.WAN2.isp_name || ''
                         },
                         object: _ISP_UPTIME_PROPERTIES
                     }

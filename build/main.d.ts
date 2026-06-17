@@ -4,10 +4,10 @@ import type { NetworkEvent } from './lib/api/network-types.js';
 import { type myCache } from './lib/myTypes.js';
 import { myIob } from './lib/myIob.js';
 declare class UnifiNetwork extends utils.Adapter {
-    ufn: NetworkApi;
-    myIob: myIob;
+    ufn: NetworkApi | undefined;
+    myIob: myIob | undefined;
     isConnected: boolean;
-    controllerVersion: string;
+    controllerVersion: string | undefined;
     aliveTimeout: ioBroker.Timeout | undefined;
     pingTimeout: ioBroker.Timeout | undefined;
     aliveTimestamp: number;

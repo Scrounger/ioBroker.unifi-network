@@ -4,12 +4,12 @@ import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from "../myIob.js";
 
 export namespace wlan {
-    let keys: string[] = undefined;
+    let keys: string[] | undefined = undefined;
 
     export const idChannel = 'wlan';
     export const nameChannel = 'WLAN';
 
-    export function get(): { [key: string]: myTreeDefinition } {
+    export function get(): { [key: string]: myTreeDefinition<any, NetworkWlanConfig, ioBroker.myAdapter> } {
         return {
             current_access_point_count: {
                 id: 'access_point_count',
@@ -24,9 +24,9 @@ export namespace wlan {
                 async writeVal(val: boolean, id: string, device: NetworkWlanConfig, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.wlan.enable]`;
 
-                    const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.wlanConfig)}/${device._id.trim()}`, { enabled: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.wlanConfig)}/${device._id?.trim()}`, { enabled: val }, 'PUT');
 
-                    await adapter.ufn.checkCommandSuccessful(result, logPrefix, `wlan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
+                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `wlan ${val ? 'enabled' : 'disabled'} - '${device.name}' (id: ${device._id})`);
                 }
             },
             is_guest: {
@@ -52,7 +52,7 @@ export namespace wlan {
                 iobType: 'number',
                 name: 'peak of connected clients',
                 conditionToCreateState(objDevice: NetworkWlanConfig, objChannel: NetworkWlanConfig, adapter: ioBroker.myAdapter): boolean {
-                    return !objDevice?.is_guest
+                    return !objDevice.is_guest
                 },
             },
             connected_guests: {
@@ -60,7 +60,7 @@ export namespace wlan {
                 iobType: 'number',
                 name: 'connected guests',
                 conditionToCreateState(objDevice: NetworkWlanConfig, objChannel: NetworkWlanConfig, adapter: ioBroker.myAdapter): boolean {
-                    return objDevice?.is_guest
+                    return objDevice.is_guest || false
                 },
                 valFromProperty: 'current_client_count',
             },

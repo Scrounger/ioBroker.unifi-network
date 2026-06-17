@@ -6,7 +6,7 @@ import type { FirewallGroup } from "./api/network-types-firewall.js";
 export declare const disconnectDebounceList: {
     [mac: string]: {
         lc: number;
-        timeout: ioBroker.Timeout;
+        timeout: ioBroker.Timeout | null | undefined;
     };
 };
 export declare const eventHandler: {

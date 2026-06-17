@@ -4,11 +4,11 @@ import * as myHelper from '../../helper.js';
 import type { myTreeDefinition } from "../../myIob.js";
 
 export namespace group {
-    let keys: string[] = undefined;
+    let keys: string[] | undefined = undefined;
 
     export const idChannel = 'firewall.groups';
 
-    export function get(): { [key: string]: myTreeDefinition } {
+    export function get(): { [key: string]: myTreeDefinition<any, FirewallGroup, ioBroker.myAdapter> } {
         return {
             name: {
                 iobType: 'string',
@@ -19,9 +19,9 @@ export namespace group {
                     const logPrefix = `[firewallGroup.name]`;
 
                     try {
-                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
+                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { name: val }, 'PUT');
 
-                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
+                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'name' set to '${val}' (id: ${device._id})`);
                     } catch (error: any) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                     }
@@ -39,9 +39,9 @@ export namespace group {
 
                     try {
                         const memObj = JSON.parse(val);
-                        const result = await adapter.ufn.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
+                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.firewallGroup)}/${device._id.trim()}`, { group_members: memObj }, 'PUT');
 
-                        await adapter.ufn.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
+                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `firewall group '${device.name}' - 'members' set to '${val}' (id: ${device._id})`);
 
                     } catch (error: any) {
                         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);

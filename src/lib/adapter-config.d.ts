@@ -63,8 +63,8 @@ declare global {
 
 		interface myAdapter extends ioBroker.Adapter {
 			// Functions must be public
-			ufn: NetworkApi;
-			myIob: myIob;
+			ufn: NetworkApi | undefined;
+			myIob: myIob | undefined;
 			cache: myCache;
 
 			checkImageDownload(idImageUrl: string, url: string): Promise<void>

@@ -341,7 +341,7 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.retrievData]`;
         try {
             const response = await this.retrieve(url, options);
-            if (this.responseOk(response?.statusCode)) {
+            if (response && this.responseOk(response?.statusCode)) {
                 const data = await response.body.json();
                 if (data) {
                     return data;
@@ -571,7 +571,7 @@ export class NetworkApi extends EventEmitter {
                     return res;
                 }
                 else {
-                    return res.filter(x => x[filterKey] === filterVal);
+                    return res.filter((x) => x[filterKey] === filterVal);
                 }
             }
         }
@@ -993,7 +993,7 @@ export class NetworkApi extends EventEmitter {
         if (!endpointSuffix) {
             return '';
         }
-        this.log.silly(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
+        this.log.silly?.(`getApiEndpoint: ${this.controllerUrl}${endpointPrefix}${endpointSuffix}`);
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`;
     }
     getApiEndpoint_V2(endpoint) {
@@ -1158,7 +1158,9 @@ export class NetworkApi extends EventEmitter {
                         this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                     }
                 }
-                ws.removeListener('message', messageHandler);
+                if (messageHandler) {
+                    ws.removeListener('message', messageHandler);
+                }
                 ws.terminate();
             });
             // Process messages as they come in.
@@ -1182,7 +1184,7 @@ export class NetworkApi extends EventEmitter {
             ws.on('pong', messageHandler = (data) => {
                 try {
                     this.emit('pong');
-                    this.log.silly(`pong received`);
+                    this.log.silly?.(`pong received`);
                 }
                 catch (error) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
@@ -1202,7 +1204,7 @@ export class NetworkApi extends EventEmitter {
         try {
             if (this._eventsWs && this._eventsWs !== null) {
                 this._eventsWs.ping();
-                this.log.silly(`ping sent`);
+                this.log.silly?.(`ping sent`);
             }
         }
         catch (error) {

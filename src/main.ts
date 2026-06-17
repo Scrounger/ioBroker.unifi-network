@@ -30,12 +30,12 @@ import { NetworkSysInfo } from './lib/api/network-types-sysinfo.js';
 import { migration } from './lib/migration.js';
 
 class UnifiNetwork extends utils.Adapter {
-	ufn: NetworkApi = undefined;
-	myIob: myIob;
+	ufn: NetworkApi | undefined;
+	myIob: myIob | undefined;
 
 	isConnected: boolean = false;
 
-	controllerVersion: string = '';
+	controllerVersion: string | undefined = undefined;
 
 	aliveTimeout: ioBroker.Timeout | undefined = undefined;
 	pingTimeout: ioBroker.Timeout | undefined = undefined;
@@ -131,7 +131,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.myIob.findMissingTranslation();
 			} else {
 				this.log.error(`${logPrefix} adapter config settings wrong!`);
-				await this.stop({ reason: 'adapter config settings wrong' });
+				await this.stop?.({ reason: 'adapter config settings wrong' });
 			}
 
 		} catch (error: any) {
@@ -148,7 +148,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onUnload]:';
 
 		try {
-			this.clearTimeout(this.ufn.connectionTimeout);
+			this.clearTimeout(this.ufn?.connectionTimeout);
 
 			this.removeListener('message', this.eventListener);
 			this.removeListener('pong', this.pongListener);
@@ -201,7 +201,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (state) {
 				if (state.from.includes(this.namespace)) {
 					// internal changes
-					if (this.myIob.getIdLastPart(id) === 'imageUrl') {
+					if (this.myIob?.getIdLastPart(id) === 'imageUrl') {
 						if (this.config.clientImageDownload && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`))) {
 							await this.downloadImage(state.val as string, [this.myIob.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update client image`);
@@ -209,7 +209,7 @@ class UnifiNetwork extends utils.Adapter {
 							await this.downloadImage(state.val as string, [this.myIob.getIdWithoutLastPart(id)]);
 							this.log.debug(`${logPrefix} state '${id}' changed -> update device image`);
 						}
-					} else if (this.myIob.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelVpn}.`))) {
+					} else if (this.myIob?.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelVpn}.`))) {
 						const macOrIp = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id)).replaceAll('_', '.');
 
 						if (state.val !== this.cache.isOnline[macOrIp].val) {
@@ -235,10 +235,10 @@ class UnifiNetwork extends utils.Adapter {
 
 					if (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`)) {
 						// Client state changed
-						const mac = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+						const mac = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 						const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
-						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+						if (this.myIob?.statesWithWriteFunction[writeValKey] && mac) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.clients[mac], this);
 						} else {
 							this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
@@ -248,34 +248,34 @@ class UnifiNetwork extends utils.Adapter {
 						const mac = id.replace(`${this.namespace}.${tree.device.idChannel}.`, '').split('.')[0];
 
 						const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
-						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+						if (this.myIob?.statesWithWriteFunction[writeValKey]) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.devices[mac], this);
 						} else {
 							this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.wlan.idChannel}.`)) {
-						const wlan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+						const wlan_id = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 						const writeValKey = id.replace(`.${wlan_id}.`, '.').replace(`${this.namespace}.`, '');
-						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+						if (this.myIob?.statesWithWriteFunction[writeValKey] && wlan_id) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.wlan[wlan_id], this);
 						} else {
 							this.log.debug(`${logPrefix} wlan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
-						const lan_id = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+						const lan_id = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 						const writeValKey = id.replace(`.${lan_id}.`, '.').replace(`${this.namespace}.`, '');
-						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+						if (this.myIob?.statesWithWriteFunction[writeValKey] && lan_id) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.lan[lan_id], this);
 						} else {
 							this.log.debug(`${logPrefix} lan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
 						}
 					} else if (id.startsWith(`${this.namespace}.${tree.firewall.group.idChannel}.`)) {
-						const groupId = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
+						const groupId = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
 
 						const writeValKey = id.replace(`.${groupId}.`, '.').replace(`${this.namespace}.`, '');
-						if (this.myIob.statesWithWriteFunction[writeValKey]) {
+						if (this.myIob?.statesWithWriteFunction[writeValKey] && groupId) {
 							await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewall.groups[groupId], this);
 						} else {
 							this.log.debug(`${logPrefix} firewall group state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
@@ -442,7 +442,7 @@ class UnifiNetwork extends utils.Adapter {
 						await this.establishConnection();
 					} else {
 						this.log.error(`${logPrefix} Connection to the Unifi-Network controller is down for more then ${(this.config.expertConnectionMaxRetries || 200) * (this.config.expertAliveInterval || 30)}s, stopping the adapter.`);
-						await this.stop({ reason: 'too many connection retries' });
+						await this.stop?.({ reason: 'too many connection retries' });
 					}
 					return;
 				} else {
@@ -497,7 +497,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (!isAdapterStart) {
-				this.ufn.wsSendPing();
+				this.ufn?.wsSendPing();
 			}
 
 			if (this.pingTimeout) {
@@ -522,10 +522,10 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateRealTimeApiData]:';
 
 		try {
-			await this.updateDevices((await this.ufn.getDevices_V2())?.network_devices, isAdapterStart);
+			await this.updateDevices((await this.ufn?.getDevices_V2())?.network_devices, isAdapterStart);
 
 			await this.updateClients(null, isAdapterStart);
-			await this.updateClients(await this.ufn.getClientsHistory_V2() as myNetworkClient[], isAdapterStart, true);
+			await this.updateClients(await this.ufn?.getClientsHistory_V2() as myNetworkClient[], isAdapterStart, true);
 			// await this.updatClientsOffline(await this.ufn.getClients(), isAdapterStart);
 
 			await this.updateLanConfig(null, isAdapterStart);
@@ -537,7 +537,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.firewallRuleConfigEnabled || this.config.firewallGroupConfigEnabled) {
 
 				if (isAdapterStart) {
-					await this.myIob.createOrUpdateChannel(tree.firewall.idChannel, 'firewall', undefined, true);
+					await this.myIob?.createOrUpdateChannel(tree.firewall.idChannel, 'firewall', undefined, true);
 				}
 
 				await this.updateFirewallGroup(null, isAdapterStart);
@@ -566,7 +566,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[updateApiData]:';
 
 		try {
-			await this.updateSysInfo(await this.ufn.getSysInfo(), isAdapterStart);
+			await this.updateSysInfo(await this.ufn?.getSysInfo(), isAdapterStart);
 
 			// only poll if api calls are enabled, that are not covered by the real-time api
 			if (this.config.systemInformationEnabled) {
@@ -596,7 +596,7 @@ class UnifiNetwork extends utils.Adapter {
 				if (this.config.devicesEnabled) {
 
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(tree.device.idChannel, tree.device.nameChannel, undefined, true);
+						await this.myIob?.createOrUpdateChannel(tree.device.idChannel, tree.device.nameChannel, undefined, true);
 					}
 
 					if (data && data !== null) {
@@ -632,7 +632,7 @@ class UnifiNetwork extends utils.Adapter {
 								let dataToProcess = device;
 								if (this.cache.devices[device.mac]) {
 									// filter out unchanged properties
-									dataToProcess = this.myIob.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys()) as NetworkDevice;
+									dataToProcess = this.myIob?.deepDiffBetweenObjects(device, this.cache.devices[device.mac], this, tree.device.getKeys()) as NetworkDevice;
 								}
 
 								if (!_.isEmpty(dataToProcess)) {
@@ -643,8 +643,8 @@ class UnifiNetwork extends utils.Adapter {
 
 									this.log.silly(`${logPrefix} device '${device.name}' (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 
-									await this.myIob.createOrUpdateDevice(idDevice, device.name, `${idDevice}.isOnline`, `${idDevice}.hasError`, undefined, isAdapterStart, true);
-									await this.myIob.createOrUpdateStates(idDevice, tree.device.get(), dataToProcess, device, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device.name, isAdapterStart);
+									await this.myIob?.createOrUpdateDevice(idDevice, device.name, `${idDevice}.isOnline`, `${idDevice}.hasError`, undefined, isAdapterStart, true);
+									await this.myIob?.createOrUpdateStates(idDevice, tree.device.get(), dataToProcess, device, this.config.deviceStatesBlackList, this.config.deviceStatesIsWhiteList, device.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -674,7 +674,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private async updateClients(data: myNetworkClient[] | null = null, isAdapterStart: boolean = false, isOfflineClients: boolean = false): Promise<void> {
+	private async updateClients(data: myNetworkClient[] | null | undefined = null, isAdapterStart: boolean = false, isOfflineClients: boolean = false): Promise<void> {
 		const logPrefix = '[updateClients]:';
 
 		try {
@@ -682,20 +682,20 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (isAdapterStart && !isOfflineClients) {
 					if (this.config.clientsEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannelUsers, tree.client.nameChannelUsers, undefined, true);
+						await this.myIob?.createOrUpdateChannel(tree.client.idChannelUsers, tree.client.nameChannelUsers, undefined, true);
 					}
 
 					if (this.config.guestsEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannelGuests, tree.client.nameChannelGuests, undefined, true);
+						await this.myIob?.createOrUpdateChannel(tree.client.idChannelGuests, tree.client.nameChannelGuests, undefined, true);
 					}
 
 					if (this.config.vpnEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannelVpn, tree.client.nameChannelVpn, undefined, true);
+						await this.myIob?.createOrUpdateChannel(tree.client.idChannelVpn, tree.client.nameChannelVpn, undefined, true);
 					}
 
 					if (this.config.clientsEnabled || this.config.guestsEnabled || this.config.vpnEnabled) {
-						await this.myIob.createOrUpdateChannel(tree.client.idChannel, tree.client.nameChannel, undefined, true);
-						data = await this.ufn.getClientsActive_V2() as myNetworkClient[];
+						await this.myIob?.createOrUpdateChannel(tree.client.idChannel, tree.client.nameChannel, undefined, true);
+						data = await this.ufn?.getClientsActive_V2();
 					} else {
 						if (await this.objectExists(tree.client.idChannel)) {
 							await this.delObjectAsync(tree.client.idChannel, { recursive: true });
@@ -742,7 +742,7 @@ class UnifiNetwork extends utils.Adapter {
 										let dataToProcess = client;
 										if (this.cache.clients[client.mac]) {
 											// filter out unchanged properties
-											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+											dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
 										if (!_.isEmpty(dataToProcess)) {
@@ -760,8 +760,8 @@ class UnifiNetwork extends utils.Adapter {
 												this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 											}
 
-											await this.myIob.createOrUpdateDevice(`${tree.client.idChannelUsers}.${client.mac}`, name, `${tree.client.idChannelUsers}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
-											await this.myIob.createOrUpdateStates(`${tree.client.idChannelUsers}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
+											await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelUsers}.${client.mac}`, name, `${tree.client.idChannelUsers}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
+											await this.myIob?.createOrUpdateStates(`${tree.client.idChannelUsers}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
 										}
 									} else {
 
@@ -787,7 +787,7 @@ class UnifiNetwork extends utils.Adapter {
 										let dataToProcess = client;
 										if (this.cache.clients[client.mac]) {
 											// filter out unchanged properties
-											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+											dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
 										if (!_.isEmpty(dataToProcess)) {
@@ -805,8 +805,8 @@ class UnifiNetwork extends utils.Adapter {
 												this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 											}
 
-											await this.myIob.createOrUpdateDevice(`${tree.client.idChannelGuests}.${client.mac}`, name, `${tree.client.idChannelGuests}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
-											await this.myIob.createOrUpdateStates(`${tree.client.idChannelGuests}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
+											await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelGuests}.${client.mac}`, name, `${tree.client.idChannelGuests}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
+											await this.myIob?.createOrUpdateStates(`${tree.client.idChannelGuests}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
 										}
 
 									} else {
@@ -831,12 +831,12 @@ class UnifiNetwork extends utils.Adapter {
 										}
 
 										const idChannel = client.network_id;
-										await this.myIob.createOrUpdateChannel(`${tree.client.idChannelVpn}.${idChannel}`, client.network_name || '', base64[client.vpn_type] || undefined);
+										await this.myIob?.createOrUpdateChannel(`${tree.client.idChannelVpn}.${idChannel}`, client.network_name, client.vpn_type ? base64[client.vpn_type] : undefined);
 
 										let dataToProcess = client;
 										if (this.cache.vpn[client.ip]) {
 											// filter out unchanged properties
-											dataToProcess = this.myIob.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
+											dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
 										}
 
 										const preparedIp = client.ip.replaceAll('.', '_');
@@ -856,8 +856,8 @@ class UnifiNetwork extends utils.Adapter {
 												this.log.silly(`${logPrefix} vpn ${dataToProcess.name} (ip: ${dataToProcess.ip}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
 											}
 
-											await this.myIob.createOrUpdateDevice(`${tree.client.idChannelVpn}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${tree.client.idChannelVpn}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart, true);
-											await this.myIob.createOrUpdateStates(`${tree.client.idChannelVpn}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
+											await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelVpn}.${idChannel}.${preparedIp}`, client.unifi_device_info_from_ucore?.name || client.name || client.hostname, `${tree.client.idChannelVpn}.${idChannel}.${preparedIp}.isOnline`, undefined, undefined, isAdapterStart, true);
+											await this.myIob?.createOrUpdateStates(`${tree.client.idChannelVpn}.${idChannel}.${preparedIp}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
 										}
 									}
 								}
@@ -930,21 +930,21 @@ class UnifiNetwork extends utils.Adapter {
 				const offlineTimeout = typeOfClient === 'vpn' ? this.config.vpnOfflineTimeout : this.config.clientOfflineTimeout;
 
 				const lastSeenState = clients[id];
-				const isOnlineState = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`);
-				const mac = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.mac`);
-				const ip = await this.getStateAsync(`${this.myIob.getIdWithoutLastPart(id)}.ip`);
+				const isOnlineState = await this.getStateAsync(`${this.myIob?.getIdWithoutLastPart(id)}.isOnline`);
+				const mac = await this.getStateAsync(`${this.myIob?.getIdWithoutLastPart(id)}.mac`);
+				const ip = await this.getStateAsync(`${this.myIob?.getIdWithoutLastPart(id)}.ip`);
 
-				const client = typeOfClient !== 'vpn' ? this.cache.clients[mac.val as string] : this.cache.vpn[ip.val as string];
+				const client = typeOfClient !== 'vpn' ? this.cache.clients[mac?.val as string] : this.cache.vpn[ip?.val as string];
 
 				const lastSeen = moment(lastSeenState.val as number * 1000);
 				const diff = moment().diff(lastSeen, 'seconds');
 
-				if (diff > offlineTimeout && isOnlineState.val) {
+				if (diff > offlineTimeout && isOnlineState && isOnlineState.val) {
 					if (!isAdapterStart) {
-						this.log[this.config.clientDebugLevel || this.log.level](`${logPrefix} Fallback method - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
+						this.log[(this.config.clientDebugLevel || this.log.level) as ioBroker.LogLevel](`${logPrefix} Fallback method - ${typeOfClient} '${client?.name}' (mac: ${client?.mac}, ip: ${client?.ip}) is offline, last_seen '${lastSeen.format('DD.MM. - HH:mm')}h' not updated since ${diff}s`);
 					}
 
-					await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
+					await this.setState(`${this.myIob?.getIdWithoutLastPart(id)}.isOnline`, false, true);
 				}
 			}
 		} catch (error: any) {
@@ -952,7 +952,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private async updateWlanConfig(data: NetworkWlanConfig[] | NetworkWlanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
+	private async updateWlanConfig(data: NetworkWlanConfig[] | NetworkWlanConfig_V2[] | null | undefined, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateWlanConfig]:';
 
 		try {
@@ -960,8 +960,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.wlanConfigEnabled) {
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(tree.wlan.idChannel, tree.wlan.nameChannel, undefined, true);
-						data = await this.ufn.getWlanConfig_V2();
+						await this.myIob?.createOrUpdateChannel(tree.wlan.idChannel, tree.wlan.nameChannel, undefined, true);
+						data = await this.ufn?.getWlanConfig_V2();
 					}
 
 					if (data && data !== null) {
@@ -974,6 +974,7 @@ class UnifiNetwork extends utils.Adapter {
 								wlan = { ...(wlan as NetworkWlanConfig_V2).configuration, ...(wlan as NetworkWlanConfig_V2).details, ...(wlan as NetworkWlanConfig_V2).statistics }
 							}
 
+							// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 							wlan = (wlan as NetworkWlanConfig);
 
 							const idWlan = `${tree.wlan.idChannel}.${wlan._id}`;
@@ -983,22 +984,22 @@ class UnifiNetwork extends utils.Adapter {
 									countWlan++
 								}
 
-								if (!this.cache.wlan[wlan._id]) {
+								if (wlan._id && !this.cache.wlan[wlan._id]) {
 									this.log.debug(`${logPrefix} Discovered WLAN '${wlan.name}'`);
 								}
 
 								let dataToProcess = wlan;
-								if (this.cache.wlan[wlan._id]) {
+								if (wlan._id && this.cache.wlan[wlan._id]) {
 									// filter out unchanged properties
-									dataToProcess = this.myIob.deepDiffBetweenObjects(wlan, this.cache.wlan[wlan._id], this, tree.wlan.getKeys()) as NetworkWlanConfig;
+									dataToProcess = this.myIob?.deepDiffBetweenObjects(wlan, this.cache.wlan[wlan._id], this, tree.wlan.getKeys()) as NetworkWlanConfig;
 								}
 
-								if (!_.isEmpty(dataToProcess)) {
+								if (wlan._id && !_.isEmpty(dataToProcess)) {
 									this.cache.wlan[wlan._id] = { ... this.cache.wlan[wlan._id], ...wlan };
 									dataToProcess._id = wlan._id;
 
-									await this.myIob.createOrUpdateDevice(idWlan, wlan.name, `${tree.wlan.idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
-									await this.myIob.createOrUpdateStates(idWlan, tree.wlan.get(), dataToProcess, wlan, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan.name, isAdapterStart);
+									await this.myIob?.createOrUpdateDevice(idWlan, wlan.name, `${tree.wlan.idChannel}.${wlan._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob?.createOrUpdateStates(idWlan, tree.wlan.get(), dataToProcess, wlan, this.config.wlanStatesBlackList, this.config.wlanStatesIsWhiteList, wlan.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1035,7 +1036,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.wlanConfigEnabled) {
 				if (isAdapterStart) {
 					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'wlan' };
-					await this.myIob.createOrUpdateStates(tree.wlan.idChannel, tree.wlan.getGlobal(), obj, obj, undefined, false, obj.name, true);
+					await this.myIob?.createOrUpdateStates(tree.wlan.idChannel, tree.wlan.getGlobal(), obj, obj, undefined, false, obj.name, true);
 				}
 
 				let sumClients = 0;
@@ -1072,7 +1073,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private async updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[], isAdapterStart: boolean = false): Promise<void> {
+	private async updateLanConfig(data: NetworkLanConfig[] | NetworkLanConfig_V2[] | null | undefined, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateLanConfig]:';
 
 		try {
@@ -1081,8 +1082,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.lanConfigEnabled) {
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(tree.lan.idChannel, tree.lan.nameChannel, undefined, true);
-						data = await this.ufn.getLanConfig_V2();
+						await this.myIob?.createOrUpdateChannel(tree.lan.idChannel, tree.lan.nameChannel, undefined, true);
+						data = await this.ufn?.getLanConfig_V2();
 					}
 
 					if (data && data !== null) {
@@ -1096,6 +1097,7 @@ class UnifiNetwork extends utils.Adapter {
 								lan = { ...(lan as NetworkLanConfig_V2).configuration, ...(lan as NetworkLanConfig_V2).details, ...(lan as NetworkLanConfig_V2).statistics }
 							}
 
+							// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 							lan = (lan as NetworkLanConfig);
 
 							const idLan = `${tree.lan.idChannel}.${lan._id}`;
@@ -1105,23 +1107,23 @@ class UnifiNetwork extends utils.Adapter {
 									countLan++
 								}
 
-								if (!this.cache.lan[lan._id]) {
+								if (lan._id && !this.cache.lan[lan._id]) {
 									this.log.debug(`${logPrefix} Discovered LAN '${lan.name}'`);
 								}
 
 								let dataToProcess = lan;
-								if (this.cache.lan[lan._id]) {
+								if (lan._id && this.cache.lan[lan._id]) {
 									// filter out unchanged properties
-									dataToProcess = this.myIob.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys()) as NetworkLanConfig;
+									dataToProcess = this.myIob?.deepDiffBetweenObjects(lan, this.cache.lan[lan._id], this, tree.lan.getKeys()) as NetworkLanConfig;
 								}
 
-								if (!_.isEmpty(dataToProcess)) {
+								if (lan._id && !_.isEmpty(dataToProcess)) {
 									this.cache.lan[lan._id] = { ... this.cache.lan[lan._id], ...lan };
 
 									dataToProcess._id = lan._id;
 
-									await this.myIob.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${tree.lan.idChannel}.${lan._id}.enabled`, undefined, base64[lan.vpn_type], isAdapterStart, true);
-									await this.myIob.createOrUpdateStates(idLan, tree.lan.get(), dataToProcess, lan, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan.name, isAdapterStart);
+									await this.myIob?.createOrUpdateDevice(idLan, `${lan.name}${lan.vlan ? ` (${lan.vlan})` : ''}`, `${tree.lan.idChannel}.${lan._id}.enabled`, undefined, lan.vpn_type ? base64[lan.vpn_type] : undefined, isAdapterStart, true);
+									await this.myIob?.createOrUpdateStates(idLan, tree.lan.get(), dataToProcess, lan, this.config.lanStatesBlackList, this.config.lanStatesIsWhiteList, lan.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1157,7 +1159,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.lanConfigEnabled) {
 				if (isAdapterStart) {
 					const obj: ConnectedClients = { connected_clients: 0, connected_guests: 0, name: 'lan' };
-					await this.myIob.createOrUpdateStates(tree.lan.idChannel, tree.lan.getGlobal(), obj, obj, undefined, false, obj.name, true);
+					await this.myIob?.createOrUpdateStates(tree.lan.idChannel, tree.lan.getGlobal(), obj, obj, undefined, false, obj.name, true);
 				}
 
 				let sumClients = 0;
@@ -1194,7 +1196,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private async updateFirewallGroup(data: FirewallGroup[], isAdapterStart: boolean = false): Promise<void> {
+	private async updateFirewallGroup(data: FirewallGroup[] | null | undefined, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateFirewallGroup]:';
 
 		try {
@@ -1203,8 +1205,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.firewallGroupConfigEnabled) {
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(idChannel, 'firewall group', undefined, true);
-						data = await this.ufn.getFirewallGroup();
+						await this.myIob?.createOrUpdateChannel(idChannel, 'firewall group', undefined, true);
+						data = await this.ufn?.getFirewallGroup();
 					}
 
 					if (data && data !== null) {
@@ -1227,15 +1229,15 @@ class UnifiNetwork extends utils.Adapter {
 								let dataToProcess = firewallGroup;
 								if (this.cache.firewall.groups[firewallGroup._id]) {
 									// filter out unchanged properties
-									dataToProcess = this.myIob.deepDiffBetweenObjects(firewallGroup, this.cache.firewall.groups[firewallGroup._id], this, tree.firewall.group.getKeys()) as FirewallGroup;
+									dataToProcess = this.myIob?.deepDiffBetweenObjects(firewallGroup, this.cache.firewall.groups[firewallGroup._id], this, tree.firewall.group.getKeys()) as FirewallGroup;
 								}
 
 								if (!_.isEmpty(dataToProcess)) {
 									this.cache.firewall.groups[firewallGroup._id] = { ...this.cache.firewall.groups[firewallGroup._id], ...firewallGroup };
 									dataToProcess._id = firewallGroup._id;
 
-									await this.myIob.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
-									await this.myIob.createOrUpdateStates(idFirewallGroup, tree.firewall.group.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
+									await this.myIob?.createOrUpdateDevice(idFirewallGroup, `${firewallGroup.name}`, `${idChannel}.${firewallGroup._id}.enabled`, undefined, undefined, isAdapterStart, true);
+									await this.myIob?.createOrUpdateStates(idFirewallGroup, tree.firewall.group.get(), dataToProcess, firewallGroup, this.config.firewallGroupStatesBlackList, this.config.firewallGroupStatesIsWhiteList, firewallGroup.name, isAdapterStart);
 								}
 							} else {
 								if (isAdapterStart) {
@@ -1264,7 +1266,7 @@ class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
-	private async updateSysInfo(data: NetworkSysInfo, isAdapterStart: boolean = false): Promise<void> {
+	private async updateSysInfo(data: NetworkSysInfo | null | undefined, isAdapterStart: boolean = false): Promise<void> {
 		const logPrefix = '[updateSysInfo]:';
 
 		try {
@@ -1272,11 +1274,11 @@ class UnifiNetwork extends utils.Adapter {
 
 				if (this.config.systemInformationEnabled) {
 					if (isAdapterStart) {
-						await this.myIob.createOrUpdateChannel(tree.sysInfo.idChannel, undefined, undefined, true);
+						await this.myIob?.createOrUpdateChannel(tree.sysInfo.idChannel, undefined, undefined, true);
 					}
 
 					if (data && data !== null) {
-						await this.myIob.createOrUpdateStates(tree.sysInfo.idChannel, tree.sysInfo.get(), data, data, undefined, undefined, 'sysInfo', isAdapterStart);
+						await this.myIob?.createOrUpdateStates(tree.sysInfo.idChannel, tree.sysInfo.get(), data, data, undefined, undefined, 'sysInfo', isAdapterStart);
 
 						if (isAdapterStart) {
 							this.log.info(`${logPrefix} System Information updated`);
@@ -1319,7 +1321,7 @@ class UnifiNetwork extends utils.Adapter {
 						write: false,
 						role: 'state'
 					},
-					native: undefined
+					native: {}
 				});
 
 				const url = 'https://static.ui.com/fingerprint/ui/public.json'
@@ -1383,12 +1385,12 @@ class UnifiNetwork extends utils.Adapter {
 					}
 
 					if (await this.objectExists(`${idChannel}`)) {
-						await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
+						await this.myIob?.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, base64ImgString, true, false);
 					}
 				}
 			}
 		} catch (error: any) {
-			const mac = this.myIob.getIdLastPart(idChannelList[0]);
+			const mac = this.myIob?.getIdLastPart(idChannelList[0]);
 
 			this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
 		}
@@ -1398,25 +1400,27 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[checkImageDownload]:';
 
 		try {
-			const idChannel = this.myIob.getIdWithoutLastPart(idImageUrl);
+			const idChannel = this.myIob?.getIdWithoutLastPart(idImageUrl);
 
-			if (url) {
-				if (await this.objectExists(idImageUrl)) {
-					const state = await this.getStateAsync(idImageUrl);
-					const image = await this.getStateAsync(`${idChannel}.image`);
+			if (idChannel) {
+				if (url) {
+					if (await this.objectExists(idImageUrl)) {
+						const state = await this.getStateAsync(idImageUrl);
+						const image = await this.getStateAsync(`${idChannel}.image`);
 
-					if ((state && state.val !== url) || image === null || (image && image.val === null)) {
-						await this.downloadImage(url, [idChannel]);
+						if ((state && state.val !== url) || image === null || (image && image.val === null)) {
+							await this.downloadImage(url, [idChannel]);
+						}
+					} else {
+						if (await this.objectExists(`${idChannel}.image`)) {
+							await this.downloadImage(url, [idChannel]);
+						}
 					}
 				} else {
 					if (await this.objectExists(`${idChannel}.image`)) {
-						await this.downloadImage(url, [idChannel]);
+						await this.setState(`${idChannel}.image`, null, true);
+						await this.myIob?.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, undefined, true, false);
 					}
-				}
-			} else {
-				if (await this.objectExists(`${idChannel}.image`)) {
-					await this.setState(`${idChannel}.image`, null, true);
-					await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, null, true, false);
 				}
 			}
 		} catch (error: any) {
@@ -1608,8 +1612,8 @@ class UnifiNetwork extends utils.Adapter {
 							if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: event.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: event.mac }))) {
 								this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac]?.name}'`);
 
-								await this.myIob.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
-								await this.myIob.createOrUpdateStates(`${idChannel}.${event.mac}`, tree.client.get(), event as myNetworkClient, this.cache.clients[event.mac], this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, this.cache.clients[event.mac].name, true);
+								await this.myIob?.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, `${idChannel}.${event.mac}.isOnline`, undefined, undefined, true);
+								await this.myIob?.createOrUpdateStates(`${idChannel}.${event.mac}`, tree.client.get(), event, this.cache.clients[event.mac], this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, this.cache.clients[event.mac].name, true);
 							}
 						}
 					}
@@ -1650,11 +1654,11 @@ class UnifiNetwork extends utils.Adapter {
 				} else {
 					if (event.data.length > 0) {
 						// seperate events for lan's and vpn
-						const noVPN = event.data.filter(lan => !lan.purpose.includes('vpn'));
+						const noVPN = event.data.filter(lan => !lan.purpose?.includes('vpn'));
 						await this.updateLanConfig(noVPN);
 
 						// ToDo: Handling of Gateway VPN Client Connection
-						const vpnLans = event.data.filter(lan => lan.purpose.includes('vpn'));
+						const vpnLans = event.data.filter(lan => lan.purpose?.includes('vpn'));
 						this.log.debug(`${logPrefix} VPN conf are not yet supported! (version: ${this.controllerVersion}, meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(vpnLans)})`);
 					}
 				}
