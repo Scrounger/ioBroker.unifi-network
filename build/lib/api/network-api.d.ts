@@ -63,6 +63,7 @@ export declare class NetworkApi extends EventEmitter {
     private adapter;
     private dispatcher;
     private cookieJar;
+    private lastTokenUpdate;
     private apiErrorCount;
     private headers;
     log: NetworkLogging;

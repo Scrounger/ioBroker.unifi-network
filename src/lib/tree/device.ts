@@ -613,7 +613,7 @@ export namespace device {
                                 } else {
                                     adapter.log.warn(`${logPrefix} ${device.name} (mac: ${device.mac}): changing value not possible, device is in state '${device.state}'`);
                                 }
-                            } catch (error) {
+                            } catch (error: any) {
                                 adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
                             }
                         },

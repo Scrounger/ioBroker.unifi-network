@@ -290,7 +290,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.log.info(`state ${id} deleted`);
 			}
 
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -329,7 +329,7 @@ class UnifiNetwork extends utils.Adapter {
 					messageHandler.firewall.group.stateList(obj, this, this.ufn);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -373,7 +373,7 @@ class UnifiNetwork extends utils.Adapter {
 				await this.aliveChecker();
 			}, (this.config.expertAliveInterval || 30) * 1000);
 
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -409,7 +409,7 @@ class UnifiNetwork extends utils.Adapter {
 					this.log.error(`${logPrefix} Login to the Unifi-Network controller API failed! (host: ${this.ufn.controllerUrl}, site: ${this.config.site})`);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 
@@ -463,7 +463,7 @@ class UnifiNetwork extends utils.Adapter {
 					}, (this.config.expertAliveInterval || 30) * 1000);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -482,7 +482,7 @@ class UnifiNetwork extends utils.Adapter {
 			this.connected = isConnected;
 
 			await this.setState('info.connection', isConnected, true);
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -509,7 +509,7 @@ class UnifiNetwork extends utils.Adapter {
 				this.sendPing();
 			}, ((this.config.expertAliveInterval || 30) / 2) * 1000);
 
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -557,7 +557,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			// this.log.warn(JSON.stringify(list));
 
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -583,7 +583,7 @@ class UnifiNetwork extends utils.Adapter {
 			} else {
 				await this.setState('info.lastApiPoll', null, true);
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -669,7 +669,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -895,7 +895,7 @@ class UnifiNetwork extends utils.Adapter {
 					this.log.debug(`${logPrefix} channel '${tree.client.idChannelVpn}' deleted`);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -914,7 +914,7 @@ class UnifiNetwork extends utils.Adapter {
 
 				await this.updateClients(result, isAdapterStart, true);
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -947,7 +947,7 @@ class UnifiNetwork extends utils.Adapter {
 					await this.setState(`${this.myIob.getIdWithoutLastPart(id)}.isOnline`, false, true);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1023,7 +1023,7 @@ class UnifiNetwork extends utils.Adapter {
 				}
 			}
 
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1067,7 +1067,7 @@ class UnifiNetwork extends utils.Adapter {
 					this.setStateChanged(idSumGuests, sumGuests, true);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1145,7 +1145,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1189,7 +1189,7 @@ class UnifiNetwork extends utils.Adapter {
 					this.setStateChanged(idSumGuests, sumGuests, true);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1259,7 +1259,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1294,7 +1294,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1339,7 +1339,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1387,7 +1387,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			const mac = this.myIob.getIdLastPart(idChannelList[0]);
 
 			this.log.error(`${logPrefix} [mac: ${mac}, url: ${url}]: ${error}, stack: ${error.stack}`);
@@ -1419,7 +1419,7 @@ class UnifiNetwork extends utils.Adapter {
 					await this.myIob.createOrUpdateDevice(idChannel, undefined, `${idChannel}.isOnline`, undefined, null, true, false);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1439,7 +1439,7 @@ class UnifiNetwork extends utils.Adapter {
 			this.log.silly('ping pong');
 
 			await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1478,7 +1478,7 @@ class UnifiNetwork extends utils.Adapter {
 
 			await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
 
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1558,7 +1558,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1581,7 +1581,7 @@ class UnifiNetwork extends utils.Adapter {
 			} else {
 				this.log.warn(`${logPrefix} not implemented event - Please report this to the developer and creating an issue on github! (version: ${this.controllerVersion}, meta: ${JSON.stringify(events.meta)}, data: ${JSON.stringify(events.data)})`);
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1615,7 +1615,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1633,7 +1633,7 @@ class UnifiNetwork extends utils.Adapter {
 					await this.updateWlanConfig(event.data);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1659,7 +1659,7 @@ class UnifiNetwork extends utils.Adapter {
 					}
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1677,7 +1677,7 @@ class UnifiNetwork extends utils.Adapter {
 					await this.updateFirewallGroup(event.data);
 				}
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}
@@ -1689,7 +1689,7 @@ class UnifiNetwork extends utils.Adapter {
 			if (this.config.devicesEnabled) {
 				await eventHandler.device.speedTest(event, this, this.cache);
 			}
-		} catch (error) {
+		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
 		}
 	}

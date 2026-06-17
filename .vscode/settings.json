@@ -21,5 +21,7 @@
             ],
             "url": "https://raw.githubusercontent.com/ioBroker/ioBroker.admin/master/packages/jsonConfig/schemas/jsonConfig.json"
         }
-    ]
+    ],
+    //Todo: „TypeScript: Select TypeScript Version“ -> auf neue version updaten
+    "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
