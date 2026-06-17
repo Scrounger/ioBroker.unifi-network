@@ -156,7 +156,7 @@ export class NetworkApi extends EventEmitter {
                 }
             }
             else {
-                this.log.warn(`${logPrefix} CSRF token is older than 24 hours, refreshing login credentials to acquire a new token.`);
+                this.log.warn(`${logPrefix} Token / cookie is older than 24 hours, refreshing login credentials to acquire a new token.`);
             }
             // Utility to grab the headers we're interested in a normalized manner.
             const getHeader = (name, headers) => {
