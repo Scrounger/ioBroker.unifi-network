@@ -1485,10 +1485,9 @@ class UnifiNetwork extends utils.Adapter {
         const logPrefix = '[onNetworkVpnUsersEvent]:';
         try {
             if (this.config.vpnEnabled) {
-                this.log.debug(`${logPrefix} vpn users event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
+                this.log.silly(`${logPrefix} vpn users event (meta: ${JSON.stringify(event.meta)}, data: ${JSON.stringify(event.data)})`);
                 if (event.data && event.data.length > 0) {
                     for (const client of event.data) {
-                        this.log.debug(`${logPrefix} Discovered vpn client '${client.display_name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);
                         let updateObjects = false;
                         if (!this.cache.vpn[client.ip]) {
                             this.log.debug(`${logPrefix} Discovered vpn client '${client.display_name}' (IP: ${client.ip}, remote_ip: ${client.remote_ip})`);

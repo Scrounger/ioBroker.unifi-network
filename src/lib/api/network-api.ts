@@ -221,14 +221,15 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.loginController]`
 
         try {
+            // ToDo: if network controller bug is fixed by unifi, we can reactivate this
             // If we're already logged in, we're done.
-            if (moment().diff(this.lastTokenUpdate, 'hours', true) < 24) {
-                if (this.headers.cookie || this.headers['x-csrf-token']) {
-                    return true;
-                }
-            } else {
-                this.log.warn(`${logPrefix} Token / cookie is older than 24 hours, refreshing login credentials to acquire a new token.`);
-            }
+            // if (moment().diff(this.lastTokenUpdate, 'hours', true) < 24) {
+            //     if (this.headers.cookie || this.headers['x-csrf-token']) {
+            //         return true;
+            //     }
+            // } else {
+            //     this.log.warn(`${logPrefix} Token / cookie is older than 24 hours, refreshing login credentials to acquire a new token.`);
+            // }
 
             // Utility to grab the headers we're interested in a normalized manner.
             const getHeader = (name: string, headers?: Record<string, string | string[] | undefined>): Nullable<string> => {
