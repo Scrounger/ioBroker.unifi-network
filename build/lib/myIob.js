@@ -50,7 +50,7 @@ export class myIob {
             }
             if (!(await this.adapter.objectExists(id))) {
                 this.log.debug(`${logPrefix} creating device '${id}'`);
-                await this.adapter.setObject(id, {
+                await this.adapter.setObjectNotExistsAsync(id, {
                     type: 'device',
                     common: common,
                     native,
@@ -98,7 +98,7 @@ export class myIob {
             };
             if (!(await this.adapter.objectExists(id))) {
                 this.log.debug(`${logPrefix} creating channel '${id}'`);
-                await this.adapter.setObject(id, {
+                await this.adapter.setObjectNotExistsAsync(id, {
                     type: 'channel',
                     common: common,
                     native,
@@ -168,7 +168,7 @@ export class myIob {
                                             common: this.getCommonForState(key, treeDefinition, fullData, channelData, logMsgState, logDeviceName),
                                             native: {},
                                         };
-                                        await this.adapter.setObject(`${channel}.${stateId}`, obj);
+                                        await this.adapter.setObjectNotExistsAsync(`${channel}.${stateId}`, obj);
                                     }
                                     else {
                                         // update State if needed (only on adapter start)
