@@ -145,6 +145,9 @@ export var client;
                         return diff <= adapter.config.clientOfflineTimeout;
                     }
                     else {
+                        if (device.status) {
+                            return device.status === 'online';
+                        }
                         return diff <= adapter.config.vpnOfflineTimeout;
                     }
                 }

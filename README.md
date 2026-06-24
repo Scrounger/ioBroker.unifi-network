@@ -49,6 +49,10 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+- (Scrounger) vpn client handling optimized
+
 ### 1.5.0 (2026-06-23)
 
 - (Scrounger) vpn event handler for network >= 10.3.x added #89

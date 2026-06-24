@@ -206,6 +206,7 @@ export declare class NetworkApi extends EventEmitter {
      * @returns
      */
     getNetworkMemberGroups(): Promise<NetworkMembersGroup[] | undefined>;
+    getVpnUser(): Promise<myNetworkClient[] | undefined>;
     /**
      * get statistics for site, gateway, switches or access points
      *
