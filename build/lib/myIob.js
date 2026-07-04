@@ -60,6 +60,9 @@ export class myIob {
                 if (updateObject) {
                     const obj = await this.adapter.getObjectAsync(id);
                     if (obj && obj.common) {
+                        if (common.name === 'undefined' && obj.common.name !== 'undefined') {
+                            common.name = obj.common.name;
+                        }
                         if (!this.isDeviceCommonEqual(obj.common, common)) {
                             await this.adapter.extendObject(id, { common: common });
                             const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
@@ -108,6 +111,9 @@ export class myIob {
                 if (updateObject) {
                     const obj = await this.adapter.getObjectAsync(id);
                     if (obj && obj.common) {
+                        if (common.name === 'undefined' && obj.common.name !== 'undefined') {
+                            common.name = obj.common.name;
+                        }
                         if (!this.isChannelCommonEqual(obj.common, common)) {
                             await this.adapter.extendObject(id, { common: common });
                             const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
@@ -560,7 +566,7 @@ export class myIob {
      * @returns
      */
     isDeviceCommonEqual(objCommon, myCommon) {
-        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
+        return (_.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
     }
     /**
      * Compare common properties of channel
@@ -570,7 +576,7 @@ export class myIob {
      * @returns
      */
     isChannelCommonEqual(objCommon, myCommon) {
-        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
+        return (_.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
     }
     /**
      * Compare common properties of state

@@ -624,88 +624,90 @@ class UnifiNetwork extends utils.Adapter {
                                     }
                                 }
                                 const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
-                                if (this.config.clientsEnabled && client.mac && !client.is_guest) {
-                                    // Clients
-                                    if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
-                                        if (isAdapterStart) {
-                                            countClients++;
-                                        }
-                                        if (!this.cache.clients[client.mac]) {
-                                            this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
-                                            this.cache.isOnline[client.mac] = { val: !isOfflineClients };
-                                        }
-                                        let dataToProcess = client;
-                                        if (this.cache.clients[client.mac]) {
-                                            // filter out unchanged properties
-                                            dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
-                                        }
-                                        if (!_.isEmpty(dataToProcess)) {
-                                            this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
-                                            this.cache.clients[client.mac].name = name;
-                                            this.cache.clients[client.mac].timestamp = moment().unix();
-                                            this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
-                                            this.cache.isOnline[client.mac].network_id = client.network_id;
-                                            dataToProcess.mac = client.mac;
-                                            dataToProcess.name = name;
-                                            if (!isAdapterStart) {
-                                                this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                if (client.mac) {
+                                    if (this.config.clientsEnabled && !client.is_guest) {
+                                        // Clients
+                                        if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
+                                            if (isAdapterStart) {
+                                                countClients++;
                                             }
-                                            await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelUsers}.${client.mac}`, name, `${tree.client.idChannelUsers}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
-                                            await this.myIob?.createOrUpdateStates(`${tree.client.idChannelUsers}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
-                                        }
-                                    }
-                                    else {
-                                        if (await this.objectExists(`${tree.client.idChannelUsers}.${client.mac}`)) {
-                                            await this.delObjectAsync(`${tree.client.idChannelUsers}.${client.mac}`, { recursive: true });
-                                            this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                            if (!this.cache.clients[client.mac]) {
+                                                this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+                                                this.cache.isOnline[client.mac] = { val: !isOfflineClients };
+                                            }
+                                            let dataToProcess = client;
+                                            if (this.cache.clients[client.mac]) {
+                                                // filter out unchanged properties
+                                                dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
+                                            }
+                                            if (!_.isEmpty(dataToProcess)) {
+                                                this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
+                                                this.cache.clients[client.mac].name = name;
+                                                this.cache.clients[client.mac].timestamp = moment().unix();
+                                                this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+                                                this.cache.isOnline[client.mac].network_id = client.network_id;
+                                                dataToProcess.mac = client.mac;
+                                                dataToProcess.name = name;
+                                                if (!isAdapterStart) {
+                                                    this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                                }
+                                                await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelUsers}.${client.mac}`, name, `${tree.client.idChannelUsers}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
+                                                await this.myIob?.createOrUpdateStates(`${tree.client.idChannelUsers}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
+                                            }
                                         }
                                         else {
-                                            this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
-                                        }
-                                    }
-                                }
-                                else if (this.config.guestsEnabled && client.mac && client.is_guest) {
-                                    // Guests
-                                    if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
-                                        if (isAdapterStart) {
-                                            countGuests++;
-                                        }
-                                        if (!this.cache.clients[client.mac]) {
-                                            this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
-                                            this.cache.isOnline[client.mac] = { val: !isOfflineClients };
-                                        }
-                                        let dataToProcess = client;
-                                        if (this.cache.clients[client.mac]) {
-                                            // filter out unchanged properties
-                                            dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
-                                        }
-                                        if (!_.isEmpty(dataToProcess)) {
-                                            this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
-                                            this.cache.clients[client.mac].name = name;
-                                            this.cache.clients[client.mac].timestamp = moment().unix();
-                                            this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
-                                            this.cache.isOnline[client.mac].network_id = client.network_id;
-                                            dataToProcess.mac = client.mac;
-                                            dataToProcess.name = name;
-                                            if (!isAdapterStart) {
-                                                this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                            if (await this.objectExists(`${tree.client.idChannelUsers}.${client.mac}`)) {
+                                                await this.delObjectAsync(`${tree.client.idChannelUsers}.${client.mac}`, { recursive: true });
+                                                this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
                                             }
-                                            await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelGuests}.${client.mac}`, name, `${tree.client.idChannelGuests}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
-                                            await this.myIob?.createOrUpdateStates(`${tree.client.idChannelGuests}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
+                                            else {
+                                                this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                            }
                                         }
                                     }
-                                    else {
-                                        if (await this.objectExists(`${tree.client.idChannelGuests}.${client.mac}`)) {
-                                            await this.delObjectAsync(`${tree.client.idChannelGuests}.${client.mac}`, { recursive: true });
-                                            this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                    else if (this.config.guestsEnabled && client.is_guest) {
+                                        // Guests
+                                        if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
+                                            if (isAdapterStart) {
+                                                countGuests++;
+                                            }
+                                            if (!this.cache.clients[client.mac]) {
+                                                this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+                                                this.cache.isOnline[client.mac] = { val: !isOfflineClients };
+                                            }
+                                            let dataToProcess = client;
+                                            if (this.cache.clients[client.mac]) {
+                                                // filter out unchanged properties
+                                                dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys());
+                                            }
+                                            if (!_.isEmpty(dataToProcess)) {
+                                                this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
+                                                this.cache.clients[client.mac].name = name;
+                                                this.cache.clients[client.mac].timestamp = moment().unix();
+                                                this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+                                                this.cache.isOnline[client.mac].network_id = client.network_id;
+                                                dataToProcess.mac = client.mac;
+                                                dataToProcess.name = name;
+                                                if (!isAdapterStart) {
+                                                    this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                                                }
+                                                await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelGuests}.${client.mac}`, name, `${tree.client.idChannelGuests}.${client.mac}.isOnline`, undefined, undefined, isAdapterStart, true);
+                                                await this.myIob?.createOrUpdateStates(`${tree.client.idChannelGuests}.${client.mac}`, tree.client.get(), dataToProcess, client, this.config.clientStatesBlackList, this.config.clientStatesIsWhiteList, client.name, isAdapterStart);
+                                            }
                                         }
                                         else {
-                                            this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                            if (await this.objectExists(`${tree.client.idChannelGuests}.${client.mac}`)) {
+                                                await this.delObjectAsync(`${tree.client.idChannelGuests}.${client.mac}`, { recursive: true });
+                                                this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
+                                            }
+                                            else {
+                                                this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
+                                            }
                                         }
                                     }
                                 }
                                 else {
-                                    this.log.warn(`${logPrefix} client '${name}' (mac: ${client.mac}) has unknown type '${client.type}' or missing mac address, ignoring it`);
+                                    this.log.warn(`${logPrefix} client '${name}' has no mac address -> ignored`);
                                 }
                             }
                             else {
