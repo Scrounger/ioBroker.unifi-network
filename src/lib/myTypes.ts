@@ -43,7 +43,7 @@ export const WebSocketEvent = {
         Disconnected: ['EVT_AP_Disconnected', 'EVT_BB_Disconnected', 'EVT_GW_Disconnected', 'EVT_DM_Disconnected', 'EVT_SW_Disconnected', 'EVT_XG_Disconnected'],
         Restarted: ['EVT_AP_Restarted', 'EVT_BB_Restarted', 'EVT_GW_Restarted', 'EVT_SW_Restarted', 'EVT_XG_Restarted', 'EVT_AP_RestartedUnknown', 'EVT_BB_RestartedUnknown', 'EVT_GW_RestartedUnknown', 'EVT_SW_RestartedUnknown', 'EVT_XG_RestartedUnknown'],
         ChannelChanged: ['EVT_AP_ChannelChanged', 'EVT_BB_ChannelChanged'],
-        LostContact: ['EVT_AP_Lost_Contact', 'EVT_BB_Lost_Contact', 'EVT_DEV_Lost_Contact', 'EVT_GW_Lost_Contact', 'EVT_SW_Lost_Contact', 'EVT_XG_Lost_Contact'],
+        LostContact: ['EVT_AP_Lost_Contact', 'EVT_BB_Lost_Contact', 'EVT_DEV_Lost_Contact', 'EVT_GW_Lost_Contact', 'EVT_SW_Lost_Contact', 'EVT_XG_Lost_Contact', 'EVT_DM_Lost_Contact'],
         PoeDisconnect: ['EVT_SW_PoeDisconnect'],
         PoeOverload: ['EVT_SW_PoeOverload'],
         WANTransition: ['EVT_GW_WANTransition'],
@@ -57,6 +57,7 @@ export const WebSocketEvent = {
         Authorization: ['EVT_HS_AuthedByNoAuth', 'EVT_HS_AuthedByPassword'],
         RadarDetected: ['EVT_AP_RadarDetected'],
         PossibleInterference: ['EVT_AP_PossibleInterference', 'EVT_BB_POSSIBLE_INTERFERENCE'],
+        Isolated: ['EVT_AP_Isolated'],
     },
     client: {
         Connected: ['EVT_LG_Connected', 'EVT_LU_Connected', 'EVT_WG_Connected', 'EVT_WU_Connected'],

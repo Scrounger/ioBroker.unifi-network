@@ -45,6 +45,7 @@ export declare const WebSocketEvent: {
         Authorization: string[];
         RadarDetected: string[];
         PossibleInterference: string[];
+        Isolated: string[];
     };
     client: {
         Connected: string[];
