@@ -3,7 +3,6 @@ import _ from 'lodash';
 import * as myHelper from './helper.js';
 import type { myTreeData } from './myTypes.js';
 import * as tree from './tree/index.js';
-import { publicEncrypt } from 'node:crypto';
 
 type ReadValFunction<
     Type extends ioBroker.StateValue = ioBroker.StateValue,
@@ -145,7 +144,7 @@ export class myIob {
      * @param logChanges
      * @param native
      */
-    public async createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId: string, errorId: string | undefined = undefined, icon: string | undefined = undefined, updateObject: boolean = false, logChanges: boolean = true, native: Record<string, any> = {}): Promise<void> {
+    public async createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId: string | undefined = undefined, errorId: string | undefined = undefined, icon: string | undefined = undefined, updateObject: boolean = false, logChanges: boolean = true, native: Record<string, any> = {}): Promise<void> {
         const logPrefix = '[myIob.createOrUpdateDevice]:';
 
         try {
@@ -185,10 +184,6 @@ export class myIob {
                     const obj = await this.adapter.getObjectAsync(id);
 
                     if (obj && obj.common) {
-                        if (common.name === 'undefined' && obj.common.name !== 'undefined') {
-                            common.name = obj.common.name;
-                        }
-
                         if (!this.isDeviceCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
                             await this.adapter.extendObject(id, { common: common });
 
@@ -242,10 +237,6 @@ export class myIob {
                     const obj = await this.adapter.getObjectAsync(id);
 
                     if (obj && obj.common) {
-                        if (common.name === 'undefined' && obj.common.name !== 'undefined') {
-                            common.name = obj.common.name;
-                        }
-
                         if (!this.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
                             await this.adapter.extendObject(id, { common: common });
 
@@ -746,7 +737,7 @@ export class myIob {
      * @returns
      */
     private isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
-        return (_.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
+        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
     }
 
     /**
@@ -757,7 +748,7 @@ export class myIob {
      * @returns
      */
     private isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean {
-        return (_.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
+        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
     }
 
     /**

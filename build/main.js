@@ -53,7 +53,8 @@ class UnifiNetwork extends utils.Adapter {
         'session-metadata:sync',
         'radio-ai:plan', // Channel AI events
         'setting:sync',
-        'vpn-connection:sync' // ToDo: Handling of Gateway VPN Client Connection
+        'vpn-connection:sync', // ToDo: Handling of Gateway VPN Client Connection
+        'ping-test:update'
     ];
     statesUsingValAsLastChanged = [
         'rundate',

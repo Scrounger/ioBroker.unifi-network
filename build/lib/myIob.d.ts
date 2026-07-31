@@ -77,7 +77,7 @@ export declare class myIob {
      * @param logChanges
      * @param native
      */
-    createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId: string, errorId?: string | undefined, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
+    createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId?: string | undefined, errorId?: string | undefined, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
     /**
      * create or update a channel object, update will only be done on adapter start
      *
