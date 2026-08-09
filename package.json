@@ -40,7 +40,7 @@
     "@iobroker/eslint-config": "^2.3.4",
     "@iobroker/testing": "^5.2.2",
     "@tsconfig/node22": "^22.0.5",
-    "@types/lodash": "^4.17.24",
+    "@types/lodash": "^4.17.25",
     "@types/node": "^22.20.0",
     "@types/ws": "^8.18.1",
     "rimraf": "^6.1.3",
