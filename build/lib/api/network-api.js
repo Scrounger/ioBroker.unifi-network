@@ -1,15 +1,12 @@
-// Lib imports
-import { Pool, errors, interceptors, request, Agent } from 'undici';
-import { STATUS_CODES } from 'node:http';
 import { EventEmitter } from 'node:events';
+import { STATUS_CODES } from 'node:http';
 import util from 'node:util';
-import WebSocket from 'ws';
 import { CookieJar } from 'tough-cookie';
-// API imports
+import { Agent, Pool, errors, interceptors, request } from 'undici';
+import WebSocket from 'ws';
 import { API_TIMEOUT } from './network-settings.js';
 import { NetworkReportInterval } from './network-types-report-stats.js';
 import { SystemLogType } from './network-types-system-log.js';
-import moment from 'moment';
 export var ApiEndpoints;
 (function (ApiEndpoints) {
     ApiEndpoints["login"] = "login";
@@ -47,7 +44,6 @@ export class NetworkApi extends EventEmitter {
     adapter;
     dispatcher;
     cookieJar = new CookieJar();
-    lastTokenUpdate = 0;
     apiErrorCount;
     // private apiLastSuccess: number;
     headers;
@@ -150,15 +146,10 @@ export class NetworkApi extends EventEmitter {
     async loginController() {
         const logPrefix = `[${this.logPrefix}.loginController]`;
         try {
-            // ToDo: if network controller bug is fixed by unifi, we can reactivate this
             // If we're already logged in, we're done.
-            // if (moment().diff(this.lastTokenUpdate, 'hours', true) < 24) {
-            //     if (this.headers.cookie || this.headers['x-csrf-token']) {
-            //         return true;
-            //     }
-            // } else {
-            //     this.log.warn(`${logPrefix} Token / cookie is older than 24 hours, refreshing login credentials to acquire a new token.`);
-            // }
+            if (this.headers.cookie || this.headers['x-csrf-token']) {
+                return true;
+            }
             // Utility to grab the headers we're interested in a normalized manner.
             const getHeader = (name, headers) => {
                 const rawHeader = headers?.[name.toLowerCase()];
@@ -178,7 +169,6 @@ export class NetworkApi extends EventEmitter {
                     // Preserve the CSRF token, if found, for future API calls.
                     if (csrfToken) {
                         this.headers['x-csrf-token'] = csrfToken;
-                        this.lastTokenUpdate = moment().valueOf();
                     }
                 }
             }
@@ -200,7 +190,6 @@ export class NetworkApi extends EventEmitter {
                 if (csrfToken) {
                     // Unifi OS: Save the CSRF token.                    
                     this.headers['x-csrf-token'] = csrfToken;
-                    this.lastTokenUpdate = moment().valueOf();
                     this.log.debug(`${logPrefix} login to UniFi OS controller successful.`);
                     return await this.checkSites();
                 }
@@ -208,7 +197,6 @@ export class NetworkApi extends EventEmitter {
                     if (cookie.includes('unifises') || cookie.includes('csrf_token')) {
                         // self hosted controller
                         this.log.debug(`${logPrefix} login to self hosted UniFi controller successful.`);
-                        this.lastTokenUpdate = moment().valueOf();
                         return await this.checkSites();
                     }
                     else {

@@ -51,6 +51,8 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 -->
 
 ### **WORK IN PROGRESS**
+
+- (Scrounger) revert bug fix for expired token #124
 - (Scrounger) channel / device name undefined bug fix #116
 - (Scrounger) vpn client handling optimized
 - (Scrounger) event messages improved #122 #115

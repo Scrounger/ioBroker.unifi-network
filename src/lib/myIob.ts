@@ -133,17 +133,17 @@ export class myIob {
     }
 
     /**
-     * create or update a device object, update will only be done on adapter start
-     *
-     * @param id
-     * @param name
-     * @param onlineId
-     * @param errorId
-     * @param icon
-     * @param updateObject
-     * @param logChanges
-     * @param native
-     */
+ * create or update a device object, update will only be done on adapter start
+ *
+ * @param id
+ * @param name
+ * @param onlineId
+ * @param errorId
+ * @param icon
+ * @param updateObject
+ * @param logChanges
+ * @param native
+ */
     public async createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId: string | undefined = undefined, errorId: string | undefined = undefined, icon: string | undefined = undefined, updateObject: boolean = false, logChanges: boolean = true, native: Record<string, any> = {}): Promise<void> {
         const logPrefix = '[myIob.createOrUpdateDevice]:';
 
@@ -184,7 +184,14 @@ export class myIob {
                     const obj = await this.adapter.getObjectAsync(id);
 
                     if (obj && obj.common) {
-                        if (!this.isDeviceCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
+                        const storedName = (obj.common as ioBroker.DeviceCommon).name;
+
+                        // kein Name übergeben -> vorhandenen Namen beibehalten statt mit 'undefined' zu überschreiben
+                        if (name === undefined && storedName && storedName !== 'undefined') {
+                            common.name = storedName;
+                        }
+
+                        if (!this.isDeviceCommonEqual(obj.common as ioBroker.DeviceCommon, common)) {
                             await this.adapter.extendObject(id, { common: common });
 
                             const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
@@ -220,7 +227,7 @@ export class myIob {
                 name = translation && Object.keys(translation).length > 1 ? translation : name
             }
 
-            const common = {
+            const common: ioBroker.ChannelCommon = {
                 name: name ?? 'undefined',
                 icon: icon,
             };
@@ -237,6 +244,13 @@ export class myIob {
                     const obj = await this.adapter.getObjectAsync(id);
 
                     if (obj && obj.common) {
+                        const storedName = (obj.common as ioBroker.ChannelCommon).name;
+
+                        // kein Name übergeben -> vorhandenen Namen beibehalten statt mit 'undefined' zu überschreiben
+                        if (name === undefined && storedName && storedName !== 'undefined') {
+                            common.name = storedName;
+                        }
+
                         if (!this.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
                             await this.adapter.extendObject(id, { common: common });
 
@@ -737,7 +751,7 @@ export class myIob {
      * @returns
      */
     private isDeviceCommonEqual(objCommon: ioBroker.DeviceCommon, myCommon: ioBroker.DeviceCommon): boolean {
-        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
+        return _.isEqual(objCommon.name, myCommon.name) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
     }
 
     /**
@@ -748,7 +762,7 @@ export class myIob {
      * @returns
      */
     private isChannelCommonEqual(objCommon: ioBroker.ChannelCommon, myCommon: ioBroker.ChannelCommon): boolean {
-        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
+        return _.isEqual(objCommon.name, myCommon.name) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
     }
 
     /**

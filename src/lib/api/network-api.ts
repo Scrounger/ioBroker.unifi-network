@@ -1,28 +1,24 @@
-// Lib imports
-import { Dispatcher, Pool, errors, interceptors, request, Agent } from 'undici';
-import { STATUS_CODES } from 'node:http';
 import { EventEmitter } from 'node:events';
+import { STATUS_CODES } from 'node:http';
 import util from 'node:util';
-import WebSocket from 'ws';
 import { CookieJar } from 'tough-cookie';
-
-// API imports
-import { API_TIMEOUT } from './network-settings.js';
-import type { NetworkLogging } from './network-logging.js';
-import type { NetworkEvent } from './network-types.js'
-import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js'
-import type { NetworkDeviceModels } from './network-types-device-models.js'
-import type { NetworkClient } from './network-types-client.js';
-import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
-import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
-import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
-import { SystemLogType } from './network-types-system-log.js';
-import type { FirewallGroup } from './network-types-firewall.js';
-import { NetworkSite } from './network-types-sites.js';
-import { NetworkMembersGroup } from './network-types-network-members-groups.js';
-import { NetworkSysInfo } from './network-types-sysinfo.js';
-import moment from 'moment';
+import { Agent, Dispatcher, Pool, errors, interceptors, request } from 'undici';
+import WebSocket from 'ws';
 import { myNetworkClient } from '../myTypes.js';
+import type { NetworkLogging } from './network-logging.js';
+import { API_TIMEOUT } from './network-settings.js';
+import type { NetworkClient } from './network-types-client.js';
+import type { NetworkDeviceModels } from './network-types-device-models.js';
+import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
+import type { FirewallGroup } from './network-types-firewall.js';
+import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
+import { NetworkMembersGroup } from './network-types-network-members-groups.js';
+import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
+import { NetworkSite } from './network-types-sites.js';
+import { NetworkSysInfo } from './network-types-sysinfo.js';
+import { SystemLogType } from './network-types-system-log.js';
+import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
+import type { NetworkEvent } from './network-types.js';
 
 export type Nullable<T> = T | null;
 
@@ -84,8 +80,6 @@ export class NetworkApi extends EventEmitter {
 
     private dispatcher!: Dispatcher;
     private cookieJar: CookieJar = new CookieJar();
-
-    private lastTokenUpdate: number = 0;
 
     private apiErrorCount: number;
     // private apiLastSuccess: number;
@@ -221,15 +215,10 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.loginController]`
 
         try {
-            // ToDo: if network controller bug is fixed by unifi, we can reactivate this
             // If we're already logged in, we're done.
-            // if (moment().diff(this.lastTokenUpdate, 'hours', true) < 24) {
-            //     if (this.headers.cookie || this.headers['x-csrf-token']) {
-            //         return true;
-            //     }
-            // } else {
-            //     this.log.warn(`${logPrefix} Token / cookie is older than 24 hours, refreshing login credentials to acquire a new token.`);
-            // }
+            if (this.headers.cookie || this.headers['x-csrf-token']) {
+                return true;
+            }
 
             // Utility to grab the headers we're interested in a normalized manner.
             const getHeader = (name: string, headers?: Record<string, string | string[] | undefined>): Nullable<string> => {
@@ -258,7 +247,6 @@ export class NetworkApi extends EventEmitter {
                     if (csrfToken) {
 
                         this.headers['x-csrf-token'] = csrfToken;
-                        this.lastTokenUpdate = moment().valueOf();
                     }
                 }
             }
@@ -287,7 +275,6 @@ export class NetworkApi extends EventEmitter {
                 if (csrfToken) {
                     // Unifi OS: Save the CSRF token.                    
                     this.headers['x-csrf-token'] = csrfToken;
-                    this.lastTokenUpdate = moment().valueOf();
                     this.log.debug(`${logPrefix} login to UniFi OS controller successful.`);
 
                     return await this.checkSites();
@@ -295,7 +282,6 @@ export class NetworkApi extends EventEmitter {
                     if (cookie.includes('unifises') || cookie.includes('csrf_token')) {
                         // self hosted controller
                         this.log.debug(`${logPrefix} login to self hosted UniFi controller successful.`);
-                        this.lastTokenUpdate = moment().valueOf();
 
                         return await this.checkSites();
                     } else {

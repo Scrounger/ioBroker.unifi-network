@@ -1,18 +1,18 @@
-import { Dispatcher } from 'undici';
 import { EventEmitter } from 'node:events';
-import type { NetworkLogging } from './network-logging.js';
-import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
-import type { NetworkDeviceModels } from './network-types-device-models.js';
-import type { NetworkClient } from './network-types-client.js';
-import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
-import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
-import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
-import { SystemLogType } from './network-types-system-log.js';
-import type { FirewallGroup } from './network-types-firewall.js';
-import { NetworkSite } from './network-types-sites.js';
-import { NetworkMembersGroup } from './network-types-network-members-groups.js';
-import { NetworkSysInfo } from './network-types-sysinfo.js';
+import { Dispatcher } from 'undici';
 import { myNetworkClient } from '../myTypes.js';
+import type { NetworkLogging } from './network-logging.js';
+import type { NetworkClient } from './network-types-client.js';
+import type { NetworkDeviceModels } from './network-types-device-models.js';
+import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
+import type { FirewallGroup } from './network-types-firewall.js';
+import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
+import { NetworkMembersGroup } from './network-types-network-members-groups.js';
+import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
+import { NetworkSite } from './network-types-sites.js';
+import { NetworkSysInfo } from './network-types-sysinfo.js';
+import { SystemLogType } from './network-types-system-log.js';
+import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './network-types-wlan-config.js';
 export type Nullable<T> = T | null;
 /**
  * Configuration options for HTTP requests executed by `retrieve()`.
@@ -65,7 +65,6 @@ export declare class NetworkApi extends EventEmitter {
     private adapter;
     private dispatcher;
     private cookieJar;
-    private lastTokenUpdate;
     private apiErrorCount;
     private headers;
     log: NetworkLogging;
