@@ -1,8 +1,8 @@
-import type { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
-import { type myCache, type myNetworkClient } from "./myTypes.js";
-import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
-import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { FirewallGroup } from "./api/network-types-firewall.js";
+import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
+import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import type { NetworkEventData, NetworkEventMeta, NetworkEventSpeedTest } from "./api/network-types.js";
+import { type myCache, type myNetworkClient } from "./myTypes.js";
 export declare const disconnectDebounceList: {
     [mac: string]: {
         lc: number;
@@ -25,6 +25,10 @@ export declare const eventHandler: {
         block(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
         /**
          * @deprecated deprecated since 10.4.57, handle by onNetworkVpnUsersEvent in main.ts now
+         * @param meta
+         * @param data
+         * @param adapter
+         * @param cache
          */
         vpnDisconnect(meta: NetworkEventMeta, data: myNetworkClient, adapter: ioBroker.Adapter, cache: myCache): Promise<void>;
     };

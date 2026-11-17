@@ -1,24 +1,17 @@
-/*
- * Created with @iobroker/create-adapter v2.6.5
- */
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
-import moment from 'moment';
-import { request } from "undici";
-import { STATUS_CODES } from 'node:http';
 import _ from 'lodash';
+import moment from 'moment';
+import { STATUS_CODES } from 'node:http';
 import url from 'node:url';
-// API imports
+import { request } from "undici";
 import { NetworkApi } from './lib/api/network-api.js';
-// Adapter imports
-import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
-import { eventHandler, disconnectDebounceList } from './lib/eventHandler.js';
-import * as tree from './lib/tree/index.js';
 import { base64 } from './lib/base64.js';
+import { disconnectDebounceList, eventHandler } from './lib/eventHandler.js';
 import { messageHandler } from './lib/messageHandler.js';
-import { myIob } from './lib/myIob.js';
 import { migration } from './lib/migration.js';
+import { myIob } from './lib/myIob.js';
+import { WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
+import * as tree from './lib/tree/index.js';
 class UnifiNetwork extends utils.Adapter {
     ufn;
     myIob;

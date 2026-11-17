@@ -1,12 +1,12 @@
 import moment from "moment";
 
-import type { NetworkEventMeta, NetworkEventData, NetworkEventSpeedTest } from "./api/network-types.js";
-import { WebSocketEvent, type myCache, type myNetworkClient } from "./myTypes.js";
-import * as myHelper from './helper.js';
-import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
-import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
-import * as tree from './tree/index.js'
 import type { FirewallGroup } from "./api/network-types-firewall.js";
+import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
+import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
+import type { NetworkEventData, NetworkEventMeta, NetworkEventSpeedTest } from "./api/network-types.js";
+import * as myHelper from './helper.js';
+import { WebSocketEvent, type myCache, type myNetworkClient } from "./myTypes.js";
+import * as tree from './tree/index.js';
 
 export const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioBroker.Timeout | null | undefined } } = {};
 
@@ -364,6 +364,10 @@ export const eventHandler = {
         },
         /**
          * @deprecated deprecated since 10.4.57, handle by onNetworkVpnUsersEvent in main.ts now 
+         * @param meta 
+         * @param data 
+         * @param adapter 
+         * @param cache 
          */
         async vpnDisconnect(meta: NetworkEventMeta, data: myNetworkClient, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
             const logPrefix = '[eventHandler.client.vpnDisconnect]:'

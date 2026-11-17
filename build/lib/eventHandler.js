@@ -1,6 +1,6 @@
 import moment from "moment";
-import { WebSocketEvent } from "./myTypes.js";
 import * as myHelper from './helper.js';
+import { WebSocketEvent } from "./myTypes.js";
 import * as tree from './tree/index.js';
 export const disconnectDebounceList = {};
 const speedTestRunning = {};
@@ -323,6 +323,10 @@ export const eventHandler = {
         },
         /**
          * @deprecated deprecated since 10.4.57, handle by onNetworkVpnUsersEvent in main.ts now
+         * @param meta
+         * @param data
+         * @param adapter
+         * @param cache
          */
         async vpnDisconnect(meta, data, adapter, cache) {
             const logPrefix = '[eventHandler.client.vpnDisconnect]:';

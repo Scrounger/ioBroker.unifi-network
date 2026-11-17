@@ -15,17 +15,17 @@ export class myIob {
         this.statesUsingValAsLastChanged = statesUsingValAsLastChanged;
     }
     /**
-     * create or update a device object, update will only be done on adapter start
-     *
-     * @param id
-     * @param name
-     * @param onlineId
-     * @param errorId
-     * @param icon
-     * @param updateObject
-     * @param logChanges
-     * @param native
-     */
+ * create or update a device object, update will only be done on adapter start
+ *
+ * @param id
+ * @param name
+ * @param onlineId
+ * @param errorId
+ * @param icon
+ * @param updateObject
+ * @param logChanges
+ * @param native
+ */
     async createOrUpdateDevice(id, name, onlineId = undefined, errorId = undefined, icon = undefined, updateObject = false, logChanges = true, native = {}) {
         const logPrefix = '[myIob.createOrUpdateDevice]:';
         try {
@@ -60,6 +60,11 @@ export class myIob {
                 if (updateObject) {
                     const obj = await this.adapter.getObjectAsync(id);
                     if (obj && obj.common) {
+                        const storedName = obj.common.name;
+                        // kein Name übergeben -> vorhandenen Namen beibehalten statt mit 'undefined' zu überschreiben
+                        if (name === undefined && storedName && storedName !== 'undefined') {
+                            common.name = storedName;
+                        }
                         if (!this.isDeviceCommonEqual(obj.common, common)) {
                             await this.adapter.extendObject(id, { common: common });
                             const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
@@ -108,6 +113,11 @@ export class myIob {
                 if (updateObject) {
                     const obj = await this.adapter.getObjectAsync(id);
                     if (obj && obj.common) {
+                        const storedName = obj.common.name;
+                        // kein Name übergeben -> vorhandenen Namen beibehalten statt mit 'undefined' zu überschreiben
+                        if (name === undefined && storedName && storedName !== 'undefined') {
+                            common.name = storedName;
+                        }
                         if (!this.isChannelCommonEqual(obj.common, common)) {
                             await this.adapter.extendObject(id, { common: common });
                             const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
@@ -560,7 +570,7 @@ export class myIob {
      * @returns
      */
     isDeviceCommonEqual(objCommon, myCommon) {
-        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
+        return _.isEqual(objCommon.name, myCommon.name) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role && _.isEqual(objCommon.statusStates, myCommon.statusStates);
     }
     /**
      * Compare common properties of channel
@@ -570,7 +580,7 @@ export class myIob {
      * @returns
      */
     isChannelCommonEqual(objCommon, myCommon) {
-        return (myCommon.name !== 'undefined' && _.isEqual(objCommon.name, myCommon.name)) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
+        return _.isEqual(objCommon.name, myCommon.name) && (!myCommon.icon || objCommon.icon === myCommon.icon) && objCommon.desc === myCommon.desc && objCommon.role === myCommon.role;
     }
     /**
      * Compare common properties of state

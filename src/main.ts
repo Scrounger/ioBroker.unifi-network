@@ -1,33 +1,23 @@
-/*
- * Created with @iobroker/create-adapter v2.6.5
- */
-
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
-import moment from 'moment';
-import { request } from "undici";
-import { STATUS_CODES } from 'node:http';
 import _ from 'lodash';
+import moment from 'moment';
+import { STATUS_CODES } from 'node:http';
 import url from 'node:url';
-
-// API imports
+import { request } from "undici";
 import { NetworkApi } from './lib/api/network-api.js';
-import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventVpnUsers, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import type { NetworkDevice } from './lib/api/network-types-device.js';
-import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
-import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
 import type { FirewallGroup } from './lib/api/network-types-firewall.js';
-
-// Adapter imports
-import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myNetworkClient } from './lib/myTypes.js';
-import { eventHandler, disconnectDebounceList } from './lib/eventHandler.js';
-import * as tree from './lib/tree/index.js'
-import { base64 } from './lib/base64.js';
-import { messageHandler } from './lib/messageHandler.js';
-import { myIob, myTreeState } from './lib/myIob.js';
+import type { NetworkLanConfig, NetworkLanConfig_V2 } from './lib/api/network-types-lan-config.js';
 import { NetworkSysInfo } from './lib/api/network-types-sysinfo.js';
+import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-types-wlan-config.js';
+import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
+import { base64 } from './lib/base64.js';
+import { disconnectDebounceList, eventHandler } from './lib/eventHandler.js';
+import { messageHandler } from './lib/messageHandler.js';
 import { migration } from './lib/migration.js';
+import { myIob, myTreeState } from './lib/myIob.js';
+import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myNetworkClient } from './lib/myTypes.js';
+import * as tree from './lib/tree/index.js';
 
 class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi | undefined;

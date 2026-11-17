@@ -66,17 +66,17 @@ export declare class myIob {
     };
     constructor(adapter: ioBroker.Adapter, utils: typeof import("@iobroker/adapter-core"), statesUsingValAsLastChanged?: string[]);
     /**
-     * create or update a device object, update will only be done on adapter start
-     *
-     * @param id
-     * @param name
-     * @param onlineId
-     * @param errorId
-     * @param icon
-     * @param updateObject
-     * @param logChanges
-     * @param native
-     */
+ * create or update a device object, update will only be done on adapter start
+ *
+ * @param id
+ * @param name
+ * @param onlineId
+ * @param errorId
+ * @param icon
+ * @param updateObject
+ * @param logChanges
+ * @param native
+ */
     createOrUpdateDevice(id: string, name: string | ioBroker.Translated | undefined, onlineId?: string | undefined, errorId?: string | undefined, icon?: string | undefined, updateObject?: boolean, logChanges?: boolean, native?: Record<string, any>): Promise<void>;
     /**
      * create or update a channel object, update will only be done on adapter start
