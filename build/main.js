@@ -12,7 +12,7 @@ import { migration } from './lib/migration.js';
 import { myIob } from './lib/myIob.js';
 import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
 import * as tree from './lib/tree/index.js';
-class UnifiNetwork extends utils.Adapter {
+export class UnifiNetwork extends utils.Adapter {
     ufn;
     myIob;
     isConnected = false;

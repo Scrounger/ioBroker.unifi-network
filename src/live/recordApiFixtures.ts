@@ -1,7 +1,8 @@
 /**
  * Records read-only API responses of the UniFi controller as local, anonymized fixtures.
  *
- * Writes one JSON file per endpoint to `test/fixtures/local/api/<endpoint>.json`.
+ * Writes one JSON file per endpoint to `test/fixtures/local/<version>/api/<endpoint>.json`.
+ * `<version>` is the network application version from the `sysinfo` response, e.g. `10.6.109`.
  * Each file contains the complete controller response (envelope included) under `response`.
  *
  * - Only GET requests are sent, via the same URLs the `NetworkApi` getters use.
@@ -19,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { ApiEndpoints, ApiEndpoints_V2, type NetworkApi } from '../lib/api/network-api.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
+import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';
 import { createLiveApi, describeMessages, getLiveConfig } from './liveHelper.test.js';
 
 interface EndpointDefinition {
@@ -269,6 +271,12 @@ async function main(): Promise<number> {
         return 1;
     }
 
+    const version = versionFromSysInfo(responses.sysinfo);
+    if (!version) {
+        console.error('Keine Version in der sysinfo-Antwort gefunden, es wurde nichts geschrieben.');
+        return 1;
+    }
+
     const recordedAt = new Date().toISOString();
     const anonymized = anonymize(removeSecretEntries(responses), secrets);
     const files = Object.entries(anonymized).map(([name, response]) => ({
@@ -282,7 +290,7 @@ async function main(): Promise<number> {
         return 1;
     }
 
-    const outputDir = fileURLToPath(new URL('../../test/fixtures/local/api/', import.meta.url));
+    const outputDir = fixtureDir(version, 'api');
     mkdirSync(outputDir, { recursive: true });
 
     for (const file of files) {
@@ -297,7 +305,7 @@ async function main(): Promise<number> {
         }
     }
 
-    console.log(`${files.length} Fixtures geschrieben nach ${path.relative(process.cwd(), outputDir)}:`);
+    console.log(`Version ${version}: ${files.length} Fixtures geschrieben nach ${path.relative(process.cwd(), outputDir)}:`);
     for (const file of files) {
         console.log(`  ${file.name}.json`);
     }

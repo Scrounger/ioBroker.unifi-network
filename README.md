@@ -43,6 +43,43 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ![image info](./doc/config_local_user.png)
 
+## Development
+
+Tests against a real controller and recorded fixtures:
+
+1. Create a git-ignored `.env` in the project root:
+
+    ```env
+    UNIFI_HOST=192.168.1.1
+    UNIFI_USER=your-local-user
+    UNIFI_PASSWORD=your-password
+    # optional
+    UNIFI_PORT=443
+    UNIFI_SITE=default
+    ```
+
+2. Record the API responses (read-only, one file per endpoint):
+
+    ```bash
+    npm run record:api
+    ```
+
+3. Record the real-time events (interactive, options: `--missing`, `--destructive`, `--only=<ids>`):
+
+    ```bash
+    npm run record:events
+    ```
+
+4. Run the tests:
+
+    ```bash
+    npm run test:ts    # offline, uses recorded fixtures
+    npm run test:live  # against the controller
+    npm run test:all   # all of the above
+    ```
+
+Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they contain controller data.
+
 ## Changelog
 
 <!--

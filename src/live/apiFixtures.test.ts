@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { findLeaks } from './anonymizeFixtures.js';
+import { fixtureDir, latestFixtureVersion, versionFromSysInfo } from './fixtureVersions.js';
 import { getLiveConfig } from './liveHelper.test.js';
 
-const FIXTURE_DIR = fileURLToPath(new URL('../../test/fixtures/local/api/', import.meta.url));
+/** Newest controller version with API fixtures. The tests always run against it. */
+const FIXTURE_VERSION = latestFixtureVersion() ?? 'keine-version';
+const FIXTURE_DIR = fixtureDir(FIXTURE_VERSION, 'api');
 
 interface RecordedFixture {
     endpoint: string;
@@ -26,7 +28,7 @@ function readFixtures(): { file: string; content: string; fixture: RecordedFixtu
         });
 }
 
-describe('Aufgezeichnete API-Fixtures (offline)', function () {
+describe(`Aufgezeichnete API-Fixtures ${FIXTURE_VERSION} (offline)`, function () {
     before(function () {
         if (!existsSync(FIXTURE_DIR) || readdirSync(FIXTURE_DIR).length === 0) {
             this.skip();
@@ -39,6 +41,12 @@ describe('Aufgezeichnete API-Fixtures (offline)', function () {
             expect(Number.isNaN(Date.parse(fixture.recordedAt)), file).to.equal(false);
             expect(fixture.response, file).to.not.equal(undefined);
         }
+    });
+
+    it('das Versionsverzeichnis entspricht der Version aus sysinfo', () => {
+        const sysinfo = readFixtures().find(({ fixture }) => fixture.endpoint === 'sysinfo');
+        expect(sysinfo, 'sysinfo-Fixture fehlt').to.not.equal(undefined);
+        expect(versionFromSysInfo(sysinfo?.fixture.response), 'sysinfo').to.equal(FIXTURE_VERSION);
     });
 
     it('V1-Antworten haben meta.rc "ok" und data', () => {

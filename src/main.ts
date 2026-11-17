@@ -19,7 +19,7 @@ import { myIob, myTreeState } from './lib/myIob.js';
 import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages, type ConnectedClients, type myCache, type myNetworkClient } from './lib/myTypes.js';
 import * as tree from './lib/tree/index.js';
 
-class UnifiNetwork extends utils.Adapter {
+export class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi | undefined;
 	myIob: myIob | undefined;
 

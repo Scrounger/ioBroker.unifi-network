@@ -32,6 +32,7 @@ const PLACEHOLDER_IPV6 = /^2001:db8::[0-9a-f]{1,4}$/i;
 const PLACEHOLDER_UUID = /^00000000-0000-4000-8000-[0-9a-f]{12}$/i;
 
 const SECRET_KEY = /pass|secret|token|cookie|key|psk|private|configuration_file/i;
+const EVENT_KEY_VALUE = /^EVT_[A-Za-z_]+$/;
 const NAME_KEY = /name|ssid|email|serial|^user$|note|comment|tags|city|dns_record|remote_ip_override|desc/i;
 const VERSION_KEY = /version/i;
 const VERSION_FIELD = /"[^"]*version[^"]*"\s*:\s*"[^"]*"/gi;
@@ -44,6 +45,8 @@ const SECRET_ENTRY_KEY = /private_key|preshared/i;
 const REDACTED = '<redacted>';
 const MIN_NAME_LENGTH = 3;
 const MIN_SECRET_LENGTH = 4;
+// A value that is only a MAC address. Name-like keys such as `user` hold MACs in WLAN events.
+const WHOLE_MAC = /^(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/i;
 
 /**
  * Assigns placeholders in order of first appearance, one map per value type.
@@ -151,7 +154,7 @@ interface Context {
 
 function collectNames(value: unknown, key: string | undefined, names: Set<string>): void {
     if (typeof value === 'string') {
-        if (key && NAME_KEY.test(key) && value.length >= MIN_NAME_LENGTH) {
+        if (key && NAME_KEY.test(key) && value.length >= MIN_NAME_LENGTH && !WHOLE_MAC.test(value)) {
             names.add(value);
         }
         return;
@@ -204,13 +207,25 @@ function anonymizeText(text: string, context: Context, options: TextOptions = {}
     return withoutUuids.replace(OBJECT_ID_PATTERN, (match: string): string => context.placeholders.objectId(match));
 }
 
+/**
+ * Event keys like `EVT_WU_Connected` sit under the field `key`, which the secret pattern matches.
+ * They are schema, not credentials, so they are kept.
+ *
+ * @param key object key of the value
+ * @param value value under the key
+ */
+function isEventKey(key: string, value: string): boolean {
+    return key === 'key' && EVENT_KEY_VALUE.test(value);
+}
+
 function anonymizeValue(value: unknown, key: string | undefined, context: Context): unknown {
     if (typeof value === 'string') {
-        if (key && SECRET_KEY.test(key)) {
+        if (key && SECRET_KEY.test(key) && !isEventKey(key, value)) {
             return REDACTED;
         }
         if (key && NAME_KEY.test(key) && value.length > 0) {
-            return context.placeholders.name(value);
+            // MACs under name-like keys (`user` in WLAN events) keep the MAC form, so the handlers can still match them
+            return WHOLE_MAC.test(value) ? context.placeholders.mac(value) : context.placeholders.name(value);
         }
         return anonymizeText(value, context, { keepIpv4: key !== undefined && VERSION_KEY.test(key) });
     }

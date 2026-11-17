@@ -20,10 +20,25 @@ describe('anonymizeFixtures (offline)', () => {
         expect(result.device_name).to.not.equal('Wohnzimmer');
     });
 
+    it('behält MAC-Adressen unter dem Namensschlüssel user als MAC-Platzhalter', () => {
+        const result = anonymize<{ user: string; name: string }>({ user: 'f4:92:bf:12:34:56', name: 'Wohnzimmer' }, []);
+
+        expect(result.user).to.match(/^02:00:00:00:[0-9a-f]{2}:[0-9a-f]{2}$/);
+        expect(result.name).to.not.match(/^02:00:00:00:/);
+        expect(findLeaks(JSON.stringify(result), [])).to.deep.equal([]);
+    });
+
     it('ersetzt Werte unter Geheimnisschlüsseln durch <redacted>', () => {
         const result = anonymize<Record<string, string>>({ x_passphrase: 'abc123' }, []);
 
         expect(result.x_passphrase).to.equal('<redacted>');
+    });
+
+    it('behält Event-Keys unter dem Feld key, schwärzt andere key-Werte', () => {
+        const result = anonymize<{ key: string; api_key: string }>({ key: 'EVT_WU_Connected', api_key: 'abc123' }, []);
+
+        expect(result.key).to.equal('EVT_WU_Connected');
+        expect(result.api_key).to.equal('<redacted>');
     });
 
     it('behält Versionsstrings, die wie IPv4-Adressen aussehen', () => {

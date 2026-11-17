@@ -3,6 +3,7 @@ import { copyFileSync, existsSync, lstatSync, readFileSync, readlinkSync, rmSync
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { fixtureDir, latestFixtureVersion } from '../live/fixtureVersions.js';
 
 type MyIobClass = typeof import('./myIob.js').myIob;
 type MyIobArgs = ConstructorParameters<MyIobClass>;
@@ -280,8 +281,8 @@ describe('myIob (offline)', function () {
     });
 });
 
-/** Verzeichnis mit den anonymisierten API-Fixtures (git-ignoriert, vom Recorder aufgezeichnet). */
-const FIXTURE_DIR = fileURLToPath(new URL('../../test/fixtures/local/api/', import.meta.url));
+/** Verzeichnis mit den anonymisierten API-Fixtures der neuesten Version (git-ignoriert, vom Recorder aufgezeichnet). */
+const FIXTURE_DIR = fixtureDir(latestFixtureVersion() ?? 'keine-version', 'api');
 
 /** Fixtures, die die Suite braucht. Fehlt eine, wird die Suite übersprungen. */
 const REQUIRED_FIXTURES = ['devicesV2', 'clientsActiveV2', 'wlanConfigV2', 'lanConfigV2', 'sysinfo', 'firewallGroup'];

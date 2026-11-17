@@ -3,7 +3,7 @@ import { NetworkApi } from './lib/api/network-api.js';
 import type { NetworkEvent } from './lib/api/network-types.js';
 import { myIob } from './lib/myIob.js';
 import { type myCache } from './lib/myTypes.js';
-declare class UnifiNetwork extends utils.Adapter {
+export declare class UnifiNetwork extends utils.Adapter {
     ufn: NetworkApi | undefined;
     myIob: myIob | undefined;
     isConnected: boolean;
@@ -106,4 +106,3 @@ declare class UnifiNetwork extends utils.Adapter {
     private onNetworkSpeedTestEvent;
 }
 export default function startAdapter(options: Partial<utils.AdapterOptions> | undefined): UnifiNetwork;
-export {};
