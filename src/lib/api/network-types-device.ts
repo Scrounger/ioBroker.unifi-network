@@ -332,11 +332,11 @@ export interface NetworkDeviceRadioTableStat {
 }
 
 interface NetworkDevicePortOverride {
-    name: string
+    name?: string
     poe_mode?: string
     port_idx: number
     portconf_id?: string
-    setting_preference: string
+    setting_preference?: string
     autoneg?: boolean
     dot1x_ctrl?: string
     dot1x_idle_timeout?: number

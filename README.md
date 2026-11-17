@@ -89,6 +89,7 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) enable / disable ports added (#150)
 - (Scrounger) momment replaced with day.js
 - (Scrounger) dependencies updated #116
 - (Scrounger) revert bug fix for expired token #124

@@ -1,9 +1,8 @@
 import _ from 'lodash';
-import type { NetworkDevice, NetworkDeviceStorage, NetworkDevicePortTable, NetworkDeviceRadioTableStat, NetworkDeviceTemperature, NetworkDeviceVapTable, NetworkDeviceRadioTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats, NetworkDeviceSystemStats, NetworkDeviceWanStats } from '../api/network-types-device.js';
-import * as myHelper from '../helper.js';
-import { myTreeDefinition, myTreeState } from '../myIob.js';
 import { ApiEndpoints } from '../api/network-api.js';
-import { AnyARecord } from 'node:dns';
+import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceSystemStats, NetworkDeviceTemperature, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanStats, NetworkDeviceWanUptimeStats } from '../api/network-types-device.js';
+import * as myHelper from '../helper.js';
+import { myTreeDefinition } from '../myIob.js';
 
 
 export namespace device {
@@ -305,7 +304,7 @@ export namespace device {
                 async writeVal(val: string, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
                     const logPrefix = `[tree.device.led_override]:`;
 
-                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { led_override: val }, 'PUT');
 
                     await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `LED override to '${val}' - '${device.name}' (mac: ${device.mac})`);
                 },
@@ -378,7 +377,34 @@ export namespace device {
                     },
                     enable: {
                         iobType: 'boolean',
-                        name: 'enabled'
+                        name: 'enabled',
+                        read: true,
+                        write: true,
+                        async writeVal(val: boolean, id: string, device: NetworkDevice, adapter: ioBroker.myAdapter): Promise<void> {
+                            const logPrefix = `[tree.device.port.enable]`;
+                            const port_idx = parseInt(adapter.myIob!.getIdLastPart(adapter.myIob!.getIdWithoutLastPart(id)).replace('port_', ''));
+                            const port_overrides = structuredClone(device.port_overrides ?? []);
+
+                            // only ports with an existing port_overrides entry are changed, no new entry is created
+                            const override = port_overrides.find(x => x.port_idx === port_idx);
+                            if (!override) {
+                                adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: enable/disable not possible, no port_overrides entry exists for this port!`);
+                                return;
+                            }
+                            if (override.portconf_id) {
+                                // ethernet port profile is configured, enable/disable not possible
+                                adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch enable/disable not possible, because 'ethernet port profile' is configured!`);
+                                return;
+                            }
+                            if (override.port_security_mac_address?.length) {
+                                adapter.log.error(`${logPrefix} Port ${port_idx} uses MAC address filtering, not changed`);
+                                return;
+                            }
+                            override.port_security_enabled = !val;
+
+                            const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { port_overrides }, 'PUT');
+                            await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `port ${port_idx} ${val ? 'enable' : 'disable'} - '${device.name}' (mac: ${device.mac})`);
+                        }
                     },
                     is_uplink: {
                         iobType: 'boolean',
