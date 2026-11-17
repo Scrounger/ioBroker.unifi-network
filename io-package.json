@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "news": {
+      "1.6.0": {
+        "en": "enable / disable ports added #150\nmomment replaced with day.js\ndependencies updated #116\nrevert bug fix for expired token #124\nchannel / device name undefined bug fix #116\nvpn client handling optimized\nevent messages improved #122 #115",
+        "de": "Ports aktivieren/deaktivieren #150\nMoment ersetzt durch day.js\nAbhängigkeiten geändert #116\nBugfix für abgelaufenes Token #124\nKanal/Gerätename unbestimmt, Bugfix #116\nVPN-Client-Bedienung optimiert\nEvent-Meldungen verbessert #122 #115",
+        "ru": "добавлено включение/отключение портов #150\nмомент заменен на day.js\nзависимости обновлены #116\nотменить исправление ошибки для токена с истекшим сроком действия #124\nканал/имя устройства не определено, исправление ошибки #116\nоптимизирована обработка vpn-клиента\nулучшены сообщения о событиях #122 #115",
+        "pt": "adição de portas ativar/desativar #150\nsubstituída por day.js\ndependências atuais #116\nreverter o bug do token expirado #124\nbug indefinido de canal/dispositivo #116\nClientes VPN otimizados\nmensagens de evento melhoradas #122 #115",
+        "nl": "poorten in- of uitschakelen, toegevoegd #150\nmoment vervangen door day.js\nafhankelijkheden bijgewerkt #116\nbugfix voor verlopen token #124 ongedaan maken\nkanaal/apparaatnaam ongedefinieerd bugfix #116\nafhandeling van vpn-clients geoptimaliseerd\nberichten over gebeurtenissen zijn verbeterd #122 #115",
+        "fr": "ports activés/désactivés #150\nmoment remplacé par day.js\ndépendances mises à jour #116\ncorriger le jeton expiré #124\nnom de la chaîne ou de l'appareil non défini #116\ngestion des clients VPN optimisée\nmessages améliorés #122 #115",
+        "it": "abilita/disabilita porte #150\nmomento sostituito da day.js\ndipendenze aggiornate #116\nbug fix per il token scaduto #124\ncanale/dispositivo undefined bug fix #116\nclient vpn ottimizzato\neventi migliorati #122 #115",
+        "es": "habilitar o deshabilitar puertos agregó #150\nmomento reemplazado por day.js\ndependencias actualizó #116\ncorregir el token caducado #124\ncanal/nombre del dispositivo sin definir bug fix #116\nmanejo de cliente vpn optimizado\nmensajes de eventos mejorados #122 #115",
+        "pl": "włącz/wyłącz porty dodane #150\nmomment zastąpiony na day.js\nzależności zaktualizowane #116\nprzywróć poprawkę błędu dla wygasłego tokena #124\nnazwa kanału/urządzenia niezdefiniowana poprawka błędu #116\nzoptymalizowana obsługa klienta vpn\npoprawiono komunikaty zdarzeń #122 #115",
+        "uk": "включити/вимкнути додані порти #150\nmomment замінено на day.js\nзалежності оновлено #116\nповернути виправлення помилки для простроченого токена #124\nВиправлено помилку невизначеного імені каналу/ пристрою #116\nоптимізована обробка клієнтів vpn\nповідомлення про події покращено #122 #115",
+        "zh-cn": "已添加启用/禁用端口 #150\nmoment 替换为 day.js\n依赖关系已更新 #116\n恢复过期令牌的错误修复 #124\n频道/设备名称未定义错误修复 #116\nvpn 客户端处理已优化\n事件消息已改进 #122 #115"
+      },
       "1.5.0": {
         "en": "vpn event handler for network >= 10.3.x added #89\nevent messages improved #109, #91\ntypescript 6.x bug fixes\ndependencies updated\nspanish language added #98\nbug fix for expired token since v10.4.57 #108\nAdapter requires node.js >= 22 now",
         "de": "VPN-Ereignisbehandlung für Netzwerk >= 10.3.x hinzugefügt #89\nEreignismeldungen verbessert #109, #91\nFehlerbehebungen für TypeScript 6.x\nAbhängigkeiten aktualisiert\nSpanische Sprache hinzugefügt #98\nFehlerbehebung für abgelaufene Token seit Version 10.4.57 #108\nDer Adapter benötigt jetzt Node.js >= 22.",
@@ -80,19 +93,6 @@
         "pl": "Błąd tłumacza 6 GHz # 37\nbłąd ikony ikony isOnline\npoprawki błędów",
         "uk": "Виправлення помилок перекладача 6 ГГц #37\nisOnline державної іконки виправлення помилок\nвиправлення помилок",
         "zh-cn": "6 GHz 解释器错误修正 # 37\nis 在线状态图标错误修正\n错误修正"
-      },
-      "1.2.0": {
-        "en": "option to set offline debounce time for single client added\ndependencies updated",
-        "de": "möglichkeit, offline-debounce-zeit für einzelne client hinzugefügt\naktualisierte abhängigkeiten",
-        "ru": "возможность настроить офлайн-время отключения для одного клиента\nобновленные зависимости",
-        "pt": "opção para definir o tempo de defloramento offline para um único cliente adicionado\ndependências atualizadas",
-        "nl": "optie om offline debounce tijd in te stellen voor single client toegevoegd\nafhankelijkheden bijgewerkt",
-        "fr": "option pour définir l'heure de débonflement hors ligne pour un seul client ajouté\ndépendances mises à jour",
-        "it": "opzione per impostare offline debounce time per singolo client aggiunto\ndipendenze aggiornate",
-        "es": "opción para establecer el tiempo de devolución fuera de línea para un cliente único\ndependencias actualizadas",
-        "pl": "opcja ustawienia czasu debuuncji offline dla jednego klienta dodanego\nzaktualizowane zależności",
-        "uk": "опція в автономному режимі\nоновлені залежності",
-        "zh-cn": "选项为添加单个客户端设定下线解禁时间\n更新依赖关系"
       }
     },
     "titleLang": {

@@ -1,4 +1,9 @@
 # Older changes
+## 1.2.2 (2025-11-14)
+
+- (Scrounger) delete device event added
+- (Scrounger) event messages improved #43
+
 ## 1.2.1 (2025-11-10)
 
 - (Scrounger) 6 GHz interpreter bug fix #37

@@ -86,8 +86,7 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.6.0 (2026-11-17)
 
 - (Scrounger) enable / disable ports added #150
 - (Scrounger) momment replaced with day.js
@@ -139,11 +138,6 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 - (Scrounger) dependencies updated
 - (Scrounger) code optimized
 - (Scrounger) logging optimized
-
-### 1.2.2 (2025-11-14)
-
-- (Scrounger) delete device event added
-- (Scrounger) event messages improved #43
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
