@@ -1,6 +1,6 @@
-import moment from 'moment';
-import * as myHelper from '../helper.js';
+import dayjs from 'dayjs';
 import { ApiEndpoints } from '../api/network-api.js';
+import * as myHelper from '../helper.js';
 export var client;
 (function (client) {
     let keys = undefined;
@@ -140,7 +140,7 @@ export var client;
                 required: true,
                 updateTs: true,
                 readVal(val, adapter, device, channel, id) {
-                    const diff = moment().diff(val * 1000, 'seconds');
+                    const diff = dayjs().diff(val * 1000, 'second');
                     if (device.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
                     }

@@ -1,5 +1,5 @@
-import type { myNetworkClient } from '../myTypes.js';
 import type { myTreeDefinition } from '../myIob.js';
+import type { myNetworkClient } from '../myTypes.js';
 export declare namespace client {
     const idChannel = "clients";
     const nameChannel = "client devices";

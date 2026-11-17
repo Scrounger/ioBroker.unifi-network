@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 
 import type { FirewallGroup } from "./api/network-types-firewall.js";
 import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
@@ -233,7 +233,7 @@ export const eventHandler = {
                             }
                         } else {
                             disconnectDebounceList[mac] = {
-                                lc: moment().valueOf(),
+                                lc: dayjs().valueOf(),
                                 timeout: null
                             }
 

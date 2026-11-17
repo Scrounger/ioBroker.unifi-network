@@ -1,6 +1,6 @@
 import * as utils from '@iobroker/adapter-core';
+import dayjs from 'dayjs';
 import _ from 'lodash';
-import moment from 'moment';
 import { STATUS_CODES } from 'node:http';
 import url from 'node:url';
 import { request } from "undici";
@@ -29,7 +29,7 @@ class UnifiNetwork extends utils.Adapter {
 
 	aliveTimeout: ioBroker.Timeout | undefined = undefined;
 	pingTimeout: ioBroker.Timeout | undefined = undefined;
-	aliveTimestamp: number = moment().valueOf();
+	aliveTimestamp: number = dayjs().valueOf();
 	apiPollingTimeout: ioBroker.Timeout | undefined = undefined;
 
 	connectionRetries: number = 0;
@@ -92,8 +92,6 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onReady]:';
 
 		try {
-			moment.locale(this.language);
-
 			await utils.I18n.init(`${utils.getAbsoluteDefaultDataDir().replace('iobroker-data/', '')}node_modules/iobroker.${this.name}/admin`, this);
 
 			this.myIob = new myIob(this, utils, this.statesUsingValAsLastChanged);
@@ -419,7 +417,7 @@ class UnifiNetwork extends utils.Adapter {
 
 		try {
 			if (this.ufn) {
-				const diff = Math.round((moment().valueOf() - this.aliveTimestamp) / 1000);
+				const diff = Math.round((dayjs().valueOf() - this.aliveTimestamp) / 1000);
 
 				if (diff >= (this.config.expertAliveInterval || 30)) {
 					this.log.warn(`${logPrefix} No connection to the Unifi-Network controller -> restart connection (retries: ${this.connectionRetries}, no data since ${diff}s)`);
@@ -571,7 +569,7 @@ class UnifiNetwork extends utils.Adapter {
 					await this.updateApiData();
 				}, this.config.apiUpdateInterval * 1000);
 
-				await this.setState('info.lastApiPoll', moment().valueOf(), true);
+				await this.setState('info.lastApiPoll', dayjs().valueOf(), true);
 			} else {
 				await this.setState('info.lastApiPoll', null, true);
 			}
@@ -612,7 +610,7 @@ class UnifiNetwork extends utils.Adapter {
 									// debounce real time data
 									const lastSeen = this.cache.devices[device.mac].last_seen;
 									const iobTimestamp = this.cache.devices[device.mac].iobTimestamp;
-									if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
+									if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
 										continue
 									}
 								}
@@ -629,7 +627,7 @@ class UnifiNetwork extends utils.Adapter {
 
 								if (!_.isEmpty(dataToProcess)) {
 									this.cache.devices[device.mac] = { ...this.cache.devices[device.mac], ...device };
-									this.cache.devices[device.mac].iobTimestamp = moment().unix();
+									this.cache.devices[device.mac].iobTimestamp = dayjs().unix();
 
 									dataToProcess.mac = device.mac;
 
@@ -707,12 +705,12 @@ class UnifiNetwork extends utils.Adapter {
 									const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
 									const iobTimestamp = this.cache.clients[client.mac].timestamp || this.cache.clients[client.ip].timestamp;
 
-									if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
+									if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
 										continue
 									}
 								}
 
-								const offlineSince = moment().diff((client.last_seen) * 1000, 'days');
+								const offlineSince = dayjs().diff((client.last_seen) * 1000, 'day');
 								if (client.mac) {
 									if (this.config.clientsEnabled && !client.is_guest) {
 										// Clients
@@ -735,7 +733,7 @@ class UnifiNetwork extends utils.Adapter {
 											if (!_.isEmpty(dataToProcess)) {
 												this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
 												this.cache.clients[client.mac].name = name;
-												this.cache.clients[client.mac].timestamp = moment().unix();
+												this.cache.clients[client.mac].timestamp = dayjs().unix();
 
 												this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
 												this.cache.isOnline[client.mac].network_id = client.network_id;
@@ -781,7 +779,7 @@ class UnifiNetwork extends utils.Adapter {
 											if (!_.isEmpty(dataToProcess)) {
 												this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
 												this.cache.clients[client.mac].name = name;
-												this.cache.clients[client.mac].timestamp = moment().unix();
+												this.cache.clients[client.mac].timestamp = dayjs().unix();
 
 												this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
 												this.cache.isOnline[client.mac].network_id = client.network_id;
@@ -878,7 +876,7 @@ class UnifiNetwork extends utils.Adapter {
 									const lastSeen = this.cache.clients[client.ip].last_seen;
 									const iobTimestamp = this.cache.clients[client.ip].timestamp;
 
-									if ((lastSeen && moment().diff(lastSeen * 1000, 'seconds') < this.config.realTimeApiDebounceTime) || (iobTimestamp && moment().diff(iobTimestamp * 1000, 'seconds') < this.config.realTimeApiDebounceTime)) {
+									if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
 										this.log.warn('NEXT!');
 										continue
 									}
@@ -909,7 +907,7 @@ class UnifiNetwork extends utils.Adapter {
 									if (!_.isEmpty(dataToProcess)) {
 										this.cache.vpn[client.ip] = { ...this.cache.vpn[client.ip], ...client };
 										this.cache.vpn[client.ip].name = name;
-										this.cache.vpn[client.ip].timestamp = moment().unix();
+										this.cache.vpn[client.ip].timestamp = dayjs().unix();
 
 										this.cache.isOnline[client.ip].network_id = client.network_id;
 
@@ -994,8 +992,8 @@ class UnifiNetwork extends utils.Adapter {
 
 				const client = typeOfClient !== 'vpn' ? this.cache.clients[mac?.val as string] : this.cache.vpn[ip?.val as string];
 
-				const lastSeen = moment(lastSeenState.val as number * 1000);
-				const diff = moment().diff(lastSeen, 'seconds');
+				const lastSeen = dayjs(lastSeenState.val as number * 1000);
+				const diff = dayjs().diff(lastSeen, 'second');
 
 				if (diff > offlineTimeout && isOnlineState && isOnlineState.val) {
 					if (!isAdapterStart) {
@@ -1497,7 +1495,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onPongMessage]:';
 
 		try {
-			this.aliveTimestamp = moment().valueOf();
+			this.aliveTimestamp = dayjs().valueOf();
 			this.log.silly('ping pong');
 
 			await this.setState('info.lastRealTimeData', { val: this.aliveTimestamp, lc: this.aliveTimestamp }, true);
@@ -1510,7 +1508,7 @@ class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onNetworkMessage]:';
 
 		try {
-			this.aliveTimestamp = moment().valueOf();
+			this.aliveTimestamp = dayjs().valueOf();
 
 			if (event.meta.message === WebSocketEventMessages.device) {
 				await this.updateDevices(event.data as NetworkDevice[]);

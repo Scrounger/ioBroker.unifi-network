@@ -52,6 +52,7 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ### **WORK IN PROGRESS**
 
+- (Scrounger) momment replaced with day.js
 - (Scrounger) dependencies updated #116
 - (Scrounger) revert bug fix for expired token #124
 - (Scrounger) channel / device name undefined bug fix #116

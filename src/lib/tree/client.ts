@@ -1,9 +1,9 @@
-import moment from 'moment';
-import type { myNetworkClient } from '../myTypes.js';
+import dayjs from 'dayjs';
+import { ApiEndpoints } from '../api/network-api.js';
 import type { NetworkClientFingerprint } from '../api/network-types-client.js';
 import * as myHelper from '../helper.js';
 import type { myTreeDefinition } from '../myIob.js';
-import { ApiEndpoints } from '../api/network-api.js';
+import type { myNetworkClient } from '../myTypes.js';
 
 export namespace client {
     let keys: string[] | undefined = undefined;
@@ -152,7 +152,7 @@ export namespace client {
                 required: true,
                 updateTs: true,
                 readVal(val: number, adapter: ioBroker.myAdapter, device: myNetworkClient, channel: myNetworkClient, id: string): ioBroker.StateValue {
-                    const diff = moment().diff(val * 1000, 'seconds');
+                    const diff = dayjs().diff(val * 1000, 'second');
                     if (device.type !== 'VPN') {
                         return diff <= adapter.config.clientOfflineTimeout;
                     } else {

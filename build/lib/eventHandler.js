@@ -1,4 +1,4 @@
-import moment from "moment";
+import dayjs from "dayjs";
 import * as myHelper from './helper.js';
 import { WebSocketEvent } from "./myTypes.js";
 import * as tree from './tree/index.js';
@@ -202,7 +202,7 @@ export const eventHandler = {
                         }
                         else {
                             disconnectDebounceList[mac] = {
-                                lc: moment().valueOf(),
+                                lc: dayjs().valueOf(),
                                 timeout: null
                             };
                             let logMsg = `${logPrefix} ${isGuest ? 'guest' : 'client'} '${cache?.clients[mac]?.name}' ${connected ? 'connected' : 'disconnected'} (mac: ${mac}${cache?.clients[mac]?.ip ? `, ip: ${cache?.clients[mac]?.ip}` : ''})`;
