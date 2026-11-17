@@ -284,7 +284,7 @@ export var device;
                 },
                 async writeVal(val, id, device, adapter) {
                     const logPrefix = `[tree.device.led_override]:`;
-                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { led_override: val }, 'PUT');
+                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { led_override: val }, 'PUT');
                     await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `LED override to '${val}' - '${device.name}' (mac: ${device.mac})`);
                 },
             },
@@ -404,31 +404,21 @@ export var device;
                             try {
                                 if (adapter.myIob) {
                                     const port_idx = parseInt(adapter.myIob.getIdLastPart(adapter.myIob.getIdWithoutLastPart(id)).replace('port_', ''));
-                                    const port_overrides = device.port_overrides;
-                                    if (port_overrides && port_overrides.length > 0) {
-                                        const indexOfPort = port_overrides.findIndex(x => x.port_idx === port_idx);
-                                        if (indexOfPort !== -1) {
-                                            // port_overrides has settings for this port
-                                            if (port_overrides[indexOfPort].portconf_id) {
-                                                // ethernet profil is configured, change poe not possible
-                                                adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
-                                                return;
-                                            }
-                                            else {
-                                                port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
-                                            }
-                                        }
-                                        else {
-                                            // port_overrides has no settings for this port
-                                            adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: not exists in port_overrides object -> create item`);
-                                            port_overrides[indexOfPort].poe_mode = val ? 'auto' : 'off';
-                                        }
-                                        const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device.device_id.trim()}`, { port_overrides: port_overrides }, 'PUT');
-                                        await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `command sent: switch poe power - '${val ? 'on' : 'off'}' '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`);
+                                    const port_overrides = structuredClone(device.port_overrides ?? []);
+                                    // only ports with an existing port_overrides entry are changed, no new entry is created
+                                    const override = port_overrides.find(x => x.port_idx === port_idx);
+                                    if (!override) {
+                                        adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, no port_overrides entry exists for this port!`);
+                                        return;
                                     }
-                                    else {
-                                        adapter.log.debug(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: no port_overrides object exists!`);
+                                    if (override.portconf_id) {
+                                        // ethernet port profile is configured, switch poe not possible
+                                        adapter.log.error(`${logPrefix} ${device.name} (mac: ${device.mac}) - Port ${port_idx}: switch poe not possible, because 'ethernet port profile' is configured!`);
+                                        return;
                                     }
+                                    override.poe_mode = val ? 'auto' : 'off';
+                                    const result = await adapter.ufn?.sendData(`${adapter.ufn.getApiEndpoint(ApiEndpoints.deviceRest)}/${device._id.trim()}`, { port_overrides }, 'PUT');
+                                    await adapter.ufn?.checkCommandSuccessful(result, logPrefix, `command sent: switch poe power - '${val ? 'on' : 'off'}' '${device.name}' (mac: ${device.mac}) - Port ${port_idx}`);
                                 }
                             }
                             catch (error) {
