@@ -94,8 +94,9 @@ function createInstance(stub: AdapterStub): object {
 function recordRoutes(instance: object, calls: string[]): void {
     for (const name of ROUTE_METHODS) {
         Object.assign(instance, {
-            [name]: async (): Promise<void> => {
+            [name]: (): Promise<void> => {
                 calls.push(name);
+                return Promise.resolve();
             },
         });
     }

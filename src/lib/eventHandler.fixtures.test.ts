@@ -14,7 +14,11 @@ import * as tree from './tree/index.js';
 const FIXTURE_DIR = fixtureDir(latestFixtureVersion() ?? 'keine-version', 'events');
 const describeWithFixtures = existsSync(FIXTURE_DIR) ? describe : describe.skip;
 
-/** First recorded sample of a fixture, e.g. `EVT_WG_Connected`. */
+/**
+ * First recorded sample of a fixture, e.g. `EVT_WG_Connected`.
+ *
+ * @param file fixture name without extension
+ */
 function sampleOf<T = NetworkEventData>(file: string): { meta: NetworkEventMeta; data: T } {
     const fixture = JSON.parse(readFileSync(path.join(FIXTURE_DIR, `${file}.json`), 'utf8')) as {
         samples: { meta: NetworkEventMeta; data: T }[];

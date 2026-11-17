@@ -69,22 +69,24 @@ export function createAdapterStub(config: Record<string, unknown> = {}): Adapter
     const adapter = {
         config: { ...DEFAULT_CONFIG, ...config },
         log,
-        objectExists: async (id: string): Promise<boolean> => objects.has(id),
-        setState: async (id: string, state: unknown): Promise<void> => {
+        objectExists: (id: string): Promise<boolean> => Promise.resolve(objects.has(id)),
+        setState: (id: string, state: unknown): Promise<void> => {
             write(id, state);
+            return Promise.resolve();
         },
-        setStateChangedAsync: async (id: string, state: unknown): Promise<boolean> => {
+        setStateChangedAsync: (id: string, state: unknown): Promise<boolean> => {
             write(id, state);
-            return true;
+            return Promise.resolve(true);
         },
-        delObjectAsync: async (id: string): Promise<void> => {
+        delObjectAsync: (id: string): Promise<void> => {
             for (const existing of [...objects]) {
                 if (existing === id || existing.startsWith(`${id}.`)) {
                     objects.delete(existing);
                 }
             }
+            return Promise.resolve();
         },
-        getStatesAsync: async (): Promise<Record<string, unknown>> => ({}),
+        getStatesAsync: (): Promise<Record<string, unknown>> => Promise.resolve({}),
         setTimeout: (): undefined => undefined,
         clearTimeout: (): void => undefined,
     };
@@ -99,7 +101,7 @@ export function createAdapterStub(config: Record<string, unknown> = {}): Adapter
             lan: {},
             isOnline: {},
             firewall: { groups: {} },
-        } as unknown as myCache,
+        },
         objects,
         states,
         warnings,
