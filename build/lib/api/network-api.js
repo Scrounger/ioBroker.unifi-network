@@ -754,9 +754,9 @@ export class NetworkApi extends EventEmitter {
     /**
      * get statistics for site, gateway, switches or access points
      *
-     * @param type report type @see reportType
-     * @param interval report interval @see reportInterval
-     * @param attrs filter by attributes @see NetworkReportStats
+     * @param type report type, see `NetworkReportType`
+     * @param interval report interval, see `NetworkReportInterval`
+     * @param attrs filter by attributes, see `NetworkReportStats`
      * @param mac filter by mac
      * @param start repot start timestamp
      * @param end report end timestamp
@@ -1078,14 +1078,23 @@ export class NetworkApi extends EventEmitter {
                 this._eventsWs = null;
                 return false;
             }
-            let messageHandler;
+            let onMessage = null;
+            let onPong = null;
+            // Removes this socket's listeners. Shared by the close and error handlers.
+            const removeListeners = () => {
+                if (onMessage) {
+                    ws.removeListener('message', onMessage);
+                    onMessage = null;
+                }
+                if (onPong) {
+                    ws.removeListener('pong', onPong);
+                    onPong = null;
+                }
+            };
             // Cleanup after ourselves if our websocket closes for some resaon.
             ws.once('close', () => {
                 this._eventsWs = null;
-                if (messageHandler) {
-                    ws.removeListener('message', messageHandler);
-                    messageHandler = null;
-                }
+                removeListeners();
             });
             // Handle any websocket errors.
             ws.once('error', (error) => {
@@ -1099,13 +1108,11 @@ export class NetworkApi extends EventEmitter {
                         this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                     }
                 }
-                if (messageHandler) {
-                    ws.removeListener('message', messageHandler);
-                }
+                removeListeners();
                 ws.terminate();
             });
             // Process messages as they come in.
-            ws.on('message', messageHandler = (data) => {
+            onMessage = (data) => {
                 try {
                     if (data.toString().toLowerCase() === 'pong') {
                         this.log.warn('PONG');
@@ -1121,8 +1128,9 @@ export class NetworkApi extends EventEmitter {
                 catch (error) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
-            });
-            ws.on('pong', messageHandler = (data) => {
+            };
+            ws.on('message', onMessage);
+            onPong = () => {
                 try {
                     this.emit('pong');
                     this.log.silly?.(`pong received`);
@@ -1130,7 +1138,8 @@ export class NetworkApi extends EventEmitter {
                 catch (error) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
-            });
+            };
+            ws.on('pong', onPong);
             // Make the websocket available, and then we're done.
             this._eventsWs = ws;
         }

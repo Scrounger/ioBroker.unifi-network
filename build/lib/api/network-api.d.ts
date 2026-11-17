@@ -6,7 +6,7 @@ import type { NetworkClient } from './network-types-client.js';
 import type { NetworkDeviceModels } from './network-types-device-models.js';
 import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
 import type { FirewallGroup } from './network-types-firewall.js';
-import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
+import type { NetworkLanConfig, NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkMembersGroup } from './network-types-network-members-groups.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { NetworkSite } from './network-types-sites.js';
@@ -178,7 +178,7 @@ export declare class NetworkApi extends EventEmitter {
      * @param network_id optional: network id to receive only the configuration for this wlan
      * @returns
      */
-    getLanConfig(network_id?: string | undefined): Promise<NetworkWlanConfig[] | undefined>;
+    getLanConfig(network_id?: string | undefined): Promise<NetworkLanConfig[] | undefined>;
     /**
      * API V2 - List all Lan configurations
      *
@@ -209,9 +209,9 @@ export declare class NetworkApi extends EventEmitter {
     /**
      * get statistics for site, gateway, switches or access points
      *
-     * @param type report type @see reportType
-     * @param interval report interval @see reportInterval
-     * @param attrs filter by attributes @see NetworkReportStats
+     * @param type report type, see `NetworkReportType`
+     * @param interval report interval, see `NetworkReportInterval`
+     * @param attrs filter by attributes, see `NetworkReportStats`
      * @param mac filter by mac
      * @param start repot start timestamp
      * @param end report end timestamp

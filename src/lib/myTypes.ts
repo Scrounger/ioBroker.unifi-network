@@ -1,9 +1,9 @@
 import type { NetworkClient } from "./api/network-types-client.js";
 import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceSystemStats, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
-import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
-import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { Firewall, FirewallGroup } from "./api/network-types-firewall.js";
+import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import { NetworkSysInfo } from "./api/network-types-sysinfo.js";
+import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 
 export type myTreeData =
     NetworkDevice | NetworkDevicePortTable | NetworkDeviceRadioTable | NetworkDeviceRadioTableStat | NetworkDeviceVapTable | NetworkDeviceStorage | NetworkDeviceWan | NetworkDeviceWanUptimeStats | NetworkDeviceSystemStats |
@@ -35,6 +35,20 @@ export enum WebSocketEventMessages {
     firewallGroup = 'firewallgroup:',
     vpnUsers = 'vpn-users:'
 }
+
+/**
+ * WebSocket `meta.message` values the adapter does not process.
+ * Compared against the complete `meta.message` value.
+ */
+export const ignoredWebSocketMessages: readonly string[] = [
+    'device:update',
+    'unifi-device:sync',
+    'session-metadata:sync',
+    'radio-ai:plan',                        // Channel AI events
+    'setting:sync',
+    'vpn-connection:sync',                  // ToDo: Handling of Gateway VPN Client Connection
+    'ping-test:update'
+];
 
 export const WebSocketEvent = {
     // defined in web-socket-manager.xxxxxxx.js

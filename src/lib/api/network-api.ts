@@ -11,7 +11,7 @@ import type { NetworkClient } from './network-types-client.js';
 import type { NetworkDeviceModels } from './network-types-device-models.js';
 import type { NetworkDevice, NetworkDevice_V2 } from './network-types-device.js';
 import type { FirewallGroup } from './network-types-firewall.js';
-import type { NetworkLanConfig_V2 } from './network-types-lan-config.js';
+import type { NetworkLanConfig, NetworkLanConfig_V2 } from './network-types-lan-config.js';
 import { NetworkMembersGroup } from './network-types-network-members-groups.js';
 import { NetworkReportInterval, type NetworkReportStats, type NetworkReportType } from './network-types-report-stats.js';
 import { NetworkSite } from './network-types-sites.js';
@@ -839,7 +839,7 @@ export class NetworkApi extends EventEmitter {
      * @param network_id optional: network id to receive only the configuration for this wlan
      * @returns 
      */
-    public async getLanConfig(network_id: string | undefined = undefined): Promise<NetworkWlanConfig[] | undefined> {
+    public async getLanConfig(network_id: string | undefined = undefined): Promise<NetworkLanConfig[] | undefined> {
         const logPrefix = `[${this.logPrefix}.getLanConfig]`
 
         try {
@@ -961,9 +961,9 @@ export class NetworkApi extends EventEmitter {
     /**
      * get statistics for site, gateway, switches or access points
      * 
-     * @param type report type @see reportType
-     * @param interval report interval @see reportInterval
-     * @param attrs filter by attributes @see NetworkReportStats
+     * @param type report type, see `NetworkReportType`
+     * @param interval report interval, see `NetworkReportInterval`
+     * @param attrs filter by attributes, see `NetworkReportStats`
      * @param mac filter by mac
      * @param start repot start timestamp
      * @param end report end timestamp
@@ -1356,18 +1356,27 @@ export class NetworkApi extends EventEmitter {
                 return false;
             }
 
-            let messageHandler: ((data: string) => void) | null;
+            let onMessage: ((data: string) => void) | null = null;
+            let onPong: (() => void) | null = null;
+
+            // Removes this socket's listeners. Shared by the close and error handlers.
+            const removeListeners = (): void => {
+                if (onMessage) {
+                    ws.removeListener('message', onMessage);
+                    onMessage = null;
+                }
+                if (onPong) {
+                    ws.removeListener('pong', onPong);
+                    onPong = null;
+                }
+            };
 
             // Cleanup after ourselves if our websocket closes for some resaon.
             ws.once('close', (): void => {
 
                 this._eventsWs = null;
 
-                if (messageHandler) {
-
-                    ws.removeListener('message', messageHandler);
-                    messageHandler = null;
-                }
+                removeListeners();
             });
 
             // Handle any websocket errors.
@@ -1384,15 +1393,13 @@ export class NetworkApi extends EventEmitter {
                     }
                 }
 
-                if (messageHandler) {
-                    ws.removeListener('message', messageHandler);
-                }
+                removeListeners();
 
                 ws.terminate();
             });
 
             // Process messages as they come in.
-            ws.on('message', messageHandler = (data: string): void => {
+            onMessage = (data: string): void => {
                 try {
                     if (data.toString().toLowerCase() === 'pong') {
                         this.log.warn('PONG');
@@ -1408,16 +1415,18 @@ export class NetworkApi extends EventEmitter {
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
-            });
+            };
+            ws.on('message', onMessage);
 
-            ws.on('pong', messageHandler = (data: string): void => {
+            onPong = (): void => {
                 try {
                     this.emit('pong');
                     this.log.silly?.(`pong received`);
                 } catch (error: any) {
                     this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);
                 }
-            });
+            };
+            ws.on('pong', onPong);
 
             // Make the websocket available, and then we're done.
             this._eventsWs = ws;

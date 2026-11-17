@@ -10,6 +10,19 @@ export var WebSocketEventMessages;
     WebSocketEventMessages["firewallGroup"] = "firewallgroup:";
     WebSocketEventMessages["vpnUsers"] = "vpn-users:";
 })(WebSocketEventMessages || (WebSocketEventMessages = {}));
+/**
+ * WebSocket `meta.message` values the adapter does not process.
+ * Compared against the complete `meta.message` value.
+ */
+export const ignoredWebSocketMessages = [
+    'device:update',
+    'unifi-device:sync',
+    'session-metadata:sync',
+    'radio-ai:plan', // Channel AI events
+    'setting:sync',
+    'vpn-connection:sync', // ToDo: Handling of Gateway VPN Client Connection
+    'ping-test:update'
+];
 export const WebSocketEvent = {
     // defined in web-socket-manager.xxxxxxx.js
     device: {

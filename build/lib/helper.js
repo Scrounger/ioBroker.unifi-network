@@ -21,7 +21,7 @@ export function zeroPad(source, places) {
 /**
  * Collect all properties used in tree defintions
  *
- * @param treefDefintion @see tree-devices.ts @see tree-clients.ts
+ * @param treefDefintion see `tree-devices.ts` and `tree-clients.ts`
  * @returns
  */
 export function getAllKeysOfTreeDefinition(treefDefintion) {

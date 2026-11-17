@@ -20,3 +20,16 @@ admin/i18n/*/flat.txt
 mybuild.sh
 myrelease.sh
 ioBroker.unifi-network.lnk
+
+# local environment / credentials (live tests)
+.env
+.env.*
+!.env.example
+
+# recorded real-time event fixtures (contain anonymized controller data, stay local)
+test/fixtures/local/
+
+# compiled tests and live tools (excluded from build, see tsconfig.build.json)
+build/**/*.test.js
+build/**/*.test.d.ts
+build/live/

@@ -1,9 +1,9 @@
 import type { NetworkClient } from "./api/network-types-client.js";
 import type { NetworkDevice, NetworkDevicePortTable, NetworkDeviceRadioTable, NetworkDeviceRadioTableStat, NetworkDeviceStorage, NetworkDeviceSystemStats, NetworkDeviceVapTable, NetworkDeviceWan, NetworkDeviceWanUptimeStats } from "./api/network-types-device.js";
-import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
-import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import type { Firewall, FirewallGroup } from "./api/network-types-firewall.js";
+import type { NetworkLanConfig } from "./api/network-types-lan-config.js";
 import { NetworkSysInfo } from "./api/network-types-sysinfo.js";
+import type { NetworkWlanConfig } from "./api/network-types-wlan-config.js";
 export type myTreeData = NetworkDevice | NetworkDevicePortTable | NetworkDeviceRadioTable | NetworkDeviceRadioTableStat | NetworkDeviceVapTable | NetworkDeviceStorage | NetworkDeviceWan | NetworkDeviceWanUptimeStats | NetworkDeviceSystemStats | NetworkClient | myNetworkClient | ConnectedClients | NetworkLanConfig | NetworkWlanConfig | Firewall | FirewallGroup | NetworkSysInfo;
 export interface myNetworkClient extends NetworkClient {
     isOnline: boolean;
@@ -25,6 +25,11 @@ export declare enum WebSocketEventMessages {
     firewallGroup = "firewallgroup:",
     vpnUsers = "vpn-users:"
 }
+/**
+ * WebSocket `meta.message` values the adapter does not process.
+ * Compared against the complete `meta.message` value.
+ */
+export declare const ignoredWebSocketMessages: readonly string[];
 export declare const WebSocketEvent: {
     device: {
         Connected: string[];

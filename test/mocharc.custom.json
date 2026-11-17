@@ -1,8 +1,10 @@
 {
 	"require": [
 		"test/mocha.setup.cjs",
-		"ts-node/register",
 		"source-map-support/register"
+	],
+	"node-option": [
+		"import=tsx"
 	],
 	"watch-files": [
 		"src/**/*.test.ts"

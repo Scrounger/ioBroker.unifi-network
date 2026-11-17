@@ -16,7 +16,7 @@ import { disconnectDebounceList, eventHandler } from './lib/eventHandler.js';
 import { messageHandler } from './lib/messageHandler.js';
 import { migration } from './lib/migration.js';
 import { myIob, myTreeState } from './lib/myIob.js';
-import { type ConnectedClients, WebSocketEvent, WebSocketEventMessages, type myCache, type myNetworkClient } from './lib/myTypes.js';
+import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages, type ConnectedClients, type myCache, type myNetworkClient } from './lib/myTypes.js';
 import * as tree from './lib/tree/index.js';
 
 class UnifiNetwork extends utils.Adapter {
@@ -56,15 +56,7 @@ class UnifiNetwork extends utils.Adapter {
 		await this.onPongMessage();
 	};
 
-	eventsToIgnore = [
-		'device:update',
-		'unifi-device:sync',
-		'session-metadata:sync',
-		'radio-ai:plan',						// Channel AI events
-		'setting:sync',
-		'vpn-connection:sync',					// ToDo: Handling of Gateway VPN Client Connection
-		'ping-test:update'
-	]
+	eventsToIgnore: readonly string[] = ignoredWebSocketMessages;
 
 	statesUsingValAsLastChanged = [          // id of states where lc is taken from the value
 		'rundate',

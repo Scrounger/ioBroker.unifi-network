@@ -47,6 +47,7 @@
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "tsc-watch": "^7.2.1",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
   "type": "module",
@@ -67,7 +68,9 @@
     "prebuild:ts": "rimraf build",
     "build:ts": "build-adapter ts --typescriptFormat esm",
     "watch:ts": "build-adapter ts --watch --typescriptFormat esm",
-    "test:ts": "mocha --config test/mocharc.custom.json src/**/*.test.ts",
+    "test:ts": "mocha --config test/mocharc.custom.json \"src/**/*.test.ts\" --ignore \"src/live/**/*.live.test.ts\"",
+    "test:live": "mocha --config test/mocharc.custom.json \"src/live/**/*.live.test.ts\" --exit",
+    "record:api": "tsx src/live/recordApiFixtures.ts",
     "test:package": "mocha test/package --exit",
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:ts && npm run test:package",
