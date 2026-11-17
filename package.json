@@ -74,6 +74,7 @@
     "record:api": "tsx src/live/recordApiFixtures.ts",
     "record:events": "tsx src/live/recordEventFixtures.ts",
     "record:events:missing": "tsx src/live/recordEventFixtures.ts --missing",
+    "record:events:unknown": "tsx src/live/recordUnknownEvents.ts",
     "test:package": "mocha test/package --exit",
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:ts && npm run test:package",

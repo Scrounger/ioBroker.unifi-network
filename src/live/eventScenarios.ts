@@ -4,7 +4,7 @@
  * Pure functions and constants without side effects, shared by the recorder and the offline tests.
  * Event keys are taken from `WebSocketEvent`, so the scenarios stay in sync with the adapter code.
  */
-import { WebSocketEvent } from '../lib/myTypes.js';
+import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages } from '../lib/myTypes.js';
 
 /** Maximum number of distinct devices, clients or users kept per cyclic message type. */
 export const ENTITY_LIMIT = 5;
@@ -33,6 +33,12 @@ export const HANDLED_EVENT_KEYS: readonly string[] = [
     ...WebSocketEvent.device.WANTransition,
     ...WebSocketEvent.device.Deleted,
 ];
+
+/** Every event key the adapter knows, evaluated or only logged. Keys outside this list are unknown. */
+export const KNOWN_EVENT_KEYS: readonly string[] = [
+    ...Object.values(WebSocketEvent.device),
+    ...Object.values(WebSocketEvent.client),
+].flat();
 
 /** Minimal shape of a WebSocket message as emitted by `NetworkApi`. */
 export interface WsMessage {
@@ -65,6 +71,38 @@ export function handledEventItems(message: WsMessage): WsItem[] {
         return [];
     }
     return itemsOf(message).filter((item: WsItem): boolean => typeof item.key === 'string' && HANDLED_EVENT_KEYS.includes(item.key));
+}
+
+/**
+ * Returns the items of an `events` message whose key is not known to the adapter at all.
+ * These are the items the adapter logs as `not implemented`.
+ *
+ * @param message WebSocket message
+ */
+export function unknownEventItems(message: WsMessage): WsItem[] {
+    if (message.meta.message !== WebSocketEventMessages.events) {
+        return [];
+    }
+    return itemsOf(message).filter((item: WsItem): boolean => typeof item.key === 'string' && !KNOWN_EVENT_KEYS.includes(item.key));
+}
+
+/**
+ * Returns true for messages the adapter dispatches in `onNetworkMessage` or ignores on purpose.
+ * Mirrors the dispatch there. A name for which this returns false is logged as `not implemented`.
+ *
+ * @param name `meta.message` of the message
+ */
+export function isKnownMessage(name: string): boolean {
+    return name === WebSocketEventMessages.device
+        || name === WebSocketEventMessages.events
+        || name === WebSocketEventMessages.speedTest
+        || name.startsWith(WebSocketEventMessages.client)
+        || name.startsWith(WebSocketEventMessages.user)
+        || name.startsWith(WebSocketEventMessages.wlanConf)
+        || name.startsWith(WebSocketEventMessages.lanConf)
+        || name.startsWith(WebSocketEventMessages.firewallGroup)
+        || name.startsWith(WebSocketEventMessages.vpnUsers)
+        || ignoredWebSocketMessages.includes(name);
 }
 
 /**
