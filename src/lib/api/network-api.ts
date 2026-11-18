@@ -1031,7 +1031,6 @@ export class NetworkApi extends EventEmitter {
 
         try {
             const url = `${this.controllerUrl}${this.isUnifiOs ? '/proxy/network' : ''}/v2/api/site/${this.site}/system-log/${type}`;
-            this.log.warn(url);
             if (!end) {
                 end = Date.now()
             }
@@ -1051,7 +1050,7 @@ export class NetworkApi extends EventEmitter {
             if (type === SystemLogType.critical) {
                 payload.nextAiCategory = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
             } else if (type === SystemLogType.devices) {
-                if (!macs) {
+                if (macs) {
                     payload.macs = macs;
                 }
             } else if (type === SystemLogType.admin) {

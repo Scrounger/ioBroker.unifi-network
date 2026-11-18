@@ -112,6 +112,7 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 ### **WORK IN PROGRESS**
 
 - (Scrounger) bug fixes found by adapter checker
+- (Scrounger) bug fixes
 
 ### 1.6.0 (2026-11-17)
 

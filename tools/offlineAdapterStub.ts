@@ -33,6 +33,15 @@ export interface AdapterStub {
     errors: string[];
 }
 
+/**
+ * Escapes one literal part of a state id pattern for use in a regular expression.
+ *
+ * @param part literal part of the pattern, without `*`
+ */
+function escapeRegExp(part: string): string {
+    return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function isStateObject(state: unknown): state is { val: unknown } {
     return typeof state === 'object' && state !== null && 'val' in state;
 }
@@ -68,6 +77,8 @@ export function createAdapterStub(config: Record<string, unknown> = {}): Adapter
 
     const adapter = {
         config: { ...DEFAULT_CONFIG, ...config },
+        namespace: 'unifi-network.0',
+        name: 'unifi-network',
         log,
         objectExists: (id: string): Promise<boolean> => Promise.resolve(objects.has(id)),
         setState: (id: string, state: unknown): Promise<void> => {
@@ -86,7 +97,27 @@ export function createAdapterStub(config: Record<string, unknown> = {}): Adapter
             }
             return Promise.resolve();
         },
-        getStatesAsync: (): Promise<Record<string, unknown>> => Promise.resolve({}),
+        setStateChanged: (id: string, state: unknown): Promise<boolean> => {
+            write(id, state);
+            return Promise.resolve(true);
+        },
+        getStateAsync: (id: string): Promise<{ val: unknown } | null> =>
+            Promise.resolve(states.has(id) ? { val: states.get(id) } : null),
+        /**
+         * Returns all states whose id matches the pattern. Supports `*` as wildcard, e.g. `clients.*.last_seen`.
+         *
+         * @param pattern state id pattern
+         */
+        getStatesAsync: (pattern: string): Promise<Record<string, { val: unknown }>> => {
+            const matcher = new RegExp(`^${pattern.split('*').map(escapeRegExp).join('.*')}$`);
+            const result: Record<string, { val: unknown }> = {};
+            for (const [id, val] of states) {
+                if (matcher.test(id)) {
+                    result[id] = { val };
+                }
+            }
+            return Promise.resolve(result);
+        },
         setTimeout: (): undefined => undefined,
         clearTimeout: (): void => undefined,
     };

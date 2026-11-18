@@ -819,7 +819,6 @@ export class NetworkApi extends EventEmitter {
         const logPrefix = `[${this.logPrefix}.getSystemLog]`;
         try {
             const url = `${this.controllerUrl}${this.isUnifiOs ? '/proxy/network' : ''}/v2/api/site/${this.site}/system-log/${type}`;
-            this.log.warn(url);
             if (!end) {
                 end = Date.now();
             }
@@ -837,7 +836,7 @@ export class NetworkApi extends EventEmitter {
                 payload.nextAiCategory = ['CLIENT', 'DEVICE', 'INTERNET', 'VPN'];
             }
             else if (type === SystemLogType.devices) {
-                if (!macs) {
+                if (macs) {
                     payload.macs = macs;
                 }
             }

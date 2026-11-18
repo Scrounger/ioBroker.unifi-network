@@ -138,6 +138,62 @@ describeWithFixtures('eventHandler mit aufgezeichneten Fixtures (offline)', () =
 
             expect(stub.states.get(id)).to.equal(parseInt(data.channel_to as string));
         });
+
+        it('setzt isOnline eines Users bei EVT_WU_Disconnected auf false', async () => {
+            const { meta, data } = sampleOf('EVT_WU_Disconnected');
+            const mac = data.user as string;
+            const id = `${tree.client.idChannelUsers}.${mac}.isOnline`;
+            stub.objects.add(id);
+
+            await eventHandler.client.connected(meta, data, stub.adapter, stub.cache);
+
+            expect(stub.states.get(id)).to.equal(false);
+            expect(stub.errors).to.deep.equal([]);
+        });
+
+        it('setzt isOnline eines Gasts bei EVT_LG_Disconnected auf false', async () => {
+            const { meta, data } = sampleOf('EVT_LG_Disconnected');
+            const mac = data.guest as string;
+            const id = `${tree.client.idChannelGuests}.${mac}.isOnline`;
+            stub.objects.add(id);
+
+            await eventHandler.client.connected(meta, data, stub.adapter, stub.cache);
+
+            expect(stub.states.get(id)).to.equal(false);
+            expect(stub.errors).to.deep.equal([]);
+        });
+    });
+
+    describe('client-Debounce', () => {
+        it('verzögert die Trennung bei clientRealtimeDisconnectDebounceTime > 0 und schreibt noch keinen State', async () => {
+            stub = createAdapterStub({ clientRealtimeDisconnectDebounceTime: 30 });
+            const { meta, data } = sampleOf('EVT_WU_Disconnected');
+            const mac = data.user as string;
+            const id = `${tree.client.idChannelUsers}.${mac}.isOnline`;
+            stub.objects.add(id);
+
+            await eventHandler.client.connected(meta, data, stub.adapter, stub.cache);
+
+            expect(disconnectDebounceList[mac]).to.not.equal(undefined);
+            expect(stub.states.has(id)).to.equal(false);
+        });
+
+        it('verwirft die ausstehende Trennung, wenn der Client innerhalb der Debounce-Zeit wieder verbindet', async () => {
+            stub = createAdapterStub({ clientRealtimeDisconnectDebounceTime: 30 });
+            const disconnected = sampleOf('EVT_WU_Disconnected');
+            const connected = sampleOf('EVT_WU_Connected');
+            const mac = disconnected.data.user as string;
+            const id = `${tree.client.idChannelUsers}.${mac}.isOnline`;
+            stub.objects.add(id);
+
+            await eventHandler.client.connected(disconnected.meta, disconnected.data, stub.adapter, stub.cache);
+            expect(disconnectDebounceList[mac]).to.not.equal(undefined);
+
+            await eventHandler.client.connected(connected.meta, { ...connected.data, user: mac }, stub.adapter, stub.cache);
+
+            expect(disconnectDebounceList[mac]).to.equal(undefined);
+            expect(stub.states.get(id)).to.equal(true);
+        });
     });
 
     describe('device', () => {
@@ -204,6 +260,31 @@ describeWithFixtures('eventHandler mit aufgezeichneten Fixtures (offline)', () =
             await eventHandler.device.wanTransition(meta, data, stub.adapter, stub.cache);
 
             expect(stub.states.has(id)).to.equal(false);
+        });
+
+        it('schreibt Download, Upload und Latenz nach Abschluss des Speedtests (speed-test:update)', async () => {
+            const { meta, data: samples } = sampleOf<Record<string, any>[]>('speed-test-update');
+            const [result] = samples;
+            const mac = meta.mac as string;
+            const idChannel = `${tree.device.idChannel}.${mac}.wan1`;
+            const idDownload = `${idChannel}.speedtest_download`;
+            const idUpload = `${idChannel}.speedtest_upload`;
+            const idLatency = `${idChannel}.latency`;
+            setCachedDevice(stub.cache, mac, { name: 'Gateway', mac, wan1: { ifname: result.interface_name } });
+            stub.objects.add(idDownload);
+            stub.objects.add(idUpload);
+            stub.objects.add(idLatency);
+            const speedTestEvent = (payload: Record<string, unknown>[]): Parameters<typeof eventHandler.device.speedTest>[0] =>
+                ({ meta, data: payload }) as unknown as Parameters<typeof eventHandler.device.speedTest>[0];
+
+            // laufender Test setzt den Zustand, erst danach wird der Abschluss übernommen
+            await eventHandler.device.speedTest(speedTestEvent([{ ...result, 'download-progress': 10 }]), stub.adapter, stub.cache);
+            await eventHandler.device.speedTest(speedTestEvent([result]), stub.adapter, stub.cache);
+
+            expect(stub.states.get(idDownload)).to.equal(result.xput_download);
+            expect(stub.states.get(idUpload)).to.equal(result.xput_upload);
+            expect(stub.states.get(idLatency)).to.equal(result.latency);
+            expect(stub.errors).to.deep.equal([]);
         });
     });
 

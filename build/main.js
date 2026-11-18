@@ -69,7 +69,7 @@ export class UnifiNetwork extends utils.Adapter {
                 this.config.realTimeApiDebounceTime >= 0 && this.config.realTimeApiDebounceTime <= 10000 &&
                 this.config.apiUpdateInterval >= 30 && this.config.apiUpdateInterval <= 10000 &&
                 this.config.clientRealtimeDisconnectDebounceTime >= 0 && this.config.clientRealtimeDisconnectDebounceTime <= 10000) {
-                if (this.config.host, this.config.user, this.config.password) {
+                if (this.config.host && this.config.user && this.config.password) {
                     this.ufn = new NetworkApi(this.config.host, this.config.port, this.config.site, this.config.user, this.config.password, this);
                     migration(this);
                     await this.establishConnection(true);
@@ -749,12 +749,11 @@ export class UnifiNetwork extends utils.Adapter {
                         for (const client of data) {
                             const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
                             if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: client.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: client.mac }))) {
-                                if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.ip])) {
+                                if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.vpn[client.ip])) {
                                     // debounce real time data
-                                    const lastSeen = this.cache.clients[client.ip].last_seen;
-                                    const iobTimestamp = this.cache.clients[client.ip].timestamp;
+                                    const lastSeen = this.cache.vpn[client.ip].last_seen;
+                                    const iobTimestamp = this.cache.vpn[client.ip].timestamp;
                                     if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
-                                        this.log.warn('NEXT!');
                                         continue;
                                     }
                                 }
@@ -1220,10 +1219,18 @@ export class UnifiNetwork extends utils.Adapter {
             if (url !== null) {
                 const response = await request(url);
                 if (response && response.statusCode === 200) {
-                    const imageBuffer = Buffer.from(await response.body.arrayBuffer());
-                    const imageBase64 = imageBuffer.toString('base64');
-                    base64ImgString = `data:image/png;base64,${imageBase64}`;
-                    this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
+                    const contentType = String(response.headers['content-type'] ?? '');
+                    const mimeType = /^image\/[\w.+-]+/i.exec(contentType)?.[0];
+                    if (mimeType) {
+                        const imageBuffer = Buffer.from(await response.body.arrayBuffer());
+                        const imageBase64 = imageBuffer.toString('base64');
+                        base64ImgString = `data:${mimeType};base64,${imageBase64}`;
+                        this.log.debug(`${logPrefix} image download successful -> update states: ${JSON.stringify(idChannelList)}`);
+                    }
+                    else {
+                        await response.body.dump();
+                        this.log.error(`${logPrefix} unexpected content-type "${contentType}" for url: ${url}`);
+                    }
                 }
                 else {
                     if (response) {
