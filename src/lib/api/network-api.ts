@@ -1315,12 +1315,14 @@ export class NetworkApi extends EventEmitter {
     }
 
     public async checkCommandSuccessful(result: Nullable<Dispatcher.ResponseData<unknown>> | undefined, logPrefix: string, message: string, id: string | undefined = undefined): Promise<void> {
-        if (result) {
+        if (result && this.responseOk(result.statusCode)) {
             if (id) {
                 await this.adapter.setState(id, { ack: true });
             }
 
             this.log.info(`${logPrefix} command successfully sent: ${message}`);
+        } else {
+            this.log.error(`${logPrefix} command failed: ${message} (status code: ${result?.statusCode ?? 'no response'})`);
         }
     }
 

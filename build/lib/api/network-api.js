@@ -1049,11 +1049,14 @@ export class NetworkApi extends EventEmitter {
         return `${this.controllerUrl}${endpointPrefix}${endpointSuffix}`;
     }
     async checkCommandSuccessful(result, logPrefix, message, id = undefined) {
-        if (result) {
+        if (result && this.responseOk(result.statusCode)) {
             if (id) {
                 await this.adapter.setState(id, { ack: true });
             }
             this.log.info(`${logPrefix} command successfully sent: ${message}`);
+        }
+        else {
+            this.log.error(`${logPrefix} command failed: ${message} (status code: ${result?.statusCode ?? 'no response'})`);
         }
     }
     async launchEventsWs() {
