@@ -4,7 +4,6 @@
         "src/**/*.ts"
     ],
     "exclude": [
-        "src/**/*.test.ts",
         "src/**/*.d.ts",
         "src/lib/api/network-logging.ts",
         "src/lib/api/network-types.ts",

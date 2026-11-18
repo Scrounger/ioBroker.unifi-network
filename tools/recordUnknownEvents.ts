@@ -22,10 +22,10 @@ import path from 'node:path';
 import { createInterface, type Interface } from 'node:readline/promises';
 import { ApiEndpoints } from '../src/lib/api/network-api.js';
 import { WebSocketEventMessages } from '../src/lib/myTypes.js';
+import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from '../test/tools/liveHelper.test.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import { isKnownMessage, toFileName, unknownEventItems, type WsMessage } from './eventScenarios.js';
 import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';
-import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from './liveHelper.test.js';
 
 /** Default maximum runtime in minutes, used when the prompt is answered with Enter. */
 const DEFAULT_MINUTES = 15;

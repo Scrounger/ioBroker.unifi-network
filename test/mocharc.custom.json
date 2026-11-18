@@ -7,6 +7,6 @@
 		"import=tsx"
 	],
 	"watch-files": [
-		"src/**/*.test.ts"
+		"test/**/*.test.ts"
 	]
 }

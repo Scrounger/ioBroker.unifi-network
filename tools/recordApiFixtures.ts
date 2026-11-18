@@ -21,9 +21,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { ApiEndpoints, ApiEndpoints_V2, type NetworkApi } from '../src/lib/api/network-api.js';
+import { createLiveApi, describeMessages, getLiveConfig } from '../test/tools/liveHelper.test.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';
-import { createLiveApi, describeMessages, getLiveConfig } from './liveHelper.test.js';
 
 /** Lists the files that would be written or deleted without changing anything. Enabled with `--dry-run`. */
 const DRY_RUN = process.argv.includes('--dry-run');

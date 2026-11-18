@@ -21,6 +21,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import path from 'node:path';
 import { createInterface, type Interface } from 'node:readline/promises';
 import { ApiEndpoints } from '../src/lib/api/network-api.js';
+import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from '../test/tools/liveHelper.test.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import {
     CYCLIC_MESSAGES,
@@ -36,7 +37,6 @@ import {
     type WsMessage,
 } from './eventScenarios.js';
 import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';
-import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from './liveHelper.test.js';
 
 /** Maximum time the recorder waits for the cyclic messages at the end. */
 const CYCLIC_WAIT_MS = 60_000;

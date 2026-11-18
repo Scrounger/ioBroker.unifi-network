@@ -23,7 +23,8 @@ export default [
             'www',
             './lib/protect-api-playback-stream.ts',
             'src-www/src/assets/lib/conn.js',
-            'test'
+            'test/**/*.cjs',
+            'test/**/*.mjs',
         ],
     },
 
