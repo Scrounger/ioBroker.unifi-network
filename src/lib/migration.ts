@@ -15,7 +15,7 @@ export function migration(adapter: ioBroker.myAdapter): void {
     }
 }
 
-function isVersionGreaterThan(version: string, comparisonVersion: string): boolean {
+export function isVersionGreaterThan(version: string, comparisonVersion: string): boolean {
     const versionParts = version.split('.').map(Number);
     const comparisonParts = comparisonVersion.split('.').map(Number);
 

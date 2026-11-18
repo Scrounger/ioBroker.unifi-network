@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { request } from 'undici';
 import type { NetworkDeviceModels } from '../src/lib/api/network-types-device-models.js';
-import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
+import { describeMessages, getSharedLogin, type LiveSession } from './liveHelper.test.js';
 import { createMainContext } from './mainTestHelpers.js';
 
 /**
@@ -67,22 +67,17 @@ describe('Geräte-Bilder über den Controller (live, read-only)', function () {
     };
 
     before(async function () {
-        const config = getLiveConfig();
-        if (!config) {
+        this.timeout(90_000);
+        const shared = await getSharedLogin();
+        if (!shared) {
             this.skip();
             return;
         }
 
-        this.timeout(90_000);
-        session = createLiveApi(config);
-        const loggedIn = await loginWithRetry(session);
-        expect(loggedIn, describeMessages(session.messages)).to.equal(true);
+        session = shared.session;
+        expect(shared.loggedIn, describeMessages(session.messages)).to.equal(true);
 
         models = (await getSession().api.getDeviceModels_V2()) ?? [];
-    });
-
-    after(() => {
-        session?.api.logout();
     });
 
     it('getDeviceModels_V2() liefert Modelle mit Bild-IDs', () => {

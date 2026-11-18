@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import type { NetworkApi } from '../src/lib/api/network-api.js';
 import { NetworkReportInterval, NetworkReportType } from '../src/lib/api/network-types-report-stats.js';
-import { createLiveApi, describeMessages, getLiveConfig, isListOrEmpty, loginWithRetry, type LiveSession } from './liveHelper.test.js';
+import { describeMessages, getSharedLogin, isListOrEmpty, type LiveSession } from './liveHelper.test.js';
 
 const MAC_PATTERN = /^([0-9a-f]{2}:){5}[0-9a-f]{2}$/i;
 
@@ -21,20 +21,15 @@ describe('UniFi Network Controller - API (live, read-only)', function () {
     const context = (): string => describeMessages(getSession().messages);
 
     before(async function () {
-        const config = getLiveConfig();
-        if (!config) {
+        this.timeout(90_000);
+        const shared = await getSharedLogin();
+        if (!shared) {
             this.skip();
             return;
         }
 
-        this.timeout(90_000);
-        session = createLiveApi(config);
-        const loggedIn = await loginWithRetry(session);
-        expect(loggedIn, describeMessages(session.messages)).to.equal(true);
-    });
-
-    after(() => {
-        session?.api.logout();
+        session = shared.session;
+        expect(shared.loggedIn, describeMessages(session.messages)).to.equal(true);
     });
 
     it('getSysInfo() returns an object with version', async () => {

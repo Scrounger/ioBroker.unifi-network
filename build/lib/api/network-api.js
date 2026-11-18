@@ -131,7 +131,7 @@ export class NetworkApi extends EventEmitter {
                         this.log.debug(`${logPrefix} UniFi OS controller on port ${this.port} detected`);
                     }
                     else {
-                        this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller!`);
+                        this.log.error(`${logPrefix} Unable to detect UniFi OS or self hosted controller! (code: ${response?.statusCode ?? 'no response'})`);
                         this.logout();
                     }
                 }
@@ -200,7 +200,7 @@ export class NetworkApi extends EventEmitter {
                         return await this.checkSites();
                     }
                     else {
-                        this.log.error(`${logPrefix} no cookies found`);
+                        this.log.error(`${logPrefix} no cookies found (code: ${response?.statusCode ?? 'no response'})`);
                         this.log.debug(`${logPrefix} headers: ${JSON.stringify(response?.headers)}`);
                         this.log.debug(`${logPrefix} headers: ${JSON.stringify(cookie)}`);
                         return false;
@@ -424,7 +424,7 @@ export class NetworkApi extends EventEmitter {
             }
             // We destroyed the pool due to a reset event and our inflight connections are failing.
             if (error instanceof errors.RequestRetryError) {
-                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots (url: ${url})`);
+                this.log.error(`${logPrefix} Unable to connect to the Network controller. This is temporary and may occur during device reboots (code: ${error.statusCode}, url: ${url})`);
                 return null;
             }
             // Connection timed out.
@@ -1103,8 +1103,9 @@ export class NetworkApi extends EventEmitter {
                 this._eventsWs = null;
                 // If we're closing before fully established it's because we're shutting down the API - ignore it.
                 if (error.message !== 'WebSocket was closed before the connection was established') {
-                    if (error.message === 'Unexpected server response: 502' || error.message === 'Unexpected server response: 503' || error.message === 'Unexpected server response: 200') {
-                        this.log.error(`${logPrefix} Network controller - WebSocket service is unavailable. This is usually temporary and will occur during device reboots.`);
+                    const wsStatusCode = /^Unexpected server response: (\d{3})$/.exec(error.message)?.[1];
+                    if (wsStatusCode === '200' || wsStatusCode === '502' || wsStatusCode === '503') {
+                        this.log.error(`${logPrefix} Network controller - WebSocket service is unavailable. This is usually temporary and will occur during device reboots (code: ${wsStatusCode}, url: ${url}).`);
                     }
                     else {
                         this.log.error(`${logPrefix} ws error: ${error.message}, stack: ${error.stack}`);

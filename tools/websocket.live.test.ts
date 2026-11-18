@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { once, type EventEmitter } from 'node:events';
 import type WebSocket from 'ws';
-import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
+import { describeMessages, getSharedLogin, loginWithRetry, type LiveSession } from './liveHelper.test.js';
 
 /** `readyState` value of an open `ws` socket. */
 const WS_OPEN = 1;
@@ -47,20 +47,15 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
     const getEventsSocket = (): WebSocket | null => (getSession().api as unknown as { _eventsWs: WebSocket | null })._eventsWs;
 
     before(async function () {
-        const config = getLiveConfig();
-        if (!config) {
+        this.timeout(90_000);
+        const shared = await getSharedLogin();
+        if (!shared) {
             this.skip();
             return;
         }
 
-        this.timeout(90_000);
-        session = createLiveApi(config);
-        const loggedIn = await loginWithRetry(session);
-        expect(loggedIn, describeMessages(session.messages)).to.equal(true);
-    });
-
-    after(() => {
-        session?.api.logout();
+        session = shared.session;
+        expect(shared.loggedIn, describeMessages(session.messages)).to.equal(true);
     });
 
     it('launchEventsWs() opens the event connection', async () => {
@@ -101,11 +96,16 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
         const socket = getEventsSocket();
         expect(socket, context()).to.not.be.null;
 
-        getSession().api.logout();
+        try {
+            getSession().api.logout();
 
-        if (socket && socket.readyState !== WS_CLOSED) {
-            await waitForEvent(socket, 'close', 10_000);
+            if (socket && socket.readyState !== WS_CLOSED) {
+                await waitForEvent(socket, 'close', 10_000);
+            }
+            expect(getEventsSocket(), context()).to.be.null;
+        } finally {
+            // The session is shared with the other live files. Log in again so they keep a valid session.
+            await loginWithRetry(getSession());
         }
-        expect(getEventsSocket(), context()).to.be.null;
     });
 });

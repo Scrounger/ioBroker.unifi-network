@@ -12,7 +12,7 @@ export function migration(adapter) {
         adapter.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
     }
 }
-function isVersionGreaterThan(version, comparisonVersion) {
+export function isVersionGreaterThan(version, comparisonVersion) {
     const versionParts = version.split('.').map(Number);
     const comparisonParts = comparisonVersion.split('.').map(Number);
     for (let i = 0; i < Math.max(versionParts.length, comparisonParts.length); i++) {

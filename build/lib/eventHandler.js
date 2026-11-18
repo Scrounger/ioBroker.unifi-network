@@ -4,6 +4,17 @@ import { WebSocketEvent } from "./myTypes.js";
 import * as tree from './tree/index.js';
 export const disconnectDebounceList = {};
 const speedTestRunning = {};
+/**
+ * Clears the module-level state (debounce list and speedtest flags). Only meant for tests.
+ */
+export function resetEventHandlerStateForTests() {
+    for (const mac of Object.keys(disconnectDebounceList)) {
+        delete disconnectDebounceList[mac];
+    }
+    for (const wan of Object.keys(speedTestRunning)) {
+        delete speedTestRunning[wan];
+    }
+}
 export const eventHandler = {
     device: {
         async restarted(meta, data, adapter, cache) {

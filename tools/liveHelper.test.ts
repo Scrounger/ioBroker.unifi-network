@@ -135,6 +135,41 @@ export async function loginWithRetry(session: LiveSession, attempts = 3, delayMs
     return false;
 }
 
+/** Result of the login that all live test files of a test run share. */
+export interface SharedLogin {
+    session: LiveSession;
+    loggedIn: boolean;
+}
+
+let sharedLogin: Promise<SharedLogin | undefined> | undefined;
+
+/**
+ * Returns the login that all live test files share. The first caller logs in, every later caller gets the
+ * same result. This keeps a test run to a single login instead of one per file. A failed login is cached as
+ * well, so the remaining files fail with the same controller messages instead of logging in again.
+ *
+ * @returns the shared session or `undefined` if no credentials are configured
+ */
+export function getSharedLogin(): Promise<SharedLogin | undefined> {
+    sharedLogin ??= (async (): Promise<SharedLogin | undefined> => {
+        const config = getLiveConfig();
+        if (!config) {
+            return undefined;
+        }
+
+        const session = createLiveApi(config);
+        const loggedIn = await loginWithRetry(session);
+        return { session, loggedIn };
+    })();
+    return sharedLogin;
+}
+
+// Root hook: logs the shared session out once after all live tests of the run.
+after(async (): Promise<void> => {
+    const shared = await sharedLogin;
+    shared?.session.api.logout();
+});
+
 /**
  * Formats the collected log messages for assertion output.
  *

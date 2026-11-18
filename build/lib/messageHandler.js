@@ -10,6 +10,21 @@ let lanList = undefined;
 let lanStateList = undefined;
 let firewallGroupList = undefined;
 let firewallGroupStateList = undefined;
+/**
+ * Clears all cached lists, so the next request is built again. Only meant for tests.
+ */
+export function resetListCachesForTests() {
+    deviceList = undefined;
+    deviceStateList = undefined;
+    clientList = undefined;
+    clientStateList = undefined;
+    wlanList = undefined;
+    wlanStateList = undefined;
+    lanList = undefined;
+    lanStateList = undefined;
+    firewallGroupList = undefined;
+    firewallGroupStateList = undefined;
+}
 export const messageHandler = {
     device: {
         async list(message, adapter, ufn) {

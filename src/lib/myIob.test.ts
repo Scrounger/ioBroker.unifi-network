@@ -1,13 +1,15 @@
 import { expect } from 'chai';
-import { copyFileSync, existsSync, lstatSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
+// Statische Imports: dynamische Imports laden die Module (network-api) doppelt und verfälschen die Coverage.
+import { myIob, type myTreeState } from './myIob.js';
+import type { myTreeData } from './myTypes.js';
+import * as treeModule from './tree/index.js';
 
 type MyIobClass = typeof import('./myIob.js').myIob;
 type MyIobArgs = ConstructorParameters<MyIobClass>;
-type TreeModule = typeof import('./tree/index.js');
 type StoredObject = { type?: string; common?: Record<string, any>; native?: Record<string, any> };
 type TreeDefinitions = Parameters<InstanceType<MyIobClass>['createOrUpdateStates']>[1];
 type BlacklistFilter = Parameters<InstanceType<MyIobClass>['createOrUpdateStates']>[4];
@@ -23,62 +25,7 @@ interface TestContext {
     stateCalls: string[];
     extendedIds: string[];
     errors: string[];
-}
-
-/**
- * `myIob` is a symlink to `../shared/myIob.ts` outside of this repository.
- * The module is loaded lazily, so the suite can be skipped when that file or its dependencies (lodash) are not resolvable.
- */
-let myIob: MyIobClass;
-
-/** Pfad des Moduls im Projekt (normalerweise ein Symlink auf das Shared-Modul). */
-const MODULE_PATH = fileURLToPath(new URL('./myIob.ts', import.meta.url));
-
-/** Symlink-Ziel, das nach den Tests wiederhergestellt wird. */
-let savedSymlinkTarget: string | undefined;
-
-/**
- * Ersetzt den Symlink durch eine Kopie der Shared-Datei, damit das Modul im Projektkontext
- * (Projekt-`node_modules` mit lodash, ESM) aufgelöst wird. Ohne Symlink oder ohne Quelle passiert nichts.
- */
-function replaceSymlinkWithCopy(): void {
-    const stats = lstatSync(MODULE_PATH, { throwIfNoEntry: false });
-    if (!stats?.isSymbolicLink()) {
-        return;
-    }
-
-    const target = readlinkSync(MODULE_PATH);
-    const source = resolve(dirname(MODULE_PATH), target);
-    if (!existsSync(source)) {
-        return;
-    }
-
-    // Ziel vor dem Austausch merken, damit auch ein fehlgeschlagenes copyFileSync wiederhergestellt wird.
-    savedSymlinkTarget = target;
-    unlinkSync(MODULE_PATH);
-    copyFileSync(source, MODULE_PATH);
-}
-
-/**
- * Entfernt die Kopie und stellt den ursprünglichen Symlink wieder her.
- */
-function restoreSymlink(): void {
-    if (savedSymlinkTarget === undefined) {
-        return;
-    }
-
-    rmSync(MODULE_PATH, { force: true });
-    symlinkSync(savedSymlinkTarget, MODULE_PATH);
-    savedSymlinkTarget = undefined;
-}
-
-// Absicherung: Symlink auch bei Prozessende oder Abbruch (Strg+C) wiederherstellen.
-process.once('exit', restoreSymlink);
-for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-    process.once(signal, () => {
-        restoreSymlink();
-        process.exit(130);
-    });
+    warnings: string[];
 }
 
 /**
@@ -90,13 +37,16 @@ function createTestContext(): TestContext {
     const stateCalls: string[] = [];
     const extendedIds: string[] = [];
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     const log = {
         level: 'debug',
         silly: (): void => undefined,
         debug: (): void => undefined,
         info: (): void => undefined,
-        warn: (): void => undefined,
+        warn: (message: string): void => {
+            warnings.push(message);
+        },
         error: (message: string): void => {
             errors.push(message);
         },
@@ -135,6 +85,10 @@ function createTestContext(): TestContext {
             objects.set(id, { ...existing, ...obj, common: { ...existing.common, ...obj.common } });
             return Promise.resolve();
         },
+        delObjectAsync: (id: string): Promise<void> => {
+            objects.delete(id);
+            return Promise.resolve();
+        },
         setState: writeState('setState'),
         setStateChangedAsync: writeState('setStateChangedAsync'),
     };
@@ -147,26 +101,63 @@ function createTestContext(): TestContext {
 
     const iob = new myIob(adapter as unknown as MyIobArgs[0], utils as unknown as MyIobArgs[1]);
 
-    return { adapter, iob, objects, states, stateCalls, extendedIds, errors };
+    return { adapter, iob, objects, states, stateCalls, extendedIds, errors, warnings };
+}
+
+/**
+ * Testdaten für createOrUpdateStates. Die Testfälle verwenden frei gewählte State-Ids, die nicht
+ * den Feldern von `myTreeData` entsprechen. Deshalb wird der Typ hier bewusst umgangen.
+ *
+ * @param values Werte je State-Id
+ * @returns Daten im Format von createOrUpdateStates
+ */
+function testData(values: Record<string, unknown>): myTreeData {
+    return values;
+}
+
+/**
+ * Liefert den Adapter-Stub für Aufrufe, die einen `ioBroker.Adapter` erwarten.
+ *
+ * @param ctx Test-Kontext mit dem Adapter-Stub
+ * @returns Adapter-Stub als `ioBroker.Adapter`
+ */
+function asAdapter(ctx: TestContext): ioBroker.Adapter {
+    return ctx.adapter as unknown as ioBroker.Adapter;
+}
+
+/**
+ * Erstellt eine myIob-Instanz, deren Übersetzungsabfrage durch `translate` ersetzt wird.
+ *
+ * @param ctx Test-Kontext mit dem Adapter-Stub
+ * @param translate Ersatz für `I18n.getTranslatedObject`
+ * @returns myIob-Instanz mit der übergebenen Übersetzungsfunktion
+ */
+function createTranslatingIob(ctx: TestContext, translate: (text: string) => Record<string, string>): myIob {
+    const utils = { I18n: { getTranslatedObject: translate } };
+    return new myIob(ctx.adapter as unknown as MyIobArgs[0], utils as unknown as MyIobArgs[1]);
+}
+
+/**
+ * Legt einen einzelnen State über createOrUpdateStates an und liefert das gespeicherte Objekt.
+ *
+ * @param iob myIob-Instanz, die den State anlegt
+ * @param ctx Test-Kontext mit dem Objekt-Speicher
+ * @param id State-Id innerhalb des Test-Channels
+ * @param def Tree-Definition des States
+ * @returns das gespeicherte Objekt oder undefined
+ */
+async function createStateObject(iob: myIob, ctx: TestContext, id: string, def: myTreeState<any, any, any>): Promise<StoredObject | undefined> {
+    const channel = `${NAMESPACE}.test`;
+    const value = def.iobType === 'number' ? 1 : def.iobType === 'string' ? 'x' : true;
+    const definitions: TreeDefinitions = { [id]: def };
+
+    await iob.createOrUpdateStates(channel, definitions, { [id]: value }, { [id]: value });
+    return ctx.objects.get(`${channel}.${id}`);
 }
 
 
 describe('myIob (offline)', function () {
     let ctx: TestContext;
-
-    before(async function () {
-        replaceSymlinkWithCopy();
-        try {
-            ({ myIob } = await import('./myIob.js'));
-        } catch {
-            this.skip();
-            return;
-        }
-    });
-
-    after(() => {
-        restoreSymlink();
-    });
 
     beforeEach(() => {
         ctx = createTestContext();
@@ -277,6 +268,263 @@ describe('myIob (offline)', function () {
 
             expect(ctx.states.get(id)).to.deep.equal({ val: 7, ack: true });
             expect(ctx.stateCalls).to.deep.equal(['setStateChangedAsync']);
+        });
+    });
+
+    describe('deepDiffBetweenObjects()', () => {
+        it('liefert nur geänderte Felder', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ a: 1, b: 2 }, { a: 1, b: 3 }, asAdapter(ctx))).to.deep.equal({ b: 2 });
+        });
+
+        it('liefert bei verschachtelten Objekten nur die geänderten Unterfelder', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ x: { y: 2, z: 1 } }, { x: { y: 1, z: 1 } }, asAdapter(ctx))).to.deep.equal({ x: { y: 2 } });
+        });
+
+        it('liefert keine Differenz bei gleichen verschachtelten Objekten', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ x: { y: 1 } }, { x: { y: 1 } }, asAdapter(ctx))).to.deep.equal({});
+        });
+
+        it('übernimmt das komplette Objekt, wenn die Basis kein Objekt ist', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ x: { y: 1 } }, { x: 5 }, asAdapter(ctx))).to.deep.equal({ x: { y: 1 } });
+        });
+
+        it('übernimmt geänderte Arrays aus Primitiven komplett', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ tags: ['a', 'c'] }, { tags: ['a', 'b'] }, asAdapter(ctx))).to.deep.equal({ tags: ['a', 'c'] });
+        });
+
+        it('liefert bei Arrays aus Objekten pro Index nur die Änderungen', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ list: [{ a: 1 }, { a: 2 }] }, { list: [{ a: 1 }, { a: 3 }] }, asAdapter(ctx))).to.deep.equal({ list: [null, { a: 2 }] });
+        });
+
+        it('liefert neue Array-Einträge vollständig', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ list: [{ a: 1 }, { b: 2 }] }, { list: [{ a: 1 }] }, asAdapter(ctx))).to.deep.equal({ list: [null, { b: 2 }] });
+        });
+
+        it('berücksichtigt nur erlaubte Schlüssel', () => {
+            expect(ctx.iob.deepDiffBetweenObjects({ a: 1, b: 2 }, { a: 0, b: 0 }, asAdapter(ctx), ['a'])).to.deep.equal({ a: 1 });
+        });
+
+        it('protokolliert Fehler und liefert keine fehlerhaften Felder', () => {
+            const result = ctx.iob.deepDiffBetweenObjects({ a: 1 }, null, asAdapter(ctx));
+
+            expect(result).to.deep.equal({});
+            expect(ctx.errors.length, 'Fehler im Logger').to.be.above(0);
+            ctx.errors.splice(0);
+        });
+    });
+
+    describe('Übersetzungsprüfung', () => {
+        it('meldet fehlende Übersetzungen der Tree-Definitionen', () => {
+            ctx.iob.findMissingTranslation();
+
+            expect(ctx.warnings.some(w => w.includes('missing translations')), 'Warnung zu fehlenden Übersetzungen').to.equal(true);
+        });
+
+        it('meldet keine fehlenden Übersetzungen, wenn alle Namen übersetzt sind', () => {
+            const iob = createTranslatingIob(ctx, () => ({ en: 'Name', de: 'Name' }));
+            iob.findMissingTranslation();
+
+            expect(ctx.warnings.filter(w => w.includes('missing translations'))).to.be.empty;
+        });
+
+        it('wertet verschachtelte Gruppen, Arrays und Objekte aus und überspringt "events"', () => {
+            const tree = {
+                events: { get: () => ({ ignored: { iobType: 'string', name: 'Ignored' } }) },
+                group: {
+                    plain: { name: 'Plain' },
+                    device: {
+                        get: () => ({
+                            withName: { iobType: 'string', name: 'Named' },
+                            withoutName: { iobType: 'number' },
+                            fnName: { iobType: 'boolean', name: () => 'Funktion' },
+                            obj: { object: { inner: { iobType: 'string', name: 'Inner' } } },
+                            arr: { array: { item: { iobType: 'string', name: 'Item' } } },
+                            primitive: 'text',
+                        }),
+                    },
+                },
+            };
+
+            ctx.iob._findMissingTranslation(tree);
+
+            const message = ctx.warnings.find(w => w.includes('device - missing translations'));
+            expect(message, 'Warnung für device').to.be.a('string');
+            const missing = JSON.parse((message as string).slice((message as string).indexOf('{')));
+            expect(missing).to.deep.equal({ Named: 'Named', withoutName: 'withoutName', obj: 'obj', arr: 'arr', Inner: 'Inner', Item: 'Item' });
+            expect(ctx.warnings.join('\n')).to.not.include('Ignored');
+        });
+
+        it('protokolliert Fehler beim Auslesen einer Tree-Definition', () => {
+            ctx.iob._findMissingTranslation({
+                broken: {
+                    get: (): never => {
+                        throw new Error('boom');
+                    },
+                },
+            });
+
+            expect(ctx.errors.join('\n')).to.include('boom');
+            ctx.errors.splice(0);
+        });
+    });
+
+    describe('Rollenzuweisung über createOrUpdateStates()', () => {
+        const cases: { id: string; def: myTreeState<any, any, any>; role: string }[] = [
+            { id: 'enable_x', def: { iobType: 'boolean', read: true, write: true }, role: 'switch.enable' },
+            { id: 'led', def: { iobType: 'boolean', read: true, write: true }, role: 'switch.light' },
+            { id: 'poe_mode', def: { iobType: 'boolean', read: true, write: true }, role: 'switch.power' },
+            { id: 'relay', def: { iobType: 'boolean', read: true, write: true }, role: 'switch' },
+            { id: 'isOnline', def: { iobType: 'boolean', read: true, write: false }, role: 'indicator.reachable' },
+            { id: 'error_flag', def: { iobType: 'boolean', read: true, write: false }, role: 'indicator.error' },
+            { id: 'alarm', def: { iobType: 'boolean', read: true, write: false }, role: 'indicator.alarm' },
+            { id: 'maintenance_mode', def: { iobType: 'boolean', read: true, write: false }, role: 'indicator.maintenance' },
+            { id: 'door', def: { iobType: 'boolean', read: true, write: false }, role: 'sensor' },
+            { id: 'temperatur', def: { iobType: 'number', unit: '°C', read: true, write: false }, role: 'value.temperature' },
+            { id: 'setpoint', def: { iobType: 'number', unit: 'K', read: true, write: true }, role: 'level.temperature' },
+            { id: 'brightness', def: { iobType: 'number', unit: 'lux', read: true, write: false }, role: 'value.brightness' },
+            { id: 'co2', def: { iobType: 'number', unit: 'ppm', read: true, write: false }, role: 'value.co2' },
+            { id: 'pressure', def: { iobType: 'number', unit: 'mbar', read: true, write: false }, role: 'value.pressure' },
+            { id: 'energy_total', def: { iobType: 'number', unit: 'kWh', read: true, write: true }, role: 'level.energy' },
+            { id: 'power_now', def: { iobType: 'number', unit: 'W', read: true, write: false }, role: 'value.power' },
+            { id: 'current', def: { iobType: 'number', unit: 'A', read: true, write: false }, role: 'value.current' },
+            { id: 'voltage', def: { iobType: 'number', unit: 'V', read: true, write: false }, role: 'value.voltage' },
+            { id: 'frequency', def: { iobType: 'number', unit: 'Hz', read: true, write: false }, role: 'value.frequency' },
+            { id: 'longitude', def: { iobType: 'number', read: true, write: false }, role: 'value.gps.longitude' },
+            { id: 'latitude', def: { iobType: 'number', read: true, write: false }, role: 'value.gps.latitude' },
+            { id: 'humidity', def: { iobType: 'number', unit: '%', read: true, write: false }, role: 'value.humidity' },
+            { id: 'battery', def: { iobType: 'number', unit: '%', read: true, write: false }, role: 'value.battery' },
+            { id: 'volume', def: { iobType: 'number', unit: '%', read: true, write: true }, role: 'level.volume' },
+            { id: 'count', def: { iobType: 'number', read: true, write: true }, role: 'level' },
+            { id: 'countW', def: { iobType: 'number', read: false, write: true }, role: 'level' },
+            { id: 'plain', def: { iobType: 'number', read: false, write: false }, role: 'state' },
+            { id: 'firmware', def: { iobType: 'string', read: true, write: false }, role: 'info.firmware' },
+            { id: 'status_text', def: { iobType: 'string', read: true, write: false }, role: 'info.status' },
+            { id: 'model', def: { iobType: 'string', read: true, write: false }, role: 'info.model' },
+            { id: 'mac_address', def: { iobType: 'string', read: true, write: false }, role: 'info.mac' },
+            { id: 'hostname', def: { iobType: 'string', read: true, write: false }, role: 'info.name' },
+            { id: 'hardware_rev', def: { iobType: 'string', read: true, write: false }, role: 'info.hardware' },
+            { id: 'serial_no', def: { iobType: 'string', read: true, write: false }, role: 'info.serial' },
+            { id: 'comment', def: { iobType: 'string', read: true, write: false }, role: 'text' },
+            { id: 'note', def: { iobType: 'string', read: true, write: true }, role: 'text' },
+            { id: 'payload', def: { iobType: 'json' as ioBroker.CommonType, read: true, write: false }, role: 'state' },
+        ];
+
+        for (const c of cases) {
+            it(`vergibt die Rolle '${c.role}' für ${c.id}`, async () => {
+                const obj = await createStateObject(ctx.iob, ctx, c.id, c.def);
+
+                expect(obj?.common?.role).to.equal(c.role);
+            });
+        }
+    });
+
+    describe('getCommonForState() über createOrUpdateStates()', () => {
+        const translations: Record<string, Record<string, string>> = {
+            Temperatur: { en: 'Temperature', de: 'Temperatur' },
+            Grad: { en: '°C', de: 'Grad Celsius' },
+        };
+
+        it('übernimmt übersetzte Namen und Einheiten', async () => {
+            ctx.adapter.language = 'de';
+            const iob = createTranslatingIob(ctx, text => translations[text] ?? { en: text });
+            const obj = await createStateObject(iob, ctx, 'temp', { iobType: 'number', name: 'Temperatur', unit: 'Grad', read: true, write: false });
+
+            expect(obj?.common?.name).to.deep.equal({ en: 'Temperature', de: 'Temperatur' });
+            expect(obj?.common?.unit).to.equal('Grad Celsius');
+        });
+
+        it('nutzt Unit-Funktionen und behält Namen ohne Übersetzung', async () => {
+            const obj = await createStateObject(ctx.iob, ctx, 'humidity', { iobType: 'number', unit: (): string => '%', read: true, write: false });
+
+            expect(obj?.common?.unit).to.equal('%');
+            expect(obj?.common?.name).to.equal('humidity');
+        });
+
+        it('übernimmt Grenzen, Schritt, Standardwert, Beschreibung und Rolle', async () => {
+            const obj = await createStateObject(ctx.iob, ctx, 'level', { iobType: 'number', min: 0, max: 100, step: 5, expert: true, def: 0, desc: 'Beschreibung', role: 'custom.role', read: true, write: true });
+
+            expect(obj?.common).to.include({ min: 0, max: 100, step: 5, expert: true, def: 0, desc: 'Beschreibung', role: 'custom.role' });
+        });
+
+        it('übernimmt den Standardwert false', async () => {
+            const obj = await createStateObject(ctx.iob, ctx, 'flag', { iobType: 'boolean', def: false, read: true, write: true });
+
+            expect(obj?.common?.def).to.equal(false);
+        });
+
+        it('übernimmt Auswahlwerte aus states und statesFromProperty', async () => {
+            const withStates = await createStateObject(ctx.iob, ctx, 'mode', { iobType: 'string', read: true, write: true, states: { auto: 'Automatik', manual: 'Manuell' } });
+            const fromProperty = await createStateObject(ctx.iob, ctx, 'choice', { iobType: 'string', read: true, write: false, statesFromProperty: (): string[] => ['x', 'y'] });
+
+            expect(withStates?.common?.states).to.deep.equal({ auto: 'Automatik', manual: 'Manuell' });
+            expect(fromProperty?.common?.states).to.deep.equal(['x', 'y']);
+        });
+    });
+
+    describe('createOrUpdateStates() Sonderfälle', () => {
+        it('legt keine States an, wenn der Adapter nicht verbunden ist', async () => {
+            ctx.adapter.connected = false;
+            const def: TreeDefinitions = { offline: { iobType: 'boolean', read: true, write: false } };
+            const changed = await ctx.iob.createOrUpdateStates(`${NAMESPACE}.test`, def, testData({ offline: true }), testData({ offline: true }));
+
+            expect(changed).to.equal(false);
+            expect(ctx.objects.size).to.equal(0);
+            expect(ctx.warnings.some(w => w.includes('adapter has no connection'))).to.equal(true);
+        });
+
+        it('überspringt States, deren valFromProperty in den Daten fehlt', async () => {
+            const obj = await createStateObject(ctx.iob, ctx, 'derived', { iobType: 'number', read: true, write: false, valFromProperty: 'source' });
+
+            expect(obj).to.equal(undefined);
+        });
+
+        it('entfernt einen State, der auf der Blacklist steht', async () => {
+            const channel = `${NAMESPACE}.test`;
+            const def: TreeDefinitions = { blocked: { iobType: 'boolean', read: true, write: false } };
+            await ctx.iob.createOrUpdateStates(channel, def, testData({ blocked: true }), testData({ blocked: true }));
+            expect(ctx.objects.has(`${channel}.blocked`)).to.equal(true);
+
+            await ctx.iob.createOrUpdateStates(channel, def, testData({ blocked: true }), testData({ blocked: true }), [{ id: 'blocked' }]);
+            expect(ctx.objects.has(`${channel}.blocked`)).to.equal(false);
+        });
+
+        it('löscht States mit false-Bedingung nur bei updateObject=true', async () => {
+            const channel = `${NAMESPACE}.test`;
+            const def: TreeDefinitions = { cond: { iobType: 'boolean', read: true, write: false, conditionToCreateState: (): boolean => false } };
+            ctx.objects.set(`${channel}.cond`, { type: 'state', common: {} });
+
+            await ctx.iob.createOrUpdateStates(channel, def, testData({ cond: true }), testData({ cond: true }));
+            expect(ctx.objects.has(`${channel}.cond`), 'ohne updateObject unverändert').to.equal(true);
+
+            await ctx.iob.createOrUpdateStates(channel, def, testData({ cond: true }), testData({ cond: true }), undefined, false, 'Gerät', true);
+            expect(ctx.objects.has(`${channel}.cond`), 'mit updateObject gelöscht').to.equal(false);
+        });
+
+        it('aktualisiert bestehende States bei updateObject=true', async () => {
+            const channel = `${NAMESPACE}.test`;
+            await ctx.iob.createOrUpdateStates(channel, { level: { iobType: 'number', read: true, write: false, min: 0 } }, testData({ level: 1 }), testData({ level: 1 }));
+            await ctx.iob.createOrUpdateStates(channel, { level: { iobType: 'number', read: true, write: false, min: 10 } }, testData({ level: 1 }), testData({ level: 1 }), undefined, false, 'Gerät', true);
+
+            expect(ctx.objects.get(`${channel}.level`)?.common?.min).to.equal(10);
+            expect(ctx.extendedIds).to.deep.equal([`${channel}.level`]);
+        });
+
+        it('protokolliert Fehler aus readVal im Logger', async () => {
+            const channel = `${NAMESPACE}.test`;
+            const def: TreeDefinitions = {
+                broken: {
+                    iobType: 'number',
+                    read: true,
+                    write: false,
+                    readVal: (): number => {
+                        throw new Error('readVal kaputt');
+                    },
+                },
+            };
+            await ctx.iob.createOrUpdateStates(channel, def, testData({ broken: 1 }), testData({ broken: 1 }));
+
+            expect(ctx.errors.join('\n')).to.include('readVal kaputt');
+            ctx.errors.splice(0);
         });
     });
 });
@@ -485,26 +733,11 @@ function findOptionalStateId(definitions: TreeDefinitions, channel: string, crea
 
 describe('myIob mit API-Fixtures (offline)', function () {
     let ctx: TestContext;
-    let treeModule: TreeModule;
 
-    before(async function () {
+    before(function () {
         if (!REQUIRED_FIXTURES.every(name => existsSync(resolve(FIXTURE_DIR, `${name}.json`)))) {
             this.skip();
-            return;
         }
-
-        replaceSymlinkWithCopy();
-        try {
-            ({ myIob } = await import('./myIob.js'));
-        } catch {
-            this.skip();
-            return;
-        }
-        treeModule = await import('./tree/index.js');
-    });
-
-    after(() => {
-        restoreSymlink();
     });
 
     beforeEach(() => {

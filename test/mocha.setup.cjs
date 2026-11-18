@@ -10,17 +10,20 @@ Module.register(pathToFileURL(path.join(__dirname, 'adapter-core.hooks.mjs')).hr
 
 // src/lib/myIob.ts is a symlink to ../shared/myIob.ts. Node resolves its imports from the real path,
 // where neither ./helper.js nor node_modules exist. Requests from that real path are resolved as if
-// they came from the symlink location src/lib instead.
+// they came from the symlink location src/lib instead. This only applies while the symlink exists:
+// tools/withMyIobCopy.mjs replaces it with a copy, and then src/lib is no shared directory.
 const projectRoot = path.resolve(__dirname, '..');
 const srcLibDir = path.join(projectRoot, 'src', 'lib');
-const sharedDir = path.dirname(fs.realpathSync(path.join(srcLibDir, 'myIob.ts')));
+const myIobPath = path.join(srcLibDir, 'myIob.ts');
+const isMyIobSymlink = fs.lstatSync(myIobPath, { throwIfNoEntry: false })?.isSymbolicLink() ?? false;
+const sharedDir = isMyIobSymlink ? path.dirname(fs.realpathSync(myIobPath)) : undefined;
 const ADAPTER_CORE_STUB = path.join(__dirname, 'stubs', 'adapter-core.cjs');
 const originalResolveFilename = Module._resolveFilename;
 Module._resolveFilename = function resolveTestOverrides(request, parent, ...rest) {
 	if (request === '@iobroker/adapter-core') {
 		return ADAPTER_CORE_STUB;
 	}
-	if (parent?.filename?.startsWith(sharedDir + path.sep)) {
+	if (sharedDir !== undefined && parent?.filename?.startsWith(sharedDir + path.sep)) {
 		if (request.startsWith('.')) {
 			request = path.resolve(srcLibDir, request);
 		} else {

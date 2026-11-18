@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
 import type { NetworkApi } from './api/network-api.js';
-import type * as MessageHandlerModule from './messageHandler.js';
+import { messageHandler, resetListCachesForTests } from './messageHandler.js';
 import type { JsonConfigAutocompleteSendTo } from './myTypes.js';
 
 const API_DIR = fixtureDir(latestFixtureVersion() ?? 'none', 'api');
@@ -20,15 +20,14 @@ function responseOf<T>(name: string): T {
 }
 
 /**
- * `messageHandler` keeps its lists in module-level variables. Every test imports a new module instance
- * with a unique query string, so no list leaks from one test into the next.
+ * `messageHandler` keeps its lists in module-level variables. Resetting them before each test keeps lists from
+ * leaking from one test into the next. The shared module instance is used so that c8 keeps its coverage.
+ *
+ * @returns The shared `messageHandler` with empty list caches.
  */
-let caseCounter = 0;
-async function freshMessageHandler(): Promise<typeof MessageHandlerModule.messageHandler> {
-    caseCounter++;
-    const url = `./messageHandler.js?case=${caseCounter}`;
-    const module = (await import(url)) as typeof MessageHandlerModule;
-    return module.messageHandler;
+function freshMessageHandler(): Promise<typeof messageHandler> {
+    resetListCachesForTests();
+    return Promise.resolve(messageHandler);
 }
 
 interface SentMessage {

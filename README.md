@@ -9,7 +9,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.unifi-network.png?downloads=true)](https://nodei.co/npm/iobroker.unifi-network/)
 
-**Tests:** ![Test and Release](https://github.com/Scrounger/ioBroker.unifi-network/workflows/Test%20and%20Release/badge.svg) ![Coverage](https://img.shields.io/badge/coverage-53%25-orange)
+**Tests:** ![Test and Release](https://github.com/Scrounger/ioBroker.unifi-network/workflows/Test%20and%20Release/badge.svg) ![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)
 
 ## unifi-network adapter for ioBroker
 
@@ -102,8 +102,6 @@ Tests against a real controller and recorded fixtures:
     ```
 
 Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they contain controller data. The live tests need the controller credentials in the git-ignored `.env` file. The coverage report is written to `coverage/` (git-ignored).
-
-The coverage badge at the top of this page is updated automatically by `npm run test:coverage` (`tools/updateCoverageBadge.mjs`), based on the `total` line percentage in `coverage/coverage-summary.json`. Commit the changed README together with the code.
 
 ## Changelog
 

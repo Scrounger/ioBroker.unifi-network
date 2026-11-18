@@ -4,7 +4,19 @@
         "src/**/*.ts"
     ],
     "exclude": [
-        "src/**/*.test.ts"
+        "src/**/*.test.ts",
+        "src/**/*.d.ts",
+        "src/lib/api/network-logging.ts",
+        "src/lib/api/network-types.ts",
+        "src/lib/api/network-types-client.ts",
+        "src/lib/api/network-types-device-models.ts",
+        "src/lib/api/network-types-device.ts",
+        "src/lib/api/network-types-firewall.ts",
+        "src/lib/api/network-types-lan-config.ts",
+        "src/lib/api/network-types-network-members-groups.ts",
+        "src/lib/api/network-types-sites.ts",
+        "src/lib/api/network-types-sysinfo.ts",
+        "src/lib/api/network-types-wlan-config.ts"
     ],
     "reporter": [
         "text",

@@ -1,7 +1,7 @@
 import _ from "lodash";
 import type { NetworkApi } from "./api/network-api.js";
-import * as tree from './tree/index.js'
 import type { JsonConfigAutocompleteSendTo } from "./myTypes.js";
+import * as tree from './tree/index.js';
 
 let deviceList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 let deviceStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
@@ -17,6 +17,22 @@ let lanStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 
 let firewallGroupList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
 let firewallGroupStateList: JsonConfigAutocompleteSendTo[] | undefined = undefined;
+
+/**
+ * Clears all cached lists, so the next request is built again. Only meant for tests.
+ */
+export function resetListCachesForTests(): void {
+    deviceList = undefined;
+    deviceStateList = undefined;
+    clientList = undefined;
+    clientStateList = undefined;
+    wlanList = undefined;
+    wlanStateList = undefined;
+    lanList = undefined;
+    lanStateList = undefined;
+    firewallGroupList = undefined;
+    firewallGroupStateList = undefined;
+}
 
 export const messageHandler = {
     device: {

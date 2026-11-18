@@ -12,6 +12,18 @@ export const disconnectDebounceList: { [mac: string]: { lc: number, timeout: ioB
 
 const speedTestRunning: { [wan: string]: boolean } = {};
 
+/**
+ * Clears the module-level state (debounce list and speedtest flags). Only meant for tests.
+ */
+export function resetEventHandlerStateForTests(): void {
+    for (const mac of Object.keys(disconnectDebounceList)) {
+        delete disconnectDebounceList[mac];
+    }
+    for (const wan of Object.keys(speedTestRunning)) {
+        delete speedTestRunning[wan];
+    }
+}
+
 export const eventHandler = {
     device: {
         async restarted(meta: NetworkEventMeta, data: NetworkEventData, adapter: ioBroker.Adapter, cache: myCache): Promise<void> {
