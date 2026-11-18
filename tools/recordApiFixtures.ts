@@ -18,7 +18,7 @@ import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { ApiEndpoints, ApiEndpoints_V2, type NetworkApi } from '../lib/api/network-api.js';
+import { ApiEndpoints, ApiEndpoints_V2, type NetworkApi } from '../src/lib/api/network-api.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';
 import { createLiveApi, describeMessages, getLiveConfig } from './liveHelper.test.js';
@@ -145,12 +145,12 @@ function collectMethods(source: ts.SourceFile): Map<string, MethodUsage> {
  *
  * Starts at every call outside `lib/api/network-api.ts` (adapter, message handler, tree) and follows the calls
  * inside `NetworkApi` transitively. Endpoints read only by unreached methods are not recorded, e.g. a getter
- * that only a live test calls. `src/live/` and test files are not scanned.
+ * that only a live test calls. `tools/` and test files are not scanned.
  *
  * @returns Keys like `ApiEndpoints.devices` or `ApiEndpoints_V2.devices`
  */
 function findReadEndpoints(): Set<string> {
-    const srcDir = fileURLToPath(new URL('../', import.meta.url));
+    const srcDir = fileURLToPath(new URL('../src/', import.meta.url));
     const apiFile = path.join(srcDir, 'lib', 'api', 'network-api.ts');
     const files = readdirSync(srcDir, { recursive: true, encoding: 'utf8' })
         .filter((entry: string): boolean => entry.endsWith('.ts') && !entry.endsWith('.test.ts'))

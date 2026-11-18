@@ -3,7 +3,7 @@ import { copyFileSync, existsSync, lstatSync, readFileSync, readlinkSync, rmSync
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
-import { fixtureDir, latestFixtureVersion } from '../live/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
 
 type MyIobClass = typeof import('./myIob.js').myIob;
 type MyIobArgs = ConstructorParameters<MyIobClass>;

@@ -5,13 +5,13 @@
     "allowJs": false,
     "checkJs": false,
     "noEmit": false,
+    "rootDir": "./src",
     "declaration": false
   },
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
-    "src/**/*.test.ts",
-    "src/live/**"
+    "src/**/*.test.ts"
   ]
 }

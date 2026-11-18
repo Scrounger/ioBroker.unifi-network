@@ -1,4 +1,4 @@
-import type { myCache } from '../lib/myTypes.js';
+import type { myCache } from '../src/lib/myTypes.js';
 
 /** Config values the handlers read. Tests override single values. */
 const DEFAULT_CONFIG: Record<string, unknown> = {

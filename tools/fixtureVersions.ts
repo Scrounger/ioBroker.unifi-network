@@ -10,7 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** Root of all local fixtures (git-ignored). */
-export const FIXTURE_ROOT = fileURLToPath(new URL('../../test/fixtures/local/', import.meta.url));
+export const FIXTURE_ROOT = fileURLToPath(new URL('../test/fixtures/local/', import.meta.url));
 
 /** Kinds of fixture directories below a version directory. */
 export type FixtureKind = 'api' | 'events';

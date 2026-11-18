@@ -1,0 +1,17 @@
+{
+    // Type checking for the development tools (recorders and fixture checks). Not part of the adapter build.
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": "..",
+        "noEmit": true,
+        "declaration": false
+    },
+    "include": [
+        "./**/*.ts",
+        "../src/**/*.ts"
+    ],
+    "exclude": [
+        "../build/**",
+        "../node_modules"
+    ]
+}

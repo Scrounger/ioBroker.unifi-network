@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fixtureDir, latestFixtureVersion } from '../live/fixtureVersions.js';
-import { type AdapterStub, createAdapterStub, setCachedClient, setCachedDevice } from '../live/offlineAdapterStub.js';
+import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
+import { type AdapterStub, createAdapterStub, setCachedClient, setCachedDevice } from '../../tools/offlineAdapterStub.js';
 import type { NetworkEventData, NetworkEventMeta } from './api/network-types.js';
 import { disconnectDebounceList, eventHandler } from './eventHandler.js';
 import * as tree from './tree/index.js';

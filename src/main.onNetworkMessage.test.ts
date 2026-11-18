@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fixtureDir, latestFixtureVersion } from '../tools/fixtureVersions.js';
+import { type AdapterStub, createAdapterStub, setCachedClient } from '../tools/offlineAdapterStub.js';
 import type { NetworkEventData } from './lib/api/network-types.js';
 import { ignoredWebSocketMessages } from './lib/myTypes.js';
 import * as tree from './lib/tree/index.js';
-import { fixtureDir, latestFixtureVersion } from './live/fixtureVersions.js';
-import { type AdapterStub, createAdapterStub, setCachedClient } from './live/offlineAdapterStub.js';
 import { UnifiNetwork } from './main.js';
 
 /**
@@ -113,7 +113,7 @@ function loadEvent<T>(file: string): { meta: { message: string; rc?: string }; d
         samples: { meta: { message: string; rc?: string }; data: unknown }[];
     };
     const sample = fixture.samples[0];
-    // Event samples store one item (see recordEventFixtures.ts). A WebSocket `events` message carries its items as array.
+    // Event samples store one item (see tools/recordEventFixtures.ts). A WebSocket `events` message carries its items as array.
     const data = fixture.message === 'events' ? [sample.data] : sample.data;
     return { meta: sample.meta, data: data as T };
 }

@@ -4,7 +4,7 @@
  * Pure functions and constants without side effects, shared by the recorder and the offline tests.
  * Event keys are taken from `WebSocketEvent`, so the scenarios stay in sync with the adapter code.
  */
-import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages } from '../lib/myTypes.js';
+import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages } from '../src/lib/myTypes.js';
 
 /** Maximum number of distinct devices, clients or users kept per cyclic message type. */
 export const ENTITY_LIMIT = 5;

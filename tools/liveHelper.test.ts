@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { NetworkApi } from '../lib/api/network-api.js';
-import type { NetworkLogging } from '../lib/api/network-logging.js';
+import { NetworkApi } from '../src/lib/api/network-api.js';
+import type { NetworkLogging } from '../src/lib/api/network-logging.js';
 
 /**
  * Shared helpers for the live tests against a real UniFi Network controller.

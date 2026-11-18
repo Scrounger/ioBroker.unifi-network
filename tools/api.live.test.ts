@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import type { NetworkApi } from '../lib/api/network-api.js';
-import { NetworkReportInterval, NetworkReportType } from '../lib/api/network-types-report-stats.js';
+import type { NetworkApi } from '../src/lib/api/network-api.js';
+import { NetworkReportInterval, NetworkReportType } from '../src/lib/api/network-types-report-stats.js';
 import { createLiveApi, describeMessages, getLiveConfig, isListOrEmpty, type LiveSession } from './liveHelper.test.js';
 
 const MAC_PATTERN = /^([0-9a-f]{2}:){5}[0-9a-f]{2}$/i;

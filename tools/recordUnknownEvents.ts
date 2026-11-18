@@ -19,8 +19,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createInterface, type Interface } from 'node:readline/promises';
-import { ApiEndpoints } from '../lib/api/network-api.js';
-import { WebSocketEventMessages } from '../lib/myTypes.js';
+import { ApiEndpoints } from '../src/lib/api/network-api.js';
+import { WebSocketEventMessages } from '../src/lib/myTypes.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import { isKnownMessage, toFileName, unknownEventItems, type WsMessage } from './eventScenarios.js';
 import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';

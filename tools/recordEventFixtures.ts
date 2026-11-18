@@ -18,7 +18,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createInterface, type Interface } from 'node:readline/promises';
-import { ApiEndpoints } from '../lib/api/network-api.js';
+import { ApiEndpoints } from '../src/lib/api/network-api.js';
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import {
     CYCLIC_MESSAGES,
