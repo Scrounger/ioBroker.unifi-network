@@ -33,3 +33,6 @@ test/fixtures/local/
 build/**/*.test.js
 build/**/*.test.d.ts
 build/live/
+
+# test coverage reports (npm run test:coverage)
+coverage/
