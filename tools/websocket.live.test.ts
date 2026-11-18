@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { once, type EventEmitter } from 'node:events';
 import type WebSocket from 'ws';
-import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from './liveHelper.test.js';
+import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
 
 /** `readyState` value of an open `ws` socket. */
 const WS_OPEN = 1;
@@ -23,7 +23,7 @@ async function waitForEvent<T = unknown>(emitter: EventEmitter, event: string, t
         const [data] = await once(emitter, event, { signal: abort.signal });
         return data as T;
     } catch {
-        throw new Error(`kein '${event}'-Event innerhalb von ${timeoutMs} ms`);
+        throw new Error(`no '${event}' event within ${timeoutMs} ms`);
     } finally {
         clearTimeout(timer);
     }
@@ -36,7 +36,7 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
 
     const getSession = (): LiveSession => {
         if (!session) {
-            throw new Error('Keine Session vorhanden');
+            throw new Error('No session available');
         }
         return session;
     };
@@ -53,8 +53,9 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
             return;
         }
 
+        this.timeout(90_000);
         session = createLiveApi(config);
-        const loggedIn = await session.api.login();
+        const loggedIn = await loginWithRetry(session);
         expect(loggedIn, describeMessages(session.messages)).to.equal(true);
     });
 
@@ -62,13 +63,13 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
         session?.api.logout();
     });
 
-    it('launchEventsWs() öffnet die Event-Verbindung', async () => {
+    it('launchEventsWs() opens the event connection', async () => {
         const started = await getSession().api.launchEventsWs();
         expect(started, context()).to.equal(true);
         expect(getEventsSocket(), context()).to.not.be.null;
     });
 
-    it('wsSendPing() erhält ein pong vom Controller', async () => {
+    it('wsSendPing() receives a pong from the controller', async () => {
         const socket = getEventsSocket();
         expect(socket, context()).to.not.be.null;
 
@@ -84,7 +85,7 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
         await pong;
     });
 
-    it('empfängt Events vom Controller', async function () {
+    it('receives events from the controller', async function () {
         let event: unknown;
         try {
             event = await waitForEvent(getSession().api, 'message', 30_000);
@@ -96,7 +97,7 @@ describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
         expect(event, context()).to.be.an('object');
     });
 
-    it('logout() schließt die WebSocket-Verbindung', async () => {
+    it('logout() closes the WebSocket connection', async () => {
         const socket = getEventsSocket();
         expect(socket, context()).to.not.be.null;
 

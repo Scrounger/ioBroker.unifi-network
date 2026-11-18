@@ -315,32 +315,32 @@ export function findLeaks(serialized: string, secrets: string[]): string[] {
 
     for (const secret of secrets) {
         if (secret.length >= MIN_SECRET_LENGTH && serialized.includes(secret)) {
-            leaks.push('Zugangsdaten');
+            leaks.push('Credentials');
         }
     }
 
     for (const match of serialized.matchAll(MAC_PATTERN)) {
         if (!PLACEHOLDER_MAC.test(match[0])) {
-            leaks.push('MAC-Adresse');
+            leaks.push('MAC address');
         }
     }
 
     // Version fields are exempt from the IPv4 check, the same way `anonymize` keeps them.
     for (const match of serialized.replace(VERSION_FIELD, '').matchAll(IPV4_PATTERN)) {
         if (!PLACEHOLDER_IPV4.test(match[0])) {
-            leaks.push('IPv4-Adresse');
+            leaks.push('IPv4 address');
         }
     }
 
     for (const match of serialized.matchAll(OBJECT_ID_PATTERN)) {
         if (!PLACEHOLDER_OBJECT_ID.test(match[0])) {
-            leaks.push('Objekt-ID');
+            leaks.push('Object ID');
         }
     }
 
     for (const match of serialized.matchAll(IPV6_PATTERN)) {
         if (!PLACEHOLDER_IPV6.test(match[0])) {
-            leaks.push('IPv6-Adresse');
+            leaks.push('IPv6 address');
         }
     }
 
@@ -357,7 +357,7 @@ export function findLeaks(serialized: string, secrets: string[]): string[] {
     }
 
     if (/PrivateKey\s*=/i.test(serialized)) {
-        leaks.push('WireGuard-Schluessel');
+        leaks.push('WireGuard key');
     }
 
     return leaks;

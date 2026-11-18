@@ -11,7 +11,7 @@ import { getLiveConfig } from './liveHelper.test.js';
  * The tests run against the newest controller version and skip if its events directory is missing or empty.
  */
 /** Newest controller version with event fixtures. The tests always run against it. */
-const FIXTURE_VERSION = latestFixtureVersion() ?? 'keine-version';
+const FIXTURE_VERSION = latestFixtureVersion() ?? 'no-version';
 const FIXTURE_DIR = fixtureDir(FIXTURE_VERSION, 'events');
 
 interface EventSample {
@@ -23,6 +23,8 @@ interface EventFixture {
     message: string;
     key?: string;
     recordedAt: string;
+    /** False if the fixture was recorded with `--no-anonymize`. Missing in fixtures recorded before the flag existed. */
+    anonymized?: boolean;
     seenMessages: number;
     entityLimit?: number;
     samples: EventSample[];
@@ -52,7 +54,7 @@ function itemsOf(sample: EventSample): WsItem[] {
     return Array.isArray(sample.data) ? sample.data.filter(isRecord) : [];
 }
 
-describe(`Aufgezeichnete Event-Fixtures ${FIXTURE_VERSION} (offline)`, function () {
+describe(`Recorded event fixtures ${FIXTURE_VERSION} (offline)`, function () {
     let fixtures: LoadedFixture[] = [];
 
     before(function () {
@@ -65,7 +67,7 @@ describe(`Aufgezeichnete Event-Fixtures ${FIXTURE_VERSION} (offline)`, function 
         }
     });
 
-    it('jede Datei hat message, recordedAt, seenMessages und samples', function () {
+    it('every file has message, recordedAt, seenMessages and samples', function () {
         for (const { file, fixture } of fixtures) {
             expect(fixture.message, file).to.be.a('string');
             expect(Number.isNaN(Date.parse(fixture.recordedAt)), file).to.equal(false);
@@ -74,7 +76,7 @@ describe(`Aufgezeichnete Event-Fixtures ${FIXTURE_VERSION} (offline)`, function 
         }
     });
 
-    it('Event-Fixtures enthalten nur ausgewertete Keys und deren Items', function () {
+    it('event fixtures contain only handled keys and their items', function () {
         for (const { file, fixture } of fixtures.filter(({ fixture: f }: LoadedFixture): boolean => f.message === 'events')) {
             expect(fixture.key, file).to.be.a('string');
             expect(HANDLED_EVENT_KEYS, file).to.include(fixture.key);
@@ -87,7 +89,7 @@ describe(`Aufgezeichnete Event-Fixtures ${FIXTURE_VERSION} (offline)`, function 
         }
     });
 
-    it('zyklische Fixtures enthalten höchstens ENTITY_LIMIT verschiedene Entitäten', function () {
+    it('cyclic fixtures contain at most ENTITY_LIMIT distinct entities', function () {
         for (const { file, fixture } of fixtures.filter(({ fixture: f }: LoadedFixture): boolean => f.entityLimit !== undefined)) {
             expect(fixture.entityLimit, file).to.equal(ENTITY_LIMIT);
 
@@ -96,11 +98,15 @@ describe(`Aufgezeichnete Event-Fixtures ${FIXTURE_VERSION} (offline)`, function 
         }
     });
 
-    it('enthält keine Anonymisierungs-Lecks', function () {
+    it('contains no anonymization leaks', function () {
+        const anonymized = fixtures.filter((item: LoadedFixture): boolean => item.fixture.anonymized !== false);
+        if (anonymized.length === 0) {
+            this.skip();
+        }
         const config = getLiveConfig();
         const secrets = config ? [config.host, config.user, config.password] : [];
 
-        for (const { file, content } of fixtures) {
+        for (const { file, content } of anonymized) {
             expect(findLeaks(content, secrets), file).to.deep.equal([]);
         }
     });

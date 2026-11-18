@@ -13,7 +13,8 @@
  *   when the runtime is over (saves), or with Ctrl+C (aborts without saving).
  * - All documents are anonymized in one call and checked for leaks. Nothing is written if a leak is detected.
  *
- * Usage: npm run record:events:unknown
+ * Usage: npm run record:events:unknown [-- --dry-run] [-- --no-anonymize]
+ *   --no-anonymize  writes the data unchanged: no anonymization, no removal of secret entries, no leak check
  * Required: UNIFI_HOST, UNIFI_USER, UNIFI_PASSWORD (see liveHelper.test.ts)
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -28,6 +29,12 @@ import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from
 
 /** Default maximum runtime in minutes, used when the prompt is answered with Enter. */
 const DEFAULT_MINUTES = 15;
+
+/** Lists the files that would be written without writing them. Enabled with `--dry-run`. */
+const DRY_RUN = process.argv.includes('--dry-run');
+
+/** Writes the data unchanged: no anonymization, no removal of secret entries, no leak check. Enabled with `--no-anonymize`. */
+const NO_ANONYMIZE = process.argv.includes('--no-anonymize');
 
 /** Sub directory of the events fixtures that holds the unknown events. */
 const UNKNOWN_DIR = 'unknown';
@@ -197,7 +204,7 @@ class UnknownCollector {
  */
 async function askMinutes(rl: Interface): Promise<number> {
     for (; ;) {
-        const answer = (await rl.question(`Max. Laufzeit in Minuten [${DEFAULT_MINUTES}]: `)).trim();
+        const answer = (await rl.question(`Maximum runtime in minutes [${DEFAULT_MINUTES}]: `)).trim();
         if (answer === '') {
             return DEFAULT_MINUTES;
         }
@@ -205,7 +212,7 @@ async function askMinutes(rl: Interface): Promise<number> {
         if (Number.isInteger(minutes) && minutes > 0) {
             return minutes;
         }
-        console.log('Bitte eine ganze Zahl größer 0 eingeben.');
+        console.log('Please enter a whole number greater than 0.');
     }
 }
 
@@ -227,7 +234,7 @@ async function capture(api: LiveSession['api'], rl: Interface, collector: Unknow
         try {
             collector.handle(message);
         } catch (error) {
-            console.error(`Nachricht konnte nicht verarbeitet werden: ${String(error)}`);
+            console.error(`Message could not be processed: ${String(error)}`);
         }
     });
 
@@ -235,17 +242,17 @@ async function capture(api: LiveSession['api'], rl: Interface, collector: Unknow
         if (line.trim().toLowerCase() === 'q') {
             finish('quit');
         } else {
-            console.log('  q + Enter = beenden und speichern, Strg+C = abbrechen ohne Speichern');
+            console.log('  q + Enter = quit and save, Ctrl+C = abort without saving');
         }
     });
 
     const timer = setTimeout((): void => finish('timeout'), minutes * 60_000);
     try {
         if (!(await api.launchEventsWs())) {
-            console.error('Event-WebSocket konnte nicht geöffnet werden.');
+            console.error('Could not open the event WebSocket.');
             return 'error';
         }
-        console.log(`Aufzeichnung läuft, max. ${minutes} min. Beenden: q + Enter (speichern), Strg+C (abbrechen ohne Speichern).`);
+        console.log(`Recording, max. ${minutes} min. Quit: q + Enter (save), Ctrl+C (abort without saving).`);
         return await stopped;
     } finally {
         clearTimeout(timer);
@@ -258,7 +265,7 @@ async function capture(api: LiveSession['api'], rl: Interface, collector: Unknow
 async function main(): Promise<number> {
     const config = getLiveConfig();
     if (!config) {
-        console.error('Fehlende Zugangsdaten: UNIFI_HOST, UNIFI_USER und UNIFI_PASSWORD müssen gesetzt sein.');
+        console.error('Missing credentials: UNIFI_HOST, UNIFI_USER and UNIFI_PASSWORD must be set.');
         return 1;
     }
 
@@ -267,31 +274,31 @@ async function main(): Promise<number> {
     const { api } = session;
 
     if (!(await api.login())) {
-        console.error(`Login fehlgeschlagen. ${describeMessages(session.messages)}`);
+        console.error(`Login failed. ${describeMessages(session.messages)}`);
         return 1;
     }
 
     const version = versionFromSysInfo(await api.retrievData(api.getApiEndpoint(ApiEndpoints.sysinfo)));
     if (!version) {
         api.logout();
-        console.error('Keine Version in der sysinfo-Antwort gefunden, es wurde nichts geschrieben.');
+        console.error('No version found in the sysinfo response, nothing was written.');
         return 1;
     }
     console.log(`Controller-Version ${version}`);
 
     const unknownDir = path.join(fixtureDir(version, 'events'), UNKNOWN_DIR);
     const existingIds = loadExistingIds(unknownDir);
-    console.log(`Vorhandene unbekannte Events: ${existingIds.size} (werden nicht erneut erfasst)`);
+    console.log(`Existing unknown events: ${existingIds.size} (will not be recorded again)`);
 
     const rl = createInterface({ input: process.stdin, output: process.stdout });
     rl.on('SIGINT', (): void => {
-        console.log('\nAbgebrochen, nichts geschrieben.');
+        console.log('\nAborted, nothing written.');
         rl.close();
         process.exit(130);
     });
 
     const collector = new UnknownCollector(existingIds, (record: UnknownRecord): void => {
-        console.log(`  NEU ${record.key ?? record.message} (${record.sample.meta.message})`);
+        console.log(`  NEW ${record.key ?? record.message} (${record.sample.meta.message})`);
     });
 
     let stop: Stop;
@@ -299,7 +306,7 @@ async function main(): Promise<number> {
         const minutes = await askMinutes(rl);
         stop = await capture(api, rl, collector, minutes);
         if (stop === 'timeout') {
-            console.log('\nMax. Laufzeit erreicht.');
+            console.log('\nMaximum runtime reached.');
         }
     } finally {
         rl.close();
@@ -312,30 +319,40 @@ async function main(): Promise<number> {
 
     const files = collector.fixtures(new Date().toISOString());
     if (files.length === 0) {
-        console.log('Keine unbekannten Events erfasst, es wurde nichts geschrieben.');
+        console.log('No unknown events recorded, nothing was written.');
         return 0;
     }
 
-    const anonymized = anonymize(removeSecretEntries(files.map((file: FixtureFile): Record<string, unknown> => file.document)), secrets);
+    const prepared = NO_ANONYMIZE
+        ? files.map((file: FixtureFile): Record<string, unknown> => file.document)
+        : removeSecretEntries(files.map((file: FixtureFile): Record<string, unknown> => file.document));
+    if (NO_ANONYMIZE) {
+        console.warn('Warning: without anonymization, the data is stored unchanged.');
+    }
+    const anonymized = NO_ANONYMIZE ? prepared : anonymize(prepared, secrets);
     const contents = files.map((file: FixtureFile, index: number) => ({
         name: file.name,
-        content: `${JSON.stringify(anonymized[index], null, 2)}\n`,
+        content: `${JSON.stringify({ ...anonymized[index], anonymized: !NO_ANONYMIZE }, null, 2)}\n`,
     }));
 
-    const leaks = [...new Set(contents.flatMap((file) => findLeaks(file.content, secrets)))];
+    const leaks = NO_ANONYMIZE ? [] : [...new Set(contents.flatMap((file) => findLeaks(file.content, secrets)))];
     if (leaks.length > 0) {
-        console.error(`Abbruch, nicht anonymisierte Daten gefunden (${leaks.length} Treffer). Es wurde nichts geschrieben.`);
+        console.error(`Aborted, non-anonymized data found (${leaks.length} matches). Nothing was written.`);
         return 1;
     }
 
-    mkdirSync(unknownDir, { recursive: true });
-    for (const file of contents) {
-        writeFileSync(path.join(unknownDir, `${file.name}.json`), file.content, 'utf8');
+    const target = path.relative(process.cwd(), unknownDir);
+    if (DRY_RUN) {
+        console.log(`\nDry run, nothing written. ${contents.length} unknown events would be written to ${target}:`);
+    } else {
+        mkdirSync(unknownDir, { recursive: true });
+        for (const file of contents) {
+            writeFileSync(path.join(unknownDir, `${file.name}.json`), file.content, 'utf8');
+        }
+        console.log(`\n${contents.length} unknown events written to ${target}:`);
     }
-
-    console.log(`\n${contents.length} unbekannte Events geschrieben nach ${path.relative(process.cwd(), unknownDir)}:`);
     for (const file of files) {
-        console.log(`  ${file.name}.json (${String(file.document.seenMessages)}x gesehen)`);
+        console.log(`  ${file.name}.json (seen ${String(file.document.seenMessages)}x)`);
     }
 
     return 0;
@@ -346,6 +363,6 @@ main()
         process.exitCode = code;
     })
     .catch((error: unknown): void => {
-        console.error(`Aufzeichnung fehlgeschlagen: ${String(error)}`);
+        console.error(`Recording failed: ${String(error)}`);
         process.exitCode = 1;
     });

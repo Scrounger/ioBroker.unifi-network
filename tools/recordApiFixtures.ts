@@ -11,10 +11,12 @@
  * - All responses are anonymized in one call, so placeholders match across files.
  * - Nothing is written if a leak of the controller host, user or password is detected.
  *
- * Usage: npm run record:api
+ * Usage: npm run record:api [-- --dry-run] [-- --no-anonymize]
+ *   --dry-run        lists the files that would be written or deleted, writes and deletes nothing
+ *   --no-anonymize   writes the data unchanged: no anonymization, no removal of secret entries, no leak check
  * Required: UNIFI_HOST, UNIFI_USER, UNIFI_PASSWORD (see liveHelper.test.ts)
  */
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
@@ -22,6 +24,12 @@ import { ApiEndpoints, ApiEndpoints_V2, type NetworkApi } from '../src/lib/api/n
 import { anonymize, findLeaks, removeSecretEntries } from './anonymizeFixtures.js';
 import { fixtureDir, versionFromSysInfo } from './fixtureVersions.js';
 import { createLiveApi, describeMessages, getLiveConfig } from './liveHelper.test.js';
+
+/** Lists the files that would be written or deleted without changing anything. Enabled with `--dry-run`. */
+const DRY_RUN = process.argv.includes('--dry-run');
+
+/** Writes the data unchanged: no anonymization, no removal of secret entries, no leak check. Enabled with `--no-anonymize`. */
+const NO_ANONYMIZE = process.argv.includes('--no-anonymize');
 
 interface EndpointDefinition {
     /** Name of the fixture file without extension. */
@@ -32,7 +40,7 @@ interface EndpointDefinition {
 
 /** Endpoints the project reads but which are not recorded as JSON fixtures, with the reason. */
 const NOT_RECORDED: Record<string, string> = {
-    backup: 'Download einer Binärdatei, kein JSON',
+    backup: 'Download of a binary file, not JSON',
 };
 
 /** Query parameters of the requests that need them, keyed by fixture name. */
@@ -227,11 +235,11 @@ function buildEndpointDefinitions(): EndpointDefinition[] {
 
 async function main(): Promise<number> {
     const endpoints = buildEndpointDefinitions();
-    console.log(`Endpunkte aus dem Projekt: ${endpoints.map((endpoint) => endpoint.name).join(', ')}`);
+    console.log(`Endpoints from the project: ${endpoints.map((endpoint) => endpoint.name).join(', ')}`);
 
     const config = getLiveConfig();
     if (!config) {
-        console.error('Fehlende Zugangsdaten: UNIFI_HOST, UNIFI_USER und UNIFI_PASSWORD müssen gesetzt sein.');
+        console.error('Missing credentials: UNIFI_HOST, UNIFI_USER and UNIFI_PASSWORD must be set.');
         return 1;
     }
 
@@ -240,7 +248,7 @@ async function main(): Promise<number> {
     const { api } = session;
 
     if (!(await api.login())) {
-        console.error(`Login fehlgeschlagen. ${describeMessages(session.messages)}`);
+        console.error(`Login failed. ${describeMessages(session.messages)}`);
         return 1;
     }
 
@@ -263,49 +271,59 @@ async function main(): Promise<number> {
     }
 
     if (failed.length > 0) {
-        console.log(`Keine Antwort für: ${failed.join(', ')}`);
+        console.log(`No response for: ${failed.join(', ')}`);
     }
 
     if (Object.keys(responses).length === 0) {
-        console.error('Keine Antworten vom Controller erhalten, es wurde nichts geschrieben.');
+        console.error('No responses received from the controller, nothing was written.');
         return 1;
     }
 
     const version = versionFromSysInfo(responses.sysinfo);
     if (!version) {
-        console.error('Keine Version in der sysinfo-Antwort gefunden, es wurde nichts geschrieben.');
+        console.error('No version found in the sysinfo response, nothing was written.');
         return 1;
     }
 
     const recordedAt = new Date().toISOString();
-    const anonymized = anonymize(removeSecretEntries(responses), secrets);
+    const prepared = NO_ANONYMIZE ? responses : removeSecretEntries(responses);
+    if (NO_ANONYMIZE) {
+        console.warn('Warning: without anonymization, the data is stored unchanged.');
+    }
+    const anonymized = NO_ANONYMIZE ? prepared : anonymize(prepared, secrets);
     const files = Object.entries(anonymized).map(([name, response]) => ({
         name,
-        content: `${JSON.stringify({ endpoint: name, recordedAt, response }, null, 2)}\n`,
+        content: `${JSON.stringify({ endpoint: name, recordedAt, anonymized: !NO_ANONYMIZE, response }, null, 2)}\n`,
     }));
 
-    const leaks = [...new Set(files.flatMap((file) => findLeaks(file.content, secrets)))];
+    const leaks = NO_ANONYMIZE ? [] : [...new Set(files.flatMap((file) => findLeaks(file.content, secrets)))];
     if (leaks.length > 0) {
-        console.error(`Abbruch, nicht anonymisierte Daten gefunden (${leaks.length} Treffer). Es wurde nichts geschrieben.`);
+        console.error(`Aborted, non-anonymized data found (${leaks.length} matches). Nothing was written.`);
         return 1;
     }
 
     const outputDir = fixtureDir(version, 'api');
-    mkdirSync(outputDir, { recursive: true });
-
-    for (const file of files) {
-        writeFileSync(path.join(outputDir, `${file.name}.json`), file.content, 'utf8');
-    }
-
+    const target = path.relative(process.cwd(), outputDir);
     const planned = new Set(endpoints.map((endpoint: EndpointDefinition): string => endpoint.name));
-    for (const existing of readdirSync(outputDir)) {
-        if (existing.endsWith('.json') && !planned.has(existing.slice(0, -'.json'.length))) {
-            rmSync(path.join(outputDir, existing));
-            console.log(`  entfernt (nicht mehr vom Projekt verwendet): ${existing}`);
-        }
-    }
+    const obsolete = existsSync(outputDir)
+        ? readdirSync(outputDir).filter((existing: string): boolean => existing.endsWith('.json') && !planned.has(existing.slice(0, -'.json'.length)))
+        : [];
 
-    console.log(`Version ${version}: ${files.length} Fixtures geschrieben nach ${path.relative(process.cwd(), outputDir)}:`);
+    if (DRY_RUN) {
+        console.log(`Dry run, nothing written. Version ${version}: ${files.length} fixtures would be written to ${target}:`);
+    } else {
+        mkdirSync(outputDir, { recursive: true });
+        for (const file of files) {
+            writeFileSync(path.join(outputDir, `${file.name}.json`), file.content, 'utf8');
+        }
+        for (const existing of obsolete) {
+            rmSync(path.join(outputDir, existing));
+        }
+        console.log(`Version ${version}: ${files.length} fixtures written to ${target}:`);
+    }
+    for (const existing of obsolete) {
+        console.log(`  ${DRY_RUN ? 'would remove' : 'removed'} (no longer used by the project): ${existing}`);
+    }
     for (const file of files) {
         console.log(`  ${file.name}.json`);
     }
@@ -318,6 +336,6 @@ main()
         process.exitCode = code;
     })
     .catch((error: unknown): void => {
-        console.error(`Aufzeichnung fehlgeschlagen: ${String(error)}`);
+        console.error(`Recording failed: ${String(error)}`);
         process.exitCode = 1;
     });

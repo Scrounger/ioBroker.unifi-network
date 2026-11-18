@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { createLiveApi, describeMessages, getLiveConfig, type LiveSession } from './liveHelper.test.js';
+import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
 
 describe('UniFi Network Controller - Login (live, read-only)', function () {
     this.timeout(30_000);
@@ -8,7 +8,7 @@ describe('UniFi Network Controller - Login (live, read-only)', function () {
 
     const getSession = (): LiveSession => {
         if (!session) {
-            throw new Error('Keine Session vorhanden');
+            throw new Error('No session available');
         }
         return session;
     };
@@ -26,32 +26,32 @@ describe('UniFi Network Controller - Login (live, read-only)', function () {
         session?.api.logout();
     });
 
-    it('login() liefert true', async () => {
-        const loggedIn = await getSession().api.login();
+    it('login() returns true', async () => {
+        const loggedIn = await loginWithRetry(getSession());
         expect(loggedIn, describeMessages(getSession().messages)).to.equal(true);
     });
 
-    it('erkennt die Controller-URL', () => {
+    it('detects the controller URL', () => {
         const { api, config, messages } = getSession();
         expect(api.controllerUrl, describeMessages(messages)).to.be.a('string').and.include(config.host);
         expect(api.isUnifiOs, describeMessages(messages)).to.be.a('boolean');
     });
 
-    it('die konfigurierte Site existiert', async () => {
+    it('the configured site exists', async () => {
         const { api, config, messages } = getSession();
         const sites = await api.getSites();
         expect(sites, describeMessages(messages)).to.be.an('array');
         expect(sites?.map((site) => site.name), describeMessages(messages)).to.include(config.site);
     });
 
-    it('nach logout() ist ein erneutes login() möglich', async () => {
-        const { api, messages } = getSession();
-        api.logout();
-        const loggedIn = await api.login();
-        expect(loggedIn, describeMessages(messages)).to.equal(true);
+    it('login() works again after logout()', async () => {
+        const current = getSession();
+        current.api.logout();
+        const loggedIn = await loginWithRetry(current);
+        expect(loggedIn, describeMessages(current.messages)).to.equal(true);
     });
 
-    it('falsches Passwort wird abgelehnt (nur mit LIVE_NEGATIVE_TESTS=1)', async function () {
+    it('wrong password is rejected (only with LIVE_NEGATIVE_TESTS=1)', async function () {
         // Opt-in: repeated wrong logins can lock the account on the controller.
         if (process.env.LIVE_NEGATIVE_TESTS !== '1') {
             this.skip();

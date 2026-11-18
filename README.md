@@ -58,19 +58,41 @@ Tests against a real controller and recorded fixtures:
     UNIFI_SITE=default
     ```
 
+    - `UNIFI_HOST`, `UNIFI_USER`, `UNIFI_PASSWORD`: required
+    - `UNIFI_PORT`: HTTPS port, default `443`
+    - `UNIFI_SITE`: site name, default `default`
+
 2. Record the API responses (read-only, one file per endpoint):
 
     ```bash
     npm run record:api
     ```
 
-3. Record the real-time events (interactive, options: `--missing`, `--destructive`, `--only=<ids>`):
+    - `-- --dry-run`: only shows which files would be written or deleted
+    - `-- --no-anonymize`: stores the raw data without anonymization
+
+3. Record the real-time events (interactive):
 
     ```bash
     npm run record:events
     ```
 
-4. Run the tests:
+    - `-- --only=<ids>`: only the listed scenarios, comma-separated (ids in `tools/eventScenarios.ts`)
+    - `-- --missing`: only scenarios without a fixture, existing files are kept
+    - `-- --destructive`: also scenarios that delete data on the controller
+    - `-- --dry-run`: only shows which files would be written
+    - `-- --no-anonymize`: stores the raw data without anonymization
+
+4. Record unknown events (interactive, `q` + Enter saves, Ctrl+C aborts):
+
+    ```bash
+    npm run record:events:unknown
+    ```
+
+    - `-- --dry-run`: only shows which files would be written
+    - `-- --no-anonymize`: stores the raw data without anonymization
+
+5. Run the tests:
 
     ```bash
     npm run test:ts    # offline, uses recorded fixtures
@@ -86,6 +108,11 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (Scrounger) bug fixes found by adapter checker
+
 ### 1.6.0 (2026-11-17)
 
 - (Scrounger) enable / disable ports added #150

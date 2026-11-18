@@ -103,13 +103,45 @@ export function createLiveApi(config: LiveConfig): LiveSession {
     return { api, config, messages };
 }
 
+/** Message fragment logged by the API client when the controller cannot be reached. */
+const TRANSIENT_CONNECTION_ERROR = 'Unable to connect to the Network controller';
+
+/**
+ * Logs in and retries after transient connection errors. A controller that is busy or rebooting
+ * refuses connections for a short time. Other failures, such as wrong credentials, are not retried.
+ *
+ * @param session live session to log in with
+ * @param attempts maximum number of login attempts
+ * @param delayMs wait time between attempts in milliseconds
+ */
+export async function loginWithRetry(session: LiveSession, attempts = 3, delayMs = 5_000): Promise<boolean> {
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        const messagesBefore = session.messages.length;
+        if (await session.api.login()) {
+            return true;
+        }
+
+        const transient = session.messages
+            .slice(messagesBefore)
+            .some((message: string): boolean => message.includes(TRANSIENT_CONNECTION_ERROR));
+        if (!transient || attempt === attempts) {
+            return false;
+        }
+
+        await new Promise<void>((resolve: () => void): void => {
+            globalThis.setTimeout(resolve, delayMs);
+        });
+    }
+    return false;
+}
+
 /**
  * Formats the collected log messages for assertion output.
  *
  * @param messages messages collected by `createLiveApi`
  */
 export function describeMessages(messages: string[]): string {
-    return messages.length > 0 ? `Controller-Meldungen:\n${messages.join('\n')}` : 'keine Controller-Meldungen';
+    return messages.length > 0 ? `Controller messages:\n${messages.join('\n')}` : 'no controller messages';
 }
 
 /**

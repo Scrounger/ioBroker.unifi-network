@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import type { NetworkApi } from '../src/lib/api/network-api.js';
 import { NetworkReportInterval, NetworkReportType } from '../src/lib/api/network-types-report-stats.js';
-import { createLiveApi, describeMessages, getLiveConfig, isListOrEmpty, type LiveSession } from './liveHelper.test.js';
+import { createLiveApi, describeMessages, getLiveConfig, isListOrEmpty, loginWithRetry, type LiveSession } from './liveHelper.test.js';
 
 const MAC_PATTERN = /^([0-9a-f]{2}:){5}[0-9a-f]{2}$/i;
 
@@ -12,7 +12,7 @@ describe('UniFi Network Controller - API (live, read-only)', function () {
 
     const getSession = (): LiveSession => {
         if (!session) {
-            throw new Error('Keine Session vorhanden');
+            throw new Error('No session available');
         }
         return session;
     };
@@ -27,8 +27,9 @@ describe('UniFi Network Controller - API (live, read-only)', function () {
             return;
         }
 
+        this.timeout(90_000);
         session = createLiveApi(config);
-        const loggedIn = await session.api.login();
+        const loggedIn = await loginWithRetry(session);
         expect(loggedIn, describeMessages(session.messages)).to.equal(true);
     });
 
@@ -36,24 +37,24 @@ describe('UniFi Network Controller - API (live, read-only)', function () {
         session?.api.logout();
     });
 
-    it('getSysInfo() liefert ein Objekt mit Version', async () => {
+    it('getSysInfo() returns an object with version', async () => {
         const info = await getApi().getSysInfo();
         expect(info, context()).to.be.an('object');
         expect(info?.version, context()).to.be.a('string').and.not.be.empty;
     });
 
-    it('getControllerVersion() liefert eine Versionsnummer', async () => {
+    it('getControllerVersion() returns a version number', async () => {
         const version = await getApi().getControllerVersion();
         expect(version, context()).to.be.a('string').and.match(/^\d+\.\d+/);
     });
 
-    it('getSites() enthält die konfigurierte Site', async () => {
+    it('getSites() contains the configured site', async () => {
         const sites = await getApi().getSites();
         expect(sites, context()).to.be.an('array').that.is.not.empty;
         expect(sites?.map((site) => site.name), context()).to.include(getSession().config.site);
     });
 
-    it('getDevices() liefert Geräte mit gültiger MAC-Adresse', async () => {
+    it('getDevices() returns devices with a valid MAC address', async () => {
         const devices = await getApi().getDevices();
         expect(devices, context()).to.satisfy(isListOrEmpty);
         for (const device of devices ?? []) {
@@ -61,7 +62,7 @@ describe('UniFi Network Controller - API (live, read-only)', function () {
         }
     });
 
-    it('getClients() liefert Clients mit gültiger MAC-Adresse', async () => {
+    it('getClients() returns clients with a valid MAC address', async () => {
         const clients = await getApi().getClients();
         expect(clients, context()).to.satisfy(isListOrEmpty);
         for (const client of clients ?? []) {
@@ -69,37 +70,37 @@ describe('UniFi Network Controller - API (live, read-only)', function () {
         }
     });
 
-    it('getClientsActive() liefert eine Liste oder undefined', async () => {
+    it('getClientsActive() returns a list or undefined', async () => {
         const clients = await getApi().getClientsActive();
         expect(clients, context()).to.satisfy(isListOrEmpty);
     });
 
-    it('getWlanConfig() liefert eine Liste oder undefined', async () => {
+    it('getWlanConfig() returns a list or undefined', async () => {
         const wlans = await getApi().getWlanConfig();
         expect(wlans, context()).to.satisfy(isListOrEmpty);
     });
 
-    it('getLanConfig_V2() liefert eine Liste oder undefined', async () => {
+    it('getLanConfig_V2() returns a list or undefined', async () => {
         const networks = await getApi().getLanConfig_V2();
         expect(networks, context()).to.satisfy(isListOrEmpty);
     });
 
-    it('getFirewallGroup() liefert eine Liste oder undefined', async () => {
+    it('getFirewallGroup() returns a list or undefined', async () => {
         const groups = await getApi().getFirewallGroup();
         expect(groups, context()).to.satisfy(isListOrEmpty);
     });
 
-    it('getNetworkMemberGroups() liefert eine Liste oder undefined', async () => {
+    it('getNetworkMemberGroups() returns a list or undefined', async () => {
         const groups = await getApi().getNetworkMemberGroups();
         expect(groups, context()).to.satisfy(isListOrEmpty);
     });
 
-    it('getVpnUser() liefert eine Liste oder undefined', async () => {
+    it('getVpnUser() returns a list or undefined', async () => {
         const users = await getApi().getVpnUser();
         expect(users, context()).to.satisfy(isListOrEmpty);
     });
 
-    it('getReportStats() liefert einen Stundenreport der Site', async () => {
+    it('getReportStats() returns an hourly report of the site', async () => {
         const stats = await getApi().getReportStats(NetworkReportType.site, NetworkReportInterval.hourly);
         expect(stats, context()).to.satisfy(isListOrEmpty);
     });

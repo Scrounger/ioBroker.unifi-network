@@ -9,10 +9,12 @@
  * - All documents are anonymized in one call, so placeholders match across files.
  * - Nothing is written if a leak of the controller host, user or password is detected.
  *
- * Usage: npm run record:events [-- --destructive] [-- --only=client-connected,device-restarted] [-- --missing]
- *   --destructive  also asks for scenarios that delete data on the controller
- *   --only=ids     asks only for the listed scenario ids
- *   --missing      asks only for scenarios without a recorded message and does not overwrite existing files
+ * Usage: npm run record:events [-- --destructive] [-- --only=client-connected,device-restarted] [-- --missing] [-- --dry-run] [-- --no-anonymize]
+ *   --destructive    also asks for scenarios that delete data on the controller
+ *   --only=ids       asks only for the listed scenario ids
+ *   --missing        asks only for scenarios without a recorded message and does not overwrite existing files
+ *   --dry-run        lists the files that would be written, writes nothing
+ *   --no-anonymize   writes the data unchanged: no anonymization, no removal of secret entries, no leak check
  * Required: UNIFI_HOST, UNIFI_USER, UNIFI_PASSWORD (see liveHelper.test.ts)
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -70,6 +72,8 @@ interface Options {
     destructive: boolean;
     only: string[] | undefined;
     missing: boolean;
+    dryRun: boolean;
+    noAnonymize: boolean;
 }
 
 /**
@@ -86,10 +90,16 @@ function parseOptions(args: string[]): Options {
 
     const unknown = (only ?? []).filter((id: string): boolean => !SCENARIOS.some((scenario: Scenario): boolean => scenario.id === id));
     if (unknown.length > 0) {
-        throw new Error(`Unbekannte Szenarien in --only: ${unknown.join(', ')}`);
+        throw new Error(`Unknown scenarios in --only: ${unknown.join(', ')}`);
     }
 
-    return { destructive: args.includes('--destructive'), only, missing: args.includes('--missing') };
+    return {
+        destructive: args.includes('--destructive'),
+        only,
+        missing: args.includes('--missing'),
+        dryRun: args.includes('--dry-run'),
+        noAnonymize: args.includes('--no-anonymize'),
+    };
 }
 
 /**
@@ -196,18 +206,18 @@ class EventRecorder {
             const step = `[${index + 1}/${total}]`;
 
             if (this.matched.has(scenario.id)) {
-                console.log(`${step} ${scenario.prompt}: bereits erfasst`);
+                console.log(`${step} ${scenario.prompt}: already recorded`);
                 continue;
             }
 
             console.log(`\n${step} ${scenario.prompt}`);
-            console.log('    Warte auf das Event. Enter oder s = überspringen, q = beenden und speichern.');
+            console.log('    Waiting for the event. Enter or s = skip, q = quit and save.');
 
             const outcome = await this.waitFor((): boolean => this.matched.has(scenario.id));
             if (outcome.kind === 'quit') {
                 return true;
             }
-            console.log(outcome.kind === 'done' ? '    erfasst' : '    übersprungen');
+            console.log(outcome.kind === 'done' ? '    recorded' : '    skipped');
         }
 
         return false;
@@ -221,10 +231,10 @@ class EventRecorder {
             return;
         }
 
-        console.log(`\nWarte auf zyklische Daten (max. ${CYCLIC_WAIT_MS / 1000} s). Enter = beenden.`);
+        console.log(`\nWaiting for cyclic data (max. ${CYCLIC_WAIT_MS / 1000} s). Enter = quit.`);
         const outcome = await this.waitFor((): boolean => this.cyclicComplete(), CYCLIC_WAIT_MS);
         if (outcome.kind === 'timeout') {
-            console.log('  Zeit abgelaufen, die vorhandenen Daten werden gespeichert.');
+            console.log('  Time is up, saving the existing data.');
         }
     }
 
@@ -349,7 +359,7 @@ class EventRecorder {
                 if (outcome) {
                     return outcome;
                 }
-                console.log('    Bitte Enter, s oder q eingeben.');
+                console.log('    Please enter Enter, s or q.');
             }
         } finally {
             controller.abort();
@@ -381,7 +391,7 @@ async function main(): Promise<number> {
 
     const config = getLiveConfig();
     if (!config) {
-        console.error('Fehlende Zugangsdaten: UNIFI_HOST, UNIFI_USER und UNIFI_PASSWORD müssen gesetzt sein.');
+        console.error('Missing credentials: UNIFI_HOST, UNIFI_USER and UNIFI_PASSWORD must be set.');
         return 1;
     }
 
@@ -390,14 +400,14 @@ async function main(): Promise<number> {
     const { api } = session;
 
     if (!(await api.login())) {
-        console.error(`Login fehlgeschlagen. ${describeMessages(session.messages)}`);
+        console.error(`Login failed. ${describeMessages(session.messages)}`);
         return 1;
     }
 
     const version = versionFromSysInfo(await api.retrievData(api.getApiEndpoint(ApiEndpoints.sysinfo)));
     if (!version) {
         api.logout();
-        console.error('Keine Version in der sysinfo-Antwort gefunden, es wurde nichts geschrieben.');
+        console.error('No version found in the sysinfo response, nothing was written.');
         return 1;
     }
     console.log(`Controller-Version ${version}`);
@@ -406,7 +416,7 @@ async function main(): Promise<number> {
     const scenarios = selectScenarios(options, coveredScenarioIds(eventsDir));
     if (options.missing && scenarios.length === 0) {
         api.logout();
-        console.log('Alle Szenarien sind bereits aufgezeichnet, nichts zu tun.');
+        console.log('All scenarios are already recorded, nothing to do.');
         return 0;
     }
 
@@ -421,17 +431,17 @@ async function main(): Promise<number> {
         try {
             recorder.handle(message);
         } catch (error) {
-            console.error(`Nachricht konnte nicht verarbeitet werden: ${String(error)}`);
+            console.error(`Message could not be processed: ${String(error)}`);
         }
     });
 
     const skippedDestructive = SCENARIOS.filter((scenario: Scenario): boolean => scenario.destructive && !scenarios.includes(scenario));
-    console.log(`Zyklisch (automatisch): ${CYCLIC_MESSAGES.join(', ')}`);
-    console.log(`Szenarien: ${scenarios.length}${skippedDestructive.length > 0 ? ` (ohne destruktive, Start mit --destructive: ${skippedDestructive.length})` : ''}`);
+    console.log(`Cyclic (automatic): ${CYCLIC_MESSAGES.join(', ')}`);
+    console.log(`Scenarios: ${scenarios.length}${skippedDestructive.length > 0 ? ` (excluding destructive, start with --destructive: ${skippedDestructive.length})` : ''}`);
 
     try {
         if (!(await api.launchEventsWs())) {
-            console.error(`Event-WebSocket konnte nicht geöffnet werden. ${describeMessages(session.messages)}`);
+            console.error(`Event WebSocket could not be opened. ${describeMessages(session.messages)}`);
             return 1;
         }
 
@@ -447,40 +457,51 @@ async function main(): Promise<number> {
     const recordedAt = new Date().toISOString();
     const files = recorder.fixtures(recordedAt);
     if (files.length === 0) {
-        console.error('Keine Events erfasst, es wurde nichts geschrieben.');
+        console.error('No events recorded, nothing was written.');
         return 1;
     }
 
-    const anonymized = anonymize(removeSecretEntries(files.map((file: FixtureFile): Record<string, unknown> => file.document)), secrets);
+    const prepared = options.noAnonymize
+        ? files.map((file: FixtureFile): Record<string, unknown> => file.document)
+        : removeSecretEntries(files.map((file: FixtureFile): Record<string, unknown> => file.document));
+    if (options.noAnonymize) {
+        console.warn('Warning: without anonymization, the data is stored unchanged.');
+    }
+    const anonymized = options.noAnonymize ? prepared : anonymize(prepared, secrets);
     const contents = files.map((file: FixtureFile, index: number) => ({
         name: file.name,
-        content: `${JSON.stringify(anonymized[index], null, 2)}\n`,
+        content: `${JSON.stringify({ ...anonymized[index], anonymized: !options.noAnonymize }, null, 2)}\n`,
     }));
 
-    const leaks = [...new Set(contents.flatMap((file) => findLeaks(file.content, secrets)))];
+    const leaks = options.noAnonymize ? [] : [...new Set(contents.flatMap((file) => findLeaks(file.content, secrets)))];
     if (leaks.length > 0) {
-        console.error(`Abbruch, nicht anonymisierte Daten gefunden (${leaks.length} Treffer). Es wurde nichts geschrieben.`);
+        console.error(`Aborted, non-anonymized data found (${leaks.length} matches). Nothing was written.`);
         return 1;
     }
 
-    mkdirSync(eventsDir, { recursive: true });
-    const existing = new Set(readdirSync(eventsDir));
+    const existing = new Set(existsSync(eventsDir) ? readdirSync(eventsDir) : []);
     const written = contents.filter((file: { name: string }): boolean => !(options.missing && existing.has(`${file.name}.json`)));
-    for (const file of written) {
-        writeFileSync(path.join(eventsDir, `${file.name}.json`), file.content, 'utf8');
-    }
+    const target = path.relative(process.cwd(), eventsDir);
 
-    console.log(`\n${written.length} Fixtures geschrieben nach ${path.relative(process.cwd(), eventsDir)}:`);
+    if (options.dryRun) {
+        console.log(`\nDry run, nothing written. ${written.length} fixtures would be written to ${target}:`);
+    } else {
+        mkdirSync(eventsDir, { recursive: true });
+        for (const file of written) {
+            writeFileSync(path.join(eventsDir, `${file.name}.json`), file.content, 'utf8');
+        }
+        console.log(`\n${written.length} fixtures written to ${target}:`);
+    }
     for (const file of written) {
         console.log(`  ${file.name}.json`);
     }
     if (written.length < contents.length) {
-        console.log(`${contents.length - written.length} vorhandene Fixtures unverändert gelassen (--missing).`);
+        console.log(`${contents.length - written.length} existing fixtures left unchanged (--missing).`);
     }
 
     const missing = recorder.missingScenarios();
     if (missing.length > 0) {
-        console.log(`Nicht erfasst: ${missing.map((scenario: Scenario): string => scenario.id).join(', ')}`);
+        console.log(`Not recorded: ${missing.map((scenario: Scenario): string => scenario.id).join(', ')}`);
     }
 
     return 0;
@@ -491,6 +512,6 @@ main()
         process.exitCode = code;
     })
     .catch((error: unknown): void => {
-        console.error(`Aufzeichnung fehlgeschlagen: ${String(error)}`);
+        console.error(`Recording failed: ${String(error)}`);
         process.exitCode = 1;
     });
