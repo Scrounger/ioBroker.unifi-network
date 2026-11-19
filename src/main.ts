@@ -14,6 +14,7 @@ import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEvent
 import { base64 } from './lib/base64.js';
 import { disconnectDebounceList, eventHandler } from './lib/eventHandler.js';
 import { messageHandler } from './lib/messageHandler.js';
+import { COMMANDS, HELP } from './lib/help.js';
 import { migration } from './lib/migration.js';
 import { myIob, myTreeState } from './lib/myIob.js';
 import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages, type ConnectedClients, type myCache, type myNetworkClient } from './lib/myTypes.js';
@@ -288,7 +289,12 @@ export class UnifiNetwork extends utils.Adapter {
 			// this.log.info(`${logPrefix} ${JSON.stringify(obj)}`);
 
 			if (typeof obj === 'object') {
-				if (obj.command === 'deviceList') {
+				if (obj.command === 'help') {
+					// the description of all commands for AI agents and scripts, also without a connection
+					if (obj.callback) {
+						this.sendTo(obj.from, obj.command, { help: HELP, commands: COMMANDS }, obj.callback);
+					}
+				} else if (obj.command === 'deviceList') {
 					await messageHandler.device.list(obj, this, this.ufn);
 				} else if (obj.command === 'deviceStateList') {
 					messageHandler.device.stateList(obj, this, this.ufn);

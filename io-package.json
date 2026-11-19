@@ -148,6 +148,10 @@
     "connectionType": "local",
     "dataSource": "push",
     "messagebox": true,
+    "supportedMessages": {
+      "help": true,
+      "custom": true
+    },
     "localLinks": {
       "_default": "https://%host%:%port%"
     },

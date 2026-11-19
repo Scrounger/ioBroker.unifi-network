@@ -43,6 +43,10 @@ You will need a local user created in your UniFi OS Console to log in with. Ubiq
 
 ![image info](./doc/config_local_user.png)
 
+## Messages for scripts and AI agents
+
+`sendTo('unifi-network.0', 'help', {})` answers `{ help, commands }`: a description of all messages (`clientList`, `deviceList`, `wlanList`, `lanList`, `firewallGroupList`, ...) and of the states to control the network, written for AI agents (e.g. ioBroker.pi-agent) and script authors. `commands` lists every message with `write: true` if it changes something.
+
 ## Development
 
 Tests against a real controller and recorded fixtures:
@@ -114,6 +118,7 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 
 - (Scrounger) bug fixes found by adapter checker
 - (Scrounger) bug fixes
+- (@GermanBluefox) Added the message "help": a description of all messages for AI agents (e.g. pi-agent), and common.supportedMessages.help
 
 ### 1.6.0 (2026-11-17)
 
