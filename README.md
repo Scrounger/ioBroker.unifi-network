@@ -113,8 +113,7 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.6.1 (2026-11-20)
 
 - (Scrounger) bug fixes found by adapter checker
 - (Scrounger) bug fixes
@@ -164,14 +163,6 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 - (Scrounger) dependencies updated
 - (Scrounger) event messages improved #46
 - (Scrounger) bug fixes
-
-### 1.3.0 (2025-11-24)
-
-- (Scrounger) event messages improved #46
-- (Scrounger) option to change tx power mode of access point channels
-- (Scrounger) dependencies updated
-- (Scrounger) code optimized
-- (Scrounger) logging optimized
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

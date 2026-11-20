@@ -363,8 +363,8 @@ export class myIob {
                                         let changedObj: any = undefined;
 
                                         if (this.statesUsingValAsLastChanged.includes(key)) {
-                                            // set lc to last_seen value
-                                            changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, { val: val, lc: val as number }, true);
+                                            // set lc to last_seen value, only possible for numbers (null is no valid lc, js-controller rejects it)
+                                            changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, typeof val === 'number' ? { val: val, lc: val } : { val: val }, true);
                                         } else {
                                             changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true);
                                         }

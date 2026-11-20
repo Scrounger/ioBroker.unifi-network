@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.6.0",
+    "version": "1.6.1",
     "news": {
+      "1.6.1": {
+        "en": "bug fixes found by adapter checker\nbug fixes\nAdded the message \"help\": a description of all messages for AI agents (e.g. pi-agent), and common.supportedMessages.help",
+        "de": "Adapter-Checker hat Bug Fixes\nBugfixes\nNachricht „help“ hinzugefügt: Beschreibung aller Nachrichten für KI-Agenten (z. B. pi-agent) und common.supportedMessages.Help",
+        "ru": "исправления ошибок, обнаруженные средством проверки адаптера\nисправления ошибок\nДобавлено сообщение «help»: описание всех сообщений для агентов искусственного интеллекта (например, pi-agent) и common.supportedMessages.help",
+        "pt": "adapter checker corrigiu bugs\nbug fixes\nAdicionou a mensagem “help”: uma descrição de todas as mensagens dos agentes de IA (p. ex. pi-agent) e common.supportedMessages.help",
+        "nl": "bugfixes gevonden door de adapterchecker\nbugfixes\nHet bericht „help” toegevoegd: een beschrijving van alle berichten voor AI-agenten (bijv. pi-agent) en Common.SupportedMessages.help",
+        "fr": "Adapter Checker a corrigé des bugs\nbugs fixes\nAjout du message « help » : description de tous les messages des agents IA (p.ex. pi-agent) et common.supportedMessages.help",
+        "it": "fix trovati da Adapter Checker\nbug fix\nAggiunto «help»: una descrizione di tutti i messaggi per gli agenti AI (ad es. pi-agent) e common.supportedmessages.help",
+        "es": "Adapter Checker encontró errores\nbugs fix\nAñadió el mensaje «help»: una descripción de todos los mensajes de los agentes de IA (p. ej. pi-agent) y common.SupportedMessages.Help",
+        "pl": "poprawki błędów znalezione przez moduł sprawdzania adaptera\npoprawki błędów\nDodano komunikat „help”: opis wszystkich wiadomości dla agentów AI (np. pi-agent) oraz common.supportedMessages.help",
+        "uk": "виправлення помилок, знайдених перевіркою адаптера\nвиправлення помилок\nДодано повідомлення «help»: опис всіх повідомлень для агентів AI (наприклад, pi-agent) та common.supportedMessages.help",
+        "zh-cn": "适配器检查器发现的错误修复\n错误修复\n添加了 “帮助” 消息：对 AI 代理（例如 pi-agent）的所有消息的描述，以及 common.supportedMessages.Help"
+      },
       "1.6.0": {
         "en": "enable / disable ports added #150\nmomment replaced with day.js\ndependencies updated #116\nrevert bug fix for expired token #124\nchannel / device name undefined bug fix #116\nvpn client handling optimized\nevent messages improved #122 #115",
         "de": "Ports aktivieren/deaktivieren #150\nMoment ersetzt durch day.js\nAbhängigkeiten geändert #116\nBugfix für abgelaufenes Token #124\nKanal/Gerätename unbestimmt, Bugfix #116\nVPN-Client-Bedienung optimiert\nEvent-Meldungen verbessert #122 #115",
@@ -80,19 +93,6 @@
         "pl": "usuń zdarzenie urządzenia dodane\nwiadomości eventowe poprawione # 43",
         "uk": "видалення події пристрою додано\nповідомлення про події покращено #43",
         "zh-cn": "删除设备事件已添加\n事件消息改进 # 43"
-      },
-      "1.2.1": {
-        "en": "6 GHz interpreter bug fix #37\nisOnline state icon bug fix\nbug fixes",
-        "de": "6 GHz Dolmetscher Bugfix #37\nisOnline State icon bug fix\nfehlerbehebungen",
-        "ru": "6 ГГц интерпретатор исправление ошибки #37\nонлайн исправление багов State icon\nисправление ошибок",
-        "pt": "Correção de bug de intérprete de 6 GHz #37\ncorreção de bug do ícone do estado isOnline\ncorreções de erros",
-        "nl": "6 GHz interpreter bug fix #37\nisOnline status pictogram bug fix\nfoutherstel",
-        "fr": "Correction du bug d'interprète 6 GHz #37\ncorrection du bug de l'icône d'état isOnline\ncorrections des bogues",
-        "it": "Correzione di bug dell'interprete 6 GHz #37\nisOnline stato icon bug fix\ncorrezioni di bug",
-        "es": "6 GHz intérprete error solución #37\nisOnline State icono bug fix\nbug fixes",
-        "pl": "Błąd tłumacza 6 GHz # 37\nbłąd ikony ikony isOnline\npoprawki błędów",
-        "uk": "Виправлення помилок перекладача 6 ГГц #37\nisOnline державної іконки виправлення помилок\nвиправлення помилок",
-        "zh-cn": "6 GHz 解释器错误修正 # 37\nis 在线状态图标错误修正\n错误修正"
       }
     },
     "titleLang": {
