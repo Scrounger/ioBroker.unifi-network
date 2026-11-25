@@ -957,3 +957,174 @@ describe('myIob mit API-Fixtures (offline)', function () {
         });
     });
 });
+
+// --- Befund-Tests zu offenen Punkten -------------------------------------------------------------
+// Prüfen die Vermutungen aus der Analyse von myIob (step/expert, icon, getIdWithoutLastPart).
+
+/**
+ * Entfernt step und expert aus einer Tree-Definition (rekursiv über object).
+ * Simuliert einen gespeicherten Stand, der vor der Einführung dieser Eigenschaften angelegt wurde.
+ *
+ * @param defs Tree-Definition
+ */
+function stripStepAndExpert(defs: Record<string, any>): Record<string, any> {
+    const result: Record<string, any> = {};
+    for (const [key, def] of Object.entries(defs)) {
+        const copy: Record<string, any> = { ...def };
+        delete copy.step;
+        delete copy.expert;
+        if (copy.object) {
+            copy.object = stripStepAndExpert(copy.object as Record<string, any>);
+        }
+        result[key] = copy;
+    }
+    return result;
+}
+
+/**
+ * Sammelt alle State-Definitionen mit step oder expert samt erwarteter Object-ID (rekursiv über object).
+ * Arrays werden nicht ausgewertet.
+ *
+ * @param defs Tree-Definition
+ * @param channel Channel-ID
+ */
+function collectStatesWithStepOrExpert(defs: Record<string, any>, channel: string): { id: string; def: Record<string, any> }[] {
+    const found: { id: string; def: Record<string, any> }[] = [];
+    for (const [key, def] of Object.entries(defs)) {
+        if (def.iobType !== undefined && (def.step !== undefined || def.expert !== undefined)) {
+            found.push({ id: `${channel}.${def.id ?? key}`, def });
+        }
+        if (def.object) {
+            found.push(...collectStatesWithStepOrExpert(def.object as Record<string, any>, `${channel}.${key}`));
+        }
+    }
+    return found;
+}
+
+describe('Befund: offene Punkte (myIob, offline)', function () {
+    let ctx: TestContext;
+    const channel = `${NAMESPACE}.test`;
+
+    beforeEach(() => {
+        ctx = createTestContext();
+    });
+
+    afterEach(() => {
+        expect(ctx.errors, 'Fehler im Logger').to.be.empty;
+    });
+
+    it('step und expert werden bei updateObject=true in einen bestehenden State übernommen', async () => {
+        await ctx.iob.createOrUpdateStates(channel, { level: { iobType: 'number' } } as unknown as TreeDefinitions, testData({ level: 1 }), testData({ level: 1 }), undefined, false, 'dev', true);
+
+        await ctx.iob.createOrUpdateStates(
+            channel,
+            { level: { iobType: 'number', step: 5, expert: true } } as unknown as TreeDefinitions,
+            testData({ level: 1 }),
+            testData({ level: 1 }),
+            undefined,
+            false,
+            'dev',
+            true,
+        );
+
+        const common = ctx.objects.get(`${channel}.level`)?.common;
+        expect(common?.step, 'step').to.equal(5);
+        expect(common?.expert, 'expert').to.equal(true);
+    });
+
+    it('ein manuell gesetztes icon führt bei identischen Läufen nicht zu extendObject', async () => {
+        const definition = { v: { iobType: 'number' } } as unknown as TreeDefinitions;
+        const data = testData({ v: 1 });
+        await ctx.iob.createOrUpdateStates(channel, definition, data, data, undefined, false, 'dev', true);
+        const obj = ctx.objects.get(`${channel}.v`);
+        if (obj?.common) {
+            obj.common.icon = 'custom.png';
+        }
+
+        ctx.extendedIds.splice(0);
+        await ctx.iob.createOrUpdateStates(channel, definition, data, data, undefined, false, 'dev', true);
+        await ctx.iob.createOrUpdateStates(channel, definition, data, data, undefined, false, 'dev', true);
+
+        expect(ctx.extendedIds, 'extendObject-Aufrufe').to.deep.equal([]);
+    });
+
+    it('getIdWithoutLastPart liefert für eine ID ohne Punkt einen leeren String (kein bekannter Aufrufer)', () => {
+        expect(ctx.iob.getIdWithoutLastPart('abc')).to.equal('');
+    });
+});
+
+describe('Befund: offene Punkte (myIob, mit API-Fixtures)', function () {
+    let ctx: TestContext;
+
+    before(() => {
+        requireFixtures(FIXTURE_DIR, REQUIRED_FIXTURES);
+    });
+
+    beforeEach(() => {
+        ctx = createTestContext();
+        // imageUrl (expert) hängt an diesen Optionen; ohne sie wird der State nicht angelegt
+        Object.assign(ctx.adapter.config as Record<string, unknown>, { deviceImageDownload: true, clientImageDownload: true });
+        // Bild-Download ist im Mock nicht vorhanden; nur der Aufruf wird benötigt
+        (ctx.adapter as unknown as { checkImageDownload: () => Promise<void> }).checkImageDownload = async (): Promise<void> => { };
+    });
+
+    afterEach(() => {
+        expect(ctx.errors, 'Fehler im Logger').to.be.empty;
+    });
+
+    /**
+     * Legt States mit einer Basis-Definition ohne step/expert an und aktualisiert sie danach mit der vollständigen Definition.
+     * Liefert die Anzahl geprüfter States (existierend, mit step/expert) und die IDs der Abweichungen.
+     *
+     * @param definitions vollständige Tree-Definition
+     * @param channel Channel-ID
+     * @param data Quelldaten
+     */
+    async function checkStepOrExpert(definitions: Record<string, any>, channel: string, data: TreeData): Promise<{ checked: number; mismatches: string[] }> {
+        await createStates(ctx, channel, stripStepAndExpert(definitions) as TreeDefinitions, data);
+        await createStates(ctx, channel, definitions as TreeDefinitions, data, { updateObject: true });
+
+        const existing = collectStatesWithStepOrExpert(definitions, channel).filter(({ id }) => ctx.objects.has(id));
+        const mismatches = existing
+            .filter(({ id, def }) => {
+                const common = ctx.objects.get(id)?.common;
+                return (def.step !== undefined && common?.step !== def.step) || (def.expert !== undefined && common?.expert !== def.expert);
+            })
+            .map(({ id }) => id);
+        return { checked: existing.length, mismatches };
+    }
+
+    it('step und expert der Geräte-Tree-Definition landen nach updateObject=true in den bestehenden States', async () => {
+        const device = readNetworkDevices()[0];
+        const channel = `${treeModule.device.idChannel}.${device.mac}`;
+        const definitions = treeModule.device.get() as unknown as Record<string, any>;
+
+        const { checked, mismatches } = await checkStepOrExpert(definitions, channel, device);
+        expect(checked, 'angelegte States mit step/expert').to.be.greaterThan(0);
+        expect(mismatches, 'States ohne übernommenes step/expert').to.deep.equal([]);
+    });
+
+    it('step und expert der Client-Tree-Definition landen nach updateObject=true in den bestehenden States', async () => {
+        const client = readActiveClients()[0];
+        const channel = `${treeModule.client.idChannelUsers}.${client.mac}`;
+        const definitions = treeModule.client.get() as unknown as Record<string, any>;
+
+        const { checked, mismatches } = await checkStepOrExpert(definitions, channel, client);
+        expect(checked, 'angelegte States mit step/expert').to.be.greaterThan(0);
+        expect(mismatches, 'States ohne übernommenes step/expert').to.deep.equal([]);
+    });
+
+    it('zweiter identischer Lauf über Geräte-States schreibt nichts (ohne manuell gesetztes icon)', async () => {
+        const device = readNetworkDevices()[0];
+        const channel = `${treeModule.device.idChannel}.${device.mac}`;
+        const definitions = treeModule.device.get();
+
+        await createStates(ctx, channel, definitions, device, { updateObject: true });
+
+        ctx.extendedIds.splice(0);
+        await createStates(ctx, channel, definitions, device, { updateObject: true });
+
+        expect(ctx.extendedIds, 'extendObject-Aufrufe im zweiten Lauf').to.deep.equal([]);
+    });
+});
+

@@ -855,7 +855,12 @@ export class myIob {
      * @returns
      */
     private isStateCommonEqual(objCommon: ioBroker.StateCommon, myCommon: ioBroker.StateCommon | undefined): boolean {
-        return _.isEqual(objCommon.name, myCommon?.name) && _.isEqual(objCommon.type, myCommon?.type) && _.isEqual(objCommon.read, myCommon?.read) && _.isEqual(objCommon.write, myCommon?.write) && _.isEqual(objCommon.role, myCommon?.role) && _.isEqual(objCommon.def, myCommon?.def) && _.isEqual(objCommon.unit, myCommon?.unit) && _.isEqual(objCommon.icon, myCommon?.icon) && _.isEqual(objCommon.desc, myCommon?.desc) && _.isEqual(objCommon.max, myCommon?.max) && _.isEqual(objCommon.min, myCommon?.min) && _.isEqual(objCommon.states, myCommon?.states);
+        // step, expert and icon are only compared if the tree definition sets them.
+        // Otherwise a manually set icon or a value that is no longer defined would cause
+        // an extendObject call on every run.
+        const isOptionalEqual = (key: 'step' | 'expert' | 'icon'): boolean => myCommon === undefined || myCommon[key] === undefined || _.isEqual(objCommon[key], myCommon[key]);
+
+        return _.isEqual(objCommon.name, myCommon?.name) && _.isEqual(objCommon.type, myCommon?.type) && _.isEqual(objCommon.read, myCommon?.read) && _.isEqual(objCommon.write, myCommon?.write) && _.isEqual(objCommon.role, myCommon?.role) && _.isEqual(objCommon.def, myCommon?.def) && _.isEqual(objCommon.unit, myCommon?.unit) && isOptionalEqual('icon') && isOptionalEqual('step') && isOptionalEqual('expert') && _.isEqual(objCommon.desc, myCommon?.desc) && _.isEqual(objCommon.max, myCommon?.max) && _.isEqual(objCommon.min, myCommon?.min) && _.isEqual(objCommon.states, myCommon?.states);
     }
 
     /**
