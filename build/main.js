@@ -7,8 +7,8 @@ import { request } from "undici";
 import { NetworkApi } from './lib/api/network-api.js';
 import { base64 } from './lib/base64.js';
 import { disconnectDebounceList, eventHandler } from './lib/eventHandler.js';
-import { messageHandler } from './lib/messageHandler.js';
 import { COMMANDS, HELP } from './lib/help.js';
+import { messageHandler } from './lib/messageHandler.js';
 import { migration } from './lib/migration.js';
 import { myIob } from './lib/myIob.js';
 import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages } from './lib/myTypes.js';
@@ -81,7 +81,7 @@ export class UnifiNetwork extends utils.Adapter {
                 else {
                     this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
                 }
-                this.myIob.findMissingTranslation();
+                this.myIob.findMissingTranslation(tree);
             }
             else {
                 this.log.error(`${logPrefix} adapter config settings wrong!`);

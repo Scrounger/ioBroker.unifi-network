@@ -2,7 +2,6 @@ import _ from 'lodash';
 
 import * as myHelper from './helper.js';
 import type { myTreeData } from './myTypes.js';
-import * as tree from './tree/index.js';
 
 type ReadValFunction<
     Type extends ioBroker.StateValue = ioBroker.StateValue,
@@ -134,6 +133,115 @@ interface ObjectWriteOptions<TCommon extends ioBroker.DeviceCommon | ioBroker.Ch
     isNameGiven: boolean;
     isCommonEqual: (objCommon: TCommon, myCommon: TCommon) => boolean;
     logChanges: boolean;
+}
+
+/** Keyword rule for role lookup. Keywords are matched against the lower-cased state id. */
+interface RoleKeywordRule {
+    keywords: string[];
+    role: string;
+}
+
+/** Number suffix rule. Every matching rule overrides the suffix, so the last match wins. */
+interface NumberSuffixRule {
+    match: (unit: string | undefined, lowerId: string) => boolean;
+    suffix: string;
+}
+
+// Boolean read+write: first matching rule wins, default 'switch'
+const BOOLEAN_RW_ROLES: RoleKeywordRule[] = [
+    { keywords: ['enable'], role: 'switch.enable' },
+    { keywords: ['light', 'led'], role: 'switch.light' },
+    { keywords: ['power', 'poe'], role: 'switch.power' },
+];
+
+// Boolean read only: first matching rule wins, default 'sensor'
+const BOOLEAN_RO_ROLES: RoleKeywordRule[] = [
+    { keywords: ['connected', 'reachable', 'isonline'], role: 'indicator.reachable' },
+    { keywords: ['error'], role: 'indicator.error' },
+    { keywords: ['alarm'], role: 'indicator.alarm' },
+    { keywords: ['maintenance'], role: 'indicator.maintenance' },
+];
+
+// String read only: first matching rule wins, default 'text'
+const STRING_RO_ROLES: RoleKeywordRule[] = [
+    { keywords: ['firmware', 'version'], role: 'info.firmware' },
+    { keywords: ['status'], role: 'info.status' },
+    { keywords: ['model'], role: 'info.model' },
+    { keywords: ['mac'], role: 'info.mac' },
+    { keywords: ['name'], role: 'info.name' },
+    { keywords: ['hardware'], role: 'info.hardware' },
+    { keywords: ['serial'], role: 'info.serial' },
+];
+
+// Number: applied in order, the last matching rule defines the suffix
+const NUMBER_SUFFIX_RULES: NumberSuffixRule[] = [
+    { match: (unit, lowerId) => unit === '°C' || unit === '°F' || unit === 'K' || lowerId.includes('temperatur'), suffix: '.temperature' },
+    { match: unit => unit === 'lux', suffix: '.brightness' },
+    { match: unit => unit === 'ppm', suffix: '.co2' },
+    { match: unit => unit === 'mbar', suffix: '.pressure' },
+    { match: unit => unit === 'Wh' || unit === 'kWh', suffix: '.energy' },
+    { match: unit => unit === 'W' || unit === 'kW', suffix: '.power' },
+    { match: unit => unit === 'A', suffix: '.current' },
+    { match: unit => unit === 'V', suffix: '.voltage' },
+    { match: unit => unit === 'Hz', suffix: '.frequency' },
+    { match: (_unit, lowerId) => lowerId.includes('longitude'), suffix: '.gps.longitude' },
+    { match: (_unit, lowerId) => lowerId.includes('latitude'), suffix: '.gps.latitude' },
+    { match: (unit, lowerId) => lowerId.includes('humidity') && unit !== '', suffix: '.humidity' },
+    { match: (unit, lowerId) => lowerId.includes('battery') && unit === '%', suffix: '.battery' },
+    { match: (unit, lowerId) => lowerId.includes('volume') && unit === '%', suffix: '.volume' },
+];
+
+/**
+ * Returns the role of the first rule with a keyword contained in the lower-cased id.
+ *
+ * @param rules rules in priority order
+ * @param lowerId lower-cased state id
+ * @returns the role or undefined if no rule matches
+ */
+function firstKeywordRole(rules: RoleKeywordRule[], lowerId: string): string | undefined {
+    return rules.find(rule => rule.keywords.some(keyword => lowerId.includes(keyword)))?.role;
+}
+
+/**
+ * Returns the number suffix (e.g. '.temperature') for a unit and id. Later rules override earlier ones.
+ *
+ * @param unit unit of the state
+ * @param lowerId lower-cased state id
+ * @returns the suffix or an empty string
+ */
+function numberSuffix(unit: string | undefined, lowerId: string): string {
+    let suffix = '';
+    for (const rule of NUMBER_SUFFIX_RULES) {
+        if (rule.match(unit, lowerId)) {
+            suffix = rule.suffix;
+        }
+    }
+    return suffix;
+}
+
+/** Values that stay the same for the whole recursion of one createOrUpdateStates() call. */
+interface StateSyncContext {
+    deviceId: string;
+    fullData: myTreeData;
+    blacklistFilter: { id: string }[] | undefined;
+    isWhiteList: boolean;
+    logDeviceName: string;
+    /** identifies the data object in log messages */
+    logDetails: string;
+    /** reason used in log messages when an object is deleted because it is not allowed */
+    blockReason: string;
+    logPrefix: string;
+}
+
+/** Values of one tree level (a channel or an array item). */
+interface StateSyncLevel {
+    channel: string;
+    treeDefinition: { [key: string]: myTreeDefinition<any, any, ioBroker.myAdapter> };
+    treeData: myTreeData;
+    channelData: myTreeData;
+    updateObject: boolean;
+    filterId: string;
+    isChannelOnWhitelist: boolean;
 }
 
 export class myIob {
@@ -318,7 +426,21 @@ export class myIob {
     }
 
     public async createOrUpdateStates(idChannel: string, treeDefinition: { [key: string]: myTreeDefinition<any, any, ioBroker.myAdapter> }, partialData: myTreeData, fullData: myTreeData, blacklistFilter: { id: string }[] | undefined = undefined, isWhiteList: boolean = false, logDeviceName: string = 'not defined', updateObject: boolean = false): Promise<boolean> {
-        return await this._createOrUpdateStates(idChannel, this.getIdLastPart(idChannel), treeDefinition, partialData, blacklistFilter, isWhiteList, fullData, fullData, logDeviceName, updateObject);
+        // identifies the data object in log messages, the same for all keys of one call
+        const idInfo = fullData as { mac?: string; ip?: string; _id?: string } | undefined;
+        const ctx: StateSyncContext = {
+            deviceId: this.getIdLastPart(idChannel),
+            fullData,
+            blacklistFilter,
+            isWhiteList,
+            logDeviceName,
+            logDetails: `${idInfo?.mac ? `mac: ${idInfo.mac}` : idInfo?.ip ? `ip: ${idInfo.ip}` : idInfo?._id ? `id: ${idInfo._id}` : ''}`,
+            // reason used in log messages when an object is deleted because it is not allowed
+            blockReason: isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`,
+            logPrefix: '[myIob.createOrUpdateStates]:',
+        };
+        const level: StateSyncLevel = { channel: idChannel, treeDefinition, treeData: partialData, channelData: fullData, updateObject, filterId: '', isChannelOnWhitelist: false };
+        return await this._createOrUpdateStates(level, ctx);
     }
 
     /**
@@ -332,230 +454,337 @@ export class myIob {
         return _.some(blacklistFilter, x => !!x.id && (x.id === channelId || x.id.startsWith(`${channelId}.`)));
     }
 
-    private async _createOrUpdateStates(channel: string, deviceId: string, treeDefinition: { [key: string]: myTreeDefinition<any, any, ioBroker.myAdapter> }, treeData: myTreeData, blacklistFilter: { id: string }[] | undefined, isWhiteList: boolean, fullData: myTreeData, channelData: myTreeData, logDeviceName: string = 'not defined', updateObject: boolean = false, filterId = '', isChannelOnWhitelist: boolean = false): Promise<boolean> {
-        const logPrefix = '[myIob.createOrUpdateStates]:';
+    /**
+     * Decides whether an id passes the whitelist or blacklist filter.
+     * isChannelOnWhitelist is only set for whitelists, so checking it first keeps the previous behaviour.
+     *
+     * @param blacklistFilter list of whitelist/blacklist entries
+     * @param isWhiteList true for a whitelist, false for a blacklist
+     * @param id full id of the state or channel (without trailing delimiter)
+     * @param isChannelOnWhitelist true if a parent channel is allowed as a whole
+     * @param matchChildren true for channels and array items: entries below the id count as well
+     * @returns true if the id is allowed
+     */
+    private isAllowedByFilter(blacklistFilter: { id: string }[] | undefined, isWhiteList: boolean, id: string, isChannelOnWhitelist: boolean, matchChildren: boolean): boolean {
+        if (isChannelOnWhitelist) {
+            return true;
+        }
+        if (!isWhiteList) {
+            return !_.some(blacklistFilter, { id });
+        }
+        return matchChildren ? this.hasWhitelistEntryAtOrBelow(blacklistFilter, id) : _.some(blacklistFilter, { id });
+    }
 
+    /**
+     * Processes all keys of one tree level (a channel or an array item).
+     *
+     * @param level values of this level
+     * @param ctx values shared by the whole recursion
+     * @returns true if the value of at least one state changed
+     */
+    private async _createOrUpdateStates(level: StateSyncLevel, ctx: StateSyncContext): Promise<boolean> {
         let stateValueChanged = false;
-
-        // reason used in log messages when an object is deleted because it is not allowed
-        const blockReason = isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`;
 
         try {
             if (this.adapter.connected) {
-                // identifies the data object in log messages, the same for all keys of this call
-                const idInfo = fullData as { mac?: string; ip?: string; _id?: string } | undefined;
-                const logDetails = `${idInfo?.mac ? `mac: ${idInfo.mac}` : idInfo?.ip ? `ip: ${idInfo.ip}` : idInfo?._id ? `id: ${idInfo._id}` : ''}`;
-
-                for (const key in treeDefinition) {
-                    let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
-
-                    const treeDef = treeDefinition[key] as myTreeState<any, any, any>;
+                for (const key in level.treeDefinition) {
+                    const treeDef = level.treeDefinition[key] as myTreeState<any, any, any>;
 
                     try {
                         // if we have an own defined state which takes val from other property
                         let valKey = key;
 
                         if (this.hasKey(treeDef, 'valFromProperty') && treeDef.valFromProperty) {
-                            if (this.hasKey(treeData, treeDef.valFromProperty)) {
-                                valKey = treeDef.valFromProperty
+                            if (this.hasKey(level.treeData, treeDef.valFromProperty)) {
+                                valKey = treeDef.valFromProperty;
                             } else {
-                                this.log.silly(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''} key '${key}' has valFromProperty '${treeDef.valFromProperty}' not exist in data -> skipping!`);
+                                this.log.silly(`${ctx.logPrefix} '${ctx.logDeviceName}' ${ctx.logDetails ? `(${ctx.logDetails}) ` : ''} key '${key}' has valFromProperty '${treeDef.valFromProperty}' not exist in data -> skipping!`);
                                 continue;
                             }
                         }
 
-                        const cond1 = (this.hasKey(treeData, valKey) && treeData[valKey] !== undefined) || (this.hasKey(treeDef, 'id') && !this.hasKey(treeDef, 'valFromProperty'));
+                        const cond1 = (this.hasKey(level.treeData, valKey) && level.treeData[valKey] !== undefined) || (this.hasKey(treeDef, 'id') && !this.hasKey(treeDef, 'valFromProperty'));
                         const cond2 = this.hasKey(treeDef, 'iobType') && !this.hasKey(treeDef, 'object') && !this.hasKey(treeDef, 'array');
 
                         if (key && cond1 && cond2) {
                             // if we have a 'iobType' property, then it's a state
-                            let stateId: string | undefined = key;
-
-                            if (this.hasKey(treeDef, 'id')) {
-                                // if we have a custom state, use defined id
-                                stateId = treeDef.id;
-                            }
-
-                            if ((this.hasKey(treeDef, 'conditionToCreateState') && treeDef.conditionToCreateState?.(fullData, channelData, this.adapter) === true) || !this.hasKey(treeDef, 'conditionToCreateState')) {
-
-                                logMsgState = `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
-
-                                if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${stateId}` })) || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${stateId}` })) || isChannelOnWhitelist || this.isRequired(treeDef.required, fullData, channelData)) {
-                                    if (!(await this.adapter.objectExists(`${channel}.${stateId}`))) {
-                                        // create State
-                                        this.log.silly(`${logPrefix} ${logDeviceName} - creating state '${logMsgState}'`);
-                                        const obj: any = {
-                                            type: 'state',
-                                            common: this.getCommonForState(key, treeDefinition as { [key: string]: myTreeState }, fullData, channelData, logMsgState, logDeviceName),
-                                            native: {},
-                                        };
-
-                                        await this.adapter.setObjectNotExistsAsync(`${channel}.${stateId}`, obj);
-                                    } else {
-                                        // update State if needed (only on adapter start)
-                                        if (updateObject) {
-                                            const obj: ioBroker.Object | null | undefined = await this.adapter.getObjectAsync(`${channel}.${stateId}`);
-
-                                            const commonUpdated = this.getCommonForState(key, treeDefinition as { [key: string]: myTreeState }, fullData, channelData, logMsgState, logDeviceName);
-
-                                            if (obj && obj.common) {
-                                                if (!this.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
-                                                    await this.adapter.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
-                                                    this.log.debug(`${logPrefix} ${logDeviceName} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(this.deepDiffBetweenObjects(commonUpdated, obj.common, this.adapter))})`);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (!this.subscribedStates.has(`${channel}.${stateId}`) && ((treeDef.write && treeDef.write === true) || this.hasKey(treeDef, 'subscribeMe'))) {
-                                        // state is writeable or has subscribeMe Property -> subscribe it
-                                        this.log.silly(`${logPrefix} ${logDeviceName} - subscribing state '${logMsgState}'`);
-                                        await this.adapter.subscribeStatesAsync(`${channel}.${stateId}`);
-
-                                        this.subscribedStates.add(`${channel}.${stateId}`);
-                                    }
-
-                                    const writeValKey = `${channel}.${stateId}`.replace(`.${deviceId}.`, '.');
-                                    if (!this.statesWithWriteFunction[writeValKey] && treeDef.writeVal) {
-                                        // state has a write conversation function -> store function in 'list' to use it before writing data to ufp
-                                        this.statesWithWriteFunction[writeValKey] = treeDef.writeVal;
-                                    }
-
-                                    if (treeData && this.hasKey(treeData, valKey) && (this.hasKey(treeData, key) || this.hasKey(treeData, treeDef.valFromProperty))) {
-                                        const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, channelData, `${channel}.${stateId}`) : treeData[valKey];
-
-                                        let changedObj: any = undefined;
-
-                                        if (this.statesUsingValAsLastChanged.has(stateId ?? key)) {
-                                            // set lc to last_seen value (timestamps in ms), only possible for numbers (null is no valid lc, js-controller rejects it)
-                                            changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, typeof val === 'number' ? { val: val, lc: val } : { val: val }, true);
-                                        } else {
-                                            changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true);
-                                        }
-
-                                        // value of this state changed (only evaluated outside of object updates)
-                                        const stateChanged = !updateObject && !!changedObj && this.hasKey(changedObj, 'notChanged') && !changedObj.notChanged;
-                                        if (stateChanged) {
-                                            stateValueChanged = true;
-                                            this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
-                                        }
-
-                                        // updateTs depends only on this state: a changed value already updates the timestamp
-                                        if (!stateChanged && this.hasKey(treeDef, 'updateTs') && treeDef.updateTs === true) {
-                                            this.log.silly(`${logPrefix} timestamp of state '${logMsgState}' updated`);
-                                            await this.adapter.setState(`${channel}.${stateId}`, val, true)
-                                        }
-
-                                    } else {
-                                        if (!this.hasKey(treeDef, 'id')) {
-                                            // only report it if it's not a custom defined state
-                                            this.log.debug(`${logPrefix} ${logDeviceName} - property '${logMsgState}' not exists in data (sometimes this option may first need to be activated / used or will update by an event)`);
-                                        }
-                                    }
-
-                                } else {
-                                    // channel is on blacklist
-                                    // delete also at runtime, because some properties are only available on websocket data
-                                    if (await this.deleteObjectIfExists(`${channel}.${stateId}`, false)) {
-                                        this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${blockReason}`);
-                                    }
-                                }
-                            } else {
-                                if (updateObject) {
-                                    if (await this.deleteObjectIfExists(`${channel}.${stateId}`, false)) {
-                                        this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, condition to create is 'false'`);
-                                    }
-                                }
+                            if (await this.processState(key, valKey, treeDef, level, ctx)) {
+                                stateValueChanged = true;
                             }
                         } else {
                             // it's a channel from type object
-                            if (this.hasKey(treeDef, 'object') && this.hasKey(treeData, key)) {
-                                const treeObjectDef = treeDefinition[key] as myTreeObject;
-
-                                const idChannelAppendix = this.hasKey(treeObjectDef, 'idChannel') ? treeObjectDef.idChannel : key;
-                                const idChannel = `${channel}.${idChannelAppendix}`;
-
-                                if ((this.hasKey(treeObjectDef, 'conditionToCreateState') && treeObjectDef.conditionToCreateState?.(fullData, channelData, this.adapter) === true) || !this.hasKey(treeObjectDef, 'conditionToCreateState')) {
-                                    if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && (isChannelOnWhitelist || this.hasWhitelistEntryAtOrBelow(blacklistFilter, `${filterId}${idChannelAppendix}`))) || this.isRequired(treeObjectDef.required, fullData, channelData)) {
-                                        await this.createOrUpdateChannel(`${idChannel}`, this.hasKey(treeObjectDef, 'name') ? (typeof treeObjectDef.name === 'function' ? treeObjectDef.name(fullData, channelData[key], this.adapter) : treeObjectDef.name) : key, this.hasKey(treeObjectDef, 'icon') ? treeObjectDef.icon : undefined, updateObject);
-                                        const result = await this._createOrUpdateStates(`${idChannel}`, deviceId, treeObjectDef.object, treeData[key], blacklistFilter, isWhiteList, fullData, channelData[key], logDeviceName, updateObject, `${filterId}${idChannelAppendix}.`, isChannelOnWhitelist || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })));
-                                        stateValueChanged = result ? result : stateValueChanged;
-                                    } else {
-                                        // channel is on blacklist
-                                        if (await this.deleteObjectIfExists(idChannel, true)) {
-                                            this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${blockReason}`);
-                                        }
-                                    }
-                                } else {
-                                    if (await this.deleteObjectIfExists(idChannel, true)) {
-                                        this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
-                                    }
-                                }
+                            if (await this.processObjectChannel(key, treeDef, level, ctx)) {
+                                stateValueChanged = true;
                             }
 
                             // it's a channel from type array
-                            if (this.hasKey(treeDef, 'array') && this.hasKey(treeData, key)) {
-                                const arrayData = treeData[key] as unknown[] | null;
-
-                                if (arrayData !== null && arrayData.length > 0) {
-                                    const treeArrayDef = treeDefinition[key] as myTreeArray<any, any, any>;
-
-                                    const idChannelAppendix = this.hasKey(treeArrayDef, 'idChannel') ? treeArrayDef.idChannel : key;
-                                    const idChannel = `${channel}.${idChannelAppendix}`;
-
-                                    if ((this.hasKey(treeArrayDef, 'conditionToCreateState') && treeArrayDef.conditionToCreateState?.(fullData, channelData, this.adapter) === true) || !this.hasKey(treeArrayDef, 'conditionToCreateState')) {
-                                        if ((!isWhiteList && !_.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })) || (isWhiteList && (isChannelOnWhitelist || this.hasWhitelistEntryAtOrBelow(blacklistFilter, `${filterId}${idChannelAppendix}`))) || this.isRequired(treeArrayDef.required, fullData, channelData)) {
-                                            await this.createOrUpdateChannel(`${idChannel}`, this.hasKey(treeArrayDef, 'name') ? treeArrayDef.name : key, this.hasKey(treeArrayDef, 'icon') ? treeArrayDef.icon : undefined, updateObject);
-
-                                            const arrayNumberAdd = (this.hasKey(treeArrayDef, 'arrayStartNumber') ? treeArrayDef.arrayStartNumber : 0) ?? 0;
-
-                                            for (let i = 0; i <= arrayData.length - 1; i++) {
-                                                const nr = i + arrayNumberAdd;
-
-                                                if (treeData[key][i] !== null && treeData[key][i] !== undefined) {
-                                                    let idChannelArray: string | undefined = myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
-
-                                                    if (this.hasKey(treeArrayDef, 'arrayChannelIdFromProperty')) {
-                                                        idChannelArray = treeArrayDef.arrayChannelIdFromProperty?.(fullData, channelData[key][i], i, this.adapter);
-                                                    } else if (this.hasKey(treeArrayDef, 'arrayChannelIdPrefix')) {
-                                                        idChannelArray = treeArrayDef.arrayChannelIdPrefix + myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
-                                                    }
-
-                                                    if (idChannelArray !== undefined) {
-                                                        await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, this.hasKey(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty?.(fullData, channelData[key][i], i, this.adapter) : (treeArrayDef.arrayChannelNamePrefix ?? '') + nr || nr.toString(), undefined, true);
-                                                        const result = await this._createOrUpdateStates(`${idChannel}.${idChannelArray}`, deviceId, treeArrayDef.array, treeData[key][i], blacklistFilter, isWhiteList, fullData, channelData[key][i], logDeviceName, true, `${filterId}${idChannelAppendix}.`, isChannelOnWhitelist || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })));
-                                                        stateValueChanged = result ? result : stateValueChanged;
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            // channel is on blacklist, wlan is coming from realtime api
-                                            if (await this.deleteObjectIfExists(idChannel, true)) {
-                                                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${blockReason}`);
-                                            }
-                                        }
-                                    } else {
-                                        if (await this.deleteObjectIfExists(idChannel, true)) {
-                                            this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
-                                        }
-                                    }
-                                }
+                            if (await this.processArrayChannel(key, treeDef, level, ctx)) {
+                                stateValueChanged = true;
                             }
                         }
                     } catch (error: any) {
-                        this.log.error(`${logPrefix} [id: ${key}, ${logDetails ? `${logDetails}, ` : ''}key: ${key}] error: ${error}, stack: ${error.stack}, data: ${this.hasKey(treeData, key) ? JSON.stringify(treeData[key]) : 'undefined'}`);
+                        this.log.error(`${ctx.logPrefix} [id: ${key}, ${ctx.logDetails ? `${ctx.logDetails}, ` : ''}key: ${key}] error: ${error}, stack: ${error.stack}, data: ${this.hasKey(level.treeData, key) ? JSON.stringify(level.treeData[key]) : 'undefined'}`);
                     }
                 }
             } else {
                 if (this.log.level === 'debug') {
-                    this.log.warn(`${logPrefix} adapter has no connection!`);
+                    this.log.warn(`${ctx.logPrefix} adapter has no connection!`);
                 }
             }
         } catch (error: any) {
-            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+            this.log.error(`${ctx.logPrefix} error: ${error}, stack: ${error.stack}`);
         }
 
-        return stateValueChanged
+        return stateValueChanged;
+    }
+
+    /**
+     * Creates, updates or deletes one state and writes its value.
+     *
+     * @param key key of the state in the tree definition
+     * @param valKey key of the value in the data (differs from key with valFromProperty)
+     * @param treeDef tree definition of the state
+     * @param level values of the current tree level
+     * @param ctx values shared by the whole recursion
+     * @returns true if the value of this state changed
+     */
+    private async processState(key: string, valKey: string, treeDef: myTreeState<any, any, any>, level: StateSyncLevel, ctx: StateSyncContext): Promise<boolean> {
+        const { channel, treeDefinition, treeData, channelData, updateObject, filterId, isChannelOnWhitelist } = level;
+        const { deviceId, fullData, blacklistFilter, isWhiteList, logDeviceName, logDetails, blockReason, logPrefix } = ctx;
+
+        // if we have a custom state, use defined id
+        const stateId: string | undefined = this.hasKey(treeDef, 'id') ? treeDef.id : key;
+
+        if (!((this.hasKey(treeDef, 'conditionToCreateState') && treeDef.conditionToCreateState?.(fullData, channelData, this.adapter) === true) || !this.hasKey(treeDef, 'conditionToCreateState'))) {
+            if (updateObject) {
+                if (await this.deleteObjectIfExists(`${channel}.${stateId}`, false)) {
+                    this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, condition to create is 'false'`);
+                }
+            }
+            return false;
+        }
+
+        const logMsgState = `${channel}.${stateId}`.split('.')?.slice(1)?.join('.');
+
+        if (!(this.isAllowedByFilter(blacklistFilter, isWhiteList, `${filterId}${stateId}`, isChannelOnWhitelist, false) || this.isRequired(treeDef.required, fullData, channelData))) {
+            // channel is on blacklist
+            // delete also at runtime, because some properties are only available on websocket data
+            if (await this.deleteObjectIfExists(`${channel}.${stateId}`, false)) {
+                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${blockReason}`);
+            }
+            return false;
+        }
+
+        if (!(await this.adapter.objectExists(`${channel}.${stateId}`))) {
+            // create State
+            this.log.silly(`${logPrefix} ${logDeviceName} - creating state '${logMsgState}'`);
+            const obj: any = {
+                type: 'state',
+                common: this.getCommonForState(key, treeDefinition as { [key: string]: myTreeState }, fullData, channelData, logMsgState, logDeviceName),
+                native: {},
+            };
+
+            await this.adapter.setObjectNotExistsAsync(`${channel}.${stateId}`, obj);
+        } else if (updateObject) {
+            // update State if needed (only on adapter start)
+            const obj: ioBroker.Object | null | undefined = await this.adapter.getObjectAsync(`${channel}.${stateId}`);
+
+            const commonUpdated = this.getCommonForState(key, treeDefinition as { [key: string]: myTreeState }, fullData, channelData, logMsgState, logDeviceName);
+
+            if (obj && obj.common) {
+                if (!this.isStateCommonEqual(obj.common as ioBroker.StateCommon, commonUpdated)) {
+                    await this.adapter.extendObject(`${channel}.${stateId}`, { common: commonUpdated });
+                    this.log.debug(`${logPrefix} ${logDeviceName} - updated common properties of state '${logMsgState}' (updated properties: ${JSON.stringify(this.deepDiffBetweenObjects(commonUpdated, obj.common, this.adapter))})`);
+                }
+            }
+        }
+
+        if (!this.subscribedStates.has(`${channel}.${stateId}`) && ((treeDef.write && treeDef.write === true) || this.hasKey(treeDef, 'subscribeMe'))) {
+            // state is writeable or has subscribeMe Property -> subscribe it
+            this.log.silly(`${logPrefix} ${logDeviceName} - subscribing state '${logMsgState}'`);
+            await this.adapter.subscribeStatesAsync(`${channel}.${stateId}`);
+
+            this.subscribedStates.add(`${channel}.${stateId}`);
+        }
+
+        const writeValKey = `${channel}.${stateId}`.replace(`.${deviceId}.`, '.');
+        if (!this.statesWithWriteFunction[writeValKey] && treeDef.writeVal) {
+            // state has a write conversation function -> store function in 'list' to use it before writing data to ufp
+            this.statesWithWriteFunction[writeValKey] = treeDef.writeVal;
+        }
+
+        if (!(treeData && this.hasKey(treeData, valKey) && (this.hasKey(treeData, key) || this.hasKey(treeData, treeDef.valFromProperty)))) {
+            if (!this.hasKey(treeDef, 'id')) {
+                // only report it if it's not a custom defined state
+                this.log.debug(`${logPrefix} ${logDeviceName} - property '${logMsgState}' not exists in data (sometimes this option may first need to be activated / used or will update by an event)`);
+            }
+            return false;
+        }
+
+        const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, channelData, `${channel}.${stateId}`) : treeData[valKey];
+
+        let changedObj: any = undefined;
+
+        if (this.statesUsingValAsLastChanged.has(stateId ?? key)) {
+            // set lc to last_seen value (timestamps in ms), only possible for numbers (null is no valid lc, js-controller rejects it)
+            changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, typeof val === 'number' ? { val: val, lc: val } : { val: val }, true);
+        } else {
+            changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+        }
+
+        // value of this state changed (only evaluated outside of object updates)
+        const stateChanged = !updateObject && !!changedObj && this.hasKey(changedObj, 'notChanged') && !changedObj.notChanged;
+        if (stateChanged) {
+            this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
+        }
+
+        // updateTs depends only on this state: a changed value already updates the timestamp
+        if (!stateChanged && this.hasKey(treeDef, 'updateTs') && treeDef.updateTs === true) {
+            this.log.silly(`${logPrefix} timestamp of state '${logMsgState}' updated`);
+            await this.adapter.setState(`${channel}.${stateId}`, val, true);
+        }
+
+        return stateChanged;
+    }
+
+    /**
+     * Creates or updates a channel of type object and processes its tree definition.
+     *
+     * @param key key of the channel in the tree definition
+     * @param treeDef tree definition of the key
+     * @param level values of the current tree level
+     * @param ctx values shared by the whole recursion
+     * @returns true if the value of a state in this channel changed
+     */
+    private async processObjectChannel(key: string, treeDef: myTreeState<any, any, any>, level: StateSyncLevel, ctx: StateSyncContext): Promise<boolean> {
+        const { channel, treeDefinition, treeData, channelData, updateObject, filterId, isChannelOnWhitelist } = level;
+        const { blacklistFilter, isWhiteList, fullData, logDeviceName, logDetails, blockReason, logPrefix } = ctx;
+
+        if (!(this.hasKey(treeDef, 'object') && this.hasKey(treeData, key))) {
+            return false;
+        }
+
+        const treeObjectDef = treeDefinition[key] as myTreeObject;
+
+        const idChannelAppendix = this.hasKey(treeObjectDef, 'idChannel') ? treeObjectDef.idChannel : key;
+        const idChannel = `${channel}.${idChannelAppendix}`;
+
+        if (!((this.hasKey(treeObjectDef, 'conditionToCreateState') && treeObjectDef.conditionToCreateState?.(fullData, channelData, this.adapter) === true) || !this.hasKey(treeObjectDef, 'conditionToCreateState'))) {
+            if (await this.deleteObjectIfExists(idChannel, true)) {
+                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
+            }
+            return false;
+        }
+
+        if (!(this.isAllowedByFilter(blacklistFilter, isWhiteList, `${filterId}${idChannelAppendix}`, isChannelOnWhitelist, true) || this.isRequired(treeObjectDef.required, fullData, channelData))) {
+            // channel is on blacklist
+            if (await this.deleteObjectIfExists(idChannel, true)) {
+                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${blockReason}`);
+            }
+            return false;
+        }
+
+        await this.createOrUpdateChannel(`${idChannel}`, this.hasKey(treeObjectDef, 'name') ? (typeof treeObjectDef.name === 'function' ? treeObjectDef.name(fullData, channelData[key], this.adapter) : treeObjectDef.name) : key, this.hasKey(treeObjectDef, 'icon') ? treeObjectDef.icon : undefined, updateObject);
+
+        const childLevel: StateSyncLevel = {
+            channel: `${idChannel}`,
+            treeDefinition: treeObjectDef.object,
+            treeData: treeData[key],
+            channelData: channelData[key],
+            updateObject,
+            filterId: `${filterId}${idChannelAppendix}.`,
+            isChannelOnWhitelist: isChannelOnWhitelist || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })),
+        };
+
+        return await this._createOrUpdateStates(childLevel, ctx);
+    }
+
+    /**
+     * Creates or updates a channel of type array and processes each array item.
+     *
+     * @param key key of the array in the tree definition
+     * @param treeDef tree definition of the key
+     * @param level values of the current tree level
+     * @param ctx values shared by the whole recursion
+     * @returns true if the value of a state in one of the array items changed
+     */
+    private async processArrayChannel(key: string, treeDef: myTreeState<any, any, any>, level: StateSyncLevel, ctx: StateSyncContext): Promise<boolean> {
+        const { channel, treeDefinition, treeData, channelData, filterId, isChannelOnWhitelist } = level;
+        const { fullData, blacklistFilter, isWhiteList, logDeviceName, logDetails, blockReason, logPrefix } = ctx;
+
+        if (!(this.hasKey(treeDef, 'array') && this.hasKey(treeData, key))) {
+            return false;
+        }
+
+        const arrayData = treeData[key] as unknown[] | null;
+
+        if (!(arrayData !== null && arrayData.length > 0)) {
+            return false;
+        }
+
+        const treeArrayDef = treeDefinition[key] as myTreeArray<any, any, any>;
+
+        const idChannelAppendix = this.hasKey(treeArrayDef, 'idChannel') ? treeArrayDef.idChannel : key;
+        const idChannel = `${channel}.${idChannelAppendix}`;
+
+        if (!((this.hasKey(treeArrayDef, 'conditionToCreateState') && treeArrayDef.conditionToCreateState?.(fullData, channelData, this.adapter) === true) || !this.hasKey(treeArrayDef, 'conditionToCreateState'))) {
+            if (await this.deleteObjectIfExists(idChannel, true)) {
+                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
+            }
+            return false;
+        }
+
+        if (!(this.isAllowedByFilter(blacklistFilter, isWhiteList, `${filterId}${idChannelAppendix}`, isChannelOnWhitelist, true) || this.isRequired(treeArrayDef.required, fullData, channelData))) {
+            // channel is on blacklist, wlan is coming from realtime api
+            if (await this.deleteObjectIfExists(idChannel, true)) {
+                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${blockReason}`);
+            }
+            return false;
+        }
+
+        await this.createOrUpdateChannel(`${idChannel}`, this.hasKey(treeArrayDef, 'name') ? treeArrayDef.name : key, this.hasKey(treeArrayDef, 'icon') ? treeArrayDef.icon : undefined, level.updateObject);
+
+        const arrayNumberAdd = (this.hasKey(treeArrayDef, 'arrayStartNumber') ? treeArrayDef.arrayStartNumber : 0) ?? 0;
+
+        let valueChanged = false;
+
+        for (let i = 0; i <= arrayData.length - 1; i++) {
+            const nr = i + arrayNumberAdd;
+
+            if (treeData[key][i] === null || treeData[key][i] === undefined) {
+                continue;
+            }
+
+            let idChannelArray: string | undefined = myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
+
+            if (this.hasKey(treeArrayDef, 'arrayChannelIdFromProperty')) {
+                idChannelArray = treeArrayDef.arrayChannelIdFromProperty?.(fullData, channelData[key][i], i, this.adapter);
+            } else if (this.hasKey(treeArrayDef, 'arrayChannelIdPrefix')) {
+                idChannelArray = treeArrayDef.arrayChannelIdPrefix + myHelper.zeroPad(nr, treeArrayDef.arrayChannelIdZeroPad || 0);
+            }
+
+            if (idChannelArray === undefined) {
+                continue;
+            }
+
+            await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, this.hasKey(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty?.(fullData, channelData[key][i], i, this.adapter) : (treeArrayDef.arrayChannelNamePrefix ?? '') + nr || nr.toString(), undefined, true);
+
+            const itemLevel: StateSyncLevel = {
+                channel: `${idChannel}.${idChannelArray}`,
+                treeDefinition: treeArrayDef.array,
+                treeData: treeData[key][i],
+                channelData: channelData[key][i],
+                updateObject: true,
+                filterId: `${filterId}${idChannelAppendix}.`,
+                isChannelOnWhitelist: isChannelOnWhitelist || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })),
+            };
+
+            if (await this._createOrUpdateStates(itemLevel, ctx)) {
+                valueChanged = true;
+            }
+        }
+
+        return valueChanged;
     }
 
     /**
@@ -653,94 +882,24 @@ export class myIob {
         const logPrefix = '[myIob.assignPredefinedRoles]:';
 
         try {
-            id = this.getIdLastPart(id);
-            // lower case once, all checks below are case-insensitive
-            const lowerId = id.toLowerCase();
+            // lower case once, all keyword checks are case-insensitive
+            const lowerId = this.getIdLastPart(id).toLowerCase();
 
             if (common.type === 'boolean') {
                 if (common.read === true && common.write === true) {
-                    if (lowerId.includes('enable')) {
-                        return 'switch.enable'
-                    }
-                    if (lowerId.includes('light') || lowerId.includes('led')) {
-                        return 'switch.light'
-                    }
-                    if (lowerId.includes('power') || lowerId.includes('poe')) {
-                        return 'switch.power'
-                    }
-
-                    return 'switch';
+                    return firstKeywordRole(BOOLEAN_RW_ROLES, lowerId) ?? 'switch';
                 }
 
                 if (common.read === true && common.write === false) {
-                    if (lowerId.includes('connected') || lowerId.includes('reachable') || lowerId.includes('isonline')) {
-                        return 'indicator.reachable'
-                    }
-                    if (lowerId.includes('error')) {
-                        return 'indicator.error'
-                    }
-                    if (lowerId.includes('alarm')) {
-                        return 'indicator.alarm'
-                    }
-                    if (lowerId.includes('maintenance')) {
-                        return 'indicator.maintenance'
-                    }
-
-                    return 'sensor'
+                    return firstKeywordRole(BOOLEAN_RO_ROLES, lowerId) ?? 'sensor';
                 }
             }
 
             if (common.type === 'number') {
-                let suffix = '';
+                const suffix = numberSuffix(common.unit, lowerId);
 
-                if (common.unit === '°C' || common.unit === '°F' || common.unit === 'K' || lowerId.includes('temperatur')) {
-                    suffix = '.temperature';
-                }
-                if (common.unit === 'lux') {
-                    suffix = '.brightness';
-                }
-                if (common.unit === 'ppm') {
-                    suffix = '.co2';
-                }
-                if (common.unit === 'mbar') {
-                    suffix = '.pressure';
-                }
-                if (common.unit === 'Wh' || common.unit === 'kWh') {
-                    suffix = '.energy';
-                }
-                if (common.unit === 'W' || common.unit === 'kW') {
-                    suffix = '.power';
-                }
-                if (common.unit === 'A') {
-                    suffix = '.current';
-                }
-                if (common.unit === 'V') {
-                    suffix = '.voltage';
-                }
-                if (common.unit === 'Hz') {
-                    suffix = '.frequency';
-                }
-                if (lowerId.includes('longitude')) {
-                    suffix = '.gps.longitude'
-                }
-                if (lowerId.includes('latitude')) {
-                    suffix = '.gps.latitude'
-                }
-                if (lowerId.includes('humidity') && common.unit !== '') {
-                    suffix = '.humidity';
-                }
-                if (lowerId.includes('battery') && common.unit === '%') {
-                    suffix = '.battery';
-                }
-                if (lowerId.includes('volume') && common.unit === '%') {
-                    suffix = '.volume';
-                }
-
-                if (common.read === true && common.write === true) {
-                    return `level${suffix}`;
-                }
-
-                if (common.read === false && common.write === true) {
+                // read true/false with write true both map to 'level'
+                if (common.write === true && typeof common.read === 'boolean') {
                     return `level${suffix}`;
                 }
 
@@ -751,26 +910,10 @@ export class myIob {
 
             if (common.type === 'string') {
                 if (common.read === true && common.write === false) {
-                    if (lowerId.includes('firmware') || lowerId.includes('version')) {
-                        return 'info.firmware';
-                    } else if (lowerId.includes('status')) {
-                        return 'info.status';
-                    } else if (lowerId.includes('model')) {
-                        return 'info.model';
-                    } else if (lowerId.includes('mac')) {
-                        return 'info.mac';
-                    } else if (lowerId.includes('name')) {
-                        return 'info.name';
-                    } else if (lowerId.includes('hardware')) {
-                        return 'info.hardware';
-                    } else if (lowerId.includes('serial')) {
-                        return 'info.serial';
-                    } else {
-                        return 'text';
-                    }
-                } else {
-                    return 'text';
+                    return firstKeywordRole(STRING_RO_ROLES, lowerId) ?? 'text';
                 }
+
+                return 'text';
             }
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -934,7 +1077,12 @@ export class myIob {
         return object;
     };
 
-    public findMissingTranslation(): void {
+    /**
+     * Checks the translations of all names in the given tree definitions.
+     *
+     * @param tree root object of the tree definitions (e.g. the tree module of the adapter)
+     */
+    public findMissingTranslation(tree: object): void {
         const logPrefix = '[myIob.findMissingTranslation]:';
 
         try {

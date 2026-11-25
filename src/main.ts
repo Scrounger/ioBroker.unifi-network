@@ -13,8 +13,8 @@ import type { NetworkWlanConfig, NetworkWlanConfig_V2 } from './lib/api/network-
 import type { NetworkEvent, NetworkEventClient, NetworkEventDevice, NetworkEventFirewallGroup, NetworkEventLanConfig, NetworkEventSpeedTest, NetworkEventWlanConfig } from './lib/api/network-types.js';
 import { base64 } from './lib/base64.js';
 import { disconnectDebounceList, eventHandler } from './lib/eventHandler.js';
-import { messageHandler } from './lib/messageHandler.js';
 import { COMMANDS, HELP } from './lib/help.js';
+import { messageHandler } from './lib/messageHandler.js';
 import { migration } from './lib/migration.js';
 import { myIob, myTreeState } from './lib/myIob.js';
 import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages, type ConnectedClients, type myCache, type myNetworkClient } from './lib/myTypes.js';
@@ -110,7 +110,7 @@ export class UnifiNetwork extends utils.Adapter {
 					this.log.warn(`${logPrefix} no login credentials in adapter config set!`);
 				}
 
-				this.myIob.findMissingTranslation();
+				this.myIob.findMissingTranslation(tree);
 			} else {
 				this.log.error(`${logPrefix} adapter config settings wrong!`);
 				await this.stop?.({ reason: 'adapter config settings wrong' });

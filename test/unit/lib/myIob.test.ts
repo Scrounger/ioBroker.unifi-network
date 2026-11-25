@@ -315,14 +315,14 @@ describe('myIob (offline)', function () {
 
     describe('Übersetzungsprüfung', () => {
         it('meldet fehlende Übersetzungen der Tree-Definitionen', () => {
-            ctx.iob.findMissingTranslation();
+            ctx.iob.findMissingTranslation(treeModule);
 
             expect(ctx.warnings.some(w => w.includes('missing translations')), 'Warnung zu fehlenden Übersetzungen').to.equal(true);
         });
 
         it('meldet keine fehlenden Übersetzungen, wenn alle Namen übersetzt sind', () => {
             const iob = createTranslatingIob(ctx, () => ({ en: 'Name', de: 'Name' }));
-            iob.findMissingTranslation();
+            iob.findMissingTranslation(treeModule);
 
             expect(ctx.warnings.filter(w => w.includes('missing translations'))).to.be.empty;
         });
@@ -407,6 +407,19 @@ describe('myIob (offline)', function () {
             { id: 'comment', def: { iobType: 'string', read: true, write: false }, role: 'text' },
             { id: 'note', def: { iobType: 'string', read: true, write: true }, role: 'text' },
             { id: 'payload', def: { iobType: 'json' as ioBroker.CommonType, read: true, write: false }, role: 'state' },
+            // order: the first matching rule wins for boolean and string, later number rules override earlier ones
+            { id: 'enable_light', def: { iobType: 'boolean', read: true, write: true }, role: 'switch.enable' },
+            { id: 'lightpower', def: { iobType: 'boolean', read: true, write: true }, role: 'switch.light' },
+            { id: 'connectedError', def: { iobType: 'boolean', read: true, write: false }, role: 'indicator.reachable' },
+            { id: 'statusVersion', def: { iobType: 'string', read: true, write: false }, role: 'info.firmware' },
+            { id: 'macName', def: { iobType: 'string', read: true, write: false }, role: 'info.mac' },
+            { id: 'firmware_rw', def: { iobType: 'string', read: true, write: true }, role: 'text' },
+            { id: 'boolean_write_only', def: { iobType: 'boolean', read: false, write: true }, role: 'state' },
+            { id: 'temperature_lux', def: { iobType: 'number', unit: 'lux', read: true, write: false }, role: 'value.brightness' },
+            { id: 'latitude_watt', def: { iobType: 'number', unit: 'W', read: true, write: false }, role: 'value.gps.latitude' },
+            { id: 'humidity_plain', def: { iobType: 'number', read: true, write: false }, role: 'value.humidity' },
+            { id: 'battery_plain', def: { iobType: 'number', read: true, write: false }, role: 'value' },
+            { id: 'count_rw_unit', def: { iobType: 'number', unit: 'W', read: false, write: true }, role: 'level.power' },
         ];
 
         for (const c of cases) {
@@ -416,6 +429,27 @@ describe('myIob (offline)', function () {
                 expect(obj?.common?.role).to.equal(c.role);
             });
         }
+    });
+
+    describe('Array-Items (Characterization)', () => {
+        it('aktualisieren das Common auch ohne updateObject, Top-Level-States dagegen nicht', async () => {
+            const channel = `${NAMESPACE}.test`;
+            const data = testData({ top: 1, list: [{ v: 1 }] });
+            const definitionsW: TreeDefinitions = {
+                top: { iobType: 'number', unit: 'W', read: true, write: false },
+                list: { array: { v: { iobType: 'number', unit: 'W', read: true, write: false } } },
+            } as unknown as TreeDefinitions;
+            const definitionsV: TreeDefinitions = {
+                top: { iobType: 'number', unit: 'V', read: true, write: false },
+                list: { array: { v: { iobType: 'number', unit: 'V', read: true, write: false } } },
+            } as unknown as TreeDefinitions;
+
+            await ctx.iob.createOrUpdateStates(channel, definitionsW, data, data, undefined, false, 'dev', true);
+            await ctx.iob.createOrUpdateStates(channel, definitionsV, data, data, undefined, false, 'dev', false);
+
+            expect(ctx.objects.get(`${channel}.top`)?.common?.unit).to.equal('W');
+            expect(ctx.objects.get(`${channel}.list.0.v`)?.common?.unit).to.equal('V');
+        });
     });
 
     describe('getCommonForState() über createOrUpdateStates()', () => {
