@@ -242,7 +242,8 @@ describe('updateLanConfig', () => {
 
         await ctx.instance.updateLanConfig([lan({ vpn_type: 'wireguard-client' })], false);
 
-        const icon = callsOf(ctx, 'createOrUpdateDevice')[0].args[3];
+        // createOrUpdateDevice(id, name, options): the icon is part of the options object
+        const icon = (callsOf(ctx, 'createOrUpdateDevice')[0].args[1] as { icon?: string }).icon;
         expect(base64['wireguard-client']).to.be.a('string');
         expect(icon).to.equal(base64['wireguard-client']);
     });

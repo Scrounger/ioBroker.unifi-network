@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const modulePath = resolve(projectRoot, 'src', 'lib', 'myIob.ts');
 
-/** @type {string | undefined} */
+// Symlink target saved before the swap, restored afterwards
 let savedSymlinkTarget;
 
 /**

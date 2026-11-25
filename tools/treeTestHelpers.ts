@@ -74,6 +74,7 @@ export function createTreeContext(config: Record<string, unknown> = {}, options:
  * Every path segment has to be given explicitly. A missing path throws, so that a test cannot pass silently.
  *
  * @param tree tree module, e.g. `device`
+ * @param tree.get returns the tree definitions as a plain object
  * @param path dot separated path of the definition
  */
 export function getDefinition(tree: { get(): Record<string, unknown> }, path: string): any {

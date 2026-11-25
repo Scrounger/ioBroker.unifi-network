@@ -12,14 +12,90 @@ type MyIobClass = typeof import('../../../src/lib/myIob.js').myIob;
 type MyIobArgs = ConstructorParameters<MyIobClass>;
 type StoredObject = { type?: string; common?: Record<string, any>; native?: Record<string, any> };
 type TreeDefinitions = Parameters<InstanceType<MyIobClass>['createOrUpdateStates']>[1];
-type BlacklistFilter = Parameters<InstanceType<MyIobClass>['createOrUpdateStates']>[4];
+type StatesOptions = NonNullable<Parameters<InstanceType<MyIobClass>['createOrUpdateStates']>[4]>;
+type BlacklistFilter = StatesOptions['blacklistFilter'];
 type TreeData = Record<string, any>;
 
 const NAMESPACE = 'unifi-network.0';
 
+/**
+ * Positional call style used by the behavioral tests below. The real API takes options objects.
+ * `toPositionalIob` maps the positional arguments onto those options. Tree definitions are passed as plain literals
+ * and are not checked against the strict tree types.
+ */
+type LooseMyIob = Omit<myIob, 'createOrUpdateStates' | 'createOrUpdateDevice'> & {
+    createOrUpdateStates: (
+        channel: string,
+        definitions: Record<string, any>,
+        data: TreeData,
+        rawData: TreeData,
+        blacklist?: BlacklistFilter,
+        isWhiteList?: boolean,
+        name?: string,
+        updateObject?: boolean,
+    ) => Promise<boolean>;
+    createOrUpdateDevice: (
+        id: string,
+        name?: string,
+        onlineId?: string,
+        errorId?: string,
+        icon?: string,
+        updateObject?: boolean,
+        logChanges?: boolean,
+    ) => Promise<void>;
+};
+
+/**
+ * Wraps a myIob instance so that createOrUpdateStates and createOrUpdateDevice accept positional arguments.
+ * All other members are bound to the instance.
+ *
+ * @param iob myIob instance
+ * @returns positional view of the instance
+ */
+function toPositionalIob(iob: myIob): LooseMyIob {
+    return new Proxy(iob, {
+        get(target, prop): unknown {
+            if (prop === 'createOrUpdateStates') {
+                return (
+                    channel: string,
+                    definitions: Record<string, any>,
+                    data: TreeData,
+                    rawData: TreeData,
+                    blacklist?: BlacklistFilter,
+                    isWhiteList?: boolean,
+                    name?: string,
+                    updateObject?: boolean,
+                ): Promise<boolean> =>
+                    target.createOrUpdateStates(channel, definitions as TreeDefinitions, data, rawData, {
+                        blacklistFilter: blacklist,
+                        isWhiteList,
+                        logDeviceName: name,
+                        updateObject,
+                    });
+            }
+            if (prop === 'createOrUpdateDevice') {
+                return (
+                    id: string,
+                    name?: string,
+                    onlineId?: string,
+                    errorId?: string,
+                    icon?: string,
+                    updateObject?: boolean,
+                    logChanges?: boolean,
+                ): Promise<void> => target.createOrUpdateDevice(id, name, { onlineId, errorId, icon, updateObject, logChanges });
+            }
+            const value = Reflect.get(target, prop, target);
+            return typeof value === 'function' ? value.bind(target) : value;
+        },
+    }) as unknown as LooseMyIob;
+}
+
 interface TestContext {
     adapter: Record<string, unknown>;
-    iob: InstanceType<MyIobClass>;
+    /** Positional call style (see toPositionalIob) */
+    iob: LooseMyIob;
+    /** Same instance with the options-object API */
+    rawIob: myIob;
     objects: Map<string, StoredObject>;
     states: Map<string, { val: unknown; ack: boolean }>;
     stateCalls: string[];
@@ -101,7 +177,7 @@ function createTestContext(): TestContext {
 
     const iob = new myIob(adapter as unknown as MyIobArgs[0], utils as unknown as MyIobArgs[1]);
 
-    return { adapter, iob, objects, states, stateCalls, extendedIds, errors, warnings };
+    return { adapter, iob: toPositionalIob(iob), rawIob: iob, objects, states, stateCalls, extendedIds, errors, warnings };
 }
 
 /**
@@ -132,9 +208,9 @@ function asAdapter(ctx: TestContext): ioBroker.Adapter {
  * @param translate Ersatz für `I18n.getTranslatedObject`
  * @returns myIob-Instanz mit der übergebenen Übersetzungsfunktion
  */
-function createTranslatingIob(ctx: TestContext, translate: (text: string) => Record<string, string>): myIob {
+function createTranslatingIob(ctx: TestContext, translate: (text: string) => Record<string, string>): LooseMyIob {
     const utils = { I18n: { getTranslatedObject: translate } };
-    return new myIob(ctx.adapter as unknown as MyIobArgs[0], utils as unknown as MyIobArgs[1]);
+    return toPositionalIob(new myIob(ctx.adapter as unknown as MyIobArgs[0], utils as unknown as MyIobArgs[1]));
 }
 
 /**
@@ -146,7 +222,7 @@ function createTranslatingIob(ctx: TestContext, translate: (text: string) => Rec
  * @param def Tree-Definition des States
  * @returns das gespeicherte Objekt oder undefined
  */
-async function createStateObject(iob: myIob, ctx: TestContext, id: string, def: myTreeState<any, any, any>): Promise<StoredObject | undefined> {
+async function createStateObject(iob: LooseMyIob, ctx: TestContext, id: string, def: myTreeState<any, any, any>): Promise<StoredObject | undefined> {
     const channel = `${NAMESPACE}.test`;
     const value = def.iobType === 'number' ? 1 : def.iobType === 'string' ? 'x' : true;
     const definitions: TreeDefinitions = { [id]: def };
@@ -345,7 +421,7 @@ describe('myIob (offline)', function () {
                 },
             };
 
-            ctx.iob._findMissingTranslation(tree);
+            ctx.iob.findMissingTranslation(tree);
 
             const message = ctx.warnings.find(w => w.includes('device - missing translations'));
             expect(message, 'Warnung für device').to.be.a('string');
@@ -355,7 +431,7 @@ describe('myIob (offline)', function () {
         });
 
         it('protokolliert Fehler beim Auslesen einer Tree-Definition', () => {
-            ctx.iob._findMissingTranslation({
+            ctx.iob.findMissingTranslation({
                 broken: {
                     get: (): never => {
                         throw new Error('boom');
@@ -1035,6 +1111,85 @@ function collectStatesWithStepOrExpert(defs: Record<string, any>, channel: strin
     return found;
 }
 
+describe('Options-Objekt-API (direkter Aufruf, offline)', function () {
+    let ctx: TestContext;
+    const channel = `${NAMESPACE}.test`;
+    const definition = { a: { iobType: 'string' }, b: { iobType: 'string' } } as unknown as TreeDefinitions;
+    const data = testData({ a: 'x', b: 'y' });
+
+    beforeEach(() => {
+        ctx = createTestContext();
+    });
+
+    afterEach(() => {
+        expect(ctx.errors, 'Fehler im Logger').to.be.empty;
+    });
+
+    /**
+     * Liefert die IDs aller Objekte unterhalb des Test-Channels.
+     *
+     * @returns sortierte Objekt-IDs
+     */
+    function idsBelowChannel(): string[] {
+        return [...ctx.objects.keys()].filter(id => id.startsWith(`${channel}.`)).sort();
+    }
+
+    it('ohne Optionen werden alle States angelegt', async () => {
+        await ctx.rawIob.createOrUpdateStates(channel, definition, data, data);
+
+        expect(idsBelowChannel()).to.deep.equal([`${channel}.a`, `${channel}.b`]);
+    });
+
+    it('blacklistFilter sperrt den gelisteten State', async () => {
+        await ctx.rawIob.createOrUpdateStates(channel, definition, data, data, { blacklistFilter: [{ id: 'a' }] });
+
+        expect(idsBelowChannel()).to.deep.equal([`${channel}.b`]);
+    });
+
+    it('isWhiteList: true legt nur den gelisteten State an', async () => {
+        await ctx.rawIob.createOrUpdateStates(channel, definition, data, data, { blacklistFilter: [{ id: 'a' }], isWhiteList: true });
+
+        expect(idsBelowChannel()).to.deep.equal([`${channel}.a`]);
+    });
+
+    it('updateObject: true übernimmt geänderte Definitionen in einen bestehenden State', async () => {
+        await ctx.rawIob.createOrUpdateStates(channel, { level: { iobType: 'number' } } as unknown as TreeDefinitions, testData({ level: 1 }), testData({ level: 1 }));
+
+        await ctx.rawIob.createOrUpdateStates(
+            channel,
+            { level: { iobType: 'number', step: 5 } } as unknown as TreeDefinitions,
+            testData({ level: 1 }),
+            testData({ level: 1 }),
+            { updateObject: true },
+        );
+
+        expect(ctx.objects.get(`${channel}.level`)?.common?.step).to.equal(5);
+    });
+
+    it('createOrUpdateDevice übernimmt icon, onlineId und errorId aus den Optionen', async () => {
+        await ctx.rawIob.createOrUpdateDevice('devices.CCDD', 'Gerät', {
+            icon: 'dev.png',
+            onlineId: 'devices.CCDD.isOnline',
+            errorId: 'devices.CCDD.hasError',
+        });
+
+        const obj = ctx.objects.get('devices.CCDD');
+        expect(obj?.common?.icon).to.equal('dev.png');
+        expect(obj?.common?.statusStates?.onlineId).to.equal(`${NAMESPACE}.devices.CCDD.isOnline`);
+        expect(obj?.common?.statusStates?.errorId).to.equal(`${NAMESPACE}.devices.CCDD.hasError`);
+    });
+
+    it('createOrUpdateDevice ohne updateObject behält den gespeicherten Namen', async () => {
+        await ctx.rawIob.createOrUpdateDevice('devices.EEFF', 'Alt');
+
+        await ctx.rawIob.createOrUpdateDevice('devices.EEFF', 'Neu', {});
+        expect(ctx.objects.get('devices.EEFF')?.common?.name).to.equal('Alt');
+
+        await ctx.rawIob.createOrUpdateDevice('devices.EEFF', 'Neu', { updateObject: true });
+        expect(ctx.objects.get('devices.EEFF')?.common?.name).to.equal('Neu');
+    });
+});
+
 describe('Befund: offene Punkte (myIob, offline)', function () {
     let ctx: TestContext;
     const channel = `${NAMESPACE}.test`;
@@ -1048,11 +1203,11 @@ describe('Befund: offene Punkte (myIob, offline)', function () {
     });
 
     it('step und expert werden bei updateObject=true in einen bestehenden State übernommen', async () => {
-        await ctx.iob.createOrUpdateStates(channel, { level: { iobType: 'number' } } as unknown as TreeDefinitions, testData({ level: 1 }), testData({ level: 1 }), undefined, false, 'dev', true);
+        await ctx.iob.createOrUpdateStates(channel, { level: { iobType: 'number' } }, testData({ level: 1 }), testData({ level: 1 }), undefined, false, 'dev', true);
 
         await ctx.iob.createOrUpdateStates(
             channel,
-            { level: { iobType: 'number', step: 5, expert: true } } as unknown as TreeDefinitions,
+            { level: { iobType: 'number', step: 5, expert: true } },
             testData({ level: 1 }),
             testData({ level: 1 }),
             undefined,
@@ -1080,6 +1235,23 @@ describe('Befund: offene Punkte (myIob, offline)', function () {
         await ctx.iob.createOrUpdateStates(channel, definition, data, data, undefined, false, 'dev', true);
 
         expect(ctx.extendedIds, 'extendObject-Aufrufe').to.deep.equal([]);
+    });
+
+    it('schlägt getCommonForState beim Update fehl, bleibt der State unverändert (kein extendObject mit common undefined)', async () => {
+        const data = testData({ v: 1 });
+        const definition = { v: { iobType: 'number' } } as unknown as TreeDefinitions;
+        await ctx.iob.createOrUpdateStates(channel, definition, data, data, undefined, false, 'dev', true);
+        const failingUnit = (): string => {
+            throw new Error('kaputt');
+        };
+        const failing = { v: { iobType: 'number', unit: failingUnit } } as unknown as TreeDefinitions;
+
+        ctx.extendedIds.splice(0);
+        await ctx.iob.createOrUpdateStates(channel, failing, data, data, undefined, false, 'dev', true);
+
+        expect(ctx.extendedIds, 'extendObject-Aufrufe').to.deep.equal([]);
+        expect(ctx.errors.join('\n'), 'Logger-Fehler').to.include('kaputt');
+        ctx.errors.splice(0);
     });
 
     it('getIdWithoutLastPart liefert für eine ID ohne Punkt einen leeren String (kein bekannter Aufrufer)', () => {
