@@ -194,10 +194,11 @@ export class UnifiNetwork extends utils.Adapter {
 					} else if (this.myIob?.getIdLastPart(id) === 'isOnline' && (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelVpn}.`))) {
 						const macOrIp = this.myIob.getIdLastPart(this.myIob.getIdWithoutLastPart(id)).replaceAll('_', '.');
 
-						if (state.val !== this.cache.isOnline[macOrIp].val) {
+						const currentOnline = this.cache.isOnline[macOrIp];
+						if (state.val !== currentOnline?.val) {
 							const old = {
-								wlan_id: this.cache.isOnline[macOrIp].wlan_id,
-								network_id: this.cache.isOnline[macOrIp].network_id,
+								wlan_id: currentOnline?.wlan_id,
+								network_id: currentOnline?.network_id,
 							}
 							this.cache.isOnline[macOrIp] = {
 								val: state.val as boolean,
@@ -514,7 +515,6 @@ export class UnifiNetwork extends utils.Adapter {
 			await this.updateClients(null, isAdapterStart);
 			await this.updateClients(await this.ufn?.getClientsHistory_V2() as myNetworkClient[], isAdapterStart, true);
 			await this.updateVpnClients(null, isAdapterStart);
-			// await this.updatClientsOffline(await this.ufn.getClients(), isAdapterStart);
 
 			await this.updateLanConfig(null, isAdapterStart);
 			await this.updateLanConnectedClients(isAdapterStart);
@@ -698,10 +698,13 @@ export class UnifiNetwork extends utils.Adapter {
 							const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
 
 							if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: client.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: client.mac }))) {
-								if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.clients[client.mac] || this.cache.clients[client.ip])) {
+								const cachedByMac = this.cache.clients[client.mac];
+								const cachedByIp = this.cache.clients[client.ip];
+
+								if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (cachedByMac || cachedByIp)) {
 									// debounce real time data
-									const lastSeen = this.cache.clients[client.mac].last_seen || this.cache.clients[client.ip].last_seen;
-									const iobTimestamp = this.cache.clients[client.mac].timestamp || this.cache.clients[client.ip].timestamp;
+									const lastSeen = cachedByMac?.last_seen || cachedByIp?.last_seen;
+									const iobTimestamp = cachedByMac?.timestamp || cachedByIp?.timestamp;
 
 									if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
 										continue
@@ -724,8 +727,8 @@ export class UnifiNetwork extends utils.Adapter {
 
 											let dataToProcess = client;
 											if (this.cache.clients[client.mac]) {
-												// filter out unchanged properties
-												dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+												// filter out unchanged properties, compare with the display name the cache stores
+												dataToProcess = this.myIob?.deepDiffBetweenObjects({ ...client, name }, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 											}
 
 											if (!_.isEmpty(dataToProcess)) {
@@ -733,6 +736,7 @@ export class UnifiNetwork extends utils.Adapter {
 												this.cache.clients[client.mac].name = name;
 												this.cache.clients[client.mac].timestamp = dayjs().unix();
 
+												this.cache.isOnline[client.mac] ??= { val: !isOfflineClients };
 												this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
 												this.cache.isOnline[client.mac].network_id = client.network_id;
 
@@ -770,8 +774,8 @@ export class UnifiNetwork extends utils.Adapter {
 
 											let dataToProcess = client;
 											if (this.cache.clients[client.mac]) {
-												// filter out unchanged properties
-												dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
+												// filter out unchanged properties, compare with the display name the cache stores
+												dataToProcess = this.myIob?.deepDiffBetweenObjects({ ...client, name }, this.cache.clients[client.mac], this, tree.client.getKeys()) as myNetworkClient;
 											}
 
 											if (!_.isEmpty(dataToProcess)) {
@@ -779,6 +783,7 @@ export class UnifiNetwork extends utils.Adapter {
 												this.cache.clients[client.mac].name = name;
 												this.cache.clients[client.mac].timestamp = dayjs().unix();
 
+												this.cache.isOnline[client.mac] ??= { val: !isOfflineClients };
 												this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
 												this.cache.isOnline[client.mac].network_id = client.network_id;
 
@@ -896,7 +901,7 @@ export class UnifiNetwork extends utils.Adapter {
 									let dataToProcess = client;
 									if (this.cache.vpn[client.ip]) {
 										// filter out unchanged properties
-										dataToProcess = this.myIob?.deepDiffBetweenObjects(client, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
+										dataToProcess = this.myIob?.deepDiffBetweenObjects({ ...client, name }, this.cache.vpn[client.ip], this, tree.client.getKeys()) as myNetworkClient;
 									}
 
 									const preparedIp = client.ip.replaceAll('.', '_');
@@ -906,6 +911,7 @@ export class UnifiNetwork extends utils.Adapter {
 										this.cache.vpn[client.ip].name = name;
 										this.cache.vpn[client.ip].timestamp = dayjs().unix();
 
+										this.cache.isOnline[client.ip] ??= { val: client.status === 'online' };
 										this.cache.isOnline[client.ip].network_id = client.network_id;
 
 										dataToProcess.ip = client.ip;
@@ -947,25 +953,6 @@ export class UnifiNetwork extends utils.Adapter {
 					await this.delObjectAsync(tree.client.idChannelVpn, { recursive: true });
 					this.log.debug(`${logPrefix} channel '${tree.client.idChannelVpn}' deleted`);
 				}
-			}
-		} catch (error: any) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
-		}
-	}
-
-	private async updatClientsOffline(data: myNetworkClient[], isAdapterStart: boolean = false): Promise<void> {
-		const logPrefix = '[updatClientsOffline]:';
-
-		try {
-			if (data) {
-				const result: myNetworkClient[] = [];
-				for (const client of data) {
-					if (!this.cache.clients[client.mac] && !this.cache.clients[client.ip]) {
-						result.push(client);
-					}
-				}
-
-				await this.updateClients(result, isAdapterStart, true);
 			}
 		} catch (error: any) {
 			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -1751,14 +1738,9 @@ export class UnifiNetwork extends utils.Adapter {
 	}
 
 	private async onNetworkSpeedTestEvent(event: NetworkEventSpeedTest): Promise<void> {
-		const logPrefix = '[onNetworkSpeedTestEvent]:';
-
-		try {
-			if (this.config.devicesEnabled) {
-				await eventHandler.device.speedTest(event, this, this.cache);
-			}
-		} catch (error: any) {
-			this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+		// errors are logged by eventHandler.device.speedTest, onNetworkMessage catches anything else
+		if (this.config.devicesEnabled) {
+			await eventHandler.device.speedTest(event, this, this.cache);
 		}
 	}
 
