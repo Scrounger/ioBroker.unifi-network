@@ -607,13 +607,14 @@ export class myIob {
         if (!(await this.adapter.objectExists(`${channel}.${stateId}`))) {
             // create State
             this.log.silly(`${logPrefix} ${logDeviceName} - creating state '${logMsgState}'`);
-            const obj: any = {
+            // common is undefined if getCommonForState failed, the object is then created without common
+            const obj: Partial<ioBroker.StateObject> = {
                 type: 'state',
                 common: this.getCommonForState(key, treeDefinition as { [key: string]: myTreeState }, fullData, channelData, logMsgState, logDeviceName),
                 native: {},
             };
 
-            await this.adapter.setObjectNotExistsAsync(`${channel}.${stateId}`, obj);
+            await this.adapter.setObjectNotExistsAsync(`${channel}.${stateId}`, obj as ioBroker.SettableObject);
         } else if (updateObject) {
             // update State if needed (only on adapter start)
             const obj: ioBroker.Object | null | undefined = await this.adapter.getObjectAsync(`${channel}.${stateId}`);
@@ -654,9 +655,10 @@ export class myIob {
         const val = treeDef.readVal ? await treeDef.readVal(treeData[valKey], this.adapter, fullData, channelData, `${channel}.${stateId}`) : treeData[valKey];
 
         // set lc to last_seen value (timestamps in ms), only possible for numbers (null is no valid lc, js-controller rejects it)
-        const changedObj: any = this.statesUsingValAsLastChanged.has(stateId ?? key)
+        // the adapter types declare the result as id (string), the code reads notChanged from the result at runtime
+        const changedObj = (this.statesUsingValAsLastChanged.has(stateId ?? key)
             ? await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, typeof val === 'number' ? { val: val, lc: val } : { val: val }, true)
-            : await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true);
+            : await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true)) as unknown as { notChanged?: boolean } | undefined;
 
         // value of this state changed (only evaluated outside of object updates)
         const stateChanged = !updateObject && !!changedObj && this.hasKey(changedObj, 'notChanged') && !changedObj.notChanged;
@@ -1187,11 +1189,7 @@ export class myIob {
             }
         }
 
-        if (result && Object.keys(result).length > 0) {
-            return result;
-        } else {
-            return null;
-        }
+        return Object.keys(result).length > 0 ? result : null;
     }
 
     private getTreeNameOrKey(obj: { [key: string]: any }, path: string[] = []): Record<string, string> {
