@@ -70,7 +70,7 @@ export interface myTreeState<
     readVal?: ReadValFunction<Type, Device, Adapter>;
     writeVal?: WriteValFunction<Type, Device, Adapter>;
 
-    valFromProperty?: string; // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be regoniczed
+    valFromProperty?: string; // Take value from other property in the corresponding tree. If this property is an object, @link ./helper.ts [getAllKeysOfTreeDefinition] must added manual if they should be recognized
     statesFromProperty?(objDevice: myTreeData, objChannel: myTreeData, adapter: ioBroker.Adapter | ioBroker.myAdapter): Record<string, string> | string[] | string; // ToDo: perhaps can be removed
 
     conditionToCreateState?: ConditionToCreateStateFunction<Device, Adapter>; // condition to create state
@@ -122,14 +122,30 @@ export interface myTreeArray<
     conditionToCreateState?: ConditionToCreateStateFunction<Device, Adapter>; // condition to create state
 }
 
+/** Parameters for creating or updating a device or channel object */
+interface ObjectWriteOptions<TCommon extends ioBroker.DeviceCommon | ioBroker.ChannelCommon> {
+    logPrefix: string;
+    id: string;
+    type: 'device' | 'channel';
+    common: TCommon;
+    native: Record<string, any>;
+    updateObject: boolean;
+    /** false if no name was passed, then the stored name is kept on update */
+    isNameGiven: boolean;
+    isCommonEqual: (objCommon: TCommon, myCommon: TCommon) => boolean;
+    logChanges: boolean;
+}
+
 export class myIob {
     private adapter: ioBroker.Adapter
     private log: ioBroker.Logger
     public utils: typeof import("@iobroker/adapter-core")
 
-    private statesUsingValAsLastChanged: string[] = [];
+    // ids of states where lc is taken from the value, filled once in the constructor
+    private statesUsingValAsLastChanged: Set<string> = new Set();
 
-    private subscribedStates: string[] = [];
+    // full ids of subscribed states, so each state is subscribed only once
+    private subscribedStates: Set<string> = new Set();
 
     public statesWithWriteFunction: { [key: string]: WriteValFunction } = {};
 
@@ -137,7 +153,8 @@ export class myIob {
         this.adapter = adapter;
         this.log = adapter.log;
         this.utils = utils;
-        this.statesUsingValAsLastChanged = statesUsingValAsLastChanged;
+        // copied into a Set; no caller changes the array after construction
+        this.statesUsingValAsLastChanged = new Set(statesUsingValAsLastChanged);
     }
 
     /**
@@ -156,13 +173,10 @@ export class myIob {
         const logPrefix = '[myIob.createOrUpdateDevice]:';
 
         try {
-            if (typeof name === 'string') {
-                const translation = this.utils.I18n.getTranslatedObject(name);
-                name = translation && Object.keys(translation).length > 1 ? translation : name
-            }
+            const translatedName = this.translateName(name);
 
             const common: ioBroker.DeviceCommon = {
-                name: name ?? 'undefined',
+                name: translatedName ?? 'undefined',
                 icon: icon,
             };
 
@@ -180,40 +194,79 @@ export class myIob {
                 common.statusStates.errorId = errorId.startsWith(this.adapter.namespace) ? errorId : `${this.adapter.namespace}.${errorId}`;
             }
 
-            if (!(await this.adapter.objectExists(id))) {
-                this.log.debug(`${logPrefix} creating device '${id}'`);
-                await this.adapter.setObjectNotExistsAsync(id, {
-                    type: 'device',
-                    common: common,
-                    native,
-                });
-            } else {
-                if (updateObject) {
-                    const obj = await this.adapter.getObjectAsync(id);
-
-                    if (obj && obj.common) {
-                        const storedName = (obj.common as ioBroker.DeviceCommon).name;
-
-                        // kein Name übergeben -> vorhandenen Namen beibehalten statt mit 'undefined' zu überschreiben
-                        if (name === undefined && storedName && storedName !== 'undefined') {
-                            common.name = storedName;
-                        }
-
-                        if (!this.isDeviceCommonEqual(obj.common as ioBroker.DeviceCommon, common)) {
-                            await this.adapter.extendObject(id, { common: common });
-
-                            const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
-                            if (diff && diff.icon) {
-                                diff.icon = _.truncate(diff.icon);
-                            } // reduce base64 image string for logging
-
-                            this.log.debug(`${logPrefix} device updated '${id}' ${logChanges ? `(updated properties: ${JSON.stringify(diff)})` : ''}`);
-                        }
-                    }
-                }
-            }
+            await this.createOrUpdateObject({
+                logPrefix,
+                id,
+                type: 'device',
+                common,
+                native,
+                updateObject,
+                isNameGiven: translatedName !== undefined,
+                isCommonEqual: (objCommon, myCommon) => this.isDeviceCommonEqual(objCommon, myCommon),
+                logChanges,
+            });
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+    }
+
+    /**
+     * translate a name if a translation exists for it, otherwise return the name unchanged
+     *
+     * @param name
+     * @returns
+     */
+    private translateName(name: string | ioBroker.Translated | undefined): string | ioBroker.Translated | undefined {
+        if (typeof name !== 'string') {
+            return name;
+        }
+
+        const translation = this.utils.I18n.getTranslatedObject(name);
+        return translation && Object.keys(translation).length > 1 ? translation : name;
+    }
+
+    /**
+     * create a device or channel object, or on adapter start (updateObject) update its common properties if they differ
+     *
+     * @param options
+     */
+    private async createOrUpdateObject<TCommon extends ioBroker.DeviceCommon | ioBroker.ChannelCommon>(options: ObjectWriteOptions<TCommon>): Promise<void> {
+        const { logPrefix, id, type, common, native, updateObject, isNameGiven, isCommonEqual, logChanges } = options;
+
+        if (!(await this.adapter.objectExists(id))) {
+            this.log.debug(`${logPrefix} creating ${type} '${id}'`);
+            await this.adapter.setObjectNotExistsAsync(id, {
+                type: type,
+                common: common,
+                native,
+            });
+            return;
+        }
+
+        if (!updateObject) {
+            return;
+        }
+
+        const obj = await this.adapter.getObjectAsync(id);
+
+        if (obj && obj.common) {
+            const storedName = (obj.common as TCommon).name;
+
+            // no name passed -> keep the stored name instead of overwriting it with 'undefined'
+            if (!isNameGiven && storedName && storedName !== 'undefined') {
+                common.name = storedName;
+            }
+
+            if (!isCommonEqual(obj.common as TCommon, common)) {
+                await this.adapter.extendObject(id, { common: common });
+
+                const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
+                if (diff && diff.icon) {
+                    diff.icon = _.truncate(diff.icon);
+                } // reduce base64 image string for logging
+
+                this.log.debug(`${logPrefix} ${type} updated '${id}' ${logChanges ? `(updated properties: ${JSON.stringify(diff)})` : ''}`);
+            }
         }
     }
 
@@ -230,48 +283,24 @@ export class myIob {
         const logPrefix = '[myIob.createOrUpdateChannel]:';
 
         try {
-            if (typeof name === 'string') {
-                const translation = this.utils.I18n.getTranslatedObject(name);
-                name = translation && Object.keys(translation).length > 1 ? translation : name
-            }
+            const translatedName = this.translateName(name);
 
             const common: ioBroker.ChannelCommon = {
-                name: name ?? 'undefined',
+                name: translatedName ?? 'undefined',
                 icon: icon,
             };
 
-            if (!(await this.adapter.objectExists(id))) {
-                this.log.debug(`${logPrefix} creating channel '${id}'`);
-                await this.adapter.setObjectNotExistsAsync(id, {
-                    type: 'channel',
-                    common: common,
-                    native,
-                });
-            } else {
-                if (updateObject) {
-                    const obj = await this.adapter.getObjectAsync(id);
-
-                    if (obj && obj.common) {
-                        const storedName = (obj.common as ioBroker.ChannelCommon).name;
-
-                        // kein Name übergeben -> vorhandenen Namen beibehalten statt mit 'undefined' zu überschreiben
-                        if (name === undefined && storedName && storedName !== 'undefined') {
-                            common.name = storedName;
-                        }
-
-                        if (!this.isChannelCommonEqual(obj.common as ioBroker.ChannelCommon, common)) {
-                            await this.adapter.extendObject(id, { common: common });
-
-                            const diff = this.deepDiffBetweenObjects(common, obj.common, this.adapter);
-                            if (diff && diff.icon) {
-                                diff.icon = _.truncate(diff.icon);
-                            } // reduce base64 image string for logging
-
-                            this.log.debug(`${logPrefix} channel updated '${id}' (updated properties: ${JSON.stringify(diff)})`);
-                        }
-                    }
-                }
-            }
+            await this.createOrUpdateObject({
+                logPrefix,
+                id,
+                type: 'channel',
+                common,
+                native,
+                updateObject,
+                isNameGiven: translatedName !== undefined,
+                isCommonEqual: (objCommon, myCommon) => this.isChannelCommonEqual(objCommon, myCommon),
+                logChanges: true,
+            });
         } catch (error: any) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
@@ -308,14 +337,19 @@ export class myIob {
 
         let stateValueChanged = false;
 
+        // reason used in log messages when an object is deleted because it is not allowed
+        const blockReason = isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`;
+
         try {
             if (this.adapter.connected) {
+                // identifies the data object in log messages, the same for all keys of this call
+                const idInfo = fullData as { mac?: string; ip?: string; _id?: string } | undefined;
+                const logDetails = `${idInfo?.mac ? `mac: ${idInfo.mac}` : idInfo?.ip ? `ip: ${idInfo.ip}` : idInfo?._id ? `id: ${idInfo._id}` : ''}`;
+
                 for (const key in treeDefinition) {
                     let logMsgState = `${channel}.${key}`.split('.')?.slice(1)?.join('.');
 
                     const treeDef = treeDefinition[key] as myTreeState<any, any, any>;
-
-                    const logDetails = `${(fullData as any)?.mac ? `mac: ${(fullData as any)?.mac}` : (fullData as any)?.ip ? `ip: ${(fullData as any)?.ip}` : (fullData as any)?._id ? `id: ${(fullData as any)?._id}` : ''}`;
 
                     try {
                         // if we have an own defined state which takes val from other property
@@ -373,12 +407,12 @@ export class myIob {
                                         }
                                     }
 
-                                    if (!this.subscribedStates.includes(`${channel}.${stateId}`) && ((treeDef.write && treeDef.write === true) || this.hasKey(treeDef, 'subscribeMe'))) {
+                                    if (!this.subscribedStates.has(`${channel}.${stateId}`) && ((treeDef.write && treeDef.write === true) || this.hasKey(treeDef, 'subscribeMe'))) {
                                         // state is writeable or has subscribeMe Property -> subscribe it
                                         this.log.silly(`${logPrefix} ${logDeviceName} - subscribing state '${logMsgState}'`);
                                         await this.adapter.subscribeStatesAsync(`${channel}.${stateId}`);
 
-                                        this.subscribedStates.push(`${channel}.${stateId}`);
+                                        this.subscribedStates.add(`${channel}.${stateId}`);
                                     }
 
                                     const writeValKey = `${channel}.${stateId}`.replace(`.${deviceId}.`, '.');
@@ -392,7 +426,7 @@ export class myIob {
 
                                         let changedObj: any = undefined;
 
-                                        if (this.statesUsingValAsLastChanged.includes(stateId ?? key)) {
+                                        if (this.statesUsingValAsLastChanged.has(stateId ?? key)) {
                                             // set lc to last_seen value (timestamps in ms), only possible for numbers (null is no valid lc, js-controller rejects it)
                                             changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, typeof val === 'number' ? { val: val, lc: val } : { val: val }, true);
                                         } else {
@@ -422,16 +456,13 @@ export class myIob {
                                 } else {
                                     // channel is on blacklist
                                     // delete also at runtime, because some properties are only available on websocket data
-                                    if (await this.adapter.objectExists(`${channel}.${stateId}`)) {
-                                        await this.adapter.delObjectAsync(`${channel}.${stateId}`);
-
-                                        this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`}`);
+                                    if (await this.deleteObjectIfExists(`${channel}.${stateId}`, false)) {
+                                        this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, ${blockReason}`);
                                     }
                                 }
                             } else {
                                 if (updateObject) {
-                                    if (await this.adapter.objectExists(`${channel}.${stateId}`)) {
-                                        await this.adapter.delObjectAsync(`${channel}.${stateId}`);
+                                    if (await this.deleteObjectIfExists(`${channel}.${stateId}`, false)) {
                                         this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}state '${channel}.${stateId}' delete, condition to create is 'false'`);
                                     }
                                 }
@@ -451,14 +482,12 @@ export class myIob {
                                         stateValueChanged = result ? result : stateValueChanged;
                                     } else {
                                         // channel is on blacklist
-                                        if (await this.adapter.objectExists(idChannel)) {
-                                            await this.adapter.delObjectAsync(idChannel, { recursive: true });
-                                            this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`}`);
+                                        if (await this.deleteObjectIfExists(idChannel, true)) {
+                                            this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${blockReason}`);
                                         }
                                     }
                                 } else {
-                                    if (await this.adapter.objectExists(idChannel)) {
-                                        await this.adapter.delObjectAsync(idChannel, { recursive: true });
+                                    if (await this.deleteObjectIfExists(idChannel, true)) {
                                         this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
                                     }
                                 }
@@ -466,8 +495,9 @@ export class myIob {
 
                             // it's a channel from type array
                             if (this.hasKey(treeDef, 'array') && this.hasKey(treeData, key)) {
-                                //@ts-ignore
-                                if (treeData[key] !== null && treeData[key].length > 0) {
+                                const arrayData = treeData[key] as unknown[] | null;
+
+                                if (arrayData !== null && arrayData.length > 0) {
                                     const treeArrayDef = treeDefinition[key] as myTreeArray<any, any, any>;
 
                                     const idChannelAppendix = this.hasKey(treeArrayDef, 'idChannel') ? treeArrayDef.idChannel : key;
@@ -479,8 +509,7 @@ export class myIob {
 
                                             const arrayNumberAdd = (this.hasKey(treeArrayDef, 'arrayStartNumber') ? treeArrayDef.arrayStartNumber : 0) ?? 0;
 
-                                            //@ts-ignore
-                                            for (let i = 0; i <= treeData[key].length - 1; i++) {
+                                            for (let i = 0; i <= arrayData.length - 1; i++) {
                                                 const nr = i + arrayNumberAdd;
 
                                                 if (treeData[key][i] !== null && treeData[key][i] !== undefined) {
@@ -493,23 +522,20 @@ export class myIob {
                                                     }
 
                                                     if (idChannelArray !== undefined) {
-                                                        //@ts-ignore
-                                                        await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, this.hasKey(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty?.(fullData, channelData[key][i], i, this.adapter) : treeArrayDef.arrayChannelNamePrefix + nr || nr.toString(), undefined, true);
+                                                        await this.createOrUpdateChannel(`${idChannel}.${idChannelArray}`, this.hasKey(treeArrayDef, 'arrayChannelNameFromProperty') ? treeArrayDef.arrayChannelNameFromProperty?.(fullData, channelData[key][i], i, this.adapter) : (treeArrayDef.arrayChannelNamePrefix ?? '') + nr || nr.toString(), undefined, true);
                                                         const result = await this._createOrUpdateStates(`${idChannel}.${idChannelArray}`, deviceId, treeArrayDef.array, treeData[key][i], blacklistFilter, isWhiteList, fullData, channelData[key][i], logDeviceName, true, `${filterId}${idChannelAppendix}.`, isChannelOnWhitelist || (isWhiteList && _.some(blacklistFilter, { id: `${filterId}${idChannelAppendix}` })));
                                                         stateValueChanged = result ? result : stateValueChanged;
                                                     }
                                                 }
                                             }
                                         } else {
-                                            // channel is on blacklist, wlan is comming from realtime api
-                                            if (await this.adapter.objectExists(idChannel)) {
-                                                await this.adapter.delObjectAsync(idChannel, { recursive: true });
-                                                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${isWhiteList ? `it's not on the whitelist` : `it's on the blacklist`}`);
+                                            // channel is on blacklist, wlan is coming from realtime api
+                                            if (await this.deleteObjectIfExists(idChannel, true)) {
+                                                this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, ${blockReason}`);
                                             }
                                         }
                                     } else {
-                                        if (await this.adapter.objectExists(idChannel)) {
-                                            await this.adapter.delObjectAsync(idChannel, { recursive: true });
+                                        if (await this.deleteObjectIfExists(idChannel, true)) {
                                             this.log.info(`${logPrefix} '${logDeviceName}' ${logDetails ? `(${logDetails}) ` : ''}channel '${idChannel}' delete, condition to create is 'false'`);
                                         }
                                     }
@@ -532,11 +558,32 @@ export class myIob {
         return stateValueChanged
     }
 
+    /**
+     * delete an object if it exists
+     *
+     * @param id full id of the object
+     * @param recursive also delete child objects
+     * @returns true if the object existed and was deleted
+     */
+    private async deleteObjectIfExists(id: string, recursive: boolean): Promise<boolean> {
+        if (!(await this.adapter.objectExists(id))) {
+            return false;
+        }
+
+        if (recursive) {
+            await this.adapter.delObjectAsync(id, { recursive: true });
+        } else {
+            await this.adapter.delObjectAsync(id);
+        }
+
+        return true;
+    }
+
     private getCommonForState(id: string, treeDefinition: { [key: string]: myTreeState<any, any, any> }, fullData: myTreeData, channelData: any, logMsgState: string, logDeviceName: string): ioBroker.StateCommon | undefined {
         const logPrefix = '[myIob.getCommonForState]:';
 
         try {
-            // i18x translation if exists
+            // i18n translation if exists
             const i18n = this.utils.I18n.getTranslatedObject(treeDefinition[id].name || id);
             const name = Object.keys(i18n).length > 1 ? i18n : treeDefinition[id].name || id;
 
@@ -607,16 +654,18 @@ export class myIob {
 
         try {
             id = this.getIdLastPart(id);
+            // lower case once, all checks below are case-insensitive
+            const lowerId = id.toLowerCase();
 
             if (common.type === 'boolean') {
                 if (common.read === true && common.write === true) {
-                    if (id.toLowerCase().includes('enable')) {
+                    if (lowerId.includes('enable')) {
                         return 'switch.enable'
                     }
-                    if (id.toLowerCase().includes('light') || id.toLowerCase().includes('led')) {
+                    if (lowerId.includes('light') || lowerId.includes('led')) {
                         return 'switch.light'
                     }
-                    if (id.toLowerCase().includes('power') || id.toLowerCase().includes('poe')) {
+                    if (lowerId.includes('power') || lowerId.includes('poe')) {
                         return 'switch.power'
                     }
 
@@ -624,16 +673,16 @@ export class myIob {
                 }
 
                 if (common.read === true && common.write === false) {
-                    if (id.toLowerCase().includes('connected') || id.toLowerCase().includes('reachable') || id.toLowerCase().includes('isonline')) {
+                    if (lowerId.includes('connected') || lowerId.includes('reachable') || lowerId.includes('isonline')) {
                         return 'indicator.reachable'
                     }
-                    if (id.toLowerCase().includes('error')) {
+                    if (lowerId.includes('error')) {
                         return 'indicator.error'
                     }
-                    if (id.toLowerCase().includes('alarm')) {
+                    if (lowerId.includes('alarm')) {
                         return 'indicator.alarm'
                     }
-                    if (id.toLowerCase().includes('maintenance')) {
+                    if (lowerId.includes('maintenance')) {
                         return 'indicator.maintenance'
                     }
 
@@ -644,7 +693,7 @@ export class myIob {
             if (common.type === 'number') {
                 let suffix = '';
 
-                if (common.unit === '°C' || common.unit === '°F' || common.unit === 'K' || id.toLowerCase().includes('temperatur')) {
+                if (common.unit === '°C' || common.unit === '°F' || common.unit === 'K' || lowerId.includes('temperatur')) {
                     suffix = '.temperature';
                 }
                 if (common.unit === 'lux') {
@@ -671,19 +720,19 @@ export class myIob {
                 if (common.unit === 'Hz') {
                     suffix = '.frequency';
                 }
-                if (id.toLowerCase().includes('longitude')) {
+                if (lowerId.includes('longitude')) {
                     suffix = '.gps.longitude'
                 }
-                if (id.toLowerCase().includes('latitude')) {
+                if (lowerId.includes('latitude')) {
                     suffix = '.gps.latitude'
                 }
-                if (id.toLowerCase().includes('humidity') && common.unit !== '') {
+                if (lowerId.includes('humidity') && common.unit !== '') {
                     suffix = '.humidity';
                 }
-                if (id.toLowerCase().includes('battery') && common.unit === '%') {
+                if (lowerId.includes('battery') && common.unit === '%') {
                     suffix = '.battery';
                 }
-                if (id.toLowerCase().includes('volume') && common.unit === '%') {
+                if (lowerId.includes('volume') && common.unit === '%') {
                     suffix = '.volume';
                 }
 
@@ -702,19 +751,19 @@ export class myIob {
 
             if (common.type === 'string') {
                 if (common.read === true && common.write === false) {
-                    if (id.toLowerCase().includes('firmware') || id.toLowerCase().includes('version')) {
+                    if (lowerId.includes('firmware') || lowerId.includes('version')) {
                         return 'info.firmware';
-                    } else if (id.toLowerCase().includes('status')) {
+                    } else if (lowerId.includes('status')) {
                         return 'info.status';
-                    } else if (id.toLowerCase().includes('model')) {
+                    } else if (lowerId.includes('model')) {
                         return 'info.model';
-                    } else if (id.toLowerCase().includes('mac')) {
+                    } else if (lowerId.includes('mac')) {
                         return 'info.mac';
-                    } else if (id.toLowerCase().includes('name')) {
+                    } else if (lowerId.includes('name')) {
                         return 'info.name';
-                    } else if (id.toLowerCase().includes('hardware')) {
+                    } else if (lowerId.includes('hardware')) {
                         return 'info.hardware';
-                    } else if (id.toLowerCase().includes('serial')) {
+                    } else if (lowerId.includes('serial')) {
                         return 'info.serial';
                     } else {
                         return 'text';
@@ -810,7 +859,7 @@ export class myIob {
     }
 
     /**
-     * Compare two objects and return properties that are diffrent
+     * Compare two objects and return properties that are different
      *
      * @param object
      * @param base
@@ -897,8 +946,7 @@ export class myIob {
             for (const key in obj) {
                 if (_.isObject(obj[key]) && !key.includes('events')) {
                     if (this.hasKey(obj[key], 'get')) {
-                        //@ts-ignore
-                        const result = this.tree2Translation(obj[key].get(), this.adapter, this.utils.I18n);
+                        const result = this.tree2Translation((obj[key] as { get: () => any }).get(), this.adapter, this.utils.I18n);
 
                         if (result && Object.keys(result).length > 0) {
                             this.log.warn(`${logPrefix} ${key} - missing translations ${JSON.stringify(result)}`);
