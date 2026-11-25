@@ -234,11 +234,14 @@ export class myIob {
                                         else {
                                             changedObj = await this.adapter.setStateChangedAsync(`${channel}.${stateId}`, val, true);
                                         }
-                                        if (!updateObject && changedObj && this.hasKey(changedObj, 'notChanged') && !changedObj.notChanged) {
+                                        // value of this state changed (only evaluated outside of object updates)
+                                        const stateChanged = !updateObject && !!changedObj && this.hasKey(changedObj, 'notChanged') && !changedObj.notChanged;
+                                        if (stateChanged) {
                                             stateValueChanged = true;
                                             this.log.silly(`${logPrefix} value of state '${logMsgState}' changed to ${val}`);
                                         }
-                                        if (!stateValueChanged && this.hasKey(treeDef, 'updateTs') && treeDef.updateTs === true) {
+                                        // updateTs depends only on this state: a changed value already updates the timestamp
+                                        if (!stateChanged && this.hasKey(treeDef, 'updateTs') && treeDef.updateTs === true) {
                                             this.log.silly(`${logPrefix} timestamp of state '${logMsgState}' updated`);
                                             await this.adapter.setState(`${channel}.${stateId}`, val, true);
                                         }
