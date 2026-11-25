@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { findLeaks } from '../../tools/anonymizeFixtures.js';
-import { fixtureDir, latestFixtureVersion, versionFromSysInfo } from '../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures, versionFromSysInfo } from '../../tools/fixtureVersions.js';
 import { getLiveConfig } from './liveHelper.test.js';
 
 /** Newest controller version with API fixtures. The tests always run against it. */
@@ -31,10 +31,8 @@ function readFixtures(): { file: string; content: string; fixture: RecordedFixtu
 }
 
 describe(`Recorded API fixtures ${FIXTURE_VERSION} (offline)`, function () {
-    before(function () {
-        if (!existsSync(FIXTURE_DIR) || readdirSync(FIXTURE_DIR).length === 0) {
-            this.skip();
-        }
+    before(() => {
+        requireFixtures(FIXTURE_DIR);
     });
 
     it('every file has endpoint, recordedAt and response', () => {

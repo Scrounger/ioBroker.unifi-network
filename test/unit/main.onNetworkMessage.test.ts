@@ -1,19 +1,19 @@
 import { expect } from 'chai';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { NetworkEventData } from '../../src/lib/api/network-types.js';
 import { ignoredWebSocketMessages } from '../../src/lib/myTypes.js';
 import * as tree from '../../src/lib/tree/index.js';
 import { UnifiNetwork } from '../../src/main.js';
-import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../tools/fixtureVersions.js';
 import { type AdapterStub, createAdapterStub, setCachedClient } from '../../tools/offlineAdapterStub.js';
 
 /**
  * Runs `onNetworkMessage` with the recorded WebSocket events of the newest controller version.
- * The suite is skipped if the events directory does not exist.
+ * The suite fails if the events directory is missing.
  */
-const FIXTURE_DIR = fixtureDir(latestFixtureVersion() ?? 'keine-version', 'events');
-const describeWithFixtures = existsSync(FIXTURE_DIR) ? describe : describe.skip;
+const FIXTURE_VERSION = latestFixtureVersion() ?? 'keine-version';
+const FIXTURE_DIR = fixtureDir(FIXTURE_VERSION, 'events');
 
 /** Handler methods that `onNetworkMessage` can route to. Spied in the dispatch test. */
 const ROUTE_METHODS = [
@@ -81,7 +81,7 @@ function createInstance(stub: AdapterStub): object {
         cache: stub.cache,
         aliveTimestamp: 0,
         eventsToIgnore: ignoredWebSocketMessages,
-        controllerVersion: '10.6.109',
+        controllerVersion: FIXTURE_VERSION,
     });
 }
 
@@ -118,7 +118,11 @@ function loadEvent<T>(file: string): { meta: { message: string; rc?: string }; d
     return { meta: sample.meta, data: data as T };
 }
 
-describeWithFixtures('onNetworkMessage mit aufgezeichneten Fixtures (offline)', () => {
+describe('onNetworkMessage mit aufgezeichneten Fixtures (offline)', () => {
+    before(() => {
+        requireFixtures(FIXTURE_DIR);
+    });
+
     it('routet jede aufgezeichnete Nachricht an genau einen Handler', async () => {
         for (const file of readdirSync(FIXTURE_DIR).filter(name => name.endsWith('.json'))) {
             const event = loadEvent<unknown>(file.replace(/\.json$/, ''));

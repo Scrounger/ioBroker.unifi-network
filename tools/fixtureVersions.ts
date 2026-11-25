@@ -87,3 +87,20 @@ export function latestFixtureVersion(root: string = FIXTURE_ROOT): string | unde
 export function fixtureDir(version: string, kind: FixtureKind, root: string = FIXTURE_ROOT): string {
     return path.join(root, version, kind);
 }
+
+/**
+ * Fails if a fixture directory is missing or empty, or if a required fixture file is missing.
+ * Fixtures are git-ignored and must be recorded locally first (`npm run record:api`, `npm run record:events`).
+ *
+ * @param dir fixture directory of one kind, e.g. `test/fixtures/local/10.6.109/api`
+ * @param required names of fixture files without `.json` that must exist in `dir`
+ */
+export function requireFixtures(dir: string, required: string[] = []): void {
+    if (!existsSync(dir) || readdirSync(dir).length === 0) {
+        throw new Error(`No fixtures in ${dir}. Record them first with npm run record:api or npm run record:events.`);
+    }
+    const missing = required.filter((name: string): boolean => !existsSync(path.join(dir, `${name}.json`)));
+    if (missing.length > 0) {
+        throw new Error(`Missing fixtures in ${dir}: ${missing.join(', ')}`);
+    }
+}

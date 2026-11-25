@@ -1,14 +1,14 @@
 import { expect } from 'chai';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { findLeaks } from '../../tools/anonymizeFixtures.js';
 import { ENTITY_LIMIT, entityId, HANDLED_EVENT_KEYS, isRecord, type WsItem } from '../../tools/eventScenarios.js';
-import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../tools/fixtureVersions.js';
 import { getLiveConfig } from './liveHelper.test.js';
 
 /**
  * Offline checks for the event fixtures written by `npm run record:events`.
- * The tests run against the newest controller version and skip if its events directory is missing or empty.
+ * The tests run against the newest controller version and fail if its events directory is missing or empty.
  */
 /** Newest controller version with event fixtures. The tests always run against it. */
 const FIXTURE_VERSION = latestFixtureVersion() ?? 'no-version';
@@ -57,14 +57,9 @@ function itemsOf(sample: EventSample): WsItem[] {
 describe(`Recorded event fixtures ${FIXTURE_VERSION} (offline)`, function () {
     let fixtures: LoadedFixture[] = [];
 
-    before(function () {
-        if (!existsSync(FIXTURE_DIR)) {
-            this.skip();
-        }
+    before(() => {
+        requireFixtures(FIXTURE_DIR);
         fixtures = loadFixtures();
-        if (fixtures.length === 0) {
-            this.skip();
-        }
     });
 
     it('every file has message, recordedAt, seenMessages and samples', function () {

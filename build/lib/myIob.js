@@ -423,28 +423,28 @@ export class myIob {
             id = this.getIdLastPart(id);
             if (common.type === 'boolean') {
                 if (common.read === true && common.write === true) {
-                    if (id.toLocaleLowerCase().includes('enable')) {
+                    if (id.toLowerCase().includes('enable')) {
                         return 'switch.enable';
                     }
-                    if (id.toLocaleLowerCase().includes('light') || id.toLocaleLowerCase().includes('led')) {
+                    if (id.toLowerCase().includes('light') || id.toLowerCase().includes('led')) {
                         return 'switch.light';
                     }
-                    if (id.toLocaleLowerCase().includes('power') || id.toLocaleLowerCase().includes('poe')) {
+                    if (id.toLowerCase().includes('power') || id.toLowerCase().includes('poe')) {
                         return 'switch.power';
                     }
                     return 'switch';
                 }
                 if (common.read === true && common.write === false) {
-                    if (id.toLocaleLowerCase().includes('connected') || id.toLocaleLowerCase().includes('reachable') || id.toLocaleLowerCase().includes('isonline')) {
+                    if (id.toLowerCase().includes('connected') || id.toLowerCase().includes('reachable') || id.toLowerCase().includes('isonline')) {
                         return 'indicator.reachable';
                     }
-                    if (id.toLocaleLowerCase().includes('error')) {
+                    if (id.toLowerCase().includes('error')) {
                         return 'indicator.error';
                     }
-                    if (id.toLocaleLowerCase().includes('alarm')) {
+                    if (id.toLowerCase().includes('alarm')) {
                         return 'indicator.alarm';
                     }
-                    if (id.toLocaleLowerCase().includes('maintenance')) {
+                    if (id.toLowerCase().includes('maintenance')) {
                         return 'indicator.maintenance';
                     }
                     return 'sensor';
@@ -479,10 +479,10 @@ export class myIob {
                 if (common.unit === 'Hz') {
                     suffix = '.frequency';
                 }
-                if (id.toLocaleLowerCase().includes('longitude')) {
+                if (id.toLowerCase().includes('longitude')) {
                     suffix = '.gps.longitude';
                 }
-                if (id.toLocaleLowerCase().includes('latitude')) {
+                if (id.toLowerCase().includes('latitude')) {
                     suffix = '.gps.latitude';
                 }
                 if (id.toLowerCase().includes('humidity') && common.unit !== '') {
@@ -506,25 +506,25 @@ export class myIob {
             }
             if (common.type === 'string') {
                 if (common.read === true && common.write === false) {
-                    if (id.toLocaleLowerCase().includes('firmware') || id.toLocaleLowerCase().includes('version')) {
+                    if (id.toLowerCase().includes('firmware') || id.toLowerCase().includes('version')) {
                         return 'info.firmware';
                     }
-                    else if (id.toLocaleLowerCase().includes('status')) {
+                    else if (id.toLowerCase().includes('status')) {
                         return 'info.status';
                     }
-                    else if (id.toLocaleLowerCase().includes('model')) {
+                    else if (id.toLowerCase().includes('model')) {
                         return 'info.model';
                     }
-                    else if (id.toLocaleLowerCase().includes('mac')) {
+                    else if (id.toLowerCase().includes('mac')) {
                         return 'info.mac';
                     }
-                    else if (id.toLocaleLowerCase().includes('name')) {
+                    else if (id.toLowerCase().includes('name')) {
                         return 'info.name';
                     }
-                    else if (id.toLocaleLowerCase().includes('hardware')) {
+                    else if (id.toLowerCase().includes('hardware')) {
                         return 'info.hardware';
                     }
-                    else if (id.toLocaleLowerCase().includes('serial')) {
+                    else if (id.toLowerCase().includes('serial')) {
                         return 'info.serial';
                     }
                     else {

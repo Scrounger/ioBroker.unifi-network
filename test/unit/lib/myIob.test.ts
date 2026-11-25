@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { fixtureDir, latestFixtureVersion } from '../../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../../tools/fixtureVersions.js';
 // Statische Imports: dynamische Imports laden die Module (network-api) doppelt und verfälschen die Coverage.
 import { myIob, type myTreeState } from '../../../src/lib/myIob.js';
 import type { myTreeData } from '../../../src/lib/myTypes.js';
@@ -734,10 +734,8 @@ function findOptionalStateId(definitions: TreeDefinitions, channel: string, crea
 describe('myIob mit API-Fixtures (offline)', function () {
     let ctx: TestContext;
 
-    before(function () {
-        if (!REQUIRED_FIXTURES.every(name => existsSync(resolve(FIXTURE_DIR, `${name}.json`)))) {
-            this.skip();
-        }
+    before(() => {
+        requireFixtures(FIXTURE_DIR, REQUIRED_FIXTURES);
     });
 
     beforeEach(() => {

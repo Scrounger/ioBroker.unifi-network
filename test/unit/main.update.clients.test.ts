@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import dayjs from 'dayjs';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fixtureDir, latestFixtureVersion } from '../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../tools/fixtureVersions.js';
 import { type IobCall, type MainContext, createFakeUfn, createMainContext, spyOn } from '../../tools/mainTestHelpers.js';
 import { setCachedClient, setCachedDevice } from '../../tools/offlineAdapterStub.js';
 
@@ -437,7 +437,6 @@ describe('updateVpnClients', () => {
 });
 
 const API_DIR = fixtureDir(latestFixtureVersion() ?? 'none', 'api');
-const describeWithFixtures = existsSync(API_DIR) ? describe : describe.skip;
 
 /**
  * Returns the `response` of a recorded API fixture.
@@ -449,7 +448,11 @@ function responseOf<T>(name: string): T {
     return fixture.response;
 }
 
-describeWithFixtures('updateVpnClients mit aufgezeichneten API-Antworten (offline)', () => {
+describe('updateVpnClients mit aufgezeichneten API-Antworten (offline)', () => {
+    before(() => {
+        requireFixtures(API_DIR);
+    });
+
     // Second entry of vpnUsersV2.json: an offline VPN client with an old last_seen.
     const FIXTURE_INDEX = 1;
 

@@ -2,7 +2,14 @@ import { expect } from 'chai';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { compareVersions, fixtureDir, latestFixtureVersion, listFixtureVersions, versionFromSysInfo } from '../../tools/fixtureVersions.js';
+import {
+    compareVersions,
+    fixtureDir,
+    latestFixtureVersion,
+    listFixtureVersions,
+    requireFixtures,
+    versionFromSysInfo,
+} from '../../tools/fixtureVersions.js';
 
 describe('fixtureVersions (offline)', function () {
     let root: string;
@@ -49,5 +56,21 @@ describe('fixtureVersions (offline)', function () {
 
     it('builds the path per version and kind', function () {
         expect(fixtureDir('10.6.109', 'api', root)).to.equal(path.join(root, '10.6.109', 'api'));
+    });
+
+    it('fails if the fixture directory is missing or empty', function () {
+        expect(() => requireFixtures(path.join(root, 'missing'))).to.throw(/No fixtures/);
+
+        mkdirSync(path.join(root, 'empty'));
+        expect(() => requireFixtures(path.join(root, 'empty'))).to.throw(/No fixtures/);
+    });
+
+    it('fails and names the missing files if required fixtures are absent', function () {
+        const dir = path.join(root, 'api');
+        mkdirSync(dir);
+        writeFileSync(path.join(dir, 'devicesV2.json'), '{}');
+
+        expect(() => requireFixtures(dir, ['devicesV2'])).to.not.throw();
+        expect(() => requireFixtures(dir, ['devicesV2', 'sites'])).to.throw(/Missing fixtures .*: sites$/);
     });
 });

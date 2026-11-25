@@ -1,13 +1,12 @@
 import { expect } from 'chai';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { NetworkApi } from '../../../src/lib/api/network-api.js';
 import { messageHandler, resetListCachesForTests } from '../../../src/lib/messageHandler.js';
 import type { JsonConfigAutocompleteSendTo } from '../../../src/lib/myTypes.js';
-import { fixtureDir, latestFixtureVersion } from '../../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../../tools/fixtureVersions.js';
 
 const API_DIR = fixtureDir(latestFixtureVersion() ?? 'none', 'api');
-const describeWithFixtures = existsSync(API_DIR) ? describe : describe.skip;
 
 /**
  * Returns the `response` of a recorded API fixture.
@@ -77,7 +76,11 @@ function isSorted(values: string[]): boolean {
     return values.every((value, index) => index === 0 || values[index - 1] <= value);
 }
 
-describeWithFixtures('messageHandler mit aufgezeichneten API-Antworten (offline)', () => {
+describe('messageHandler mit aufgezeichneten API-Antworten (offline)', () => {
+    before(() => {
+        requireFixtures(API_DIR);
+    });
+
     describe('device.list', () => {
         it('liefert je Gerät ein Eintrag mit Name und MAC als Label und MAC als Wert', async () => {
             const devices = responseOf<{ network_devices: { name: string; mac: string }[] }>('devicesV2').network_devices;

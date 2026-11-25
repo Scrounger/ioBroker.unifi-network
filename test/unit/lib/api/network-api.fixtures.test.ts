@@ -1,12 +1,11 @@
 import { expect } from 'chai';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ApiEndpoints, NetworkApi } from '../../../../src/lib/api/network-api.js';
-import { fixtureDir, latestFixtureVersion } from '../../../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../../../tools/fixtureVersions.js';
 import { createAdapterStub } from '../../../../tools/offlineAdapterStub.js';
 
 const API_DIR = fixtureDir(latestFixtureVersion() ?? 'none', 'api');
-const describeWithFixtures = existsSync(API_DIR) ? describe : describe.skip;
 
 /**
  * Returns the `response` of a recorded API fixture.
@@ -164,7 +163,11 @@ describe('NetworkApi: URLs und Antwort-Auswertung (offline)', () => {
     });
 });
 
-describeWithFixtures('NetworkApi: Getter gegen aufgezeichnete Antworten (offline)', () => {
+describe('NetworkApi: Getter gegen aufgezeichnete Antworten (offline)', () => {
+    before(() => {
+        requireFixtures(API_DIR);
+    });
+
     it('getDevices_V2 gibt die Geräte-Antwort unverändert zurück', async () => {
         const api = createApi();
         const fixture = responseOf('devicesV2');

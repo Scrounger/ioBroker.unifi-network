@@ -1,18 +1,17 @@
 import { expect } from 'chai';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { NetworkEventData, NetworkEventMeta } from '../../../src/lib/api/network-types.js';
 import { disconnectDebounceList, eventHandler } from '../../../src/lib/eventHandler.js';
 import * as tree from '../../../src/lib/tree/index.js';
-import { fixtureDir, latestFixtureVersion } from '../../../tools/fixtureVersions.js';
+import { fixtureDir, latestFixtureVersion, requireFixtures } from '../../../tools/fixtureVersions.js';
 import { type AdapterStub, createAdapterStub, setCachedClient, setCachedDevice } from '../../../tools/offlineAdapterStub.js';
 
 /**
  * Runs the event handlers against the recorded fixtures of the newest controller version.
- * The suite is skipped if the events directory does not exist.
+ * The suite fails if the events directory is missing.
  */
 const FIXTURE_DIR = fixtureDir(latestFixtureVersion() ?? 'keine-version', 'events');
-const describeWithFixtures = existsSync(FIXTURE_DIR) ? describe : describe.skip;
 
 /**
  * First recorded sample of a fixture, e.g. `EVT_WG_Connected`.
@@ -26,7 +25,11 @@ function sampleOf<T = NetworkEventData>(file: string): { meta: NetworkEventMeta;
     return { meta: fixture.samples[0].meta, data: fixture.samples[0].data };
 }
 
-describeWithFixtures('eventHandler mit aufgezeichneten Fixtures (offline)', () => {
+describe('eventHandler mit aufgezeichneten Fixtures (offline)', () => {
+    before(() => {
+        requireFixtures(FIXTURE_DIR);
+    });
+
     let stub: AdapterStub;
 
     beforeEach(() => {
