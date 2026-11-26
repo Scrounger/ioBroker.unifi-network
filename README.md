@@ -113,6 +113,14 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- (Scrounger) bug fixes in user sync, client updates, whitelist and API timeouts
+- (Scrounger) state properties (step, expert, icon) and timestamps updated correctly
+- (Scrounger) warning texts corrected
+- (Scrounger) performance optimizations
+
 ### 1.6.1 (2026-11-20)
 
 - (Scrounger) bug fixes found by adapter checker
