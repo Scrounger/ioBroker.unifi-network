@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "news": {
+      "1.6.2": {
+        "en": "bug fixes in user sync, client updates, whitelist and API timeouts\nstate properties (step, expert, icon) and timestamps updated correctly\nwarning texts corrected\nperformance optimizations",
+        "de": "Bugfixes in Usersync, Client-Updates, Whitelist und API\nStatus (Step, Expert, Icon) und Zeitstempel korrekt aktualisiert\nWarntexte korrigiert\nLeistungsoptimierungen",
+        "ru": "исправлены ошибки в синхронизации пользователей, обновлениях клиентов, белых списках и тайм-аутах API\nсвойства состояния (шаг, эксперт, значок) и временные метки обновлены правильно\nисправлены тексты предупреждений\nоптимизация производительности",
+        "pt": "correções de bugs no User Sync, Client Updates, Whitelist e API\npropriedades de estado (step, expert, icon) e timestamps atualizados\ntexto de aviso corrigido\notimizações de desempenho",
+        "nl": "bugfixes bij gebruikerssynchronisatie, client-updates, whitelist en API-time-outs\nstaatseigenschappen (stap, expert, pictogram) en tijdstempels zijn correct bijgewerkt\nwaarschuwingsteksten gecorrigeerd\noptimalisaties van de prestaties",
+        "fr": "bugs liés à la synchronisation des utilisateurs, à la liste blanche et à l'API\npropriétés d'état (étape, expert, icône) et horodatages correctement mis à jour\navertissements corrigés\noptimisations de performance",
+        "it": "bug fix in user sync, client update, whitelist e timeout API\nproprietà di stato (step, expert, icon) e timestamp aggiornati\navvisi corretti\nottimizzazioni",
+        "es": "corrección de errores en la sincronización de usuarios, listas blancas y API\nlas propiedades del estado (paso, experto, icono) y hora se actualizaron correctamente\ntextos de aviso corregidos\noptimizaciones de rendimiento",
+        "pl": "poprawki błędów w synchronizacji użytkowników, aktualizacjach klienta, białej liście i limitach czasowych interfejsu API\nwłaściwości stanu (krok, ekspert, ikona) i znaczniki czasu zaktualizowane poprawnie\npoprawione teksty ostrzegawcze\noptymalizacja wydajności",
+        "uk": "виправлення помилок у синхронізації користувачів, оновленнях клієнтів, білому списку та таймаутах API\nвластивості стану (крок, експерт, піктограма) та часові мітки оновлені правильно\nвиправлені попереджувальні тексти\nоптимізація продуктивності",
+        "zh-cn": "修复了用户同步、客户端更新、白名单和 API 超时中的错误\n状态属性（步骤、专家、图标）和时间戳已正确更新\n警告文本已更正\n性能优化"
+      },
       "1.6.1": {
         "en": "bug fixes found by adapter checker\nbug fixes\nAdded the message \"help\": a description of all messages for AI agents (e.g. pi-agent), and common.supportedMessages.help",
         "de": "Adapter-Checker hat Bug Fixes\nBugfixes\nNachricht „help“ hinzugefügt: Beschreibung aller Nachrichten für KI-Agenten (z. B. pi-agent) und common.supportedMessages.Help",
@@ -80,19 +93,6 @@
         "pl": "wiadomości eventowe poprawione # 46\nopcja zmiany trybu zasilania tx kanałów punktów dostępu\nzaktualizowane zależności\nzoptymalizowany kod\nzoptymalizowane logowanie",
         "uk": "повідомлення про захід покращено #46\nможливість змінити режим живлення tx каналів доступу\nоновлені залежності\nоптимізований код\nоптимізоване завантаження",
         "zh-cn": "事件消息得到改进# 46\n选项以更改 tx 访问点频道的电源模式\n更新依赖关系\n代码优化\n记录优化"
-      },
-      "1.2.2": {
-        "en": "delete device event added\nevent messages improved #43",
-        "de": "löschen gerät ereignis hinzugefügt\nevent-nachrichten verbessert #43",
-        "ru": "добавлено событие удаленного устройства\nсообщения о событиях улучшились #43",
-        "pt": "apagar o evento do dispositivo adicionado\nmensagens de eventos melhoradas # 43",
-        "nl": "apparaat-gebeurtenis toegevoegd verwijderen\ngebeurtenisberichten verbeterd #43",
-        "fr": "supprimer événement périphérique ajouté\nmessages d'événements améliorés #43",
-        "it": "cancellare evento dispositivo aggiunto\nmessaggi evento migliorato #43",
-        "es": "eliminar el evento del dispositivo añadido\nmensajes del evento mejorado #43",
-        "pl": "usuń zdarzenie urządzenia dodane\nwiadomości eventowe poprawione # 43",
-        "uk": "видалення події пристрою додано\nповідомлення про події покращено #43",
-        "zh-cn": "删除设备事件已添加\n事件消息改进 # 43"
       }
     },
     "titleLang": {

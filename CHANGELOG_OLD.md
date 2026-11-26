@@ -1,4 +1,11 @@
 # Older changes
+## 1.3.1 (2025-12-01)
+
+- (Scrounger) null bug fix #48
+- (Scrounger) dependencies updated
+- (Scrounger) event messages improved #46
+- (Scrounger) bug fixes
+
 ## 1.3.0 (2025-11-24)
 
 - (Scrounger) event messages improved #46
