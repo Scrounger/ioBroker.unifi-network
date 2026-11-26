@@ -177,6 +177,7 @@ export function createFakeUfn(overrides: Record<string, unknown> = {}): MainInst
         launchEventsWs: (): Promise<boolean> => Promise.resolve(true),
         getControllerVersion: (): Promise<string> => Promise.resolve('10.6.109'),
         logout: (): void => undefined,
+        clearConnectionTimeouts: (): void => undefined,
         wsSendPing: (): void => undefined,
         getDevices_V2: (): Promise<{ network_devices: unknown[] }> => Promise.resolve({ network_devices: [] }),
         getClientsActive_V2: (): Promise<unknown[]> => Promise.resolve([]),

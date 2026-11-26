@@ -223,7 +223,7 @@ export class UnifiNetwork extends utils.Adapter {
 		const logPrefix = '[onUnload]:';
 
 		try {
-			this.clearTimeout(this.ufn?.connectionTimeout);
+			this.ufn?.clearConnectionTimeouts();
 
 			this.removeListener('message', this.eventListener);
 			this.removeListener('pong', this.pongListener);
@@ -1673,13 +1673,17 @@ export class UnifiNetwork extends utils.Adapter {
 							const name = event.unifi_device_info_from_ucore?.name || event.display_name || event.name || event.hostname;
 							const idChannel = !event.is_guest ? tree.client.idChannelUsers : tree.client.idChannelGuests;
 
-							event.last_seen = event.last_seen >= this.cache.clients[event.mac]?.last_seen ? event.last_seen : this.cache.clients[event.mac]?.last_seen;
+							const cachedClient = this.cache.clients[event.mac];
+							// without a cache entry keep the event's own last_seen instead of setting it to undefined
+							if (cachedClient) {
+								event.last_seen = event.last_seen >= cachedClient.last_seen ? event.last_seen : cachedClient.last_seen;
+							}
 
 							if (this.isProcessedByFilter(this.config.clientIsWhiteList, this.config.clientBlackList, { mac: event.mac })) {
-								this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac]?.name}'`);
+								this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${cachedClient?.name}'`);
 
 								await this.myIob?.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, { onlineId: `${idChannel}.${event.mac}.isOnline`, updateObject: true });
-								await this.myIob?.createOrUpdateStates(`${idChannel}.${event.mac}`, tree.client.get(), event, this.cache.clients[event.mac], { blacklistFilter: this.config.clientStatesBlackList, isWhiteList: this.config.clientStatesIsWhiteList, logDeviceName: this.cache.clients[event.mac].name, updateObject: true });
+								await this.myIob?.createOrUpdateStates(`${idChannel}.${event.mac}`, tree.client.get(), event, cachedClient ?? event, { blacklistFilter: this.config.clientStatesBlackList, isWhiteList: this.config.clientStatesIsWhiteList, logDeviceName: cachedClient ? cachedClient.name : name, updateObject: true });
 							}
 						}
 					}

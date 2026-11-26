@@ -96,7 +96,8 @@ export class NetworkApi extends EventEmitter {
 
     private _eventsWs: WebSocket | null;
 
-    public connectionTimeout: ioBroker.Timeout | undefined = undefined;
+    // Timeouts of all requests that are currently in flight, so that each request clears only its own timer.
+    private connectionTimeouts = new Set<ioBroker.Timeout>();
 
     public controllerUrl: string;
 
@@ -358,6 +359,17 @@ export class NetworkApi extends EventEmitter {
     }
 
     /**
+     * Clear the timeouts of all requests that are currently in flight, e.g. on adapter unload.
+     */
+    public clearConnectionTimeouts(): void {
+        for (const timeout of this.connectionTimeouts) {
+            this.adapter.clearTimeout(timeout);
+        }
+
+        this.connectionTimeouts.clear();
+    }
+
+    /**
      * Terminate any open connection to the UniFi Network API.
      */
     public reset(): void {
@@ -478,7 +490,10 @@ export class NetworkApi extends EventEmitter {
 
         // Create a signal handler to deliver the abort operation.
         const controller = new AbortController();
-        this.connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
+        const connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
+        if (connectionTimeout) {
+            this.connectionTimeouts.add(connectionTimeout);
+        }
 
         this.headers.cookie = await this.cookieJar.getCookieString(this.controllerUrl);
 
@@ -626,7 +641,10 @@ export class NetworkApi extends EventEmitter {
         } finally {
 
             // Clear out our response timeout.
-            this.adapter.clearTimeout(this.connectionTimeout);
+            this.adapter.clearTimeout(connectionTimeout);
+            if (connectionTimeout) {
+                this.connectionTimeouts.delete(connectionTimeout);
+            }
         }
     }
 

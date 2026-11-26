@@ -55,7 +55,8 @@ export class NetworkApi extends EventEmitter {
     password;
     username;
     _eventsWs;
-    connectionTimeout = undefined;
+    // Timeouts of all requests that are currently in flight, so that each request clears only its own timer.
+    connectionTimeouts = new Set();
     controllerUrl;
     isControllerDetected = false;
     constructor(host, port, site, username, password, adapter) {
@@ -261,6 +262,15 @@ export class NetworkApi extends EventEmitter {
         }
     }
     /**
+     * Clear the timeouts of all requests that are currently in flight, e.g. on adapter unload.
+     */
+    clearConnectionTimeouts() {
+        for (const timeout of this.connectionTimeouts) {
+            this.adapter.clearTimeout(timeout);
+        }
+        this.connectionTimeouts.clear();
+    }
+    /**
      * Terminate any open connection to the UniFi Network API.
      */
     reset() {
@@ -358,7 +368,10 @@ export class NetworkApi extends EventEmitter {
         let response;
         // Create a signal handler to deliver the abort operation.
         const controller = new AbortController();
-        this.connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
+        const connectionTimeout = this.adapter.setTimeout(() => controller.abort(), retrieveOptions.timeout);
+        if (connectionTimeout) {
+            this.connectionTimeouts.add(connectionTimeout);
+        }
         this.headers.cookie = await this.cookieJar.getCookieString(this.controllerUrl);
         options.dispatcher = options.dispatcher || this.dispatcher;
         options.headers = this.headers;
@@ -468,7 +481,10 @@ export class NetworkApi extends EventEmitter {
         }
         finally {
             // Clear out our response timeout.
-            this.adapter.clearTimeout(this.connectionTimeout);
+            this.adapter.clearTimeout(connectionTimeout);
+            if (connectionTimeout) {
+                this.connectionTimeouts.delete(connectionTimeout);
+            }
         }
     }
     async sendData(cmd, payload, method = 'POST') {

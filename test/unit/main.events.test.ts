@@ -258,13 +258,20 @@ describe('main: WebSocket-Events', () => {
             expect(context.iobCalls).to.deep.equal([]);
         });
 
-        it('loggt einen Fehler, wenn user:sync einen Client ohne Cache-Eintrag erhält', async () => {
+        it('verarbeitet user:sync ohne Cache-Eintrag ohne Fehler und schreibt States mit dem Event', async () => {
             await context.instance.onNetworkUserEvent({
                 meta: { message: 'user:sync' },
                 data: [{ mac: MAC, name: 'Laptop', is_guest: false, last_seen: 2000 }],
             });
 
-            expect(context.stub.errors.join('\n')).to.include('[onNetworkUserEvent]');
+            expect(context.stub.errors.join('\n')).not.to.include('[onNetworkUserEvent]');
+
+            const device = context.iobCalls.find(call => call.method === 'createOrUpdateDevice');
+            expect(device?.id).to.equal(`clients.users.${MAC}`);
+
+            const states = context.iobCalls.find(call => call.method === 'createOrUpdateStates');
+            expect(states?.id).to.equal(`clients.users.${MAC}`);
+            expect((states?.args[1] as { last_seen: number }).last_seen).to.equal(2000);
         });
     });
 

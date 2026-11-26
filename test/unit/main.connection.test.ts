@@ -276,8 +276,9 @@ describe('main connection and lifecycle', () => {
 
     describe('onUnload', () => {
         it('beendet Timer, entfernt Listener, meldet ab und ruft callback einmal auf', async () => {
-            const ufn = createFakeUfn({ connectionTimeout: 'conn-timeout' });
+            const ufn = createFakeUfn();
             const logout = spyOn(ufn, 'logout');
+            const clearConnectionTimeouts = spyOn(ufn, 'clearConnectionTimeouts');
             const ctx = createContext({ ufn, aliveTimeout: 'alive', pingTimeout: 'ping', apiPollingTimeout: 'api' });
             const clear = spyOn(ctx.instance, 'clearTimeout');
             const removeListener = spyOn(ctx.instance, 'removeListener');
@@ -287,7 +288,8 @@ describe('main connection and lifecycle', () => {
                 callbacks++;
             });
 
-            expect(clear.calls.map(call => call[0])).to.include.members(['conn-timeout', 'alive', 'ping', 'api']);
+            expect(clear.calls.map(call => call[0])).to.include.members(['alive', 'ping', 'api']);
+            expect(clearConnectionTimeouts.calls).to.have.length(1);
             expect(removeListener.calls).to.have.length(2);
             expect(logout.calls).to.have.length(1);
             expect(ctx.stub.states.get('info.connection')).to.equal(false);
