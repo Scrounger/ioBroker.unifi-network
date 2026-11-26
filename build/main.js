@@ -57,6 +57,87 @@ export class UnifiNetwork extends utils.Adapter {
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
+    //#region helpers
+    /**
+     * Returns the display name of a client from the real-time API data
+     *
+     * @param client client data
+     * @returns display name of the client
+     */
+    getClientName(client) {
+        return client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
+    }
+    /**
+     * Checks whether a whitelist or blacklist setting allows processing of an item
+     *
+     * @param isWhiteList true if the list is a whitelist, false if it is a blacklist
+     * @param list whitelist or blacklist
+     * @param match properties used to find the item in the list
+     * @returns true if the item should be processed
+     */
+    isProcessedByFilter(isWhiteList, list, match) {
+        const isListed = _.some(list, match);
+        return isWhiteList ? isListed : !isListed;
+    }
+    /**
+     * Checks whether a real-time update is debounced, because the last update is more recent than `realTimeApiDebounceTime`
+     *
+     * @param lastSeen last_seen of the cached object (unix timestamp in seconds)
+     * @param iobTimestamp timestamp of the last update by the adapter (unix timestamp in seconds)
+     * @returns true if the update should be skipped
+     */
+    isRealTimeDebounced(lastSeen, iobTimestamp) {
+        const debounceTime = this.config.realTimeApiDebounceTime;
+        return !!((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < debounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < debounceTime));
+    }
+    /**
+     * Counts the connected (online) clients per WLAN or LAN in one pass over the cache
+     *
+     * @param attribute cache attribute that references the WLAN or LAN
+     * @returns map of WLAN or LAN id to the number of connected clients
+     */
+    countConnectedClientsBy(attribute) {
+        const counts = new Map();
+        for (const online of Object.values(this.cache.isOnline)) {
+            const id = online.val === true ? online[attribute] : undefined;
+            if (id !== undefined) {
+                counts.set(id, (counts.get(id) ?? 0) + 1);
+            }
+        }
+        return counts;
+    }
+    /**
+     * Restarts the timer of the alive checker
+     */
+    scheduleAliveChecker() {
+        if (this.aliveTimeout) {
+            this.clearTimeout(this.aliveTimeout);
+            this.aliveTimeout = null;
+        }
+        this.aliveTimeout = this.setTimeout(async () => {
+            await this.aliveChecker();
+        }, (this.config.expertAliveInterval || 30) * 1000);
+    }
+    /**
+     * Calls the write function of a state that was changed from outside of the adapter (ack = false)
+     *
+     * @param id id of the changed state
+     * @param state the changed state
+     * @param objectId id of the object the state belongs to (mac, wlan id, lan id, ...)
+     * @param cache cache of the object type
+     * @param logLabel label for the log messages, e.g. 'client'
+     */
+    async writeExternalState(id, state, objectId, cache, logLabel) {
+        const logPrefix = '[onStateChange]:';
+        const writeValKey = id.replace(`.${objectId}.`, '.').replace(`${this.namespace}.`, '');
+        if (this.myIob?.statesWithWriteFunction[writeValKey] && objectId) {
+            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, cache[objectId], this);
+        }
+        else {
+            this.log.debug(`${logPrefix} ${logLabel} state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
+        }
+    }
+    //#endregion
     //#region adapter methods
     /**
      * Is called when databases are connected and adapter received configuration.
@@ -179,55 +260,20 @@ export class UnifiNetwork extends utils.Adapter {
                     // state changed from outside of the adapter
                     if (id.startsWith(`${this.namespace}.${tree.client.idChannelUsers}.`) || id.startsWith(`${this.namespace}.${tree.client.idChannelGuests}.`)) {
                         // Client state changed
-                        const mac = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                        const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
-                        if (this.myIob?.statesWithWriteFunction[writeValKey] && mac) {
-                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.clients[mac], this);
-                        }
-                        else {
-                            this.log.debug(`${logPrefix} client state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
-                        }
+                        await this.writeExternalState(id, state, this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id)), this.cache.clients, 'client');
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.device.idChannel}.`)) {
-                        // Device state changed						
-                        const mac = id.replace(`${this.namespace}.${tree.device.idChannel}.`, '').split('.')[0];
-                        const writeValKey = id.replace(`.${mac}.`, '.').replace(`${this.namespace}.`, '');
-                        if (this.myIob?.statesWithWriteFunction[writeValKey]) {
-                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.devices[mac], this);
-                        }
-                        else {
-                            this.log.debug(`${logPrefix} device state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
-                        }
+                        // Device state changed
+                        await this.writeExternalState(id, state, id.replace(`${this.namespace}.${tree.device.idChannel}.`, '').split('.')[0], this.cache.devices, 'device');
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.wlan.idChannel}.`)) {
-                        const wlan_id = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                        const writeValKey = id.replace(`.${wlan_id}.`, '.').replace(`${this.namespace}.`, '');
-                        if (this.myIob?.statesWithWriteFunction[writeValKey] && wlan_id) {
-                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.wlan[wlan_id], this);
-                        }
-                        else {
-                            this.log.debug(`${logPrefix} wlan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
-                        }
+                        await this.writeExternalState(id, state, this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id)), this.cache.wlan, 'wlan');
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.lan.idChannel}.`)) {
-                        const lan_id = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                        const writeValKey = id.replace(`.${lan_id}.`, '.').replace(`${this.namespace}.`, '');
-                        if (this.myIob?.statesWithWriteFunction[writeValKey] && lan_id) {
-                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.lan[lan_id], this);
-                        }
-                        else {
-                            this.log.debug(`${logPrefix} lan state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
-                        }
+                        await this.writeExternalState(id, state, this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id)), this.cache.lan, 'lan');
                     }
                     else if (id.startsWith(`${this.namespace}.${tree.firewall.group.idChannel}.`)) {
-                        const groupId = this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id));
-                        const writeValKey = id.replace(`.${groupId}.`, '.').replace(`${this.namespace}.`, '');
-                        if (this.myIob?.statesWithWriteFunction[writeValKey] && groupId) {
-                            await this.myIob.statesWithWriteFunction[writeValKey](state.val, id, this.cache.firewall.groups[groupId], this);
-                        }
-                        else {
-                            this.log.debug(`${logPrefix} firewall group state ${id} changed: ${state.val} (ack = ${state.ack}) -> not implemented`);
-                        }
+                        await this.writeExternalState(id, state, this.myIob?.getIdLastPart(this.myIob.getIdWithoutLastPart(id)), this.cache.firewall.groups, 'firewall group');
                     }
                 }
                 else {
@@ -319,13 +365,7 @@ export class UnifiNetwork extends utils.Adapter {
                 await this.setConnectionStatus(false);
             }
             // start the alive checker
-            if (this.aliveTimeout) {
-                this.clearTimeout(this.aliveTimeout);
-                this.aliveTimeout = null;
-            }
-            this.aliveTimeout = this.setTimeout(async () => {
-                await this.aliveChecker();
-            }, (this.config.expertAliveInterval || 30) * 1000);
+            this.scheduleAliveChecker();
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -392,13 +432,7 @@ export class UnifiNetwork extends utils.Adapter {
                     await this.updateIsOnlineState();
                     await this.setConnectionStatus(true);
                     this.connectionRetries = 0;
-                    if (this.aliveTimeout) {
-                        this.clearTimeout(this.aliveTimeout);
-                        this.aliveTimeout = null;
-                    }
-                    this.aliveTimeout = this.setTimeout(async () => {
-                        await this.aliveChecker();
-                    }, (this.config.expertAliveInterval || 30) * 1000);
+                    this.scheduleAliveChecker();
                 }
             }
         }
@@ -470,12 +504,6 @@ export class UnifiNetwork extends utils.Adapter {
                     this.log.debug(`${logPrefix} '${tree.firewall.idChannel}' deleted`);
                 }
             }
-            // const tmp = tree.lan.getStateIDs();
-            // let list = []
-            // for (let id of tmp) {
-            // 	list.push({ id: id });
-            // }
-            // this.log.warn(JSON.stringify(list));
         }
         catch (error) {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
@@ -517,7 +545,7 @@ export class UnifiNetwork extends utils.Adapter {
                         let countBlacklisted = 0;
                         for (const device of data) {
                             const idDevice = `${tree.device.idChannel}.${device.mac}`;
-                            if ((!this.config.deviceIsWhiteList && !_.some(this.config.deviceBlackList, { mac: device.mac })) || (this.config.deviceIsWhiteList && _.some(this.config.deviceBlackList, { mac: device.mac }))) {
+                            if (this.isProcessedByFilter(this.config.deviceIsWhiteList, this.config.deviceBlackList, { mac: device.mac })) {
                                 if (isAdapterStart) {
                                     countDevices++;
                                     if (device.vap_table) {
@@ -529,7 +557,7 @@ export class UnifiNetwork extends utils.Adapter {
                                     // debounce real time data
                                     const lastSeen = this.cache.devices[device.mac].last_seen;
                                     const iobTimestamp = this.cache.devices[device.mac].iobTimestamp;
-                                    if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
+                                    if (this.isRealTimeDebounced(lastSeen, iobTimestamp)) {
                                         continue;
                                     }
                                 }
@@ -605,100 +633,27 @@ export class UnifiNetwork extends utils.Adapter {
                         let countGuests = 0;
                         let countBlacklisted = 0;
                         for (const client of data) {
-                            const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
-                            if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: client.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: client.mac }))) {
+                            const name = this.getClientName(client);
+                            if (this.isProcessedByFilter(this.config.clientIsWhiteList, this.config.clientBlackList, { mac: client.mac })) {
                                 const cachedByMac = this.cache.clients[client.mac];
                                 const cachedByIp = this.cache.clients[client.ip];
                                 if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (cachedByMac || cachedByIp)) {
                                     // debounce real time data
                                     const lastSeen = cachedByMac?.last_seen || cachedByIp?.last_seen;
                                     const iobTimestamp = cachedByMac?.timestamp || cachedByIp?.timestamp;
-                                    if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
+                                    if (this.isRealTimeDebounced(lastSeen, iobTimestamp)) {
                                         continue;
                                     }
                                 }
-                                const offlineSince = dayjs().diff((client.last_seen) * 1000, 'day');
                                 if (client.mac) {
                                     if (this.config.clientsEnabled && !client.is_guest) {
-                                        // Clients
-                                        if (this.config.deleteClientsOlderThan === 0 || offlineSince <= this.config.deleteClientsOlderThan) {
-                                            if (isAdapterStart) {
-                                                countClients++;
-                                            }
-                                            if (!this.cache.clients[client.mac]) {
-                                                this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} client '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
-                                                this.cache.isOnline[client.mac] = { val: !isOfflineClients };
-                                            }
-                                            let dataToProcess = client;
-                                            if (this.cache.clients[client.mac]) {
-                                                // filter out unchanged properties, compare with the display name the cache stores
-                                                dataToProcess = this.myIob?.deepDiffBetweenObjects({ ...client, name }, this.cache.clients[client.mac], this, tree.client.getKeys());
-                                            }
-                                            if (!_.isEmpty(dataToProcess)) {
-                                                this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
-                                                this.cache.clients[client.mac].name = name;
-                                                this.cache.clients[client.mac].timestamp = dayjs().unix();
-                                                this.cache.isOnline[client.mac] ??= { val: !isOfflineClients };
-                                                this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
-                                                this.cache.isOnline[client.mac].network_id = client.network_id;
-                                                dataToProcess.mac = client.mac;
-                                                dataToProcess.name = name;
-                                                if (!isAdapterStart) {
-                                                    this.log.silly(`${logPrefix} client ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                                }
-                                                await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelUsers}.${client.mac}`, name, { onlineId: `${tree.client.idChannelUsers}.${client.mac}.isOnline`, updateObject: isAdapterStart, logChanges: true });
-                                                await this.myIob?.createOrUpdateStates(`${tree.client.idChannelUsers}.${client.mac}`, tree.client.get(), dataToProcess, client, { blacklistFilter: this.config.clientStatesBlackList, isWhiteList: this.config.clientStatesIsWhiteList, logDeviceName: client.name, updateObject: isAdapterStart });
-                                            }
-                                        }
-                                        else {
-                                            if (await this.objectExists(`${tree.client.idChannelUsers}.${client.mac}`)) {
-                                                await this.delObjectAsync(`${tree.client.idChannelUsers}.${client.mac}`, { recursive: true });
-                                                this.log.debug(`${logPrefix} client '${name}' deleted, because it's offline since ${offlineSince} days`);
-                                            }
-                                            else {
-                                                this.log.silly(`${logPrefix} client '${name}' ingored, because it's offline since ${offlineSince} days`);
-                                            }
+                                        if (await this.updateClientOrGuest(client, name, false, isAdapterStart, isOfflineClients, logPrefix) && isAdapterStart) {
+                                            countClients++;
                                         }
                                     }
                                     else if (this.config.guestsEnabled && client.is_guest) {
-                                        // Guests
-                                        if (this.config.deleteGuestsOlderThan === 0 || offlineSince <= this.config.deleteGuestsOlderThan) {
-                                            if (isAdapterStart) {
-                                                countGuests++;
-                                            }
-                                            if (!this.cache.clients[client.mac]) {
-                                                this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} guest '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
-                                                this.cache.isOnline[client.mac] = { val: !isOfflineClients };
-                                            }
-                                            let dataToProcess = client;
-                                            if (this.cache.clients[client.mac]) {
-                                                // filter out unchanged properties, compare with the display name the cache stores
-                                                dataToProcess = this.myIob?.deepDiffBetweenObjects({ ...client, name }, this.cache.clients[client.mac], this, tree.client.getKeys());
-                                            }
-                                            if (!_.isEmpty(dataToProcess)) {
-                                                this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
-                                                this.cache.clients[client.mac].name = name;
-                                                this.cache.clients[client.mac].timestamp = dayjs().unix();
-                                                this.cache.isOnline[client.mac] ??= { val: !isOfflineClients };
-                                                this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
-                                                this.cache.isOnline[client.mac].network_id = client.network_id;
-                                                dataToProcess.mac = client.mac;
-                                                dataToProcess.name = name;
-                                                if (!isAdapterStart) {
-                                                    this.log.silly(`${logPrefix} guest ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
-                                                }
-                                                await this.myIob?.createOrUpdateDevice(`${tree.client.idChannelGuests}.${client.mac}`, name, { onlineId: `${tree.client.idChannelGuests}.${client.mac}.isOnline`, updateObject: isAdapterStart, logChanges: true });
-                                                await this.myIob?.createOrUpdateStates(`${tree.client.idChannelGuests}.${client.mac}`, tree.client.get(), dataToProcess, client, { blacklistFilter: this.config.clientStatesBlackList, isWhiteList: this.config.clientStatesIsWhiteList, logDeviceName: client.name, updateObject: isAdapterStart });
-                                            }
-                                        }
-                                        else {
-                                            if (await this.objectExists(`${tree.client.idChannelGuests}.${client.mac}`)) {
-                                                await this.delObjectAsync(`${tree.client.idChannelGuests}.${client.mac}`, { recursive: true });
-                                                this.log.info(`${logPrefix} guest '${name}' deleted, because it's offline since ${offlineSince} days`);
-                                            }
-                                            else {
-                                                this.log.silly(`${logPrefix} guest '${name}' ingored, because it's offline since ${offlineSince} days`);
-                                            }
+                                        if (await this.updateClientOrGuest(client, name, true, isAdapterStart, isOfflineClients, logPrefix) && isAdapterStart) {
+                                            countGuests++;
                                         }
                                     }
                                 }
@@ -736,6 +691,59 @@ export class UnifiNetwork extends utils.Adapter {
             this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
         }
     }
+    /**
+     * Creates or updates a client or guest and its states. Clients and guests share the same logic,
+     * only the channel, the retention setting and some log texts differ.
+     *
+     * @param client client data
+     * @param name display name of the client
+     * @param isGuest true if the client is a guest
+     * @param isAdapterStart true during the adapter start
+     * @param isOfflineClients true if the data contains disconnected clients (client history)
+     * @param logPrefix prefix for the log messages
+     * @returns true if the client is kept, false if it is deleted or ignored because of the retention setting
+     */
+    async updateClientOrGuest(client, name, isGuest, isAdapterStart, isOfflineClients, logPrefix) {
+        const type = isGuest ? 'guest' : 'client';
+        const idChannel = isGuest ? tree.client.idChannelGuests : tree.client.idChannelUsers;
+        const deleteOlderThan = isGuest ? this.config.deleteGuestsOlderThan : this.config.deleteClientsOlderThan;
+        const offlineSince = dayjs().diff((client.last_seen) * 1000, 'day');
+        if (deleteOlderThan === 0 || offlineSince <= deleteOlderThan) {
+            if (!this.cache.clients[client.mac]) {
+                this.log.debug(`${logPrefix} Discovered ${isOfflineClients ? 'disconnected' : 'connected'} ${type} '${name}' (${!isOfflineClients ? `IP: ${client.ip}, ` : ''}mac: ${client.mac})`);
+                this.cache.isOnline[client.mac] = { val: !isOfflineClients };
+            }
+            let dataToProcess = client;
+            if (this.cache.clients[client.mac]) {
+                // filter out unchanged properties, compare with the display name the cache stores
+                dataToProcess = this.myIob?.deepDiffBetweenObjects({ ...client, name }, this.cache.clients[client.mac], this, tree.client.getKeys());
+            }
+            if (!_.isEmpty(dataToProcess)) {
+                this.cache.clients[client.mac] = { ...this.cache.clients[client.mac], ...client };
+                this.cache.clients[client.mac].name = name;
+                this.cache.clients[client.mac].timestamp = dayjs().unix();
+                this.cache.isOnline[client.mac] ??= { val: !isOfflineClients };
+                this.cache.isOnline[client.mac].wlan_id = client.wlanconf_id;
+                this.cache.isOnline[client.mac].network_id = client.network_id;
+                dataToProcess.mac = client.mac;
+                dataToProcess.name = name;
+                if (!isAdapterStart) {
+                    this.log.silly(`${logPrefix} ${type} ${dataToProcess.name} (mac: ${dataToProcess.mac}) follwing properties will be updated: ${JSON.stringify(dataToProcess)}`);
+                }
+                await this.myIob?.createOrUpdateDevice(`${idChannel}.${client.mac}`, name, { onlineId: `${idChannel}.${client.mac}.isOnline`, updateObject: isAdapterStart, logChanges: true });
+                await this.myIob?.createOrUpdateStates(`${idChannel}.${client.mac}`, tree.client.get(), dataToProcess, client, { blacklistFilter: this.config.clientStatesBlackList, isWhiteList: this.config.clientStatesIsWhiteList, logDeviceName: client.name, updateObject: isAdapterStart });
+            }
+            return true;
+        }
+        if (await this.objectExists(`${idChannel}.${client.mac}`)) {
+            await this.delObjectAsync(`${idChannel}.${client.mac}`, { recursive: true });
+            this.log[isGuest ? 'info' : 'debug'](`${logPrefix} ${type} '${name}' deleted, because it's offline since ${offlineSince} days`);
+        }
+        else {
+            this.log.silly(`${logPrefix} ${type} '${name}' ingored, because it's offline since ${offlineSince} days`);
+        }
+        return false;
+    }
     async updateVpnClients(data = null, isAdapterStart = false) {
         const logPrefix = '[updateVpnClients]:';
         try {
@@ -758,13 +766,13 @@ export class UnifiNetwork extends utils.Adapter {
                         let countVpn = 0;
                         let countBlacklisted = 0;
                         for (const client of data) {
-                            const name = client.unifi_device_info_from_ucore?.name || client.display_name || client.name || client.hostname;
-                            if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: client.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: client.mac }))) {
+                            const name = this.getClientName(client);
+                            if (this.isProcessedByFilter(this.config.clientIsWhiteList, this.config.clientBlackList, { mac: client.mac })) {
                                 if (!isAdapterStart && this.config.realTimeApiDebounceTime > 0 && (this.cache.vpn[client.ip])) {
                                     // debounce real time data
                                     const lastSeen = this.cache.vpn[client.ip].last_seen;
                                     const iobTimestamp = this.cache.vpn[client.ip].timestamp;
-                                    if ((lastSeen && dayjs().diff(lastSeen * 1000, 'second') < this.config.realTimeApiDebounceTime) || (iobTimestamp && dayjs().diff(iobTimestamp * 1000, 'second') < this.config.realTimeApiDebounceTime)) {
+                                    if (this.isRealTimeDebounced(lastSeen, iobTimestamp)) {
                                         continue;
                                     }
                                 }
@@ -839,9 +847,12 @@ export class UnifiNetwork extends utils.Adapter {
                 const typeOfClient = id.includes('.users.') ? 'client' : id.includes('.guests.') ? 'guest' : 'vpn';
                 const offlineTimeout = typeOfClient === 'vpn' ? this.config.vpnOfflineTimeout : this.config.clientOfflineTimeout;
                 const lastSeenState = clients[id];
-                const isOnlineState = await this.getStateAsync(`${this.myIob?.getIdWithoutLastPart(id)}.isOnline`);
-                const mac = await this.getStateAsync(`${this.myIob?.getIdWithoutLastPart(id)}.mac`);
-                const ip = await this.getStateAsync(`${this.myIob?.getIdWithoutLastPart(id)}.ip`);
+                const channelId = this.myIob?.getIdWithoutLastPart(id);
+                const [isOnlineState, mac, ip] = await Promise.all([
+                    this.getStateAsync(`${channelId}.isOnline`),
+                    this.getStateAsync(`${channelId}.mac`),
+                    this.getStateAsync(`${channelId}.ip`),
+                ]);
                 const client = typeOfClient !== 'vpn' ? this.cache.clients[mac?.val] : this.cache.vpn[ip?.val];
                 const lastSeen = dayjs(lastSeenState.val * 1000);
                 const diff = dayjs().diff(lastSeen, 'second');
@@ -877,7 +888,7 @@ export class UnifiNetwork extends utils.Adapter {
                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                             wlan = wlan;
                             const idWlan = `${tree.wlan.idChannel}.${wlan._id}`;
-                            if ((!this.config.wlanIsWhiteList && !_.some(this.config.wlanBlackList, { id: wlan._id })) || (this.config.wlanIsWhiteList && _.some(this.config.wlanBlackList, { id: wlan._id }))) {
+                            if (this.isProcessedByFilter(this.config.wlanIsWhiteList, this.config.wlanBlackList, { id: wlan._id })) {
                                 if (isAdapterStart) {
                                     countWlan++;
                                 }
@@ -933,18 +944,19 @@ export class UnifiNetwork extends utils.Adapter {
                 }
                 let sumClients = 0;
                 let sumGuests = 0;
+                const connectedByWlan = this.countConnectedClientsBy('wlan_id');
                 for (const wlan_id in this.cache.wlan) {
-                    const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.wlan_id === wlan_id);
-                    this.log.silly(`${logPrefix} WLAN '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedClients.length}`);
+                    const connectedCount = connectedByWlan.get(wlan_id) ?? 0;
+                    this.log.silly(`${logPrefix} WLAN '${this.cache.wlan[wlan_id].name}' (id: ${wlan_id}) connected ${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}: ${connectedCount}`);
                     if (!this.cache.wlan[wlan_id].is_guest) {
-                        sumClients = sumClients + connectedClients.length;
+                        sumClients = sumClients + connectedCount;
                     }
                     else {
-                        sumGuests = sumGuests + connectedClients.length;
+                        sumGuests = sumGuests + connectedCount;
                     }
                     const id = `${tree.wlan.idChannel}.${wlan_id}.connected_${!this.cache.wlan[wlan_id].is_guest ? 'clients' : 'guests'}`;
                     if (await this.objectExists(id)) {
-                        this.setStateChanged(id, connectedClients.length, true);
+                        this.setStateChanged(id, connectedCount, true);
                     }
                 }
                 const idSumClients = `${tree.wlan.idChannel}.connected_clients`;
@@ -981,7 +993,7 @@ export class UnifiNetwork extends utils.Adapter {
                             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                             lan = lan;
                             const idLan = `${tree.lan.idChannel}.${lan._id}`;
-                            if ((!this.config.lanIsWhiteList && !_.some(this.config.lanBlackList, { id: lan._id })) || (this.config.lanIsWhiteList && _.some(this.config.lanBlackList, { id: lan._id }))) {
+                            if (this.isProcessedByFilter(this.config.lanIsWhiteList, this.config.lanBlackList, { id: lan._id })) {
                                 if (isAdapterStart) {
                                     countLan++;
                                 }
@@ -1037,18 +1049,19 @@ export class UnifiNetwork extends utils.Adapter {
                 }
                 let sumClients = 0;
                 let sumGuests = 0;
+                const connectedByLan = this.countConnectedClientsBy('network_id');
                 for (const lan_id in this.cache.lan) {
-                    const connectedClients = _.filter(this.cache.isOnline, (x) => x.val === true && x.network_id === lan_id);
-                    this.log.silly(`${logPrefix} LAN '${this.cache.lan[lan_id].name}' (id: ${lan_id}) connected ${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}: ${connectedClients.length}`);
+                    const connectedCount = connectedByLan.get(lan_id) ?? 0;
+                    this.log.silly(`${logPrefix} LAN '${this.cache.lan[lan_id].name}' (id: ${lan_id}) connected ${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}: ${connectedCount}`);
                     if (this.cache.lan[lan_id].purpose !== 'guest') {
-                        sumClients = sumClients + connectedClients.length;
+                        sumClients = sumClients + connectedCount;
                     }
                     else {
-                        sumGuests = sumGuests + connectedClients.length;
+                        sumGuests = sumGuests + connectedCount;
                     }
                     const id = `${tree.lan.idChannel}.${lan_id}.connected_${this.cache.lan[lan_id].purpose !== 'guest' ? 'clients' : 'guests'}`;
                     if (await this.objectExists(id)) {
-                        this.setStateChanged(id, connectedClients.length, true);
+                        this.setStateChanged(id, connectedCount, true);
                     }
                 }
                 const idSumClients = `${tree.lan.idChannel}.connected_clients`;
@@ -1080,7 +1093,7 @@ export class UnifiNetwork extends utils.Adapter {
                         let countBlacklisted = 0;
                         for (const firewallGroup of data) {
                             const idFirewallGroup = `${idChannel}.${firewallGroup._id}`;
-                            if ((!this.config.firewallGroupIsWhiteList && !_.some(this.config.firewallGroupBlackList, { id: firewallGroup._id })) || (this.config.firewallGroupIsWhiteList && _.some(this.config.firewallGroupBlackList, { id: firewallGroup._id }))) {
+                            if (this.isProcessedByFilter(this.config.firewallGroupIsWhiteList, this.config.firewallGroupBlackList, { id: firewallGroup._id })) {
                                 if (isAdapterStart) {
                                     countFirewallGroup++;
                                 }
@@ -1456,7 +1469,7 @@ export class UnifiNetwork extends utils.Adapter {
                             const name = event.unifi_device_info_from_ucore?.name || event.display_name || event.name || event.hostname;
                             const idChannel = !event.is_guest ? tree.client.idChannelUsers : tree.client.idChannelGuests;
                             event.last_seen = event.last_seen >= this.cache.clients[event.mac]?.last_seen ? event.last_seen : this.cache.clients[event.mac]?.last_seen;
-                            if ((!this.config.clientIsWhiteList && !_.some(this.config.clientBlackList, { mac: event.mac })) || (this.config.clientIsWhiteList && _.some(this.config.clientBlackList, { mac: event.mac }))) {
+                            if (this.isProcessedByFilter(this.config.clientIsWhiteList, this.config.clientBlackList, { mac: event.mac })) {
                                 this.log.debug(`${logPrefix} update ${!event.is_guest ? 'client' : 'guest'} '${this.cache.clients[event.mac]?.name}'`);
                                 await this.myIob?.createOrUpdateDevice(`${idChannel}.${event.mac}`, name, { onlineId: `${idChannel}.${event.mac}.isOnline`, updateObject: true });
                                 await this.myIob?.createOrUpdateStates(`${idChannel}.${event.mac}`, tree.client.get(), event, this.cache.clients[event.mac], { blacklistFilter: this.config.clientStatesBlackList, isWhiteList: this.config.clientStatesIsWhiteList, logDeviceName: this.cache.clients[event.mac].name, updateObject: true });
