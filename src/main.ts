@@ -20,6 +20,11 @@ import { myIob, myTreeState, type WriteValFunction } from './lib/myIob.js';
 import { ignoredWebSocketMessages, WebSocketEvent, WebSocketEventMessages, type ConnectedClients, type myCache, type myNetworkClient } from './lib/myTypes.js';
 import * as tree from './lib/tree/index.js';
 
+// Interval in ms in which the alive checker verifies that the controller session is still valid
+const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
+// A session that expires within this time is renewed in the next session check, i.e. 5 to 10 minutes before it expires
+const SESSION_RENEW_BEFORE_EXPIRY = 10 * 60 * 1000;
+
 export class UnifiNetwork extends utils.Adapter {
 	ufn: NetworkApi | undefined;
 	myIob: myIob | undefined;
@@ -34,6 +39,7 @@ export class UnifiNetwork extends utils.Adapter {
 	apiPollingTimeout: ioBroker.Timeout | undefined = undefined;
 
 	connectionRetries: number = 0;
+	lastSessionCheck: number = 0;
 
 	cache: myCache = {
 		devices: {},
@@ -400,6 +406,9 @@ export class UnifiNetwork extends utils.Adapter {
 			}
 
 			if (await this.login()) {
+				// the login has just validated the session
+				this.lastSessionCheck = dayjs().valueOf();
+
 				await this.updateRealTimeApiData(isAdapterStart);
 
 				await this.updateApiData(isAdapterStart);
@@ -433,7 +442,11 @@ export class UnifiNetwork extends utils.Adapter {
 				if (loginSuccessful) {
 					this.controllerVersion = await this.ufn.getControllerVersion();
 
-					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, version: ${this.controllerVersion}, isUnifiOs: ${this.ufn.isUnifiOs})`);
+					// Add the session expiry (ioBroker date format) if the controller reported one.
+					const sessionExpiry = this.ufn.getSessionExpiry();
+					const sessionInfo = sessionExpiry === null ? '' : `, session expire: ${dayjs(sessionExpiry).format(`${this.dateFormat || 'DD.MM.YYYY'} HH:mm:ss`)}`;
+
+					this.log.info(`${logPrefix} Logged in successfully to the Unifi-Network controller (host: ${this.config.host}:${this.config.port}, site: ${this.config.site}, version: ${this.controllerVersion}, isUnifiOs: ${this.ufn.isUnifiOs}${sessionInfo})`);
 
 					if (await this.ufn.launchEventsWs()) {
 						this.log.info(`${logPrefix} WebSocket connection to realtime API successfully established`);
@@ -487,6 +500,26 @@ export class UnifiNetwork extends utils.Adapter {
 				} else {
 					this.log.silly(`${logPrefix} Connection to the Unifi-Network controller is alive (last alive signal is ${diff}s old)`);
 
+					// Pongs can keep arriving after the session expired, so the session is checked explicitly and in a fixed interval.
+					if (dayjs().valueOf() - this.lastSessionCheck >= SESSION_CHECK_INTERVAL) {
+						this.lastSessionCheck = dayjs().valueOf();
+
+						const sessionExpiry = this.ufn.getSessionExpiry();
+
+						if (sessionExpiry !== null && sessionExpiry - dayjs().valueOf() <= SESSION_RENEW_BEFORE_EXPIRY) {
+							// The controller reported the expiry, so the session is renewed before it runs out. The events WebSocket stays open.
+							this.log.info(`${logPrefix} Session of the Unifi-Network controller expires soon, renewing it`);
+
+							if (!(await this.ufn.renewSession())) {
+								await this.restartConnection(`${logPrefix} Session renewal failed, logging in again`);
+								return;
+							}
+						} else if (await this.ufn.checkSession() === 'expired') {
+							await this.restartConnection(`${logPrefix} Session of the Unifi-Network controller expired, logging in again`);
+							return;
+						}
+					}
+
 					await this.updateIsOnlineState();
 
 					await this.setConnectionStatus(true);
@@ -500,6 +533,22 @@ export class UnifiNetwork extends utils.Adapter {
 		}
 	}
 
+
+	/**
+	 * Restarts the connection with a fresh login. Used as fallback when the session cannot be renewed or has expired.
+	 *
+	 * @param reason message for the log
+	 */
+	private async restartConnection(reason: string): Promise<void> {
+		this.log.info(reason);
+
+		// logout() also closes the events WebSocket, establishConnection() opens a new one.
+		this.ufn?.logout();
+
+		await this.setConnectionStatus(false);
+
+		await this.establishConnection();
+	}
 
 	/**
 	 * Set adapter info.connection state and internal var

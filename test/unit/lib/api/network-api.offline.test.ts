@@ -597,6 +597,145 @@ describe('NetworkApi: HTTP-Anfragen über retrieve (MockAgent)', () => {
     });
 });
 
+describe('NetworkApi: checkSession (MockAgent)', () => {
+    const selfPath = '/api/self';
+    let agent: MockAgent;
+    let api: NetworkApi;
+    let stub: AdapterStub;
+
+    beforeEach(() => {
+        ({ api, stub } = createLoginApi());
+        internals(api).headers = { cookie: 'unifises=abc', 'x-csrf-token': 'csrf-1' };
+        agent = new MockAgent();
+        agent.disableNetConnect();
+        internals(api).dispatcher = agent;
+    });
+
+    afterEach(async () => {
+        await agent.close();
+    });
+
+    it('liefert ok, wenn der Controller die Session akzeptiert', async () => {
+        agent.get(MOCK_ORIGIN).intercept({ path: selfPath, method: 'GET' }).reply(200, {});
+
+        expect(await api.checkSession()).to.equal('ok');
+        expect(stub.errors).to.deep.equal([]);
+    });
+
+    it('liefert expired bei 401 und meldet keinen Fehler', async () => {
+        agent.get(MOCK_ORIGIN).intercept({ path: selfPath, method: 'GET' }).reply(401, {});
+
+        expect(await api.checkSession()).to.equal('expired');
+        expect(stub.errors).to.deep.equal([]);
+    });
+
+    it('liefert error bei einem Serverfehler und verwirft die Session nicht', async () => {
+        agent.get(MOCK_ORIGIN).intercept({ path: selfPath, method: 'GET' }).reply(503, {});
+
+        expect(await api.checkSession()).to.equal('error');
+        expect(internals(api).headers['x-csrf-token']).to.equal('csrf-1');
+    });
+
+    it('liefert error bei einem Netzwerkfehler', async () => {
+        agent.get(MOCK_ORIGIN).intercept({ path: selfPath, method: 'GET' }).replyWithError(new Error('connection reset'));
+
+        expect(await api.checkSession()).to.equal('error');
+    });
+});
+
+describe('NetworkApi: Ablauf der Session (offline)', () => {
+    it('liest den Ablauf aus dem TOKEN-Cookie nach dem Login', async () => {
+        const { api } = createLoginApi();
+        const expires = new Date(Date.now() + DAY_MS).toUTCString();
+        answerWith(api, (url, method) =>
+            url === 'https://192.0.2.1/api/auth/login' && method === 'POST'
+                ? { statusCode: 200, headers: { 'x-updated-csrf-token': 'csrf-2' }, cookies: [`TOKEN=abc; Path=/; Expires=${expires}`] }
+                : unifiOsController(url, method),
+        );
+
+        expect(await api.login()).to.equal(true);
+        expect(api.getSessionExpiry()).to.equal(Date.parse(expires));
+    });
+
+    it('liefert null, wenn das TOKEN-Cookie keinen Ablauf hat', async () => {
+        const { api } = createLoginApi();
+        answerWith(api, unifiOsController);
+
+        expect(await api.login()).to.equal(true);
+        expect(api.getSessionExpiry()).to.equal(null);
+    });
+
+    it('setzt den Ablauf beim logout zurück', async () => {
+        const { api } = createLoginApi();
+        const expires = new Date(Date.now() + DAY_MS).toUTCString();
+        answerWith(api, (url, method) =>
+            url === 'https://192.0.2.1/api/auth/login' && method === 'POST'
+                ? { statusCode: 200, headers: { 'x-updated-csrf-token': 'csrf-2' }, cookies: [`TOKEN=abc; Path=/; Expires=${expires}`] }
+                : unifiOsController(url, method),
+        );
+        await api.login();
+
+        api.logout();
+
+        expect(api.getSessionExpiry()).to.equal(null);
+    });
+});
+
+describe('NetworkApi: renewSession (MockAgent)', () => {
+    const loginPath = '/api/login';
+    let agent: MockAgent;
+    let api: NetworkApi;
+    let stub: AdapterStub;
+
+    beforeEach(() => {
+        ({ api, stub } = createLoginApi());
+        Object.assign(api, { isControllerDetected: true });
+        internals(api).headers = { cookie: 'TOKEN=old', 'x-csrf-token': 'csrf-1' };
+        agent = new MockAgent();
+        agent.disableNetConnect();
+        internals(api).dispatcher = agent;
+    });
+
+    afterEach(async () => {
+        await agent.close();
+    });
+
+    it('verlängert die Session, ohne die WebSocket-Verbindung zu schließen', async () => {
+        const expires = new Date(Date.now() + DAY_MS).toUTCString();
+        let socketClosed = false;
+        const socket = {
+            close: (): void => {
+                socketClosed = true;
+            },
+        };
+        internals(api)._eventsWs = socket;
+        agent
+            .get(MOCK_ORIGIN)
+            .intercept({ path: loginPath, method: 'POST', body: (body: string) => body.includes('"rememberMe":true') })
+            .reply(200, {}, { headers: { 'set-cookie': `TOKEN=new; Path=/; Expires=${expires}`, 'x-updated-csrf-token': 'csrf-2' } });
+
+        expect(await api.renewSession()).to.equal(true);
+        expect(socketClosed).to.equal(false);
+        expect(internals(api)._eventsWs).to.equal(socket);
+        expect(api.getSessionExpiry()).to.equal(Date.parse(expires));
+        expect(internals(api).headers['x-csrf-token']).to.equal('csrf-2');
+        expect(stub.errors).to.deep.equal([]);
+    });
+
+    it('liefert false, wenn der Controller den Login ablehnt', async () => {
+        agent.get(MOCK_ORIGIN).intercept({ path: loginPath, method: 'POST' }).reply(401, {});
+
+        expect(await api.renewSession()).to.equal(false);
+        expect(api.getSessionExpiry()).to.equal(null);
+    });
+
+    it('liefert false bei einem Netzwerkfehler', async () => {
+        agent.get(MOCK_ORIGIN).intercept({ path: loginPath, method: 'POST' }).replyWithError(new Error('connection reset'));
+
+        expect(await api.renewSession()).to.equal(false);
+    });
+});
+
 describe('NetworkApi: Anfragen-Helfer (offline)', () => {
     describe('retrievData', () => {
         it('wiederholt die Anfrage, wenn keine Antwort vorliegt', async () => {

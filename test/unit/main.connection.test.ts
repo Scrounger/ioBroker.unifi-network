@@ -259,6 +259,57 @@ describe('main connection and lifecycle', () => {
             expect(ctx.stub.warnings.some(message => message.includes('restart connection'))).to.equal(true);
         });
 
+        it('prüft die Session, wenn das Prüfintervall abgelaufen ist, und aktualisiert danach den Online-Status', async () => {
+            const ufn = createFakeUfn();
+            const checkSession = spyOn(ufn, 'checkSession');
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+            const online = spyOn(ctx.instance, 'updateIsOnlineState');
+
+            await ctx.instance.aliveChecker();
+
+            expect(checkSession.calls).to.have.length(1);
+            expect(ctx.instance.lastSessionCheck).to.be.greaterThan(0);
+            expect(online.calls).to.have.length(1);
+        });
+
+        it('prüft die Session nicht erneut, solange das Prüfintervall nicht abgelaufen ist', async () => {
+            const ufn = createFakeUfn();
+            const checkSession = spyOn(ufn, 'checkSession');
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+            ctx.instance.lastSessionCheck = Date.now();
+
+            await ctx.instance.aliveChecker();
+
+            expect(checkSession.calls).to.have.length(0);
+        });
+
+        it('loggt bei abgelaufener Session neu ein, ohne den Online-Status zu setzen', async () => {
+            const ufn = createFakeUfn({ checkSession: (): Promise<'expired'> => Promise.resolve('expired') });
+            const logout = spyOn(ufn, 'logout');
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+            const reconnect = spyOn(ctx.instance, 'establishConnection');
+            const online = spyOn(ctx.instance, 'updateIsOnlineState');
+
+            await ctx.instance.aliveChecker();
+
+            expect(logout.calls).to.have.length(1);
+            expect(reconnect.calls).to.have.length(1);
+            expect(online.calls).to.have.length(0);
+            expect(ctx.stub.states.get('info.connection')).to.equal(false);
+        });
+
+        it('loggt bei einem Fehler der Session-Prüfung nicht neu ein', async () => {
+            const ufn = createFakeUfn({ checkSession: (): Promise<'error'> => Promise.resolve('error') });
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+            const reconnect = spyOn(ctx.instance, 'establishConnection');
+            const online = spyOn(ctx.instance, 'updateIsOnlineState');
+
+            await ctx.instance.aliveChecker();
+
+            expect(reconnect.calls).to.have.length(0);
+            expect(online.calls).to.have.length(1);
+        });
+
         it('stoppt den Adapter, wenn die maximale Anzahl an Wiederholungen erreicht ist', async () => {
             const ufn = createFakeUfn();
             const ctx = createContext({ ufn, aliveTimestamp: Date.now() - 120000, connectionRetries: 2 });
@@ -271,6 +322,66 @@ describe('main connection and lifecycle', () => {
             expect(stop.calls).to.have.length(1);
             expect(stop.calls[0][0]).to.deep.equal({ reason: 'too many connection retries' });
             expect(ctx.stub.errors.some(message => message.includes('stopping the adapter'))).to.equal(true);
+        });
+
+        it('verlängert die Session 5 bis 10 Minuten vor Ablauf, ohne die Verbindung neu aufzubauen', async () => {
+            let renewals = 0;
+            const ufn = createFakeUfn({
+                getSessionExpiry: (): number => Date.now() + 8 * 60 * 1000,
+                renewSession: (): Promise<boolean> => {
+                    renewals++;
+                    return Promise.resolve(true);
+                },
+            });
+            const checkSession = spyOn(ufn, 'checkSession');
+            const logout = spyOn(ufn, 'logout');
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+            const reconnect = spyOn(ctx.instance, 'establishConnection');
+            const online = spyOn(ctx.instance, 'updateIsOnlineState');
+
+            await ctx.instance.aliveChecker();
+
+            expect(renewals).to.equal(1);
+            expect(checkSession.calls).to.have.length(0);
+            expect(logout.calls).to.have.length(0);
+            expect(reconnect.calls).to.have.length(0);
+            expect(online.calls).to.have.length(1);
+        });
+
+        it('startet die Verbindung neu, wenn die Session nicht verlängert werden kann', async () => {
+            const ufn = createFakeUfn({
+                getSessionExpiry: (): number => Date.now() + 8 * 60 * 1000,
+                renewSession: (): Promise<boolean> => Promise.resolve(false),
+            });
+            const logout = spyOn(ufn, 'logout');
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+            const reconnect = spyOn(ctx.instance, 'establishConnection');
+            const online = spyOn(ctx.instance, 'updateIsOnlineState');
+
+            await ctx.instance.aliveChecker();
+
+            expect(logout.calls).to.have.length(1);
+            expect(reconnect.calls).to.have.length(1);
+            expect(online.calls).to.have.length(0);
+            expect(ctx.stub.states.get('info.connection')).to.equal(false);
+        });
+
+        it('prüft nur die Session, wenn der Ablauf noch weit entfernt ist', async () => {
+            let renewals = 0;
+            const ufn = createFakeUfn({
+                getSessionExpiry: (): number => Date.now() + 30 * 60 * 1000,
+                renewSession: (): Promise<boolean> => {
+                    renewals++;
+                    return Promise.resolve(true);
+                },
+            });
+            const checkSession = spyOn(ufn, 'checkSession');
+            const ctx = createContext({ ufn, aliveTimestamp: Date.now() });
+
+            await ctx.instance.aliveChecker();
+
+            expect(renewals).to.equal(0);
+            expect(checkSession.calls).to.have.length(1);
         });
     });
 

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { EventEmitter } from 'node:events';
 import { STATUS_CODES } from 'node:http';
 import util from 'node:util';
@@ -105,6 +106,12 @@ export class NetworkApi extends EventEmitter {
 
     private isControllerDetected = false;
 
+    // Set when the last request was answered with 401, so that checkSession() can tell an expired session from other errors.
+    private lastRequestUnauthorized = false;
+
+    // Expiry of the session cookie (TOKEN) in epoch milliseconds, null if the controller did not report one.
+    private sessionExpiresAt: Nullable<number> = null;
+
     constructor(host: string, port: number, site: string, username: string, password: string, adapter: ioBroker.myAdapter) {
         // Initialize our parent.
         super();
@@ -143,6 +150,7 @@ export class NetworkApi extends EventEmitter {
             if (this.isControllerDetected) {
                 // Let's attempt to login.
                 const loginSuccess = await this.loginController();
+                this.sessionExpiresAt = loginSuccess ? this.readSessionExpiry() : null;
 
                 // Publish the result to our listeners
                 this.emit('login', loginSuccess);
@@ -357,6 +365,7 @@ export class NetworkApi extends EventEmitter {
             this.log.debug(`${logPrefix} Logging out and clearing credentials.`);
             // Close any connection to the Network API.
             this.reset();
+            this.sessionExpiresAt = null;
 
             // Save our CSRF token, if we have one.
             const csrfToken = this.headers['x-csrf-token'];
@@ -460,6 +469,92 @@ export class NetworkApi extends EventEmitter {
     }
 
     /**
+     * Checks whether the current session is still accepted by the controller. Does not log in again and does not extend the session.
+     *
+     * @returns 'ok' if the controller accepted the session, 'expired' if it answered with 401, 'error' for any other failure
+     */
+    public async checkSession(): Promise<'ok' | 'expired' | 'error'> {
+        this.lastRequestUnauthorized = false;
+
+        const response = await this.retrieve(this.getApiEndpoint(ApiEndpoints.self));
+
+        if (response) {
+            // The body is not needed, release the connection.
+            await response.body.dump();
+            return 'ok';
+        }
+
+        return this.lastRequestUnauthorized ? 'expired' : 'error';
+    }
+
+    /**
+     * Returns when the current session expires, as reported by the controller in the TOKEN cookie.
+     *
+     * @returns the expiry in epoch milliseconds, or `null` if the controller did not report one (e.g. no session or a self hosted controller)
+     */
+    public getSessionExpiry(): Nullable<number> {
+        return this.sessionExpiresAt;
+    }
+
+    /**
+     * Extends the session by logging in again. Unlike `login()`, the session is not reset, so the events WebSocket stays open.
+     * If the renewal fails, the caller has to recover, e.g. with `logout()` and a full `login()`.
+     *
+     * @returns true if the controller accepted the new login
+     */
+    public async renewSession(): Promise<boolean> {
+        const logPrefix = `[${this.logPrefix}.renewSession]`
+
+        try {
+            const response = await this.retrieve(
+                this.getApiEndpoint(ApiEndpoints.login),
+                {
+                    body: JSON.stringify({ username: this.username, password: this.password, rememberMe: true }),
+                    method: 'POST'
+                },
+                { isLogin: true },
+            );
+
+            if (!response) {
+                return false;
+            }
+
+            // The body is not needed, release the connection.
+            await response.body.dump();
+
+            // UniFi OS issues a new CSRF token with the login, the following requests need it.
+            const rawCsrfToken = response.headers['x-updated-csrf-token'] ?? response.headers['x-csrf-token'];
+            const csrfToken = Array.isArray(rawCsrfToken) ? rawCsrfToken[0] : rawCsrfToken;
+            if (csrfToken) {
+                this.headers['x-csrf-token'] = csrfToken;
+            }
+
+            this.sessionExpiresAt = this.readSessionExpiry();
+
+            // Show how long the renewed session is valid, if the controller reported an expiry (ioBroker date format).
+            const sessionInfo = this.sessionExpiresAt === null ? '' : ` (session expire: ${dayjs(this.sessionExpiresAt).format(`${this.adapter.dateFormat || 'DD.MM.YYYY'} HH:mm:ss`)})`;
+            this.log.debug(`${logPrefix} session renewed${sessionInfo}`);
+
+            return true;
+        } catch (error: any) {
+            this.log.error(`${logPrefix} error: ${error}, stack: ${error.stack}`);
+        }
+
+        return false;
+    }
+
+    /**
+     * Reads the expiry of the TOKEN session cookie from the cookie jar.
+     *
+     * @returns the expiry in epoch milliseconds, or `null` if there is no TOKEN cookie or it has no expiry
+     */
+    private readSessionExpiry(): Nullable<number> {
+        const token = this.cookieJar.getCookiesSync(this.controllerUrl).find((cookie) => cookie.key === 'TOKEN');
+
+        return token?.expires instanceof Date ? token.expires.getTime() : null;
+    }
+
+    /**
      * Execute an HTTP fetch request to the Network controller and retriev data as json
      * 
      * @param url       Complete URL to execute **without** any additional parameters you want to pass.
@@ -535,6 +630,7 @@ export class NetworkApi extends EventEmitter {
             // Bad username and password, or an expired session.
             if (response.statusCode === 401) {
                 this.logout();
+                this.lastRequestUnauthorized = true;
 
                 if (hadSession && !retrieveOptions.isLogin) {
                     // Expected after the session lifetime of the controller (e.g. 24h). The connection cycle logs in again.
