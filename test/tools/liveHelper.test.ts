@@ -106,31 +106,47 @@ export function createLiveApi(config: LiveConfig): LiveSession {
 /** Message fragment logged by the API client when the controller cannot be reached. */
 const TRANSIENT_CONNECTION_ERROR = 'Unable to connect to the Network controller';
 
+/** Message fragment logged for HTTP 429. The controller blocks logins for a while when they follow each other too fast. */
+export const RATE_LIMIT_ERROR = 'code: 429';
+
+/** Wait time after an HTTP 429 answer. Short waits do not help, the controller needs a while to accept logins again. */
+export const RATE_LIMIT_DELAY_MS = 5_000;
+
+/**
+ * Waits for the given time.
+ *
+ * @param ms wait time in milliseconds
+ */
+export function sleep(ms: number): Promise<void> {
+    return new Promise<void>((resolve: () => void): void => {
+        globalThis.setTimeout(resolve, ms);
+    });
+}
+
 /**
  * Logs in and retries after transient connection errors. A controller that is busy or rebooting
- * refuses connections for a short time. Other failures, such as wrong credentials, are not retried.
+ * refuses connections for a short time, and HTTP 429 means that too many logins came in too fast.
+ * Other failures, such as wrong credentials, are not retried.
  *
  * @param session live session to log in with
  * @param attempts maximum number of login attempts
- * @param delayMs wait time between attempts in milliseconds
+ * @param delayMs wait time between attempts in milliseconds, used for transient errors other than 429
  */
-export async function loginWithRetry(session: LiveSession, attempts = 3, delayMs = 5_000): Promise<boolean> {
+export async function loginWithRetry(session: LiveSession, attempts = 4, delayMs = 5_000): Promise<boolean> {
     for (let attempt = 1; attempt <= attempts; attempt++) {
         const messagesBefore = session.messages.length;
         if (await session.api.login()) {
             return true;
         }
 
-        const transient = session.messages
-            .slice(messagesBefore)
-            .some((message: string): boolean => message.includes(TRANSIENT_CONNECTION_ERROR));
+        const newMessages = session.messages.slice(messagesBefore);
+        const transient = newMessages.some((message: string): boolean => message.includes(TRANSIENT_CONNECTION_ERROR));
         if (!transient || attempt === attempts) {
             return false;
         }
 
-        await new Promise<void>((resolve: () => void): void => {
-            globalThis.setTimeout(resolve, delayMs);
-        });
+        const rateLimited = newMessages.some((message: string): boolean => message.includes(RATE_LIMIT_ERROR));
+        await sleep(rateLimited ? RATE_LIMIT_DELAY_MS : delayMs);
     }
     return false;
 }

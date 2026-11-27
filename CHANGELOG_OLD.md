@@ -1,4 +1,22 @@
 # Older changes
+## 1.4.0 (2026-04-08)
+
+- (Scrounger) bug fix for speed test event spamming since v.10.2.105
+- (Scrounger) event messages improved #68 #54
+- (Scrounger) dependencies updated
+- (Scrounger) support for Unifi OS on custom port added (e.g. UniFi OS Server) #65
+- (Scrounger) bug fix: vpn is wrongly shown as lan
+- (Scrounger) system informations added #63
+- (Scrounger) port states up, rx/tx error and rx/tx dropped added
+- (Scrounger) event messages improved #64
+- (Scrounger) read controller version added #59
+- (Scrounger) option to set debug level for client connection events added #61
+- (Scrounger) property version for devices added
+- (Scrounger) satisfaction object create condition removed to prevent create and deletion of object
+- (Scrounger) event messages for dream machines compatibility < v10.x added #72
+- (Scrounger) weblate translation added
+- (Scrounger) downgrade @iobroker/adapter-core to v3.3.1 to prevent conflicts with js-controller < v7.1.0 in rare cases #56
+
 ## 1.3.1 (2025-12-01)
 
 - (Scrounger) null bug fix #48

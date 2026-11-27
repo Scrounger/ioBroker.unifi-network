@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { once, type EventEmitter } from 'node:events';
 import type WebSocket from 'ws';
-import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
+import { describeMessages, getSharedLogin, type LiveSession } from './liveHelper.test.js';
 
 /** `readyState` value of an open `ws` socket. */
 const WS_OPEN = 1;
@@ -46,19 +46,16 @@ describe('UniFi Network Controller - Session-Erneuerung (live)', function () {
     const getEventsSocket = (): WebSocket | null => (getSession().api as unknown as { _eventsWs: WebSocket | null })._eventsWs;
 
     before(async function () {
-        const config = getLiveConfig();
-        if (!config) {
+        this.timeout(90_000);
+        // Shared with the other live files. The root hook of liveHelper logs it out after the run.
+        const shared = await getSharedLogin();
+        if (!shared) {
             this.skip();
             return;
         }
 
-        // Own client, so renewing the session does not change the login that the other live files share.
-        session = createLiveApi(config);
-        expect(await loginWithRetry(getSession()), context()).to.equal(true);
-    });
-
-    after(() => {
-        session?.api.logout();
+        session = shared.session;
+        expect(shared.loggedIn, describeMessages(session.messages)).to.equal(true);
     });
 
     it('login() liefert den Ablauf der Session aus dem TOKEN-Cookie', function () {
@@ -84,6 +81,7 @@ describe('UniFi Network Controller - Session-Erneuerung (live)', function () {
             return;
         }
 
+        // The socket stays open after this test: websocket.live.test.ts reuses this shared session.
         const started = await getSession().api.launchEventsWs();
         expect(started, context()).to.equal(true);
 

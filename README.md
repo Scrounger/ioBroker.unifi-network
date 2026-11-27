@@ -113,6 +113,9 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### 1.6.3 (2026-11-27)
+- (Scrounger) token renewal bug fixes
+
 ### 1.6.2 (2026-11-26)
 
 - (Scrounger) bug fixes in user sync, client updates, whitelist and API timeouts
@@ -145,24 +148,6 @@ Fixtures are stored in `test/fixtures/local/` and are git-ignored, as they conta
 - (ioBrokerTranslator) spanish language added #98
 - (Scrounger) bug fix for expired token since v10.4.57 #108
 - (copilot) Adapter requires node.js >= 22 now
-
-### 1.4.0 (2026-04-08)
-
-- (Scrounger) bug fix for speed test event spamming since v.10.2.105
-- (Scrounger) event messages improved #68 #54
-- (Scrounger) dependencies updated
-- (Scrounger) support for Unifi OS on custom port added (e.g. UniFi OS Server) #65
-- (Scrounger) bug fix: vpn is wrongly shown as lan
-- (Scrounger) system informations added #63
-- (Scrounger) port states up, rx/tx error and rx/tx dropped added
-- (Scrounger) event messages improved #64
-- (Scrounger) read controller version added #59
-- (Scrounger) option to set debug level for client connection events added #61
-- (Scrounger) property version for devices added
-- (Scrounger) satisfaction object create condition removed to prevent create and deletion of object
-- (Scrounger) event messages for dream machines compatibility < v10.x added #72
-- (Scrounger) weblate translation added
-- (Scrounger) downgrade @iobroker/adapter-core to v3.3.1 to prevent conflicts with js-controller < v7.1.0 in rare cases #56
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

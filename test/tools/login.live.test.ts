@@ -1,10 +1,11 @@
 import { expect } from 'chai';
-import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
+import { createLiveApi, describeMessages, getSharedLogin, type LiveSession } from './liveHelper.test.js';
 
 describe('UniFi Network Controller - Login (live, read-only)', function () {
     this.timeout(30_000);
 
     let session: LiveSession | undefined;
+    let sharedLoggedIn = false;
 
     const getSession = (): LiveSession => {
         if (!session) {
@@ -13,22 +14,21 @@ describe('UniFi Network Controller - Login (live, read-only)', function () {
         return session;
     };
 
-    before(function () {
-        const config = getLiveConfig();
-        if (!config) {
+    // Uses the login that all live files share. A separate login here would add to the HTTP 429 rate limit.
+    // No logout in this file: the other live files need the session. The root hook in liveHelper logs it out.
+    before(async function () {
+        this.timeout(90_000);
+        const shared = await getSharedLogin();
+        if (!shared) {
             this.skip();
             return;
         }
-        session = createLiveApi(config);
+        session = shared.session;
+        sharedLoggedIn = shared.loggedIn;
     });
 
-    after(() => {
-        session?.api.logout();
-    });
-
-    it('login() returns true', async () => {
-        const loggedIn = await loginWithRetry(getSession());
-        expect(loggedIn, describeMessages(getSession().messages)).to.equal(true);
+    it('login() returns true', () => {
+        expect(sharedLoggedIn, describeMessages(getSession().messages)).to.equal(true);
     });
 
     it('detects the controller URL', () => {
@@ -41,14 +41,10 @@ describe('UniFi Network Controller - Login (live, read-only)', function () {
         const { api, config, messages } = getSession();
         const sites = await api.getSites();
         expect(sites, describeMessages(messages)).to.be.an('array');
-        expect(sites?.map((site) => site.name), describeMessages(messages)).to.include(config.site);
-    });
-
-    it('login() works again after logout()', async () => {
-        const current = getSession();
-        current.api.logout();
-        const loggedIn = await loginWithRetry(current);
-        expect(loggedIn, describeMessages(current.messages)).to.equal(true);
+        expect(
+            sites?.map(site => site.name),
+            describeMessages(messages),
+        ).to.include(config.site);
     });
 
     it('wrong password is rejected (only with LIVE_NEGATIVE_TESTS=1)', async function () {

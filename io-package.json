@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "unifi-network",
-    "version": "1.6.2",
+    "version": "1.6.3",
     "news": {
+      "1.6.3": {
+        "en": "token renewal bug fixes",
+        "de": "Bugfixes zur Tokenverlängerung",
+        "ru": "исправлены ошибки обновления токенов",
+        "pt": "bugs de renovação de token",
+        "nl": "Bugreparaties voor het vernieuwen van tokens",
+        "fr": "corrections de jetons",
+        "it": "bug fix di rinnovo token",
+        "es": "errores de renovación",
+        "pl": "poprawki błędów odnowienia tokena",
+        "uk": "Виправлення помилок поновлення токена",
+        "zh-cn": "代币续订错误修复"
+      },
       "1.6.2": {
         "en": "bug fixes in user sync, client updates, whitelist and API timeouts\nstate properties (step, expert, icon) and timestamps updated correctly\nwarning texts corrected\nperformance optimizations",
         "de": "Bugfixes in Usersync, Client-Updates, Whitelist und API\nStatus (Step, Expert, Icon) und Zeitstempel korrekt aktualisiert\nWarntexte korrigiert\nLeistungsoptimierungen",
@@ -80,19 +93,6 @@
         "pl": "null bug fix # 48\nzaktualizowane zależności\nwiadomości eventowe poprawione # 46\npoprawki błędów",
         "uk": "нулі виправлення помилок #48\nоновлені залежності\nповідомлення про захід покращено #46\nвиправлення помилок",
         "zh-cn": "无错误修正# 48\n更新依赖关系\n事件消息得到改进# 46\n错误修正"
-      },
-      "1.3.0": {
-        "en": "event messages improved #46\noption to change tx power mode of access point channels\ndependencies updated\ncode optimized\nlogging optimized",
-        "de": "event-nachrichten verbessert #46\nmöglichkeit, tx-leistungsmodus der zugangspunktkanäle zu ändern\naktualisierte abhängigkeiten\ncode optimiert\nprotokollierung optimiert",
-        "ru": "сообщения об улучшении #46\nвозможность изменения режима питания tx каналов точки доступа\nобновленные зависимости\nоптимизированный код\nоптимизация лесозаготовок",
-        "pt": "mensagens de eventos melhoradas # 46\nopção para alterar o modo de potência tx dos canais de ponto de acesso\ndependências atualizadas\ncódigo otimizado\nregistro otimizado",
-        "nl": "event berichten verbeterd #46\noptie om tx stroommodus van toegangspuntkanalen te wijzigen\nafhankelijkheden bijgewerkt\ncode geoptimaliseerd\nlogging geoptimaliseerd",
-        "fr": "messages d'événements améliorés #46\noption pour changer le mode d'alimentation tx des canaux point d'accès\ndépendances mises à jour\ncode optimisé\nenregistrement optimisé",
-        "it": "messaggi evento migliorato #46\nopzione per modificare la modalità di alimentazione tx dei canali di accesso\ndipendenze aggiornate\ncodice ottimizzato\nlogging ottimizzato",
-        "es": "mensajes del evento mejorado #46\nopción para cambiar el modo de potencia tx de canales de punto de acceso\ndependencias actualizadas\ncódigo optimizado\nlogging optimizado",
-        "pl": "wiadomości eventowe poprawione # 46\nopcja zmiany trybu zasilania tx kanałów punktów dostępu\nzaktualizowane zależności\nzoptymalizowany kod\nzoptymalizowane logowanie",
-        "uk": "повідомлення про захід покращено #46\nможливість змінити режим живлення tx каналів доступу\nоновлені залежності\nоптимізований код\nоптимізоване завантаження",
-        "zh-cn": "事件消息得到改进# 46\n选项以更改 tx 访问点频道的电源模式\n更新依赖关系\n代码优化\n记录优化"
       }
     },
     "titleLang": {

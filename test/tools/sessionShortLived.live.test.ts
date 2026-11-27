@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ApiEndpoints, type NetworkApi, type Nullable } from '../../src/lib/api/network-api.js';
-import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, type LiveSession } from './liveHelper.test.js';
+import { createLiveApi, describeMessages, getLiveConfig, loginWithRetry, RATE_LIMIT_DELAY_MS, RATE_LIMIT_ERROR, sleep, type LiveSession } from './liveHelper.test.js';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
@@ -18,7 +18,8 @@ type ApiResponse = Awaited<ReturnType<NetworkApi['retrieve']>>;
  * with `rememberMe: false` is sent by this test, the renewal uses the adapter's `renewSession()`.
  */
 describe('UniFi Network Controller - kurzlebige Session (live)', function () {
-    this.timeout(90_000);
+    // Waits after HTTP 429 (see loginWithRetry) make the run longer than a plain login would need.
+    this.timeout(180_000);
 
     let session: LiveSession | undefined;
     let shortLivedExpiry: number | undefined;
@@ -34,6 +35,53 @@ describe('UniFi Network Controller - kurzlebige Session (live)', function () {
 
     const internals = (): ApiInternals => getSession().api as unknown as ApiInternals;
 
+    /** Renews the session. An HTTP 429 answer is retried after a pause, like a failed login. */
+    const renewWithRetry = async (): Promise<boolean> => {
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            const messagesBefore = getSession().messages.length;
+            if (await getSession().api.renewSession()) {
+                return true;
+            }
+
+            const rateLimited = getSession()
+                .messages.slice(messagesBefore)
+                .some((message: string): boolean => message.includes(RATE_LIMIT_ERROR));
+            if (!rateLimited || attempt === 3) {
+                return false;
+            }
+            await sleep(RATE_LIMIT_DELAY_MS);
+        }
+        return false;
+    };
+
+    /** Logs in with `rememberMe: false`. An HTTP 429 answer is retried after a pause, like `renewWithRetry`. */
+    const shortLoginWithRetry = async (): Promise<NonNullable<ApiResponse>> => {
+        const { api, config } = getSession();
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            const messagesBefore = getSession().messages.length;
+            const response: ApiResponse = await api.retrieve(
+                api.getApiEndpoint(ApiEndpoints.login),
+                {
+                    body: JSON.stringify({ username: config.user, password: config.password, rememberMe: false }),
+                    method: 'POST',
+                },
+                { isLogin: true },
+            );
+            if (response) {
+                return response;
+            }
+
+            const rateLimited = getSession()
+                .messages.slice(messagesBefore)
+                .some((message: string): boolean => message.includes(RATE_LIMIT_ERROR));
+            if (!rateLimited || attempt === 3) {
+                break;
+            }
+            await sleep(RATE_LIMIT_DELAY_MS);
+        }
+        throw new Error(`short-lived login failed. ${context()}`);
+    };
+
     before(async function () {
         const config = getLiveConfig();
         if (!config) {
@@ -41,7 +89,7 @@ describe('UniFi Network Controller - kurzlebige Session (live)', function () {
             return;
         }
 
-        // Own client, so the other live files keep their login.
+        // Own client, so the other live files keep their login. login() sets up the HTTP client that the test uses.
         session = createLiveApi(config);
         expect(await loginWithRetry(getSession()), context()).to.equal(true);
     });
@@ -51,19 +99,7 @@ describe('UniFi Network Controller - kurzlebige Session (live)', function () {
     });
 
     it('Login mit rememberMe false liefert eine Session von etwa 2 Stunden', async () => {
-        const { api, config } = getSession();
-
-        const response: ApiResponse = await api.retrieve(
-            api.getApiEndpoint(ApiEndpoints.login),
-            {
-                body: JSON.stringify({ username: config.user, password: config.password, rememberMe: false }),
-                method: 'POST',
-            },
-            { isLogin: true },
-        );
-        if (!response) {
-            throw new Error(`short-lived login failed. ${context()}`);
-        }
+        const response = await shortLoginWithRetry();
         await response.body.dump();
 
         // The controller sends the CSRF token with the login, the following requests need it.
@@ -89,7 +125,7 @@ describe('UniFi Network Controller - kurzlebige Session (live)', function () {
             throw new Error(`no short-lived session from the previous test. ${context()}`);
         }
 
-        expect(await getSession().api.renewSession(), context()).to.equal(true);
+        expect(await renewWithRetry(), context()).to.equal(true);
 
         // renewSession() logs in with rememberMe true, so the new expiry is much later than the short one.
         const renewed = getSession().api.getSessionExpiry();

@@ -30,7 +30,8 @@ async function waitForEvent<T = unknown>(emitter: EventEmitter, event: string, t
 }
 
 describe('UniFi Network Controller - WebSocket (live, read-only)', function () {
-    this.timeout(45_000);
+    // The last test logs in again and may wait for an HTTP 429 after the short-lived session logins before it.
+    this.timeout(180_000);
 
     let session: LiveSession | undefined;
 
