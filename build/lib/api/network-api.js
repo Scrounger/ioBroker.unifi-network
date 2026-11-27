@@ -83,7 +83,8 @@ export class NetworkApi extends EventEmitter {
                 // let us check if we have Unifi OS or self hosted controller
                 await this.detectController();
             }
-            this.logout();
+            // Start from a clean session, so that the login below really authenticates again (e.g. after the session expired).
+            this.resetSession();
             if (this.isControllerDetected) {
                 // Let's attempt to login.
                 const loginSuccess = await this.loginController();
@@ -144,6 +145,14 @@ export class NetworkApi extends EventEmitter {
             this.logout();
         }
     }
+    /**
+     * Drops the complete session (CSRF token, headers and cookies), so that the next login really authenticates again.
+     */
+    resetSession() {
+        this.logout();
+        delete this.headers['x-csrf-token'];
+        this.cookieJar = new CookieJar();
+    }
     async loginController() {
         const logPrefix = `[${this.logPrefix}.loginController]`;
         try {
@@ -177,7 +186,7 @@ export class NetworkApi extends EventEmitter {
             const response = await this.retrieve(this.getApiEndpoint(ApiEndpoints.login), {
                 body: JSON.stringify({ username: this.username, password: this.password, rememberMe: true }),
                 method: "POST"
-            });
+            }, { isLogin: true });
             // Something went wrong with the login call, possibly a controller reboot or failure.
             if (!this.responseOk(response?.statusCode)) {
                 this.logout();
@@ -372,7 +381,10 @@ export class NetworkApi extends EventEmitter {
         if (connectionTimeout) {
             this.connectionTimeouts.add(connectionTimeout);
         }
-        this.headers.cookie = await this.cookieJar.getCookieString(this.controllerUrl);
+        const sessionCookie = await this.cookieJar.getCookieString(this.controllerUrl);
+        // A 401 on an existing session means that the session expired, not that the credentials are wrong.
+        const hadSession = Boolean(this.headers['x-csrf-token'] || sessionCookie);
+        this.headers.cookie = sessionCookie;
         options.dispatcher = options.dispatcher || this.dispatcher;
         options.headers = this.headers;
         options.signal = controller.signal;
@@ -384,10 +396,16 @@ export class NetworkApi extends EventEmitter {
             if (response.statusCode === 302 && !this.isControllerDetected) {
                 return response;
             }
-            // Bad username and password.
+            // Bad username and password, or an expired session.
             if (response.statusCode === 401) {
                 this.logout();
-                this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password (code: ${response.statusCode}, url: ${url}).`);
+                if (hadSession && !retrieveOptions.isLogin) {
+                    // Expected after the session lifetime of the controller (e.g. 24h). The connection cycle logs in again.
+                    this.log.info(`${logPrefix} Session expired, logging in again (code: ${response.statusCode}, url: ${url}).`);
+                }
+                else {
+                    this.log.error(`${logPrefix} Invalid login credentials given. Please check your login and password (code: ${response.statusCode}, url: ${url}).`);
+                }
                 return null;
             }
             // Insufficient privileges.

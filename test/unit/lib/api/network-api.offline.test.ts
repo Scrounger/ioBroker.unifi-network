@@ -261,6 +261,18 @@ describe('NetworkApi: Verbindung, Login und Abmeldung (offline)', () => {
             expect(requests[0]).to.include({ method: 'POST', url: `${BASE}/api/login` });
         });
 
+        it('führt bei einem erneuten Login einen echten Login-Request aus, auch wenn eine alte Session existiert', async () => {
+            const { api } = createLoginApi();
+            Object.assign(api, { isControllerDetected: true, controllerUrl: BASE });
+            internals(api).headers = { cookie: 'unifises=old', 'x-csrf-token': 'csrf-old' };
+            await internals(api).cookieJar.setCookie('unifises=old; Path=/', BASE);
+            const requests = answerWith(api, classicController);
+
+            expect(await api.login()).to.equal(true);
+            expect(requests[0]).to.include({ method: 'POST', url: `${BASE}/api/login` });
+            expect(internals(api).headers['x-csrf-token']).to.equal(undefined);
+        });
+
         it('liefert false und sendet ein login-Event mit false bei ungültigen Zugangsdaten', async () => {
             const { api, stub } = createLoginApi();
             Object.assign(api, { isControllerDetected: true, controllerUrl: BASE });
@@ -453,6 +465,23 @@ describe('NetworkApi: HTTP-Anfragen über retrieve (MockAgent)', () => {
         await api.retrieve(sysinfoUrl);
 
         expect(await internals(api).cookieJar.getCookieString(BASE)).to.include('unifises=single');
+    });
+
+    it('meldet ein 401 bei bestehender Session nicht als falsche Zugangsdaten, sondern als Sitzungsablauf', async () => {
+        internals(api).headers = { cookie: 'unifises=abc', 'x-csrf-token': 'csrf-1' };
+        agent.get(MOCK_ORIGIN).intercept({ path: sysinfoPath, method: 'GET' }).reply(401, {});
+
+        expect(await api.retrieve(sysinfoUrl)).to.equal(null);
+        expect(stub.errors).to.deep.equal([]);
+        expect(internals(api).headers).to.deep.equal({ 'content-type': 'application/json', 'x-csrf-token': 'csrf-1' });
+    });
+
+    it('meldet ein 401 auf den Login-Request weiterhin als falsche Zugangsdaten', async () => {
+        internals(api).headers = { cookie: 'unifises=abc', 'x-csrf-token': 'csrf-1' };
+        agent.get(MOCK_ORIGIN).intercept({ path: '/api/login', method: 'POST' }).reply(401, {});
+
+        expect(await api.retrieve(`${BASE}/api/login`, { method: 'POST' }, { isLogin: true })).to.equal(null);
+        expect(stub.errors.some(message => message.includes('Invalid login credentials'))).to.equal(true);
     });
 
     it('liefert null, meldet den Fehler und loggt bei 401 aus', async () => {
